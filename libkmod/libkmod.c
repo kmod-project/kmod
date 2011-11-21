@@ -46,15 +46,15 @@
 struct kmod_ctx {
 	int refcount;
 	void (*log_fn)(struct kmod_ctx *ctx,
-		       int priority, const char *file, int line, const char *fn,
-		       const char *format, va_list args);
+			int priority, const char *file, int line,
+			const char *fn, const char *format, va_list args);
 	void *userdata;
 	int log_priority;
 };
 
 void kmod_log(struct kmod_ctx *ctx,
-	   int priority, const char *file, int line, const char *fn,
-	   const char *format, ...)
+		int priority, const char *file, int line, const char *fn,
+		const char *format, ...)
 {
 	va_list args;
 
@@ -64,8 +64,8 @@ void kmod_log(struct kmod_ctx *ctx,
 }
 
 static void log_stderr(struct kmod_ctx *ctx,
-		       int priority, const char *file, int line, const char *fn,
-		       const char *format, va_list args)
+			int priority, const char *file, int line,
+			const char *fn, const char *format, va_list args)
 {
 	fprintf(stderr, "libkmod: %s: ", fn);
 	vfprintf(stderr, format, args);
@@ -200,10 +200,10 @@ KMOD_EXPORT struct kmod_ctx *kmod_unref(struct kmod_ctx *ctx)
  *
  **/
 KMOD_EXPORT void kmod_set_log_fn(struct kmod_ctx *ctx,
-			      void (*log_fn)(struct kmod_ctx *ctx,
-					     int priority, const char *file,
-					     int line, const char *fn,
-					     const char *format, va_list args))
+					void (*log_fn)(struct kmod_ctx *ctx,
+						int priority, const char *file,
+						int line, const char *fn,
+						const char *format, va_list args))
 {
 	ctx->log_fn = log_fn;
 	info(ctx, "custom logging function %p registered\n", log_fn);

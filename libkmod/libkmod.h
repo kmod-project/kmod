@@ -38,9 +38,10 @@ struct kmod_ctx *kmod_ref(struct kmod_ctx *ctx);
 struct kmod_ctx *kmod_unref(struct kmod_ctx *ctx);
 int kmod_new(struct kmod_ctx **ctx);
 void kmod_set_log_fn(struct kmod_ctx *ctx,
-		  void (*log_fn)(struct kmod_ctx *ctx,
-				 int priority, const char *file, int line, const char *fn,
-				 const char *format, va_list args));
+			void (*log_fn)(struct kmod_ctx *ctx,
+				int priority, const char *file, int line,
+				const char *fn, const char *format,
+				va_list args));
 int kmod_get_log_priority(struct kmod_ctx *ctx);
 void kmod_set_log_priority(struct kmod_ctx *ctx, int priority);
 void *kmod_get_userdata(struct kmod_ctx *ctx);
@@ -57,8 +58,8 @@ const char *kmod_list_entry_get_name(struct kmod_list_entry *list_entry);
 const char *kmod_list_entry_get_value(struct kmod_list_entry *list_entry);
 #define kmod_list_entry_foreach(list_entry, first_entry) \
 	for (list_entry = first_entry; \
-	     list_entry != NULL; \
-	     list_entry = kmod_list_entry_get_next(list_entry))
+		list_entry != NULL; \
+		list_entry = kmod_list_entry_get_next(list_entry))
 
 /*
  * kmod_thing
