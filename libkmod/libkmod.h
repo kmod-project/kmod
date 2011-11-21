@@ -54,24 +54,10 @@ void kmod_set_userdata(struct kmod_ctx *ctx, void *userdata);
  */
 struct kmod_list_entry;
 struct kmod_list_entry *kmod_list_entry_get_next(struct kmod_list_entry *list_entry);
-const char *kmod_list_entry_get_name(struct kmod_list_entry *list_entry);
-const char *kmod_list_entry_get_value(struct kmod_list_entry *list_entry);
 #define kmod_list_entry_foreach(list_entry, first_entry) \
 	for (list_entry = first_entry; \
 		list_entry != NULL; \
 		list_entry = kmod_list_entry_get_next(list_entry))
-
-/*
- * kmod_thing
- *
- * access to things of kmod
- */
-struct kmod_thing;
-struct kmod_thing *kmod_thing_ref(struct kmod_thing *thing);
-struct kmod_thing *kmod_thing_unref(struct kmod_thing *thing);
-struct kmod_ctx *kmod_thing_get_ctx(struct kmod_thing *thing);
-int kmod_thing_new_from_string(struct kmod_ctx *ctx, const char *string, struct kmod_thing **thing);
-struct kmod_list_entry *kmod_thing_get_some_list_entry(struct kmod_thing *thing);
 
 #ifdef __cplusplus
 } /* extern "C" */
