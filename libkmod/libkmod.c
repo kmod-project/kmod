@@ -129,28 +129,28 @@ static int log_priority(const char *priority)
  *
  * Returns: a new kmod library context
  **/
-KMOD_EXPORT int kmod_new(struct kmod_ctx **ctx)
+KMOD_EXPORT struct kmod_ctx *kmod_new(void)
 {
 	const char *env;
-	struct kmod_ctx *c;
+	struct kmod_ctx *ctx;
 
-	c = calloc(1, sizeof(struct kmod_ctx));
-	if (!c)
-		return -ENOMEM;
+	ctx = calloc(1, sizeof(struct kmod_ctx));
+	if (!ctx)
+		return NULL;
 
-	c->refcount = 1;
-	c->log_fn = log_stderr;
-	c->log_priority = LOG_ERR;
+	ctx->refcount = 1;
+	ctx->log_fn = log_stderr;
+	ctx->log_priority = LOG_ERR;
 
 	/* environment overwrites config */
 	env = getenv("KMOD_LOG");
 	if (env != NULL)
-		kmod_set_log_priority(c, log_priority(env));
+		kmod_set_log_priority(ctx, log_priority(env));
 
-	info(c, "ctx %p created\n", c);
-	dbg(c, "log_priority=%d\n", c->log_priority);
-	*ctx = c;
-	return 0;
+	info(ctx, "ctx %p created\n", ctx);
+	dbg(ctx, "log_priority=%d\n", ctx->log_priority);
+
+	return ctx;
 }
 
 /**
