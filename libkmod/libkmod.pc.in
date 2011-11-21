@@ -3,9 +3,9 @@ exec_prefix=@exec_prefix@
 libdir=@libdir@
 includedir=@includedir@
 
-Name: libabc
-Description: Library for something with abc
+Name: libkmod
+Description: Library to deal with kernel modules
 Version: @VERSION@
-Libs: -L${libdir} -labc
+Libs: -L${libdir} -lkmod
 Libs.private:
 Cflags: -I${includedir}

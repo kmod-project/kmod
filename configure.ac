@@ -1,10 +1,11 @@
 AC_PREREQ(2.60)
-AC_INIT([libabc],
-	[1],
-	[libabc-devel@example.com],
-	[libabc],
-	[http://www.example.com/libs/libabc/])
-AC_CONFIG_SRCDIR([libabc/libabc.c])
+AC_INIT([libkmod],
+	[0.1],
+	[],
+	[libkmod],
+	[http://git.profusion.mobi/cgit.cgi/lucas/libkmod/])
+
+AC_CONFIG_SRCDIR([libkmod/libkmod.c])
 AC_CONFIG_AUX_DIR([build-aux])
 AM_INIT_AUTOMAKE([check-news foreign 1.11 -Wall -Wno-portability silent-rules tar-pax dist-bzip2 subdir-objects])
 AC_PROG_CC_STDC
@@ -32,7 +33,7 @@ AS_IF([test "x$enable_debug" = "xyes"], [
 AC_CONFIG_HEADERS(config.h)
 AC_CONFIG_FILES([
 	Makefile
-	libabc/libabc.pc
+	libkmod/libkmod.pc
 ])
 
 AC_OUTPUT

@@ -1,22 +1,22 @@
 /*
-  libabc - something with abc
-
-  Copyright (C) 2011 Someone <someone@example.com>
-
-  This library is free software; you can redistribute it and/or
-  modify it under the terms of the GNU Lesser General Public
-  License as published by the Free Software Foundation; either
-  version 2.1 of the License, or (at your option) any later version.
-
-  This library is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-  Lesser General Public License for more details.¶
-
-  You should have received a copy of the GNU Lesser General Public
-  License along with this library; if not, write to the Free Software
-  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-*/
+ * libkmod - interface to kernel module operations
+ *
+ * Copyright (C) 2011  ProFUSION embedded systems
+ * Copyright (C) 2011  Lucas De Marchi <lucas.de.marchi@gmail.com>
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation version 2.1.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -27,32 +27,32 @@
 #include <string.h>
 #include <ctype.h>
 
-#include "libabc.h"
-#include "libabc-private.h"
+#include "libkmod.h"
+#include "libkmod-private.h"
 
 /**
- * SECTION:libabc
- * @short_description: libabc context
+ * SECTION:libkmod
+ * @short_description: libkmod context
  *
  * The context contains the default values for the library user,
  * and is passed to all library operations.
  */
 
 /**
- * abc_ctx:
+ * kmod_ctx:
  *
  * Opaque object representing the library context.
  */
-struct abc_ctx {
+struct kmod_ctx {
 	int refcount;
-	void (*log_fn)(struct abc_ctx *ctx,
+	void (*log_fn)(struct kmod_ctx *ctx,
 		       int priority, const char *file, int line, const char *fn,
 		       const char *format, va_list args);
 	void *userdata;
 	int log_priority;
 };
 
-void abc_log(struct abc_ctx *ctx,
+void kmod_log(struct kmod_ctx *ctx,
 	   int priority, const char *file, int line, const char *fn,
 	   const char *format, ...)
 {
@@ -63,24 +63,24 @@ void abc_log(struct abc_ctx *ctx,
 	va_end(args);
 }
 
-static void log_stderr(struct abc_ctx *ctx,
+static void log_stderr(struct kmod_ctx *ctx,
 		       int priority, const char *file, int line, const char *fn,
 		       const char *format, va_list args)
 {
-	fprintf(stderr, "libabc: %s: ", fn);
+	fprintf(stderr, "libkmod: %s: ", fn);
 	vfprintf(stderr, format, args);
 }
 
 /**
- * abc_get_userdata:
- * @ctx: abc library context
+ * kmod_get_userdata:
+ * @ctx: kmod library context
  *
  * Retrieve stored data pointer from library context. This might be useful
  * to access from callbacks like a custom logging function.
  *
  * Returns: stored userdata
  **/
-ABC_EXPORT void *abc_get_userdata(struct abc_ctx *ctx)
+KMOD_EXPORT void *kmod_get_userdata(struct kmod_ctx *ctx)
 {
 	if (ctx == NULL)
 		return NULL;
@@ -88,13 +88,13 @@ ABC_EXPORT void *abc_get_userdata(struct abc_ctx *ctx)
 }
 
 /**
- * abc_set_userdata:
- * @ctx: abc library context
+ * kmod_set_userdata:
+ * @ctx: kmod library context
  * @userdata: data pointer
  *
  * Store custom @userdata in the library context.
  **/
-ABC_EXPORT void abc_set_userdata(struct abc_ctx *ctx, void *userdata)
+KMOD_EXPORT void kmod_set_userdata(struct kmod_ctx *ctx, void *userdata)
 {
 	if (ctx == NULL)
 		return;
@@ -119,22 +119,22 @@ static int log_priority(const char *priority)
 }
 
 /**
- * abc_new:
+ * kmod_new:
  *
- * Create abc library context. This reads the abc configuration
+ * Create kmod library context. This reads the kmod configuration
  * and fills in the default values.
  *
  * The initial refcount is 1, and needs to be decremented to
- * release the resources of the abc library context.
+ * release the resources of the kmod library context.
  *
- * Returns: a new abc library context
+ * Returns: a new kmod library context
  **/
-ABC_EXPORT int abc_new(struct abc_ctx **ctx)
+KMOD_EXPORT int kmod_new(struct kmod_ctx **ctx)
 {
 	const char *env;
-	struct abc_ctx *c;
+	struct kmod_ctx *c;
 
-	c = calloc(1, sizeof(struct abc_ctx));
+	c = calloc(1, sizeof(struct kmod_ctx));
 	if (!c)
 		return -ENOMEM;
 
@@ -143,9 +143,9 @@ ABC_EXPORT int abc_new(struct abc_ctx **ctx)
 	c->log_priority = LOG_ERR;
 
 	/* environment overwrites config */
-	env = getenv("ABC_LOG");
+	env = getenv("KMOD_LOG");
 	if (env != NULL)
-		abc_set_log_priority(c, log_priority(env));
+		kmod_set_log_priority(c, log_priority(env));
 
 	info(c, "ctx %p created\n", c);
 	dbg(c, "log_priority=%d\n", c->log_priority);
@@ -154,14 +154,14 @@ ABC_EXPORT int abc_new(struct abc_ctx **ctx)
 }
 
 /**
- * abc_ref:
- * @ctx: abc library context
+ * kmod_ref:
+ * @ctx: kmod library context
  *
- * Take a reference of the abc library context.
+ * Take a reference of the kmod library context.
  *
- * Returns: the passed abc library context
+ * Returns: the passed kmod library context
  **/
-ABC_EXPORT struct abc_ctx *abc_ref(struct abc_ctx *ctx)
+KMOD_EXPORT struct kmod_ctx *kmod_ref(struct kmod_ctx *ctx)
 {
 	if (ctx == NULL)
 		return NULL;
@@ -170,14 +170,14 @@ ABC_EXPORT struct abc_ctx *abc_ref(struct abc_ctx *ctx)
 }
 
 /**
- * abc_unref:
- * @ctx: abc library context
+ * kmod_unref:
+ * @ctx: kmod library context
  *
- * Drop a reference of the abc library context. If the refcount
+ * Drop a reference of the kmod library context. If the refcount
  * reaches zero, the resources of the context will be released.
  *
  **/
-ABC_EXPORT struct abc_ctx *abc_unref(struct abc_ctx *ctx)
+KMOD_EXPORT struct kmod_ctx *kmod_unref(struct kmod_ctx *ctx)
 {
 	if (ctx == NULL)
 		return NULL;
@@ -190,8 +190,8 @@ ABC_EXPORT struct abc_ctx *abc_unref(struct abc_ctx *ctx)
 }
 
 /**
- * abc_set_log_fn:
- * @ctx: abc library context
+ * kmod_set_log_fn:
+ * @ctx: kmod library context
  * @log_fn: function to be called for logging messages
  *
  * The built-in logging writes to stderr. It can be
@@ -199,8 +199,8 @@ ABC_EXPORT struct abc_ctx *abc_unref(struct abc_ctx *ctx)
  * into the user's logging functionality.
  *
  **/
-ABC_EXPORT void abc_set_log_fn(struct abc_ctx *ctx,
-			      void (*log_fn)(struct abc_ctx *ctx,
+KMOD_EXPORT void kmod_set_log_fn(struct kmod_ctx *ctx,
+			      void (*log_fn)(struct kmod_ctx *ctx,
 					     int priority, const char *file,
 					     int line, const char *fn,
 					     const char *format, va_list args))
@@ -210,40 +210,40 @@ ABC_EXPORT void abc_set_log_fn(struct abc_ctx *ctx,
 }
 
 /**
- * abc_get_log_priority:
- * @ctx: abc library context
+ * kmod_get_log_priority:
+ * @ctx: kmod library context
  *
  * Returns: the current logging priority
  **/
-ABC_EXPORT int abc_get_log_priority(struct abc_ctx *ctx)
+KMOD_EXPORT int kmod_get_log_priority(struct kmod_ctx *ctx)
 {
 	return ctx->log_priority;
 }
 
 /**
- * abc_set_log_priority:
- * @ctx: abc library context
+ * kmod_set_log_priority:
+ * @ctx: kmod library context
  * @priority: the new logging priority
  *
  * Set the current logging priority. The value controls which messages
  * are logged.
  **/
-ABC_EXPORT void abc_set_log_priority(struct abc_ctx *ctx, int priority)
+KMOD_EXPORT void kmod_set_log_priority(struct kmod_ctx *ctx, int priority)
 {
 	ctx->log_priority = priority;
 }
 
-struct abc_list_entry;
-struct abc_list_entry *abc_list_entry_get_next(struct abc_list_entry *list_entry);
-const char *abc_list_entry_get_name(struct abc_list_entry *list_entry);
-const char *abc_list_entry_get_value(struct abc_list_entry *list_entry);
+struct kmod_list_entry;
+struct kmod_list_entry *kmod_list_entry_get_next(struct kmod_list_entry *list_entry);
+const char *kmod_list_entry_get_name(struct kmod_list_entry *list_entry);
+const char *kmod_list_entry_get_value(struct kmod_list_entry *list_entry);
 
-struct abc_thing {
-	struct abc_ctx *ctx;
+struct kmod_thing {
+	struct kmod_ctx *ctx;
 	int refcount;
 };
 
-ABC_EXPORT struct abc_thing *abc_thing_ref(struct abc_thing *thing)
+KMOD_EXPORT struct kmod_thing *kmod_thing_ref(struct kmod_thing *thing)
 {
 	if (!thing)
 		return NULL;
@@ -251,7 +251,7 @@ ABC_EXPORT struct abc_thing *abc_thing_ref(struct abc_thing *thing)
 	return thing;
 }
 
-ABC_EXPORT struct abc_thing *abc_thing_unref(struct abc_thing *thing)
+KMOD_EXPORT struct kmod_thing *kmod_thing_unref(struct kmod_thing *thing)
 {
 	if (thing == NULL)
 		return NULL;
@@ -263,16 +263,16 @@ ABC_EXPORT struct abc_thing *abc_thing_unref(struct abc_thing *thing)
 	return NULL;
 }
 
-ABC_EXPORT struct abc_ctx *abc_thing_get_ctx(struct abc_thing *thing)
+KMOD_EXPORT struct kmod_ctx *kmod_thing_get_ctx(struct kmod_thing *thing)
 {
 	return thing->ctx;
 }
 
-ABC_EXPORT int abc_thing_new_from_string(struct abc_ctx *ctx, const char *string, struct abc_thing **thing)
+KMOD_EXPORT int kmod_thing_new_from_string(struct kmod_ctx *ctx, const char *string, struct kmod_thing **thing)
 {
-	struct abc_thing *t;
+	struct kmod_thing *t;
 
-	t = calloc(1, sizeof(struct abc_thing));
+	t = calloc(1, sizeof(struct kmod_thing));
 	if (!t)
 		return -ENOMEM;
 
@@ -282,7 +282,7 @@ ABC_EXPORT int abc_thing_new_from_string(struct abc_ctx *ctx, const char *string
 	return 0;
 }
 
-ABC_EXPORT struct abc_list_entry *abc_thing_get_some_list_entry(struct abc_thing *thing)
+KMOD_EXPORT struct kmod_list_entry *kmod_thing_get_some_list_entry(struct kmod_thing *thing)
 {
 	return NULL;
 }

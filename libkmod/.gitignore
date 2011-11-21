@@ -3,4 +3,4 @@
 .libs/
 *.la
 *.lo
-libabc.pc
+libkmod.pc

@@ -4,7 +4,7 @@ AM_MAKEFLAGS = --no-print-directory
 
 AM_CPPFLAGS = \
 	-include $(top_builddir)/config.h \
-	-I$(top_srcdir)/libabc \
+	-I$(top_srcdir)/libkmod \
 	-DSYSCONFDIR=\""$(sysconfdir)"\" \
 	-DLIBEXECDIR=\""$(libexecdir)"\"
 
@@ -19,29 +19,29 @@ AM_LDFLAGS = \
 
 CLEANFILES =
 
-LIBABC_CURRENT=2
-LIBABC_REVISION=0
-LIBABC_AGE=2
+LIBKMOD_CURRENT=2
+LIBKMOD_REVISION=0
+LIBKMOD_AGE=2
 
-include_HEADERS = libabc/libabc.h
-lib_LTLIBRARIES = libabc/libabc.la
+include_HEADERS = libkmod/libkmod.h
+lib_LTLIBRARIES = libkmod/libkmod.la
 
-libabc_libabc_la_SOURCES =\
-	libabc/libabc.h \
-	libabc/libabc-private.h \
-	libabc/libabc.c
+libkmod_libkmod_la_SOURCES =\
+	libkmod/libkmod.h \
+	libkmod/libkmod-private.h \
+	libkmod/libkmod.c
 
-EXTRA_DIST += libabc/libabc.sym
+EXTRA_DIST += libkmod/libkmod.sym
 
-libabc_libabc_la_LDFLAGS = $(AM_LDFLAGS) \
-	-version-info $(LIBABC_CURRENT):$(LIBABC_REVISION):$(LIBABC_AGE) \
-	-Wl,--version-script=$(top_srcdir)/libabc/libabc.sym
+libkmod_libkmod_la_LDFLAGS = $(AM_LDFLAGS) \
+	-version-info $(LIBKMOD_CURRENT):$(LIBKMOD_REVISION):$(LIBKMOD_AGE) \
+	-Wl,--version-script=$(top_srcdir)/libkmod/libkmod.sym
 
 pkgconfigdir = $(libdir)/pkgconfig
-pkgconfig_DATA = libabc/libabc.pc
+pkgconfig_DATA = libkmod/libkmod.pc
 
-TESTS = test-libabc
-
-check_PROGRAMS = test-libabc
-test_libabc_SOURCES = test-libabc.c
-test_libabc_LDADD = libabc/libabc.la
+# TESTS = test-libkmod
+#
+# check_PROGRAMS = test-libkmod
+# test_libkmod_SOURCES = test-libkmod.c
+# test_libkmod_LDADD = libkmod/libkmod.la

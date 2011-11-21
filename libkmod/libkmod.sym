@@ -1,0 +1,6 @@
+LIBKMOD_0_1 {
+global:
+	kmod_*;
+local:
+        *;
+};
