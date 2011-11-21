@@ -1,0 +1,11 @@
+libabc 3
+========
+Add functionality. Export symbols for 'thing'.
+
+libabc 2
+========
+Add support for 'thing'.
+
+libabc 1
+========
+Initial release.

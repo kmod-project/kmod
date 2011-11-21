@@ -1,0 +1,24 @@
+LIBABC_3 {
+global:
+	abc_thing_ref;
+	abc_thing_unref;
+	abc_thing_get_ctx;
+	abc_thing_new_from_string;
+	abc_thing_get_some_list_entry;
+local:
+	*;
+};
+
+LIBABC_1 {
+global:
+	abc_get_userdata;
+	abc_set_userdata;
+	abc_ref;
+	abc_get_log_priority;
+	abc_set_log_fn;
+	abc_unref;
+	abc_set_log_priority;
+	abc_new;
+local:
+        *;
+};

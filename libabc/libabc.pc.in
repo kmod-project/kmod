@@ -1,0 +1,11 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+
+Name: libabc
+Description: Library for something with abc
+Version: @VERSION@
+Libs: -L${libdir} -labc
+Libs.private:
+Cflags: -I${includedir}

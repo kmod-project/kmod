@@ -1,0 +1,6 @@
+.dirstamp
+.deps/
+.libs/
+*.la
+*.lo
+libabc.pc
