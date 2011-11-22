@@ -1,4 +1,4 @@
-LIBKMOD_0_1 {
+LIBKMOD_0.1 {
 global:
 	kmod_*;
 local:
