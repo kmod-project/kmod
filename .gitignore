@@ -15,4 +15,4 @@ config.status
 configure
 libtool
 stamp-h1
-test-libabc
+*~
