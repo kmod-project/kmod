@@ -31,7 +31,8 @@ libkmod_libkmod_la_SOURCES =\
 	libkmod/libkmod-private.h \
 	libkmod/libkmod-util.h \
 	libkmod/libkmod.c \
-	libkmod/libkmod-list.c
+	libkmod/libkmod-list.c \
+	libkmod/libkmod-loaded.c
 
 EXTRA_DIST += libkmod/libkmod.sym
 
@@ -42,8 +43,11 @@ libkmod_libkmod_la_LDFLAGS = $(AM_LDFLAGS) \
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libkmod/libkmod.pc
 
-TESTS = test/test-init
+TESTS = test/test-init test/test-loaded
 
-check_PROGRAMS = test/test-init
+check_PROGRAMS = test/test-init test/test-loaded
 test_test_init_SOURCES = test/test-init.c
 test_test_init_LDADD = libkmod/libkmod.la
+
+test_test_loaded_SOURCES = test/test-loaded.c
+test_test_loaded_LDADD = libkmod/libkmod.la

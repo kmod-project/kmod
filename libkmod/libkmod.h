@@ -22,6 +22,7 @@
 #define _LIBABC_H_
 
 #include <stdarg.h>
+#include <inttypes.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -63,5 +64,14 @@ struct kmod_list *kmod_list_next(struct kmod_list *first_entry,
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
+
+struct kmod_loaded;
+int kmod_loaded_new(struct kmod_ctx *ctx, struct kmod_loaded **mod);
+struct kmod_loaded *kmod_loaded_ref(struct kmod_loaded *mod);
+struct kmod_loaded *kmod_loaded_unref(struct kmod_loaded *mod);
+int kmod_loaded_get_list(struct kmod_loaded *mod, struct kmod_list **list);
+int kmod_loaded_get_module_info(struct kmod_list *entry, const char **name,
+				long *size, int *use_count, const char **deps,
+				uintptr_t *addr);
 
 #endif
