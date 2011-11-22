@@ -1,6 +1,15 @@
 LIBKMOD_0.1 {
 global:
-	kmod_*;
+	kmod_get_log_priority;
+	kmod_get_userdata;
+	kmod_log;
+	kmod_new;
+	kmod_ref;
+	kmod_set_log_fn;
+	kmod_set_log_priority;
+	kmod_set_userdata;
+	kmod_unref;
+	kmod_list_next;
 local:
         *;
 };
