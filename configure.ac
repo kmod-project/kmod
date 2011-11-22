@@ -16,6 +16,12 @@ AM_SILENT_RULES([yes])
 LT_INIT([disable-static pic-only])
 AC_PREFIX_DEFAULT([/usr])
 
+AC_PROG_CC
+AC_PROG_CC_C99
+AC_C_TYPEOF
+AM_PROG_CC_C_O
+AC_PROG_GCC_TRADITIONAL
+
 AC_ARG_ENABLE([logging],
 	AS_HELP_STRING([--disable-logging], [disable system logging @<:@default=enabled@:>@]),
 	[], enable_logging=yes)
