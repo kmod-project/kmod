@@ -40,8 +40,8 @@ libkmod_libkmod_la_LDFLAGS = $(AM_LDFLAGS) \
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libkmod/libkmod.pc
 
-# TESTS = test-libkmod
-#
-# check_PROGRAMS = test-libkmod
-# test_libkmod_SOURCES = test-libkmod.c
-# test_libkmod_LDADD = libkmod/libkmod.la
+TESTS = test/test-init
+
+check_PROGRAMS = test/test-init
+test_test_init_SOURCES = test/test-init.c
+test_test_init_LDADD = libkmod/libkmod.la
