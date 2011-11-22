@@ -35,4 +35,19 @@ void kmod_log(struct kmod_ctx *ctx,
 		int priority, const char *file, int line, const char *fn,
 		const char *format, ...) __attribute__((format(printf, 6, 7)));
 
+struct list_node {
+	struct list_node *next, *prev;
+};
+
+struct kmod_list {
+	struct list_node node;
+	void *data;
+};
+
+struct kmod_list *kmod_list_append(struct kmod_list *list, void *data);
+struct kmod_list *kmod_list_prepend(struct kmod_list *list, void *data);
+struct kmod_list *kmod_list_remove(struct kmod_list *list);
+struct kmod_list *kmod_list_remove_data(struct kmod_list *list,
+							const void *data);
+
 #endif

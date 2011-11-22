@@ -29,7 +29,9 @@ lib_LTLIBRARIES = libkmod/libkmod.la
 libkmod_libkmod_la_SOURCES =\
 	libkmod/libkmod.h \
 	libkmod/libkmod-private.h \
-	libkmod/libkmod.c
+	libkmod/libkmod-util.h \
+	libkmod/libkmod.c \
+	libkmod/libkmod-list.c
 
 EXTRA_DIST += libkmod/libkmod.sym
 
