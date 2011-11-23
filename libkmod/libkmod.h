@@ -43,9 +43,9 @@ void kmod_set_log_fn(struct kmod_ctx *ctx,
 				int priority, const char *file, int line,
 				const char *fn, const char *format,
 				va_list args));
-int kmod_get_log_priority(struct kmod_ctx *ctx);
+int kmod_get_log_priority(const struct kmod_ctx *ctx);
 void kmod_set_log_priority(struct kmod_ctx *ctx, int priority);
-void *kmod_get_userdata(struct kmod_ctx *ctx);
+void *kmod_get_userdata(const struct kmod_ctx *ctx);
 void kmod_set_userdata(struct kmod_ctx *ctx, void *userdata);
 
 /*
@@ -70,8 +70,8 @@ int kmod_loaded_new(struct kmod_ctx *ctx, struct kmod_loaded **mod);
 struct kmod_loaded *kmod_loaded_ref(struct kmod_loaded *mod);
 struct kmod_loaded *kmod_loaded_unref(struct kmod_loaded *mod);
 int kmod_loaded_get_list(struct kmod_loaded *mod, struct kmod_list **list);
-int kmod_loaded_get_module_info(struct kmod_list *entry, const char **name,
-				long *size, int *use_count, const char **deps,
-				uintptr_t *addr);
+int kmod_loaded_get_module_info(const struct kmod_list *entry,
+				const char **name, long *size, int *use_count,
+				const char **deps, uintptr_t *addr);
 
 #endif

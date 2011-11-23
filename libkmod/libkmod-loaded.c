@@ -200,7 +200,7 @@ KMOD_EXPORT int kmod_loaded_get_list(struct kmod_loaded *mod,
 	return 0;
 }
 
-KMOD_EXPORT int kmod_loaded_get_module_info(struct kmod_list *entry,
+KMOD_EXPORT int kmod_loaded_get_module_info(const struct kmod_list *entry,
 						const char **name,
 						long *size, int *use_count,
 						const char **deps,

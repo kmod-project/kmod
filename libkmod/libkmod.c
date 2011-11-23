@@ -80,7 +80,7 @@ static void log_stderr(struct kmod_ctx *ctx,
  *
  * Returns: stored userdata
  **/
-KMOD_EXPORT void *kmod_get_userdata(struct kmod_ctx *ctx)
+KMOD_EXPORT void *kmod_get_userdata(const struct kmod_ctx *ctx)
 {
 	if (ctx == NULL)
 		return NULL;
@@ -215,7 +215,7 @@ KMOD_EXPORT void kmod_set_log_fn(struct kmod_ctx *ctx,
  *
  * Returns: the current logging priority
  **/
-KMOD_EXPORT int kmod_get_log_priority(struct kmod_ctx *ctx)
+KMOD_EXPORT int kmod_get_log_priority(const struct kmod_ctx *ctx)
 {
 	return ctx->log_priority;
 }
