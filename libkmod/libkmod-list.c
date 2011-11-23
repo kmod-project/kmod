@@ -22,7 +22,6 @@
 
 #include "libkmod.h"
 #include "libkmod-private.h"
-#include "libkmod-util.h"
 
 static inline struct list_node *list_node_init(struct list_node *node)
 {

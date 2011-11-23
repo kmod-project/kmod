@@ -1,3 +1,23 @@
+/*
+ * libkmod - interface to kernel module operations
+ *
+ * Copyright (C) 2011  ProFUSION embedded systems
+ * Copyright (C) 2011  Lucas De Marchi <lucas.de.marchi@gmail.com>
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation version 2.1.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ */
+
 #ifndef _LIBKMOD_UTIL_H_
 #define _LIBKMOD_UTIL_H_
 
@@ -28,5 +48,11 @@
 	((containing_type *)						\
 	 ((char *)(member_ptr) - offsetof(containing_type, member))	\
 	 - check_types_match(*(member_ptr), ((containing_type *)0)->member))
+
+#define __must_check __attribute__((warn_unused_result))
+#define __printf_format(a,b) __attribute__((format (printf, a, b)))
+#if !defined(__always_inline)
+#define __always_inline __inline__ __attribute__((always_inline))
+#endif
 
 #endif

@@ -4,9 +4,10 @@
 #include <stdbool.h>
 #include <syslog.h>
 
+#include "libkmod-util.h"
 #include "libkmod.h"
 
-static inline void __attribute__((always_inline, format(printf, 2, 3)))
+static __always_inline __printf_format(2, 3) void
 	kmod_log_null(struct kmod_ctx *ctx, const char *format, ...) {}
 
 #define kmod_log_cond(ctx, prio, arg...) \
@@ -44,10 +45,10 @@ struct kmod_list {
 	void *data;
 };
 
-struct kmod_list *kmod_list_append(struct kmod_list *list, void *data);
-struct kmod_list *kmod_list_prepend(struct kmod_list *list, void *data);
+struct kmod_list *kmod_list_append(struct kmod_list *list, void *data) __must_check;
+struct kmod_list *kmod_list_prepend(struct kmod_list *list, void *data) __must_check;
 struct kmod_list *kmod_list_remove(struct kmod_list *list);
 struct kmod_list *kmod_list_remove_data(struct kmod_list *list,
-							const void *data);
+					const void *data) __must_check;
 
 #endif
