@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include <syslog.h>
 
-#include "libkmod-util.h"
+#include "macro.h"
 #include "libkmod.h"
 
 static __always_inline __printf_format(2, 3) void

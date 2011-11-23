@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _LIBKMOD_UTIL_H_
-#define _LIBKMOD_UTIL_H_
+#ifndef _LIBKMOD_MACRO_H_
+#define _LIBKMOD_MACRO_H_
 
 #include <stddef.h>
 
