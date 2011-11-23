@@ -232,6 +232,3 @@ KMOD_EXPORT void kmod_set_log_priority(struct kmod_ctx *ctx, int priority)
 {
 	ctx->log_priority = priority;
 }
-
-struct kmod_list_entry;
-struct kmod_list_entry *kmod_list_entry_get_next(struct kmod_list_entry *list_entry);
