@@ -15,6 +15,7 @@ global:
 	kmod_loaded_unref;
 	kmod_loaded_get_list;
 	kmod_loaded_get_module_info;
+	kmod_loaded_remove_module;
 local:
         *;
 };

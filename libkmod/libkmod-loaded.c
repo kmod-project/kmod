@@ -226,3 +226,36 @@ KMOD_EXPORT int kmod_loaded_get_module_info(const struct kmod_list *entry,
 
 	return 0;
 }
+
+extern long delete_module(const char *name, unsigned int flags);
+
+KMOD_EXPORT int kmod_loaded_remove_module(struct kmod_loaded *mod,
+						struct kmod_list *entry,
+						unsigned int flags)
+{
+	struct kmod_loaded_module *m;
+	int err;
+
+	if (mod == NULL)
+		return -ENOSYS;
+
+	if (entry == NULL)
+		return -ENOENT;
+
+	m = entry->data;
+
+	/* Filter out other flags */
+	flags &= (KMOD_REMOVE_FORCE | KMOD_REMOVE_NOWAIT);
+
+	err = delete_module(m->name, flags);
+	if (err != 0) {
+		err(mod->ctx, "Removing '%s': %s\n", m->name,
+							strerror(-err));
+		return err;
+	}
+
+	loaded_modules_free_module(m);
+	kmod_list_remove(entry);
+
+	return 0;
+}

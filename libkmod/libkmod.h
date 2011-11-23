@@ -21,6 +21,7 @@
 #ifndef _LIBKMOD_H_
 #define _LIBKMOD_H_
 
+#include <fcntl.h>
 #include <stdarg.h>
 #include <inttypes.h>
 
@@ -74,4 +75,11 @@ int kmod_loaded_get_module_info(const struct kmod_list *entry,
 				const char **name, long *size, int *use_count,
 				const char **deps, uintptr_t *addr);
 
+enum KMOD_REMOVE {
+	KMOD_REMOVE_FORCE = O_TRUNC,
+	KMOD_REMOVE_NOWAIT = O_NONBLOCK,
+};
+
+int kmod_loaded_remove_module(struct kmod_loaded *kmod,
+				struct kmod_list *entry, unsigned int flags);
 #endif
