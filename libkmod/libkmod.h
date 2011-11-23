@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _LIBABC_H_
-#define _LIBABC_H_
+#ifndef _LIBKMOD_H_
+#define _LIBKMOD_H_
 
 #include <stdarg.h>
 #include <inttypes.h>
