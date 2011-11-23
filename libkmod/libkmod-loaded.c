@@ -163,7 +163,7 @@ static int loaded_modules_parse(struct kmod_loaded *mod,
 		if (tok == NULL)
 			goto done;
 
-		sscanf(tok, "%" SCNxPTR, &m->addr);
+		m->addr = strtoull(tok, NULL, 16);
 
 done:
 		l = kmod_list_append(l, m);
