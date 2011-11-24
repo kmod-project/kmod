@@ -181,8 +181,8 @@ KMOD_EXPORT struct kmod_ctx *kmod_unref(struct kmod_ctx *ctx)
 {
 	if (ctx == NULL)
 		return NULL;
-	ctx->refcount--;
-	if (ctx->refcount > 0)
+
+	if (--ctx->refcount > 0)
 		return ctx;
 	info(ctx, "context %p released\n", ctx);
 	free(ctx);
