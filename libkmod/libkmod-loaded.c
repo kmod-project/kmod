@@ -99,7 +99,10 @@ KMOD_EXPORT struct kmod_loaded *kmod_loaded_unref(struct kmod_loaded *mod)
 {
 	if (mod == NULL)
 		return NULL;
-	mod->refcount--;
+
+	if (--mod->refcount > 0)
+		return mod;
+
 	dbg(mod->ctx, "kmod_loaded %p released\n", mod);
 	loaded_modules_free(mod);
 	free(mod);
