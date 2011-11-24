@@ -22,4 +22,6 @@ args="--prefix=/usr \
 --sysconfdir=/etc \
 --libdir=$(libdir /usr/lib)"
 
-./configure $args CFLAGS="${MYCFLAGS} ${CFLAGS}" $@
+if [ -z "$NOCONFIGURE" ]; then
+	./configure $args CFLAGS="${MYCFLAGS} ${CFLAGS}" $@
+fi
