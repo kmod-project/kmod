@@ -75,7 +75,7 @@ int kmod_loaded_get_module_info(const struct kmod_list *entry,
 				const char **name, long *size, int *use_count,
 				const char **deps, uintptr_t *addr);
 
-enum KMOD_REMOVE {
+enum kmod_remove {
 	KMOD_REMOVE_FORCE = O_TRUNC,
 	KMOD_REMOVE_NOWAIT = O_NONBLOCK,
 };
