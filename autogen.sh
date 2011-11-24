@@ -2,12 +2,17 @@
 
 autoreconf --install --symlink
 
-MYCFLAGS="-g -Wall \
+MYCFLAGS="-g -Wall -Wextra \
 -Wmissing-declarations -Wmissing-prototypes \
 -Wnested-externs -Wpointer-arith \
 -Wpointer-arith -Wsign-compare -Wchar-subscripts \
 -Wstrict-prototypes -Wshadow \
--Wformat-security -Wtype-limits"
+-Wformat-security -Wtype-limits \
+-Wformat=2 -Wuninitialized -Winit-self -Wundef \
+-Wmissing-include-dirs -Wold-style-definition \
+-Wfloat-equal -Wredundant-decls -Wendif-labels \
+-Wcast-align -Wstrict-aliasing -Wwrite-strings \
+-Wno-unused-parameter"
 
 libdir() {
 	echo $(cd $1/$(gcc -print-multi-os-directory); pwd)
