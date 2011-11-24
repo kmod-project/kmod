@@ -26,6 +26,7 @@
 #include <errno.h>
 #include <string.h>
 #include <ctype.h>
+#include <sys/utsname.h>
 
 #include "libkmod.h"
 #include "libkmod-private.h"
@@ -49,6 +50,7 @@ struct kmod_ctx {
 			int priority, const char *file, int line,
 			const char *fn, const char *format, va_list args);
 	void *userdata;
+	const char *dirname;
 	int log_priority;
 };
 
@@ -69,6 +71,11 @@ static void log_stderr(struct kmod_ctx *ctx,
 {
 	fprintf(stderr, "libkmod: %s: ", fn);
 	vfprintf(stderr, format, args);
+}
+
+const char *kmod_get_dirname(struct kmod_ctx *ctx)
+{
+	return ctx->dirname;
 }
 
 /**
@@ -118,6 +125,16 @@ static int log_priority(const char *priority)
 	return 0;
 }
 
+static const char *get_kernel_release(void)
+{
+	struct utsname u;
+
+	if (uname(&u) < 0)
+		return NULL;
+
+	return strdup(u.release);
+}
+
 /**
  * kmod_new:
  *
@@ -129,7 +146,7 @@ static int log_priority(const char *priority)
  *
  * Returns: a new kmod library context
  **/
-KMOD_EXPORT struct kmod_ctx *kmod_new(void)
+KMOD_EXPORT struct kmod_ctx *kmod_new(const char *dirname)
 {
 	const char *env;
 	struct kmod_ctx *ctx;
@@ -141,6 +158,11 @@ KMOD_EXPORT struct kmod_ctx *kmod_new(void)
 	ctx->refcount = 1;
 	ctx->log_fn = log_stderr;
 	ctx->log_priority = LOG_ERR;
+
+	if (dirname != NULL)
+		ctx->dirname = strdup(dirname);
+	else
+		ctx->dirname = get_kernel_release();
 
 	/* environment overwrites config */
 	env = getenv("KMOD_LOG");
@@ -185,6 +207,7 @@ KMOD_EXPORT struct kmod_ctx *kmod_unref(struct kmod_ctx *ctx)
 	if (--ctx->refcount > 0)
 		return ctx;
 	info(ctx, "context %p released\n", ctx);
+	free((char *)ctx->dirname);
 	free(ctx);
 	return NULL;
 }

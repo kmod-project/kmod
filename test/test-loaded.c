@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
 	struct kmod_list *list, *itr;
 	int err;
 
-	ctx = kmod_new();
+	ctx = kmod_new(NULL);
 	if (ctx == NULL)
 		exit(EXIT_FAILURE);
 

@@ -51,4 +51,6 @@ struct kmod_list *kmod_list_remove(struct kmod_list *list);
 struct kmod_list *kmod_list_remove_data(struct kmod_list *list,
 					const void *data) __must_check;
 
+const char *kmod_get_dirname(struct kmod_ctx *ctx) __attribute__((nonnull(1)));
+
 #endif

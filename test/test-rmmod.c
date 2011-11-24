@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
 	if (argc == 2)
 		modname = argv[1];
 
-	ctx = kmod_new();
+	ctx = kmod_new(NULL);
 	if (ctx == NULL)
 		exit(EXIT_FAILURE);
 
