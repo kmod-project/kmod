@@ -45,7 +45,7 @@ pkgconfig_DATA = libkmod/libkmod.pc
 
 TESTS = test/test-init test/test-loaded
 
-check_PROGRAMS = test/test-init test/test-loaded test/test-rmmod
+check_PROGRAMS = test/test-init test/test-loaded
 test_test_init_SOURCES = test/test-init.c
 test_test_init_LDADD = libkmod/libkmod.la
 
