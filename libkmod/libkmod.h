@@ -66,6 +66,11 @@ struct kmod_list *kmod_list_next(struct kmod_list *first_entry,
 } /* extern "C" */
 #endif
 
+/*
+ * kmod_loaded
+ *
+ * retrieve info from /proc/modules regarding loaded modules
+ */
 struct kmod_loaded;
 int kmod_loaded_new(struct kmod_ctx *ctx, struct kmod_loaded **mod);
 struct kmod_loaded *kmod_loaded_ref(struct kmod_loaded *mod);
@@ -82,4 +87,29 @@ enum kmod_remove {
 
 int kmod_loaded_remove_module(struct kmod_loaded *kmod,
 				struct kmod_list *entry, unsigned int flags);
+
+enum kmod_insert {
+	KMOD_INSERT_FORCE_VERMAGIC = 0x1,
+	KMOD_INSERT_FORCE_MODVERSION = 0x2,
+	KMOD_INSERT_HANDLE_DEPENDENCIES = 0x4,
+	KMOD_INSERT_IGNORE_CONFIG = 0x8,
+};
+
+/*
+ * kmod_module
+ *
+ * Operate on kernel modules
+ */
+struct kmod_module;
+int kmod_module_new_from_name(struct kmod_ctx *ctx, const char *name,
+						struct kmod_module **mod);
+int kmod_module_new_from_path(struct kmod_ctx *ctx, const char *path,
+						struct kmod_module **mod);
+
+struct kmod_module *kmod_module_ref(struct kmod_module *mod);
+struct kmod_module *kmod_module_unref(struct kmod_module *mod);
+
+int kmod_module_remove_module(struct kmod_module *mod, unsigned int flags);
+int kmod_module_insert_module(struct kmod_module *mod, unsigned int flags);
+
 #endif

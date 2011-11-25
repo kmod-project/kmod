@@ -49,6 +49,8 @@
 	 ((char *)(member_ptr) - offsetof(containing_type, member))	\
 	 - check_types_match(*(member_ptr), ((containing_type *)0)->member))
 
+/* Attributes */
+
 #define __must_check __attribute__((warn_unused_result))
 #define __printf_format(a,b) __attribute__((format (printf, a, b)))
 #if !defined(__always_inline)
