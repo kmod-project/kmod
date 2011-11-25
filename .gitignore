@@ -16,3 +16,5 @@ configure
 libtool
 stamp-h1
 *~
+.*.swp
+cscope.out
