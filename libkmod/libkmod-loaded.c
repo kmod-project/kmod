@@ -67,7 +67,7 @@ KMOD_EXPORT int kmod_loaded_new(struct kmod_ctx *ctx, struct kmod_loaded **mod)
 		return -ENOMEM;
 
 	m->refcount = 1;
-	m->ctx = ctx;
+	m->ctx = kmod_ref(ctx);
 	*mod = m;
 	return 0;
 }
@@ -104,6 +104,8 @@ KMOD_EXPORT struct kmod_loaded *kmod_loaded_unref(struct kmod_loaded *mod)
 		return mod;
 
 	dbg(mod->ctx, "kmod_loaded %p released\n", mod);
+
+	kmod_unref(mod->ctx);
 	loaded_modules_free(mod);
 	free(mod);
 	return NULL;
