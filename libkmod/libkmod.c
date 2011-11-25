@@ -169,8 +169,8 @@ KMOD_EXPORT struct kmod_ctx *kmod_new(const char *dirname)
 	if (env != NULL)
 		kmod_set_log_priority(ctx, log_priority(env));
 
-	info(ctx, "ctx %p created\n", ctx);
-	dbg(ctx, "log_priority=%d\n", ctx->log_priority);
+	INFO(ctx, "ctx %p created\n", ctx);
+	DBG(ctx, "log_priority=%d\n", ctx->log_priority);
 
 	return ctx;
 }
@@ -206,7 +206,7 @@ KMOD_EXPORT struct kmod_ctx *kmod_unref(struct kmod_ctx *ctx)
 
 	if (--ctx->refcount > 0)
 		return ctx;
-	info(ctx, "context %p released\n", ctx);
+	INFO(ctx, "context %p released\n", ctx);
 	free((char *)ctx->dirname);
 	free(ctx);
 	return NULL;
@@ -229,7 +229,7 @@ KMOD_EXPORT void kmod_set_log_fn(struct kmod_ctx *ctx,
 						const char *format, va_list args))
 {
 	ctx->log_fn = log_fn;
-	info(ctx, "custom logging function %p registered\n", log_fn);
+	INFO(ctx, "custom logging function %p registered\n", log_fn);
 }
 
 /**

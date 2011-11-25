@@ -103,7 +103,7 @@ KMOD_EXPORT struct kmod_loaded *kmod_loaded_unref(struct kmod_loaded *mod)
 	if (--mod->refcount > 0)
 		return mod;
 
-	dbg(mod->ctx, "kmod_loaded %p released\n", mod);
+	DBG(mod->ctx, "kmod_loaded %p released\n", mod);
 
 	kmod_unref(mod->ctx);
 	loaded_modules_free(mod);
@@ -254,7 +254,7 @@ KMOD_EXPORT int kmod_loaded_remove_module(struct kmod_loaded *mod,
 
 	err = delete_module(m->name, flags);
 	if (err != 0) {
-		err(mod->ctx, "Removing '%s': %s\n", m->name,
+		ERR(mod->ctx, "Removing '%s': %s\n", m->name,
 							strerror(-err));
 		return err;
 	}
