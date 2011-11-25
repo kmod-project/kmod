@@ -53,6 +53,10 @@ test_test_init_LDADD = libkmod/libkmod.la
 test_test_loaded_SOURCES = test/test-loaded.c
 test_test_loaded_LDADD = libkmod/libkmod.la
 
-noinst_PROGRAMS = test/test-rmmod $(check_PROGRAMS)
+noinst_PROGRAMS = test/test-rmmod test/test-rmmod2 \
+		  $(check_PROGRAMS)
 test_test_rmmod_SOURCES = test/test-rmmod.c
 test_test_rmmod_LDADD = libkmod/libkmod.la
+
+test_test_rmmod2_SOURCES = test/test-rmmod2.c
+test_test_rmmod2_LDADD = libkmod/libkmod.la
