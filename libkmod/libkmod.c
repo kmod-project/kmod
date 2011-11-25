@@ -71,6 +71,7 @@ static void log_stderr(struct kmod_ctx *ctx,
 {
 	fprintf(stderr, "libkmod: %s: ", fn);
 	vfprintf(stderr, format, args);
+	fprintf(stderr, "\n");
 }
 
 const char *kmod_get_dirname(struct kmod_ctx *ctx)
