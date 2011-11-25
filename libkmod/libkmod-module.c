@@ -193,12 +193,12 @@ KMOD_EXPORT int kmod_module_insert_module(struct kmod_module *mod,
 		return -ENOENT;
 
 	if (mod->path == NULL) {
-		ERR(mod->ctx, "Not supported to load a module by name yet");
+		ERR(mod->ctx, "Not supported to load a module by name yet\n");
 		return -ENOSYS;
 	}
 
 	if (flags != 0)
-		INFO(mod->ctx, "Flags are not implemented yet");
+		INFO(mod->ctx, "Flags are not implemented yet\n");
 
 	if ((fd = open(mod->path, O_RDONLY)) < 0) {
 		err = -errno;
@@ -215,7 +215,7 @@ KMOD_EXPORT int kmod_module_insert_module(struct kmod_module *mod,
 
 	err = init_module(mmaped_file, st.st_size, args);
 	if (err < 0)
-		ERR(mod->ctx, "Failed to insert module '%s'", mod->path);
+		ERR(mod->ctx, "Failed to insert module '%s'\n", mod->path);
 
 	munmap(mmaped_file, st.st_size);
 	close(fd);
