@@ -62,10 +62,6 @@ struct kmod_list *kmod_list_next(struct kmod_list *first_entry,
 		list_entry != NULL; \
 		list_entry = kmod_list_next(first_entry, list_entry))
 
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
 /*
  * kmod_loaded
  *
@@ -112,4 +108,7 @@ struct kmod_module *kmod_module_unref(struct kmod_module *mod);
 int kmod_module_remove_module(struct kmod_module *mod, unsigned int flags);
 int kmod_module_insert_module(struct kmod_module *mod, unsigned int flags);
 
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
 #endif
