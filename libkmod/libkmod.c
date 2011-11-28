@@ -2,7 +2,6 @@
  * libkmod - interface to kernel module operations
  *
  * Copyright (C) 2011  ProFUSION embedded systems
- * Copyright (C) 2011  Lucas De Marchi <lucas.de.marchi@gmail.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
