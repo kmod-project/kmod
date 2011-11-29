@@ -51,6 +51,7 @@ struct kmod_ctx {
 	void *userdata;
 	const char *dirname;
 	int log_priority;
+	struct kmod_config config;
 };
 
 void kmod_log(struct kmod_ctx *ctx,
@@ -168,6 +169,8 @@ KMOD_EXPORT struct kmod_ctx *kmod_new(const char *dirname)
 	if (env != NULL)
 		kmod_set_log_priority(ctx, log_priority(env));
 
+	kmod_parse_config(ctx, &ctx->config);
+
 	INFO(ctx, "ctx %p created\n", ctx);
 	DBG(ctx, "log_priority=%d\n", ctx->log_priority);
 
@@ -207,6 +210,7 @@ KMOD_EXPORT struct kmod_ctx *kmod_unref(struct kmod_ctx *ctx)
 		return ctx;
 	INFO(ctx, "context %p released\n", ctx);
 	free((char *)ctx->dirname);
+	kmod_free_config(ctx, &ctx->config);
 	free(ctx);
 	return NULL;
 }

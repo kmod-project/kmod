@@ -54,6 +54,13 @@ struct kmod_list *kmod_list_remove_data(struct kmod_list *list,
 
 const char *kmod_get_dirname(struct kmod_ctx *ctx) __attribute__((nonnull(1)));
 
+struct kmod_config {
+	struct kmod_list *aliases;
+};
+int kmod_parse_config_file(struct kmod_ctx *ctx, const char *filename, struct kmod_config *config);
+int kmod_parse_config(struct kmod_ctx *ctx, struct kmod_config *config);
+void kmod_free_config(struct kmod_ctx *ctx, struct kmod_config *config);
+
 char *getline_wrapped(FILE *fp, unsigned int *linenum);
 
 #endif
