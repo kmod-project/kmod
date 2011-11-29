@@ -70,6 +70,28 @@ static struct kmod_list *free_alias(struct kmod_ctx *ctx, struct kmod_list *l)
 	return kmod_list_remove(l);
 }
 
+static struct kmod_list *add_blacklist(struct kmod_ctx *ctx,
+					struct kmod_list *blacklists,
+					const char *modname)
+{
+	struct kmod_blacklist *blacklist;
+	char *p;
+
+	DBG(ctx, "modname=%s\n", modname);
+
+	p = strdup(modname);
+
+	return kmod_list_append(blacklists, p);
+}
+
+static struct kmod_list *free_blacklist(struct kmod_ctx *ctx,
+							struct kmod_list *l)
+{
+	free(l->data);
+	return kmod_list_remove(l);
+}
+
+
 int kmod_parse_config_file(struct kmod_ctx *ctx, const char *filename,
 						struct kmod_config *config)
 {
@@ -102,13 +124,21 @@ int kmod_parse_config_file(struct kmod_ctx *ctx, const char *filename,
 
 			config->aliases = add_alias(ctx, config->aliases,
 							alias, modname);
+		} else if (!strcmp(cmd, "blacklist")) {
+			char *modname = strtok(NULL, "\t ");
+
+			if (modname == NULL)
+				goto syntax_error;
+
+			config->blacklists = add_blacklist(ctx,
+						config->blacklists, modname);
 		} else if (!strcmp(cmd, "include") || !strcmp(cmd, "options")
 				|| !strcmp(cmd, "install")
-				|| !strcmp(cmd, "blacklist")
 				|| !strcmp(cmd, "remove")
 				|| !strcmp(cmd, "softdep")
 				|| !strcmp(cmd, "config")) {
-			DBG(ctx, "Command %s not implemented yet\n", cmd);
+			INFO(ctx, "%s: command %s not implemented yet\n",
+								filename, cmd);
 		} else {
 syntax_error:
 			ERR(ctx, "%s line %u: ignoring bad line starting with '%s'\n",
@@ -128,6 +158,9 @@ void kmod_free_config(struct kmod_ctx *ctx, struct kmod_config *config)
 {
 	while (config->aliases)
 		config->aliases =  free_alias(ctx, config->aliases);
+
+	while (config->blacklists)
+		config->blacklists = free_blacklist(ctx, config->blacklists);
 }
 
 static bool conf_files_filter(struct kmod_ctx *ctx, const char *path,

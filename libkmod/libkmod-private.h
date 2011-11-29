@@ -56,6 +56,7 @@ const char *kmod_get_dirname(struct kmod_ctx *ctx) __attribute__((nonnull(1)));
 
 struct kmod_config {
 	struct kmod_list *aliases;
+	struct kmod_list *blacklists;
 };
 int kmod_parse_config_file(struct kmod_ctx *ctx, const char *filename, struct kmod_config *config);
 int kmod_parse_config(struct kmod_ctx *ctx, struct kmod_config *config);
