@@ -2,6 +2,7 @@
 #define _LIBKMOD_PRIVATE_H_
 
 #include <stdbool.h>
+#include <stdio.h>
 #include <syslog.h>
 
 #include "macro.h"
@@ -52,5 +53,7 @@ struct kmod_list *kmod_list_remove_data(struct kmod_list *list,
 					const void *data) __must_check;
 
 const char *kmod_get_dirname(struct kmod_ctx *ctx) __attribute__((nonnull(1)));
+
+char *getline_wrapped(FILE *fp, unsigned int *linenum);
 
 #endif

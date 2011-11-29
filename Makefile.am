@@ -33,6 +33,7 @@ libkmod_libkmod_la_SOURCES =\
 	libkmod/libkmod.c \
 	libkmod/libkmod-list.c \
 	libkmod/libkmod-loaded.c \
+	libkmod/libkmod-util.c \
 	libkmod/libkmod-module.c
 
 EXTRA_DIST += libkmod/libkmod.sym
