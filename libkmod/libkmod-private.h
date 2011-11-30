@@ -64,5 +64,6 @@ void kmod_free_config(struct kmod_ctx *ctx, struct kmod_config *config);
 
 char *getline_wrapped(FILE *fp, unsigned int *linenum);
 char *underscores(struct kmod_ctx *ctx, char *s);
+#define streq(a, b) (strcmp((a), (b)) == 0)
 
 #endif
