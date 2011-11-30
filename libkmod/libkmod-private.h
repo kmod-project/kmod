@@ -61,6 +61,8 @@ struct kmod_config {
 int kmod_parse_config_file(struct kmod_ctx *ctx, const char *filename, struct kmod_config *config);
 int kmod_parse_config(struct kmod_ctx *ctx, struct kmod_config *config);
 void kmod_free_config(struct kmod_ctx *ctx, struct kmod_config *config);
+const char *kmod_alias_get_name(const struct kmod_list *l);
+const char *kmod_alias_get_modname(const struct kmod_list *l);
 
 char *getline_wrapped(FILE *fp, unsigned int *linenum);
 char *underscores(struct kmod_ctx *ctx, char *s);

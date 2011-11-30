@@ -44,6 +44,16 @@ struct kmod_alias {
 	char *modname;
 };
 
+const char *kmod_alias_get_name(const struct kmod_list *l) {
+	struct kmod_alias *alias = l->data;
+	return alias->name;
+}
+
+const char *kmod_alias_get_modname(const struct kmod_list *l) {
+	struct kmod_alias *alias = l->data;
+	return alias->modname;
+}
+
 static struct kmod_list *add_alias(struct kmod_ctx *ctx,
 					struct kmod_list *aliases,
 					const char *name, const char *modname)
