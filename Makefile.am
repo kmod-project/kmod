@@ -58,7 +58,7 @@ test_test_loaded_SOURCES = test/test-loaded.c
 test_test_loaded_LDADD = libkmod/libkmod.la
 
 noinst_PROGRAMS = test/test-insmod test/test-rmmod test/test-rmmod2 \
-		  $(check_PROGRAMS)
+		  test/test-lookup $(check_PROGRAMS)
 test_test_rmmod_SOURCES = test/test-rmmod.c
 test_test_rmmod_LDADD = libkmod/libkmod.la
 
@@ -67,3 +67,6 @@ test_test_rmmod2_LDADD = libkmod/libkmod.la
 
 test_test_insmod_SOURCES = test/test-insmod.c
 test_test_insmod_LDADD = libkmod/libkmod.la
+
+test_test_lookup_SOURCES = test/test-lookup.c
+test_test_lookup_LDADD = libkmod/libkmod.la
