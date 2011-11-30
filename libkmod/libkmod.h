@@ -100,9 +100,13 @@ int kmod_module_new_from_name(struct kmod_ctx *ctx, const char *name,
 						struct kmod_module **mod);
 int kmod_module_new_from_path(struct kmod_ctx *ctx, const char *path,
 						struct kmod_module **mod);
+int kmod_module_new_from_lookup(struct kmod_ctx *ctx, const char *alias,
+						struct kmod_list **list);
 
 struct kmod_module *kmod_module_ref(struct kmod_module *mod);
 struct kmod_module *kmod_module_unref(struct kmod_module *mod);
+int kmod_module_unref_list(struct kmod_list *list);
+struct kmod_module *kmod_module_get_module(struct kmod_list *l);
 
 int kmod_module_remove_module(struct kmod_module *mod, unsigned int flags);
 int kmod_module_insert_module(struct kmod_module *mod, unsigned int flags);

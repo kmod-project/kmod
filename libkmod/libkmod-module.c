@@ -33,6 +33,7 @@
 
 #include "libkmod.h"
 #include "libkmod-private.h"
+//#include "libkmod-index.h"
 
 /**
  * kmod_module:
@@ -150,6 +151,40 @@ KMOD_EXPORT struct kmod_module *kmod_module_ref(struct kmod_module *mod)
 	mod->refcount++;
 
 	return mod;
+}
+
+KMOD_EXPORT int kmod_module_new_from_lookup(struct kmod_ctx *ctx,
+						const char *alias,
+						struct kmod_list **list)
+{
+
+	int err;
+
+	if (ctx == NULL || alias == NULL)
+		return -ENOENT;
+
+
+	if (list == NULL || *list != NULL) {
+		ERR(ctx, "An empty list is needed to create lookup\n");
+		return -ENOSYS;
+	}
+
+	err = kmod_lookup_alias_from_config(ctx, alias, list);
+
+	if (err < 0) {
+		kmod_module_unref_list(*list);
+		*list = NULL;
+	}
+
+	return err;
+}
+
+KMOD_EXPORT int kmod_module_unref_list(struct kmod_list *list)
+{
+	for (; list != NULL; list = kmod_list_remove(list))
+		kmod_module_unref(list->data);
+
+	return 0;
 }
 
 KMOD_EXPORT struct kmod_module *kmod_module_get_module(struct kmod_list *l)

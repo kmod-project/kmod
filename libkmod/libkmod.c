@@ -23,6 +23,7 @@
 #include <stdarg.h>
 #include <unistd.h>
 #include <errno.h>
+#include <fnmatch.h>
 #include <string.h>
 #include <ctype.h>
 #include <sys/utsname.h>
@@ -257,4 +258,31 @@ KMOD_EXPORT int kmod_get_log_priority(const struct kmod_ctx *ctx)
 KMOD_EXPORT void kmod_set_log_priority(struct kmod_ctx *ctx, int priority)
 {
 	ctx->log_priority = priority;
+}
+
+int kmod_lookup_alias_from_config(struct kmod_ctx *ctx, const char *name,
+						struct kmod_list **list)
+{
+	struct kmod_config *config = &ctx->config;
+	struct kmod_list *l;
+	int err;
+
+	kmod_list_foreach(l, config->aliases) {
+		const char *aliasname = kmod_alias_get_name(l);
+		const char *modname = kmod_alias_get_modname(l);
+
+		if (fnmatch(aliasname, name, 0) == 0) {
+			struct kmod_module *mod;
+
+			err = kmod_module_new_from_name(ctx, modname, &mod);
+			if (err < 0) {
+				ERR(ctx, "%s", strerror(-err));
+				return err;
+			}
+
+			*list = kmod_list_append(*list, mod);
+		}
+	}
+
+	return 0;
 }
