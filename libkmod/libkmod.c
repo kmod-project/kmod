@@ -30,6 +30,7 @@
 
 #include "libkmod.h"
 #include "libkmod-private.h"
+#include "libkmod-index.h"
 
 /**
  * SECTION:libkmod
@@ -264,6 +265,52 @@ KMOD_EXPORT int kmod_get_log_priority(const struct kmod_ctx *ctx)
 KMOD_EXPORT void kmod_set_log_priority(struct kmod_ctx *ctx, int priority)
 {
 	ctx->log_priority = priority;
+}
+
+
+static const char *symbols_file = "modules.symbols";
+
+int kmod_lookup_alias_from_symbols_file(struct kmod_ctx *ctx, const char *name,
+						struct kmod_list **list)
+{
+	char *fn;
+	int err;
+	struct index_file *index;
+	struct index_value *realnames, *realname;
+
+	if (!startswith(name, "symbol:"))
+		return 0;
+
+	if (asprintf(&fn, "%s/%s.bin", ctx->dirname, symbols_file) < 0)
+		return -ENOMEM;
+
+	DBG(ctx, "file=%s alias=%s", fn, name);
+
+	index = index_file_open(fn);
+	if (index == NULL) {
+		free(fn);
+		return -ENOSYS;
+	}
+
+	realnames = index_searchwild(index, name);
+	for (realname = realnames; realname; realname = realnames->next) {
+		struct kmod_module *mod;
+
+		err = kmod_module_new_from_name(ctx, realname->value, &mod);
+		if (err < 0) {
+			ERR(ctx, "%s\n", strerror(-err));
+			goto finish;
+		}
+
+		*list = kmod_list_append(*list, mod);
+	}
+
+finish:
+	index_values_free(realnames);
+	index_file_close(index);
+	free(fn);
+
+	return err;
 }
 
 int kmod_lookup_alias_from_config(struct kmod_ctx *ctx, const char *name,
