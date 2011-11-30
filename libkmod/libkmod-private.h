@@ -52,8 +52,11 @@ struct kmod_list *kmod_list_remove(struct kmod_list *list);
 struct kmod_list *kmod_list_remove_data(struct kmod_list *list,
 					const void *data) __must_check;
 
+
+/* libkmod.c */
 const char *kmod_get_dirname(struct kmod_ctx *ctx) __attribute__((nonnull(1)));
 
+/* libkmod-config.c */
 struct kmod_config {
 	struct kmod_list *aliases;
 	struct kmod_list *blacklists;
@@ -64,6 +67,7 @@ void kmod_free_config(struct kmod_ctx *ctx, struct kmod_config *config);
 const char *kmod_alias_get_name(const struct kmod_list *l);
 const char *kmod_alias_get_modname(const struct kmod_list *l);
 
+/* util functions */
 char *getline_wrapped(FILE *fp, unsigned int *linenum);
 char *underscores(struct kmod_ctx *ctx, char *s);
 #define streq(a, b) (strcmp((a), (b)) == 0)
