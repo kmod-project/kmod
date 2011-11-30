@@ -153,6 +153,14 @@ KMOD_EXPORT struct kmod_module *kmod_module_ref(struct kmod_module *mod)
 	return mod;
 }
 
+#define CHECK_ERR_AND_FINISH(_err, _label_err, _list, label_finish)	\
+	do {								\
+		if ((_err) < 0)						\
+			goto _label_err;				\
+		if (*(_list) != NULL)					\
+			goto finish;					\
+	} while (0)
+
 KMOD_EXPORT int kmod_module_new_from_lookup(struct kmod_ctx *ctx,
 						const char *alias,
 						struct kmod_list **list)
@@ -169,15 +177,20 @@ KMOD_EXPORT int kmod_module_new_from_lookup(struct kmod_ctx *ctx,
 		return -ENOSYS;
 	}
 
+	/* Aliases from config file override all the others */
 	err = kmod_lookup_alias_from_config(ctx, alias, list);
+	CHECK_ERR_AND_FINISH(err, fail, list, finish);
 
-	if (err < 0) {
-		kmod_module_unref_list(*list);
-		*list = NULL;
-	}
+
+finish:
 
 	return err;
+fail:
+	kmod_module_unref_list(*list);
+	*list = NULL;
 }
+#undef CHECK_ERR_AND_FINISH
+
 
 KMOD_EXPORT int kmod_module_unref_list(struct kmod_list *list)
 {
