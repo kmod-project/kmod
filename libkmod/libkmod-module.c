@@ -33,7 +33,6 @@
 
 #include "libkmod.h"
 #include "libkmod-private.h"
-//#include "libkmod-index.h"
 
 /**
  * kmod_module:
