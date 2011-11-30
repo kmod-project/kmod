@@ -71,6 +71,10 @@
 
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]) + _array_size_chk(arr))
 
+/* Temporaries for importing index handling */
+#define NOFAIL(x) (x)
+#define fatal(x...) do { } while (0)
+
 /* Attributes */
 
 #define __must_check __attribute__((warn_unused_result))
