@@ -123,7 +123,8 @@ int kmod_parse_config_file(struct kmod_ctx *ctx, const char *filename,
 				goto syntax_error;
 
 			config->aliases = add_alias(ctx, config->aliases,
-							alias, modname);
+						underscores(ctx, alias),
+						underscores(ctx, modname));
 		} else if (!strcmp(cmd, "blacklist")) {
 			char *modname = strtok(NULL, "\t ");
 
@@ -131,7 +132,8 @@ int kmod_parse_config_file(struct kmod_ctx *ctx, const char *filename,
 				goto syntax_error;
 
 			config->blacklists = add_blacklist(ctx,
-						config->blacklists, modname);
+						config->blacklists,
+						underscores(ctx, modname));
 		} else if (!strcmp(cmd, "include") || !strcmp(cmd, "options")
 				|| !strcmp(cmd, "install")
 				|| !strcmp(cmd, "remove")
