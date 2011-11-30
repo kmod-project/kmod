@@ -107,6 +107,9 @@ struct kmod_module *kmod_module_unref(struct kmod_module *mod);
 int kmod_module_remove_module(struct kmod_module *mod, unsigned int flags);
 int kmod_module_insert_module(struct kmod_module *mod, unsigned int flags);
 
+const char *kmod_module_get_name(struct kmod_module *mod);
+const char *kmod_module_get_path(struct kmod_module *mod);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

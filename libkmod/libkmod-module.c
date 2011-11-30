@@ -152,6 +152,25 @@ KMOD_EXPORT struct kmod_module *kmod_module_ref(struct kmod_module *mod)
 	return mod;
 }
 
+KMOD_EXPORT struct kmod_module *kmod_module_get_module(struct kmod_list *l)
+{
+	struct kmod_module *mod = l->data;
+	return kmod_module_ref(mod);
+}
+
+KMOD_EXPORT const char *kmod_module_get_name(struct kmod_module *mod)
+{
+	// FIXME calculate name if name == NULL
+	return mod->name;
+}
+
+KMOD_EXPORT const char *kmod_module_get_path(struct kmod_module *mod)
+{
+	// FIXME calculate path if path == NULL
+	return mod->path;
+}
+
+
 extern long delete_module(const char *name, unsigned int flags);
 
 KMOD_EXPORT int kmod_module_remove_module(struct kmod_module *mod,
