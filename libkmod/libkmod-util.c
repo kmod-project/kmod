@@ -17,6 +17,7 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stddef.h>
@@ -115,3 +116,20 @@ char *underscores(struct kmod_ctx *ctx, char *s)
 	return s;
 }
 
+bool startswith(const char *s, const char *prefix) {
+        size_t sl, pl;
+
+        assert(s);
+        assert(prefix);
+
+        sl = strlen(s);
+        pl = strlen(prefix);
+
+        if (pl == 0)
+                return true;
+
+        if (sl < pl)
+                return false;
+
+        return memcmp(s, prefix, pl) == 0;
+}

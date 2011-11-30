@@ -72,5 +72,6 @@ const char *kmod_alias_get_modname(const struct kmod_list *l);
 char *getline_wrapped(FILE *fp, unsigned int *linenum);
 char *underscores(struct kmod_ctx *ctx, char *s);
 #define streq(a, b) (strcmp((a), (b)) == 0)
+bool startswith(const char *s, const char *prefix);
 
 #endif
