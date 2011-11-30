@@ -126,14 +126,23 @@ static int log_priority(const char *priority)
 	return 0;
 }
 
-static const char *get_kernel_release(void)
+static const char *dirname_default_prefix = "/lib/modules";
+
+static const char *get_kernel_release(const char *dirname)
 {
 	struct utsname u;
+	char *p;
+
+	if (dirname != NULL)
+		return strdup(dirname);
 
 	if (uname(&u) < 0)
 		return NULL;
 
-	return strdup(u.release);
+	if (asprintf(&p, "%s/%s", dirname_default_prefix, u.release) < 0)
+		return NULL;
+
+	return p;
 }
 
 /**
@@ -160,10 +169,7 @@ KMOD_EXPORT struct kmod_ctx *kmod_new(const char *dirname)
 	ctx->log_fn = log_stderr;
 	ctx->log_priority = LOG_ERR;
 
-	if (dirname != NULL)
-		ctx->dirname = strdup(dirname);
-	else
-		ctx->dirname = get_kernel_release();
+	ctx->dirname = get_kernel_release(dirname);
 
 	/* environment overwrites config */
 	env = getenv("KMOD_LOG");
