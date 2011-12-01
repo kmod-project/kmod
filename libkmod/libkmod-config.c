@@ -116,18 +116,18 @@ int kmod_parse_config_file(struct kmod_ctx *ctx, const char *filename,
 		return errno;
 
 	while ((line = getline_wrapped(fp, &linenum)) != NULL) {
-		char *cmd;
+		char *cmd, *saveptr;
 
 		if (line[0] == '\0' || line[0] == '#')
 			goto done_next;
 
-		cmd = strtok(line, "\t ");
+		cmd = strtok_r(line, "\t ", &saveptr);
 		if (cmd == NULL)
 			goto done_next;
 
 		if (!strcmp(cmd, "alias")) {
-			char *alias = strtok(NULL, "\t ");
-			char *modname = strtok(NULL, "\t ");
+			char *alias = strtok_r(NULL, "\t ", &saveptr);
+			char *modname = strtok_r(NULL, "\t ", &saveptr);
 
 			if (alias == NULL || modname == NULL)
 				goto syntax_error;
@@ -136,7 +136,7 @@ int kmod_parse_config_file(struct kmod_ctx *ctx, const char *filename,
 						underscores(ctx, alias),
 						underscores(ctx, modname));
 		} else if (!strcmp(cmd, "blacklist")) {
-			char *modname = strtok(NULL, "\t ");
+			char *modname = strtok_r(NULL, "\t ", &saveptr);
 
 			if (modname == NULL)
 				goto syntax_error;
