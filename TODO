@@ -23,3 +23,8 @@ Features:
 * when preloading stuff, give the possibility to preload binary files. We need
   to create alternative index_search* functions to operate on mmapped files.
   Then on ctx creation we mmap all the files
+
+* kmod_module: calculate fields on demand if not available:
+	- name
+	- path
+	- dependency

@@ -259,6 +259,15 @@ KMOD_EXPORT int kmod_module_unref_list(struct kmod_list *list)
 	return 0;
 }
 
+/*
+ * We don't increase the refcount. Maybe we should.
+ */
+KMOD_EXPORT struct kmod_list *kmod_module_get_dependency(struct kmod_module *mod)
+{
+	// FIXME calculate dependency if it's not initialized
+	return mod->dep;
+}
+
 KMOD_EXPORT struct kmod_module *kmod_module_get_module(struct kmod_list *l)
 {
 	struct kmod_module *mod = l->data;
