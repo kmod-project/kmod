@@ -281,7 +281,7 @@ int kmod_lookup_alias_from_alias_bin(struct kmod_ctx *ctx, const char *file,
 	if (asprintf(&fn, "%s/%s.bin", ctx->dirname, file) < 0)
 		return -ENOMEM;
 
-	DBG(ctx, "file=%s name=%s", fn, name);
+	DBG(ctx, "file=%s name=%s\n", fn, name);
 
 	index = index_file_open(fn);
 	if (index == NULL) {
@@ -354,7 +354,7 @@ int kmod_lookup_alias_from_moddep_file(struct kmod_ctx *ctx, const char *name,
 	if (asprintf(&fn, "%s/%s.bin", ctx->dirname, moddep_file) < 0)
 		return -ENOMEM;
 
-	DBG(ctx, "file=%s modname=%s", fn, name);
+	DBG(ctx, "file=%s modname=%s\n", fn, name);
 
 	index = index_file_open(fn);
 	if (index == NULL) {
