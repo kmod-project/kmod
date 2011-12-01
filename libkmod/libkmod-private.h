@@ -51,7 +51,8 @@ struct kmod_list *kmod_list_prepend(struct kmod_list *list, void *data) __must_c
 struct kmod_list *kmod_list_remove(struct kmod_list *list);
 struct kmod_list *kmod_list_remove_data(struct kmod_list *list,
 					const void *data) __must_check;
-
+struct kmod_list *kmod_list_remove_n_latest(struct kmod_list *list,
+						unsigned int n) __must_check;
 
 /* libkmod.c */
 const char *kmod_get_dirname(struct kmod_ctx *ctx) __attribute__((nonnull(1)));

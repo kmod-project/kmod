@@ -138,6 +138,34 @@ struct kmod_list *kmod_list_remove_data(struct kmod_list *list,
 	return container_of(node, struct kmod_list, node);
 }
 
+/*
+ * n must be greater to or equal the number of elements (we don't check the
+ * condition
+ */
+struct kmod_list *kmod_list_remove_n_latest(struct kmod_list *list,
+							unsigned int n)
+{
+	struct kmod_list *l;
+	unsigned int i;
+
+	/*
+	 * Get last element, remove all appended elments and if list became
+	 * empty, set return pointer to NULL
+	 */
+	l = kmod_list_prev(list, list);
+	if (l == NULL)
+		l = list;
+
+	for (i = 0; i < n; i++)
+		l = kmod_list_remove(l);
+
+	/* If list became empty, save it*/
+	if (l == NULL)
+		list = NULL;
+
+	return list;
+}
+
 KMOD_EXPORT struct kmod_list *kmod_list_prev(struct kmod_list *list,
 							struct kmod_list *curr)
 {
