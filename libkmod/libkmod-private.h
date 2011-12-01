@@ -58,6 +58,7 @@ struct kmod_list *kmod_list_remove_n_latest(struct kmod_list *list,
 const char *kmod_get_dirname(struct kmod_ctx *ctx) __attribute__((nonnull(1)));
 int kmod_lookup_alias_from_config(struct kmod_ctx *ctx, const char *name, struct kmod_list **list);
 int kmod_lookup_alias_from_symbols_file(struct kmod_ctx *ctx, const char *name, struct kmod_list **list);
+int kmod_lookup_alias_from_moddep_file(struct kmod_ctx *ctx, const char *name, struct kmod_list **list);
 
 /* libkmod-config.c */
 struct kmod_config {

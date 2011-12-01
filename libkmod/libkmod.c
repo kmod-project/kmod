@@ -317,6 +317,54 @@ fail:
 	return err;
 }
 
+static const char *moddep_file = "modules.dep";
+
+int kmod_lookup_alias_from_moddep_file(struct kmod_ctx *ctx, const char *name,
+						struct kmod_list **list)
+{
+	char *fn, *line, *p;
+	struct index_file *index;
+	int n = 0;
+
+	/*
+	 * Module names do not contain ':'. Return early if we know it will
+	 * not be found.
+	 */
+	if (strchr(name, ':'))
+		return 0;
+
+	if (asprintf(&fn, "%s/%s.bin", ctx->dirname, moddep_file) < 0)
+		return -ENOMEM;
+
+	DBG(ctx, "file=%s modname=%s", fn, name);
+
+	index = index_file_open(fn);
+	if (index == NULL) {
+		free(fn);
+		return -ENOSYS;
+	}
+
+	line = index_search(index, name);
+	if (line != NULL) {
+		struct kmod_module *mod;
+
+		n = kmod_module_new_from_name(ctx, name, &mod);
+		if (n < 0) {
+			ERR(ctx, "%s\n", strerror(-n));
+			goto finish;
+		}
+
+		*list = kmod_list_append(*list, mod);
+	}
+
+finish:
+	free(line);
+	index_file_close(index);
+	free(fn);
+
+	return n;
+}
+
 int kmod_lookup_alias_from_config(struct kmod_ctx *ctx, const char *name,
 						struct kmod_list **list)
 {
