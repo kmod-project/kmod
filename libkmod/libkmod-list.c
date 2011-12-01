@@ -138,6 +138,18 @@ struct kmod_list *kmod_list_remove_data(struct kmod_list *list,
 	return container_of(node, struct kmod_list, node);
 }
 
+KMOD_EXPORT struct kmod_list *kmod_list_prev(struct kmod_list *list,
+							struct kmod_list *curr)
+{
+	if (list == NULL || curr == NULL)
+		return NULL;
+
+	if (curr->node.prev == &list->node)
+		return NULL;
+
+	return container_of(curr->node.prev, struct kmod_list, node);
+}
+
 KMOD_EXPORT struct kmod_list *kmod_list_next(struct kmod_list *list,
 							struct kmod_list *curr)
 {

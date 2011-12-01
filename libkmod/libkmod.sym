@@ -10,6 +10,7 @@ global:
 	kmod_set_userdata;
 	kmod_unref;
 	kmod_list_next;
+	kmod_list_prev;
 	kmod_loaded_new;
 	kmod_loaded_ref;
 	kmod_loaded_unref;

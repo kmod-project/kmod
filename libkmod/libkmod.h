@@ -56,6 +56,8 @@ void kmod_set_userdata(struct kmod_ctx *ctx, void *userdata);
 struct kmod_list;
 struct kmod_list *kmod_list_next(struct kmod_list *first_entry,
 						struct kmod_list *list_entry);
+struct kmod_list *kmod_list_prev(struct kmod_list *first_entry,
+						struct kmod_list *list_entry);
 #define kmod_list_foreach(list_entry, first_entry) \
 	for (list_entry = first_entry; \
 		list_entry != NULL; \
