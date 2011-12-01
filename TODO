@@ -1,0 +1,25 @@
+
+Features:
+
+* config: configs that do not need to be matched by fnmatch() could be using a
+  vector instead of a list. This way we could search in it by calling
+  bsearch().
+
+* config: load on demand and provide a call to preload stuff
+
+* kmod_module: create a mempool with live and recently de-allocated modules.
+  This way we don't have to create a new one, parse dependencies and whatnot.
+  Just pick the already created node.
+
+* kmod_module: apply blacklist on module lookup. What's best? Return the whole
+  list and provide functions like kmod_module_filter_* or return the list
+  already filtered?
+  ^-- investigate the best API
+
+* insmod and rmmod with dependency handling. Maybe this should be done by the
+  binary, and it's sufficient to return only the lists from lookups.
+  ^-- investigate the best API
+
+* when preloading stuff, give the possibility to preload binary files. We need
+  to create alternative index_search* functions to operate on mmapped files.
+  Then on ctx creation we mmap all the files
