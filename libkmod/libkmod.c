@@ -373,6 +373,7 @@ int kmod_lookup_alias_from_moddep_file(struct kmod_ctx *ctx, const char *name,
 		}
 
 		*list = kmod_list_append(*list, mod);
+		kmod_module_parse_dep(mod, line);
 	}
 
 finish:
