@@ -267,16 +267,16 @@ KMOD_EXPORT void kmod_set_log_priority(struct kmod_ctx *ctx, int priority)
 	ctx->log_priority = priority;
 }
 
-
 static const char *symbols_file = "modules.symbols";
 
 int kmod_lookup_alias_from_symbols_file(struct kmod_ctx *ctx, const char *name,
 						struct kmod_list **list)
 {
 	char *fn;
-	int err;
+	int err, nmatch = 0, i;
 	struct index_file *index;
 	struct index_value *realnames, *realname;
+	struct kmod_list *l;
 
 	if (!startswith(name, "symbol:"))
 		return 0;
@@ -299,17 +299,21 @@ int kmod_lookup_alias_from_symbols_file(struct kmod_ctx *ctx, const char *name,
 		err = kmod_module_new_from_name(ctx, realname->value, &mod);
 		if (err < 0) {
 			ERR(ctx, "%s\n", strerror(-err));
-			goto finish;
+			goto fail;
 		}
 
 		*list = kmod_list_append(*list, mod);
+		nmatch++;
 	}
 
-finish:
 	index_values_free(realnames);
 	index_file_close(index);
 	free(fn);
 
+	return nmatch;
+
+fail:
+	*list = kmod_list_remove_n_latest(*list, nmatch);
 	return err;
 }
 
@@ -318,7 +322,7 @@ int kmod_lookup_alias_from_config(struct kmod_ctx *ctx, const char *name,
 {
 	struct kmod_config *config = &ctx->config;
 	struct kmod_list *l;
-	int err;
+	int err, nmatch = 0;
 
 	kmod_list_foreach(l, config->aliases) {
 		const char *aliasname = kmod_alias_get_name(l);
@@ -330,12 +334,17 @@ int kmod_lookup_alias_from_config(struct kmod_ctx *ctx, const char *name,
 			err = kmod_module_new_from_name(ctx, modname, &mod);
 			if (err < 0) {
 				ERR(ctx, "%s", strerror(-err));
-				return err;
+				goto fail;
 			}
 
 			*list = kmod_list_append(*list, mod);
+			nmatch++;
 		}
 	}
 
-	return 0;
+	return nmatch;
+
+fail:
+	*list = kmod_list_remove_n_latest(*list, nmatch);
+	return err;
 }
