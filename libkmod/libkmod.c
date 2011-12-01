@@ -267,9 +267,9 @@ KMOD_EXPORT void kmod_set_log_priority(struct kmod_ctx *ctx, int priority)
 	ctx->log_priority = priority;
 }
 
-static const char *symbols_file = "modules.symbols";
 
-int kmod_lookup_alias_from_symbols_file(struct kmod_ctx *ctx, const char *name,
+int kmod_lookup_alias_from_alias_bin(struct kmod_ctx *ctx, const char *file,
+						const char *name,
 						struct kmod_list **list)
 {
 	char *fn;
@@ -278,13 +278,10 @@ int kmod_lookup_alias_from_symbols_file(struct kmod_ctx *ctx, const char *name,
 	struct index_value *realnames, *realname;
 	struct kmod_list *l;
 
-	if (!startswith(name, "symbol:"))
-		return 0;
-
-	if (asprintf(&fn, "%s/%s.bin", ctx->dirname, symbols_file) < 0)
+	if (asprintf(&fn, "%s/%s.bin", ctx->dirname, file) < 0)
 		return -ENOMEM;
 
-	DBG(ctx, "file=%s alias=%s", fn, name);
+	DBG(ctx, "file=%s name=%s", fn, name);
 
 	index = index_file_open(fn);
 	if (index == NULL) {
@@ -315,6 +312,18 @@ int kmod_lookup_alias_from_symbols_file(struct kmod_ctx *ctx, const char *name,
 fail:
 	*list = kmod_list_remove_n_latest(*list, nmatch);
 	return err;
+
+}
+
+static const char *symbols_file = "modules.symbols";
+
+int kmod_lookup_alias_from_symbols_file(struct kmod_ctx *ctx, const char *name,
+						struct kmod_list **list)
+{
+	if (!startswith(name, "symbol:"))
+		return 0;
+
+	return kmod_lookup_alias_from_alias_bin(ctx, symbols_file, name, list);
 }
 
 static const char *moddep_file = "modules.dep";
