@@ -46,7 +46,7 @@ struct kmod_module {
 	const char *name;
 };
 
-static char *path_to_modname(const char *path)
+static char *path_to_modname(const char *path, bool alloc)
 {
 	char *modname;
 	char *c;
@@ -55,7 +55,9 @@ static char *path_to_modname(const char *path)
 	if (modname == NULL || modname[0] == '\0')
 		return NULL;
 
-	modname = strdup(modname);
+	if (alloc)
+		modname = strdup(modname);
+
 	for (c = modname; *c != '\0' && *c != '.'; c++) {
 		if (*c == '-')
 			*c = '_';
@@ -68,7 +70,7 @@ static char *path_to_modname(const char *path)
 static const char *get_modname(struct kmod_module *mod)
 {
 	if (mod->name == NULL)
-		mod->name = path_to_modname(mod->path);
+		mod->name = path_to_modname(mod->path, true);
 
 	return mod->name;
 }
