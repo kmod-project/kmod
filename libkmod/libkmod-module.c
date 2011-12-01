@@ -17,6 +17,7 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stddef.h>
@@ -44,6 +45,11 @@ struct kmod_module {
 	int refcount;
 	const char *path;
 	const char *name;
+	struct kmod_list *dep;
+
+	struct {
+		bool dep : 1;
+	} init;
 };
 
 static char *path_to_modname(const char *path, bool alloc)
@@ -73,6 +79,51 @@ static const char *get_modname(struct kmod_module *mod)
 		mod->name = path_to_modname(mod->path, true);
 
 	return mod->name;
+}
+
+int kmod_module_parse_dep(struct kmod_module *mod, char *line)
+{
+	struct kmod_ctx *ctx = mod->ctx;
+	struct kmod_list *list = NULL;
+	char *p, *saveptr;
+	int err, n = 0;
+
+	assert(!mod->init.dep && mod->dep == NULL);
+	mod->init.dep = true;
+
+	p = strchr(line, ':');
+	if (p == NULL)
+		return 0;
+
+	p++;
+
+	for (p = strtok_r(p, " \t", &saveptr); p != NULL;
+					p = strtok_r(NULL, " \t", &saveptr)) {
+		const char *modname = path_to_modname(p, false);
+		struct kmod_module *mod;
+
+		err = kmod_module_new_from_name(ctx, modname, &mod);
+		if (err < 0) {
+			ERR(ctx, "ctx=%p modname=%s error=%s\n",
+						ctx, modname, strerror(-err));
+			goto fail;
+		}
+
+		DBG(ctx, "add dep: %s\n", modname);
+
+		list = kmod_list_append(list, mod);
+		n++;
+	}
+
+	DBG(ctx, "%d dependencies for %s\n", n, mod->name);
+
+	mod->dep = list;
+	return n;
+
+fail:
+	kmod_module_unref_list(list);
+	mod->init.dep = false;
+	return err;
 }
 
 KMOD_EXPORT int kmod_module_new_from_name(struct kmod_ctx *ctx,
@@ -137,6 +188,7 @@ KMOD_EXPORT struct kmod_module *kmod_module_unref(struct kmod_module *mod)
 
 	DBG(mod->ctx, "kmod_module %p released\n", mod);
 
+	kmod_module_unref_list(mod->dep);
 	kmod_unref(mod->ctx);
 	free((char *) mod->path);
 	free((char *) mod->name);
@@ -166,7 +218,6 @@ KMOD_EXPORT int kmod_module_new_from_lookup(struct kmod_ctx *ctx,
 						const char *alias,
 						struct kmod_list **list)
 {
-
 	int err;
 
 	if (ctx == NULL || alias == NULL)
