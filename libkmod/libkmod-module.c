@@ -185,6 +185,9 @@ KMOD_EXPORT int kmod_module_new_from_lookup(struct kmod_ctx *ctx,
 	err = kmod_lookup_alias_from_symbols_file(ctx, alias, list);
 	CHECK_ERR_AND_FINISH(err, fail, list, finish);
 
+	err = kmod_lookup_alias_from_aliases_file(ctx, alias, list);
+	CHECK_ERR_AND_FINISH(err, fail, list, finish);
+
 finish:
 
 	return err;

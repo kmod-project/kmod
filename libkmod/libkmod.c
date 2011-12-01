@@ -326,6 +326,15 @@ int kmod_lookup_alias_from_symbols_file(struct kmod_ctx *ctx, const char *name,
 	return kmod_lookup_alias_from_alias_bin(ctx, symbols_file, name, list);
 }
 
+
+static const char *aliases_file = "modules.alias";
+
+int kmod_lookup_alias_from_aliases_file(struct kmod_ctx *ctx, const char *name,
+						struct kmod_list **list)
+{
+	return kmod_lookup_alias_from_alias_bin(ctx, aliases_file, name, list);
+}
+
 static const char *moddep_file = "modules.dep";
 
 int kmod_lookup_alias_from_moddep_file(struct kmod_ctx *ctx, const char *name,
