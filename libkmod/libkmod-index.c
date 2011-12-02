@@ -774,3 +774,134 @@ char *index_mm_search(struct index_mm *idx, const char *key)
 
 	return value;
 }
+
+/* Level 4: add all the values from a matching node */
+static void index_mm_searchwild_allvalues(struct index_mm_node *node,
+						struct index_value **out)
+{
+	struct index_value *v;
+
+	for (v = node->values; v != NULL; v = v->next)
+		add_value(out, v->value, v->priority);
+
+	index_mm_free_node(node);
+}
+
+/*
+ * Level 3: traverse a sub-keyspace which starts with a wildcard,
+ * looking for matches.
+ */
+static void index_mm_searchwild_all(struct index_mm_node *node, int j,
+					  struct buffer *buf,
+					  const char *subkey,
+					  struct index_value **out)
+{
+	int pushed = 0;
+	int ch;
+
+	while (node->prefix[j]) {
+		ch = node->prefix[j];
+
+		buf_pushchar(buf, ch);
+		pushed++;
+		j++;
+	}
+
+	for (ch = node->first; ch <= node->last; ch++) {
+		struct index_mm_node *child = index_mm_readchild(node, ch);
+
+		if (!child)
+			continue;
+
+		buf_pushchar(buf, ch);
+		index_mm_searchwild_all(child, 0, buf, subkey, out);
+		buf_popchar(buf);
+	}
+
+	if (node->values) {
+		if (fnmatch(buf_str(buf), subkey, 0) == 0)
+			index_mm_searchwild_allvalues(node, out);
+	} else {
+		index_mm_free_node(node);
+	}
+
+	buf_popchars(buf, pushed);
+}
+
+/* Level 2: descend the tree (until we hit a wildcard) */
+static void index_mm_searchwild_node(struct index_mm_node *node,
+					   struct buffer *buf,
+					   const char *key, int i,
+					   struct index_value **out)
+{
+	struct index_mm_node *child;
+	int j;
+	int ch;
+
+	while(node) {
+		for (j = 0; node->prefix[j]; j++) {
+			ch = node->prefix[j];
+
+			if (ch == '*' || ch == '?' || ch == '[') {
+				index_mm_searchwild_all(node, j, buf,
+						      &key[i+j], out);
+				return;
+			}
+
+			if (ch != key[i+j]) {
+				index_mm_free_node(node);
+				return;
+			}
+		}
+
+		i += j;
+
+		child = index_mm_readchild(node, '*');
+		if (child) {
+			buf_pushchar(buf, '*');
+			index_mm_searchwild_all(child, 0, buf, &key[i], out);
+			buf_popchar(buf);
+		}
+
+		child = index_mm_readchild(node, '?');
+		if (child) {
+			buf_pushchar(buf, '?');
+			index_mm_searchwild_all(child, 0, buf, &key[i], out);
+			buf_popchar(buf);
+		}
+
+		child = index_mm_readchild(node, '[');
+		if (child) {
+			buf_pushchar(buf, '[');
+			index_mm_searchwild_all(child, 0, buf, &key[i], out);
+			buf_popchar(buf);
+		}
+
+		if (key[i] == '\0') {
+			index_mm_searchwild_allvalues(node, out);
+
+			return;
+		}
+
+		child = index_mm_readchild(node, key[i]);
+		index_mm_free_node(node);
+		node = child;
+		i++;
+	}
+}
+
+/*
+ * Search the index for a key.  The index may contain wildcards.
+ *
+ * Returns a list of all the values of matching keys.
+ */
+struct index_value *index_mm_searchwild(struct index_mm *idx, const char *key)
+{
+	struct index_mm_node *root = index_mm_readroot(idx);
+	struct buffer *buf = buf_create();
+	struct index_value *out = NULL;
+
+	index_mm_searchwild_node(root, buf, key, 0, &out);
+	buf_destroy(buf);
+	return out;
+}

@@ -167,5 +167,6 @@ struct index_mm;
 struct index_mm *index_mm_open(struct kmod_ctx *ctx, const char *filename);
 void index_mm_close(struct index_mm *index);
 char *index_mm_search(struct index_mm *idx, const char *key);
+struct index_value *index_mm_searchwild(struct index_mm *idx, const char *key);
 
 #endif
