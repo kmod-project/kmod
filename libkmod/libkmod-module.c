@@ -339,7 +339,7 @@ KMOD_EXPORT int kmod_module_insert_module(struct kmod_module *mod,
 		return err;
 	}
 
-	stat(mod->path, &st);
+	fstat(fd, &st);
 
 	if ((mmaped_file = mmap(0, st.st_size, PROT_READ,
 					MAP_PRIVATE, fd, 0)) == MAP_FAILED) {
