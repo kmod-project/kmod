@@ -155,20 +155,8 @@ enum node_offset {
 };
 
 struct index_file;
-
-struct index_node *index_create(void);
-void index_destroy(struct index_node *node);
-int index_insert(struct index_node *node, const char *key,
-		 const char *value, unsigned int priority);
-void index_write(const struct index_node *node, FILE *out);
-
 struct index_file *index_file_open(const char *filename);
 void index_file_close(struct index_file *index);
-
-/* Dump all strings in index as lines in a plain text file
-   (prefix is prepended to each line)
-*/
-void index_dump(struct index_file *in, FILE *out, const char *prefix);
 
 /* Return value for first matching key.
    Keys must be exactly equal to match - i.e. there are no wildcard patterns

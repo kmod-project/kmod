@@ -26,21 +26,6 @@
 #include "libkmod-index.h"
 #include "macro.h"
 
-/*
- * Index abstract data type (used only by depmod)
- */
-
-struct index_node *index_create(void)
-{
-	struct index_node *node;
-
-	node = NOFAIL(calloc(sizeof(struct index_node), 1));
-	node->prefix = NOFAIL(strdup(""));
-	node->first = INDEX_CHILDMAX;
-
-	return node;
-}
-
 void index_values_free(struct index_value *values)
 {
 	while (values) {
@@ -48,34 +33,6 @@ void index_values_free(struct index_value *values)
 
 		values = value->next;
 		free(value);
-	}
-}
-
-void index_destroy(struct index_node *node)
-{
-	int c;
-
-	for (c = node->first; c <= node->last; c++) {
-		struct index_node *child = node->children[c];
-
-		if (child)
-			index_destroy(child);
-	}
-	index_values_free(node->values);
-	free(node->prefix);
-	free(node);
-}
-
-static void index__checkstring(const char *str)
-{
-	int i;
-
-	for (i = 0; str[i]; i++) {
-		int ch = str[i];
-
-		if (ch >= INDEX_CHILDMAX)
-			fatal("Module index: bad character '%c'=0x%x - only 7-bit ASCII is supported:"
-			      "\n%s\n", (char) ch, (int) ch, str);
 	}
 }
 
@@ -105,175 +62,6 @@ static int add_value(struct index_value **values,
 
 	return duplicate;
 }
-
-int index_insert(struct index_node *node, const char *key,
-		 const char *value, unsigned int priority)
-{
-	int i = 0; /* index within str */
-	int ch;
-
-	index__checkstring(key);
-	index__checkstring(value);
-
-	while(1) {
-		int j; /* index within node->prefix */
-
-		/* Ensure node->prefix is a prefix of &str[i].
-		   If it is not already, then we must split node. */
-		for (j = 0; node->prefix[j]; j++) {
-			ch = node->prefix[j];
-
-			if (ch != key[i+j]) {
-				char *prefix = node->prefix;
-				struct index_node *n;
-
-				/* New child is copy of node with prefix[j+1..N] */
-				n = NOFAIL(calloc(sizeof(struct index_node), 1));
-				memcpy(n, node, sizeof(struct index_node));
-				n->prefix = NOFAIL(strdup(&prefix[j+1]));
-
-				/* Parent has prefix[0..j], child at prefix[j] */
-				memset(node, 0, sizeof(struct index_node));
-				prefix[j] = '\0';
-				node->prefix = prefix;
-				node->first = ch;
-				node->last = ch;
-				node->children[ch] = n;
-
-				break;
-			}
-		}
-		/* j is now length of node->prefix */
-		i += j;
-
-		ch = key[i];
-		if(ch == '\0')
-			return add_value(&node->values, value, priority);
-
-		if (!node->children[ch]) {
-			struct index_node *child;
-
-			if (ch < node->first)
-				node->first = ch;
-			if (ch > node->last)
-				node->last = ch;
-			node->children[ch] = NOFAIL(calloc(sizeof(struct index_node), 1));
-
-			child = node->children[ch];
-			child->prefix = NOFAIL(strdup(&key[i+1]));
-			child->first = INDEX_CHILDMAX;
-			add_value(&child->values, value, priority);
-
-			return 0;
-		}
-
-		/* Descend into child node and continue */
-		node = node->children[ch];
-		i++;
-	}
-}
-
-static int index__haschildren(const struct index_node *node)
-{
-	return node->first < INDEX_CHILDMAX;
-}
-
-/* Recursive post-order traversal
-
-   Pre-order would make for better read-side buffering / readahead / caching.
-   (post-order means you go backwards in the file as you descend the tree).
-   However, index reading is already fast enough.
-   Pre-order is simpler for writing, and depmod is already slow.
- */
-static uint32_t index_write__node(const struct index_node *node, FILE *out)
-{
-	uint32_t *child_offs = NULL;
-	int child_count = 0;
-	long offset;
-
-	if (!node)
-		return 0;
-
-	/* Write children and save their offsets */
-	if (index__haschildren(node)) {
-		const struct index_node *child;
-		int i;
-
-		child_count = node->last - node->first + 1;
-		child_offs = NOFAIL(malloc(child_count * sizeof(uint32_t)));
-
-		for (i = 0; i < child_count; i++) {
-			child = node->children[node->first + i];
-			child_offs[i] = htonl(index_write__node(child, out));
-		}
-	}
-
-	/* Now write this node */
-	offset = ftell(out);
-
-	if (node->prefix[0]) {
-		fputs(node->prefix, out);
-		fputc('\0', out);
-		offset |= INDEX_NODE_PREFIX;
-	}
-
-	if (child_count) {
-		fputc(node->first, out);
-		fputc(node->last, out);
-		fwrite(child_offs, sizeof(uint32_t), child_count, out);
-		free(child_offs);
-		offset |= INDEX_NODE_CHILDS;
-	}
-
-	if (node->values) {
-		const struct index_value *v;
-		unsigned int value_count;
-		uint32_t u;
-
-		value_count = 0;
-		for (v = node->values; v != NULL; v = v->next)
-			value_count++;
-		u = htonl(value_count);
-		fwrite(&u, sizeof(u), 1, out);
-
-		for (v = node->values; v != NULL; v = v->next) {
-			u = htonl(v->priority);
-			fwrite(&u, sizeof(u), 1, out);
-			fputs(v->value, out);
-			fputc('\0', out);
-		}
-		offset |= INDEX_NODE_VALUES;
-	}
-
-	return offset;
-}
-
-void index_write(const struct index_node *node, FILE *out)
-{
-	long initial_offset, final_offset;
-	uint32_t u;
-
-	u = htonl(INDEX_MAGIC);
-	fwrite(&u, sizeof(u), 1, out);
-	u = htonl(INDEX_VERSION);
-	fwrite(&u, sizeof(u), 1, out);
-
-	/* Second word is reserved for the offset of the root node */
-	initial_offset = ftell(out);
-	u = 0;
-	fwrite(&u, sizeof(uint32_t), 1, out);
-
-	/* Dump trie */
-	u = htonl(index_write__node(node, out));
-
-	/* Update first word */
-	final_offset = ftell(out);
-	fseek(out, initial_offset, SEEK_SET);
-	fwrite(&u, sizeof(uint32_t), 1, out);
-	fseek(out, final_offset, SEEK_SET);
-}
-
-
 
 static void read_error(void)
 {
@@ -361,28 +149,11 @@ static const char *buf_str(struct buffer *buf)
 	return buf->bytes;
 }
 
-static int buf_fwrite(struct buffer *buf, FILE *out)
-{
-	return fwrite(buf->bytes, 1, buf->used, out);
-}
-
 static void buf_pushchar(struct buffer *buf, char ch)
 {
 	buf__realloc(buf, buf->used + 1);
 	buf->bytes[buf->used] = ch;
 	buf->used++;
-}
-
-static unsigned buf_pushchars(struct buffer *buf, const char *str)
-{
-	unsigned i = 0;
-	int ch;
-
-	while ((ch = str[i])) {
-		buf_pushchar(buf, ch);
-		i++;
-	}
-	return i;
 }
 
 /* like buf_pushchars(), but the string comes from a file */
@@ -548,54 +319,6 @@ static struct index_node_f *index_readchild(const struct index_node_f *parent,
 		                       parent->children[ch - parent->first]);
 	else
 		return NULL;
-}
-
-/*
- * Dump all strings as lines in a plain text file.
- */
-
-static void index_dump_node(struct index_node_f *node,
-			    struct buffer *buf,
-			    FILE *out,
-			    const char *prefix)
-{
-	struct index_value *v;
-	int ch, pushed;
-
-	pushed = buf_pushchars(buf, node->prefix);
-
-	for (v = node->values; v != NULL; v = v->next) {
-		fputs(prefix, out);
-		buf_fwrite(buf, out);
-		fputc(' ', out);
-		fputs(v->value, out);
-		fputc('\n', out);
-	}
-
-	for (ch = node->first; ch <= node->last; ch++) {
-		struct index_node_f *child = index_readchild(node, ch);
-
-		if (!child)
-			continue;
-
-		buf_pushchar(buf, ch);
-		index_dump_node(child, buf, out, prefix);
-		buf_popchar(buf);
-	}
-
-	buf_popchars(buf, pushed);
-	index_close(node);
-}
-
-void index_dump(struct index_file *in, FILE *out, const char *prefix)
-{
-	struct index_node_f *root;
-	struct buffer *buf;
-
-	buf = buf_create();
-	root = index_readroot(in);
-	index_dump_node(root, buf, out, prefix);
-	buf_destroy(buf);
 }
 
 static char *index_search__node(struct index_node_f *node, const char *key, int i)
