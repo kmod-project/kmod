@@ -268,7 +268,8 @@ KMOD_EXPORT void kmod_set_log_priority(struct kmod_ctx *ctx, int priority)
 }
 
 
-int kmod_lookup_alias_from_alias_bin(struct kmod_ctx *ctx, const char *file,
+static int kmod_lookup_alias_from_alias_bin(struct kmod_ctx *ctx,
+						const char *file,
 						const char *name,
 						struct kmod_list **list)
 {
