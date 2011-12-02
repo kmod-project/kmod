@@ -706,3 +706,14 @@ static struct index_mm_node *index_mm_readroot(struct index_mm *idx)
 {
 	return index_mm_read_node(idx, idx->root_offset);
 }
+
+static struct index_mm_node *index_mm_readchild(const struct index_mm_node *parent,
+									int ch)
+{
+	if (parent->first <= ch && ch <= parent->last) {
+		return index_mm_read_node(parent->idx,
+					parent->children[ch - parent->first]);
+	}
+
+	return NULL;
+}
