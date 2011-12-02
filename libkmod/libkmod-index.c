@@ -756,3 +756,21 @@ static char *index_mm_search_node(struct index_mm_node *node, const char *key,
 
 	return NULL;
 }
+
+/*
+ * Search the index for a key
+ *
+ * Returns the value of the first match
+ *
+ * The recursive functions free their node argument (using index_close).
+ */
+char *index_mm_search(struct index_mm *idx, const char *key)
+{
+	struct index_mm_node *root;
+	char *value;
+
+	root = index_mm_readroot(idx);
+	value = index_mm_search_node(root, key, 0);
+
+	return value;
+}
