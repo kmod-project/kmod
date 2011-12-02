@@ -13,7 +13,6 @@ int main(int argc, char *argv[])
 	const char *alias;
 	struct kmod_ctx *ctx;
 	struct kmod_list *list = NULL, *l;
-	struct kmod_module *mod;
 	int err;
 
 	printf("libkmod version %s\n", VERSION);

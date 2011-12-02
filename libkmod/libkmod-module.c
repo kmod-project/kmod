@@ -100,9 +100,9 @@ int kmod_module_parse_dep(struct kmod_module *mod, char *line)
 	for (p = strtok_r(p, " \t", &saveptr); p != NULL;
 					p = strtok_r(NULL, " \t", &saveptr)) {
 		const char *modname = path_to_modname(p, false);
-		struct kmod_module *mod;
+		struct kmod_module *depmod;
 
-		err = kmod_module_new_from_name(ctx, modname, &mod);
+		err = kmod_module_new_from_name(ctx, modname, &depmod);
 		if (err < 0) {
 			ERR(ctx, "ctx=%p modname=%s error=%s\n",
 						ctx, modname, strerror(-err));
@@ -111,7 +111,7 @@ int kmod_module_parse_dep(struct kmod_module *mod, char *line)
 
 		DBG(ctx, "add dep: %s\n", modname);
 
-		list = kmod_list_append(list, mod);
+		list = kmod_list_append(list, depmod);
 		n++;
 	}
 
