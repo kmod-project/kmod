@@ -1,5 +1,6 @@
 /* index.c: module index file shared functions for modprobe and depmod
     Copyright (C) 2008  Alan Jenkins <alan-jenkins@tuffmail.co.uk>.
+    Copyright (C) 2011  ProFUSION embedded systems
 
     These programs are free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
