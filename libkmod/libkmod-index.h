@@ -156,9 +156,9 @@ enum node_offset {
 
 struct index_file;
 struct index_file *index_file_open(const char *filename);
-void index_file_close(struct index_file *index);
-char *index_search(struct index_file *index, const char *key);
-struct index_value *index_searchwild(struct index_file *index, const char *key);
+void index_file_close(struct index_file *idx);
+char *index_search(struct index_file *idx, const char *key);
+struct index_value *index_searchwild(struct index_file *idx, const char *key);
 
 void index_values_free(struct index_value *values);
 
