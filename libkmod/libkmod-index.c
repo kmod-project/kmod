@@ -606,7 +606,6 @@ void index_dump(struct index_file *in, FILE *out, const char *prefix)
  * The recursive functions free their node argument (using index_close).
  */
 
-char *index_search(struct index_file *in, const char *key);
 static char *index_search__node(struct index_node_f *node, const char *key, int i);
 
 char *index_search(struct index_file *in, const char *key)
@@ -663,8 +662,6 @@ static char *index_search__node(struct index_node_f *node, const char *key, int 
  * Returns a list of all the values of matching keys.
  */
 
-/* Level 1: interface function */
-struct index_value *index_searchwild(struct index_file *in, const char *key);
 
 /* Level 2: descend the tree (until we hit a wildcard) */
 static void index_searchwild__node(struct index_node_f *node,
@@ -685,6 +682,7 @@ static void index_searchwild__allvalues(struct index_node_f *node,
 					struct index_value **out);
 
 
+/* Level 1: interface function */
 struct index_value *index_searchwild(struct index_file *in, const char *key)
 {
 	struct index_node_f *root = index_readroot(in);
