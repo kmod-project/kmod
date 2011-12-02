@@ -187,8 +187,8 @@ static int index__haschildren(const struct index_node *node)
  */
 static uint32_t index_write__node(const struct index_node *node, FILE *out)
 {
- 	uint32_t *child_offs = NULL;
- 	int child_count = 0;
+	uint32_t *child_offs = NULL;
+	int child_count = 0;
 	long offset;
 
 	if (!node)
