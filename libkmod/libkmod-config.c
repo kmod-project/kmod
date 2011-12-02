@@ -81,17 +81,16 @@ static struct kmod_list *free_alias(struct kmod_ctx *ctx, struct kmod_list *l)
 }
 
 static struct kmod_list *add_blacklist(struct kmod_ctx *ctx,
-					struct kmod_list *blacklists,
+					struct kmod_list *blacklist,
 					const char *modname)
 {
-	struct kmod_blacklist *blacklist;
 	char *p;
 
 	DBG(ctx, "modname=%s\n", modname);
 
 	p = strdup(modname);
 
-	return kmod_list_append(blacklists, p);
+	return kmod_list_append(blacklist, p);
 }
 
 static struct kmod_list *free_blacklist(struct kmod_ctx *ctx,

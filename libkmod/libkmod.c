@@ -274,10 +274,9 @@ static int kmod_lookup_alias_from_alias_bin(struct kmod_ctx *ctx,
 						struct kmod_list **list)
 {
 	char *fn;
-	int err, nmatch = 0, i;
+	int err, nmatch = 0;
 	struct index_file *idx;
 	struct index_value *realnames, *realname;
-	struct kmod_list *l;
 
 	if (asprintf(&fn, "%s/%s.bin", ctx->dirname, file) < 0)
 		return -ENOMEM;
@@ -341,7 +340,7 @@ static const char *moddep_file = "modules.dep";
 int kmod_lookup_alias_from_moddep_file(struct kmod_ctx *ctx, const char *name,
 						struct kmod_list **list)
 {
-	char *fn, *line, *p;
+	char *fn, *line;
 	struct index_file *idx;
 	int n = 0;
 
