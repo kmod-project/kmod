@@ -162,4 +162,9 @@ struct index_value *index_searchwild(struct index_file *idx, const char *key);
 
 void index_values_free(struct index_value *values);
 
+/* Implementation using mmap */
+struct index_mm;
+struct index_mm *index_mm_open(struct kmod_ctx *ctx, const char *filename);
+void index_mm_close(struct index_mm *index);
+
 #endif

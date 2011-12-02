@@ -506,3 +506,91 @@ struct index_value *index_searchwild(struct index_file *in, const char *key)
 	buf_destroy(buf);
 	return out;
 }
+
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
+/**************************************************************************/
+/*
+ * Alternative implementation, using mmap to map all the file to memory when
+ * starting
+ */
+struct index_mm {
+	struct kmod_ctx *ctx;
+	void *mm;
+	uint32_t root_offset;
+	size_t size;
+};
+
+struct index_mm *index_mm_open(struct kmod_ctx *ctx, const char *filename)
+{
+	int fd;
+	struct stat st;
+	struct index_mm *idx;
+	struct {
+		uint32_t magic;
+		uint32_t version;
+		uint32_t root_offset;
+	} hdr;
+	void *p;
+
+	DBG(ctx, "file=%s\n", filename);
+
+	if ((fd = open(filename, O_RDONLY)) < 0) {
+		ERR(ctx, "%m\n");
+		return NULL;
+	}
+
+	fstat(fd, &st);
+
+	idx = malloc(sizeof(*idx));
+	if (idx == NULL) {
+		ERR(ctx, "%m\n");
+		goto fail;
+	}
+
+	if ((idx->mm = mmap(0, st.st_size, PROT_READ,
+				MAP_PRIVATE | MAP_POPULATE,
+				fd, 0)) == MAP_FAILED) {
+		ERR(ctx, "%m\n");
+		goto fail;
+	}
+
+	p = idx->mm;
+	hdr.magic = read_long_mm(&p);
+	hdr.version = read_long_mm(&p);
+	hdr.root_offset = read_long_mm(&p);
+
+	if (hdr.magic != INDEX_MAGIC) {
+		ERR(ctx, "magic check fail: %x instead of %x\n", hdr.magic,
+								INDEX_MAGIC);
+		goto fail;
+	}
+
+	if (hdr.version >> 16 != INDEX_VERSION_MAJOR) {
+		ERR(ctx, "major version check fail: %u instead of %u\n",
+						hdr.version, INDEX_MAGIC);
+		goto fail;
+	}
+
+	idx->root_offset = hdr.root_offset;
+	idx->size = st.st_size;
+	idx->ctx = ctx;
+	close(fd);
+
+	return idx;
+
+fail:
+	close(fd);
+	if (idx->mm)
+		munmap(idx->mm, st.st_size);
+	free(idx);
+	return NULL;
+}
+
+void index_mm_close(struct index_mm *idx)
+{
+	munmap(idx->mm, idx->size);
+	free(idx);
+}
