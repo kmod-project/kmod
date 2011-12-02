@@ -1,4 +1,5 @@
-EXTRA_DIST = autogen.sh
+EXTRA_DIST =
+CLEANFILES =
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 AM_MAKEFLAGS = --no-print-directory
 
@@ -16,8 +17,6 @@ AM_CFLAGS = \
 AM_LDFLAGS = \
 	-Wl,--gc-sections \
 	-Wl,--as-needed
-
-CLEANFILES =
 
 LIBKMOD_CURRENT=0
 LIBKMOD_REVISION=0
