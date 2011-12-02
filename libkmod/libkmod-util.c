@@ -133,3 +133,13 @@ bool startswith(const char *s, const char *prefix) {
 
         return memcmp(s, prefix, pl) == 0;
 }
+
+inline void *memdup(const void *p, size_t n)
+{
+	void *r = malloc(n);
+
+	if (r == NULL)
+		return NULL;
+
+	return memcpy(r, p, n);
+}
