@@ -701,3 +701,8 @@ void index_mm_close(struct index_mm *idx)
 	munmap(idx->mm, idx->size);
 	free(idx);
 }
+
+static struct index_mm_node *index_mm_readroot(struct index_mm *idx)
+{
+	return index_mm_read_node(idx, idx->root_offset);
+}
