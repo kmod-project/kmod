@@ -717,3 +717,42 @@ static struct index_mm_node *index_mm_readchild(const struct index_mm_node *pare
 
 	return NULL;
 }
+
+static char *index_mm_search_node(struct index_mm_node *node, const char *key,
+									int i)
+{
+	char *value;
+	struct index_mm_node *child;
+	int ch;
+	int j;
+
+	while(node) {
+		for (j = 0; node->prefix[j]; j++) {
+			ch = node->prefix[j];
+
+			if (ch != key[i+j]) {
+				index_mm_free_node(node);
+				return NULL;
+			}
+		}
+
+		i += j;
+
+		if (key[i] == '\0') {
+			if (node->values) {
+				value = strdup(node->values[0].value);
+				index_mm_free_node(node);
+				return value;
+			} else {
+				return NULL;
+			}
+		}
+
+		child = index_mm_readchild(node, key[i]);
+		index_mm_free_node(node);
+		node = child;
+		i++;
+	}
+
+	return NULL;
+}
