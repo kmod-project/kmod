@@ -97,7 +97,6 @@ static uint32_t read_long(FILE *in)
  * They help build wildcard key strings to pass to fnmatch(),
  * as well as building values of matching keys.
  */
-
 struct buffer {
 	char *bytes;
 	unsigned size;
@@ -156,7 +155,6 @@ static void buf_pushchar(struct buffer *buf, char ch)
 	buf->used++;
 }
 
-/* like buf_pushchars(), but the string comes from a file */
 static unsigned buf_freadchars(struct buffer *buf, FILE *in)
 {
 	unsigned i = 0;
@@ -186,9 +184,8 @@ static void buf_clear(struct buffer *buf)
 }
 
 /*
- * Index file searching (used only by modprobe)
+ * Index file searching
  */
-
 struct index_node_f {
 	FILE *file;
 	char *prefix;		/* path compression */
@@ -304,7 +301,6 @@ void index_file_close(struct index_file *idx)
 	fclose(idx->file);
 	free(idx);
 }
-
 
 static struct index_node_f *index_readroot(struct index_file *in)
 {

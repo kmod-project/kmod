@@ -157,15 +157,7 @@ enum node_offset {
 struct index_file;
 struct index_file *index_file_open(const char *filename);
 void index_file_close(struct index_file *index);
-
-/* Return value for first matching key.
-   Keys must be exactly equal to match - i.e. there are no wildcard patterns
-*/
 char *index_search(struct index_file *index, const char *key);
-
-/* Return values for all matching keys.
-   The keys in the index are treated as wildcard patterns using fnmatch()
-*/
 struct index_value *index_searchwild(struct index_file *index, const char *key);
 
 void index_values_free(struct index_value *values);
