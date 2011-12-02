@@ -247,6 +247,7 @@ finish:
 fail:
 	kmod_module_unref_list(*list);
 	*list = NULL;
+	return err;
 }
 #undef CHECK_ERR_AND_FINISH
 
