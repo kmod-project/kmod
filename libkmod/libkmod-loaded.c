@@ -259,7 +259,7 @@ KMOD_EXPORT int kmod_loaded_remove_module(struct kmod_loaded *mod,
 	}
 
 	loaded_modules_free_module(m);
-	kmod_list_remove(entry);
+	entry = kmod_list_remove(entry);
 
 	return 0;
 }
