@@ -5,7 +5,14 @@ Features:
   vector instead of a list. This way we could search in it by calling
   bsearch().
 
-* config: load on demand and provide a call to preload stuff
+* config: load on demand
+
+* index: drop the "open(), seek(), read()" implementation and use another one
+  with mmap(). When lookup() is called and the file is not mmaped, mmap it.
+
+* provide a kmod_preload_resources() so configs are parsed and files are mmaped
+  with MAP_POPULATE | MAP_LOCKED. Maybe it's a good idea to have a
+  kmod_unload_resources() too.
 
 * kmod_module: create a mempool with live and recently de-allocated modules.
   This way we don't have to create a new one, parse dependencies and whatnot.
