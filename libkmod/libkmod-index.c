@@ -528,10 +528,10 @@ struct index_file *index_file_open(const char *filename)
 	return new;
 }
 
-void index_file_close(struct index_file *index)
+void index_file_close(struct index_file *idx)
 {
-	fclose(index->file);
-	free(index);
+	fclose(idx->file);
+	free(idx);
 }
 
 

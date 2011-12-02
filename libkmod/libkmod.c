@@ -275,7 +275,7 @@ static int kmod_lookup_alias_from_alias_bin(struct kmod_ctx *ctx,
 {
 	char *fn;
 	int err, nmatch = 0, i;
-	struct index_file *index;
+	struct index_file *idx;
 	struct index_value *realnames, *realname;
 	struct kmod_list *l;
 
@@ -284,13 +284,13 @@ static int kmod_lookup_alias_from_alias_bin(struct kmod_ctx *ctx,
 
 	DBG(ctx, "file=%s name=%s\n", fn, name);
 
-	index = index_file_open(fn);
-	if (index == NULL) {
+	idx = index_file_open(fn);
+	if (idx == NULL) {
 		free(fn);
 		return -ENOSYS;
 	}
 
-	realnames = index_searchwild(index, name);
+	realnames = index_searchwild(idx, name);
 	for (realname = realnames; realname; realname = realnames->next) {
 		struct kmod_module *mod;
 
@@ -305,7 +305,7 @@ static int kmod_lookup_alias_from_alias_bin(struct kmod_ctx *ctx,
 	}
 
 	index_values_free(realnames);
-	index_file_close(index);
+	index_file_close(idx);
 	free(fn);
 
 	return nmatch;
@@ -342,7 +342,7 @@ int kmod_lookup_alias_from_moddep_file(struct kmod_ctx *ctx, const char *name,
 						struct kmod_list **list)
 {
 	char *fn, *line, *p;
-	struct index_file *index;
+	struct index_file *idx;
 	int n = 0;
 
 	/*
@@ -357,13 +357,13 @@ int kmod_lookup_alias_from_moddep_file(struct kmod_ctx *ctx, const char *name,
 
 	DBG(ctx, "file=%s modname=%s\n", fn, name);
 
-	index = index_file_open(fn);
-	if (index == NULL) {
+	idx = index_file_open(fn);
+	if (idx == NULL) {
 		free(fn);
 		return -ENOSYS;
 	}
 
-	line = index_search(index, name);
+	line = index_search(idx, name);
 	if (line != NULL) {
 		struct kmod_module *mod;
 
@@ -379,7 +379,7 @@ int kmod_lookup_alias_from_moddep_file(struct kmod_ctx *ctx, const char *name,
 
 finish:
 	free(line);
-	index_file_close(index);
+	index_file_close(idx);
 	free(fn);
 
 	return n;
