@@ -310,11 +310,12 @@ static struct index_node_f *index_readroot(struct index_file *in)
 static struct index_node_f *index_readchild(const struct index_node_f *parent,
 					    int ch)
 {
-	if (parent->first <= ch && ch <= parent->last)
+	if (parent->first <= ch && ch <= parent->last) {
 		return index_read(parent->file,
 		                       parent->children[ch - parent->first]);
-	else
-		return NULL;
+	}
+
+	return NULL;
 }
 
 static char *index_search__node(struct index_node_f *node, const char *key, int i)
@@ -333,6 +334,7 @@ static char *index_search__node(struct index_node_f *node, const char *key, int 
 				return NULL;
 			}
 		}
+
 		i += j;
 
 		if (key[i] == '\0') {
@@ -452,6 +454,7 @@ static void index_searchwild__node(struct index_node_f *node,
 				return;
 			}
 		}
+
 		i += j;
 
 		child = index_readchild(node, '*');

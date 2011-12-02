@@ -16,8 +16,8 @@
     along with these programs.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef MODINITTOOLS_INDEX_H
-#define MODINITTOOLS_INDEX_H
+#ifndef _LIBKMOD_INDEX_H
+#define _LIBKMOD_INDEX_H
 
 #include <stdint.h>
 
@@ -162,4 +162,4 @@ struct index_value *index_searchwild(struct index_file *index, const char *key);
 
 void index_values_free(struct index_value *values);
 
-#endif /* MODINITTOOLS_INDEX_H */
+#endif
