@@ -523,6 +523,113 @@ struct index_mm {
 	size_t size;
 };
 
+struct index_mm_node {
+	struct index_mm *idx;
+	char *prefix;
+	struct index_value *values;
+	unsigned char first;
+	unsigned char last;
+	uint32_t children[];
+};
+
+static inline uint32_t read_long_mm(void **p)
+{
+	uint32_t v = **((uint32_t **)p);
+
+	*p = *((uint8_t **)p) + sizeof(uint32_t);
+
+	return ntohl(v);
+}
+
+static inline uint8_t read_char_mm(void **p)
+{
+	uint8_t *v = *((uint8_t **)p);
+	*p = v + 1;
+	return *v;
+}
+
+static inline char *read_alloc_chars_mm(void **p)
+{
+	char *s = *((char **)p);
+	size_t len = strlen(s) + 1;
+	*p = ((char *)p) + len;
+
+	return memdup(s, len);
+}
+
+static inline char *read_chars_mm(void **p)
+{
+	char *s = *((char **)p);
+	size_t len = strlen(s) + 1;
+	*p = ((char *)p) + len;
+
+	return s;
+}
+
+static struct index_mm_node *index_mm_read_node(struct index_mm *idx,
+							uint32_t offset) {
+	void *p = idx->mm;
+	struct index_mm_node *node;
+	char *prefix;
+	int i, child_count = 0;
+
+
+	if ((offset & INDEX_NODE_MASK) == 0)
+		return NULL;
+
+	p = (char *)p + (offset & INDEX_NODE_MASK);
+
+	if (offset & INDEX_NODE_PREFIX)
+		prefix = read_alloc_chars_mm(&p);
+	else
+		prefix = strdup("");
+
+	if (offset & INDEX_NODE_CHILDS) {
+		char first = read_char_mm(&p);
+		char last = read_char_mm(&p);
+		child_count = last - first + 1;
+
+		node = malloc(sizeof(*node) + sizeof(uint32_t) * child_count);
+
+		node->first = first;
+		node->last = last;
+
+		for (i = 0; i < child_count; i++)
+			node->children[i] = read_long_mm(&p);
+	} else {
+		node = malloc(sizeof(*node));
+		node->first = INDEX_CHILDMAX;
+		node->last = 0;
+	}
+
+	node->values = NULL;
+
+	if (offset & INDEX_NODE_VALUES) {
+		uint32_t j;
+
+		for (j = read_long_mm(&p); j > 0; j--) {
+			unsigned int priority;
+			const char *value;
+
+			priority = read_long_mm(&p);
+			value = read_chars_mm(&p);
+			add_value(&node->values, value, priority);
+		}
+	}
+
+	node->prefix = prefix;
+	node->idx = idx;
+
+	return node;
+}
+
+static void index_mm_free_node(struct index_mm_node *node)
+{
+	free(node->prefix);
+	index_values_free(node->values);
+	free(node);
+}
+
 struct index_mm *index_mm_open(struct kmod_ctx *ctx, const char *filename)
 {
 	int fd;
