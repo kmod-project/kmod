@@ -598,27 +598,6 @@ void index_dump(struct index_file *in, FILE *out, const char *prefix)
 	buf_destroy(buf);
 }
 
-/*
- * Search the index for a key
- *
- * Returns the value of the first match
- *
- * The recursive functions free their node argument (using index_close).
- */
-
-static char *index_search__node(struct index_node_f *node, const char *key, int i);
-
-char *index_search(struct index_file *in, const char *key)
-{
-	struct index_node_f *root;
-	char *value;
-
-	root = index_readroot(in);
-	value = index_search__node(root, key, 0);
-
-	return value;
-}
-
 static char *index_search__node(struct index_node_f *node, const char *key, int i)
 {
 	char *value;
@@ -657,43 +636,79 @@ static char *index_search__node(struct index_node_f *node, const char *key, int 
 }
 
 /*
- * Search the index for a key.  The index may contain wildcards.
+ * Search the index for a key
  *
- * Returns a list of all the values of matching keys.
+ * Returns the value of the first match
+ *
+ * The recursive functions free their node argument (using index_close).
  */
+char *index_search(struct index_file *in, const char *key)
+{
+	struct index_node_f *root;
+	char *value;
+
+	root = index_readroot(in);
+	value = index_search__node(root, key, 0);
+
+	return value;
+}
 
 
-/* Level 2: descend the tree (until we hit a wildcard) */
-static void index_searchwild__node(struct index_node_f *node,
-				   struct buffer *buf,
-				   const char *key, int i,
-				   struct index_value **out);
-
-/* Level 3: traverse a sub-keyspace which starts with a wildcard,
-            looking for matches.
-*/
-static void index_searchwild__all(struct index_node_f *node, int j,
-				  struct buffer *buf,
-				  const char *subkey,
-				  struct index_value **out);
 
 /* Level 4: add all the values from a matching node */
 static void index_searchwild__allvalues(struct index_node_f *node,
-					struct index_value **out);
-
-
-/* Level 1: interface function */
-struct index_value *index_searchwild(struct index_file *in, const char *key)
+					struct index_value **out)
 {
-	struct index_node_f *root = index_readroot(in);
-	struct buffer *buf = buf_create();
-	struct index_value *out = NULL;
+	struct index_value *v;
 
-	index_searchwild__node(root, buf, key, 0, &out);
-	buf_destroy(buf);
-	return out;
+	for (v = node->values; v != NULL; v = v->next)
+		add_value(out, v->value, v->priority);
+
+	index_close(node);
 }
 
+/*
+ * Level 3: traverse a sub-keyspace which starts with a wildcard,
+ * looking for matches.
+ */
+static void index_searchwild__all(struct index_node_f *node, int j,
+				  struct buffer *buf,
+				  const char *subkey,
+				  struct index_value **out)
+{
+	int pushed = 0;
+	int ch;
+
+	while (node->prefix[j]) {
+		ch = node->prefix[j];
+
+		buf_pushchar(buf, ch);
+		pushed++;
+		j++;
+	}
+
+	for (ch = node->first; ch <= node->last; ch++) {
+		struct index_node_f *child = index_readchild(node, ch);
+
+		if (!child)
+			continue;
+
+		buf_pushchar(buf, ch);
+		index_searchwild__all(child, 0, buf, subkey, out);
+		buf_popchar(buf);
+	}
+
+	if (node->values) {
+		if (fnmatch(buf_str(buf), subkey, 0) == 0)
+			index_searchwild__allvalues(node, out);
+	} else {
+		index_close(node);
+	}
+
+	buf_popchars(buf, pushed);
+}
+
+/* Level 2: descend the tree (until we hit a wildcard) */
 static void index_searchwild__node(struct index_node_f *node,
 				   struct buffer *buf,
 				   const char *key, int i,
@@ -754,50 +769,18 @@ static void index_searchwild__node(struct index_node_f *node,
 	}
 }
 
-static void index_searchwild__all(struct index_node_f *node, int j,
-				  struct buffer *buf,
-				  const char *subkey,
-				  struct index_value **out)
+/*
+ * Search the index for a key.  The index may contain wildcards.
+ *
+ * Returns a list of all the values of matching keys.
+ */
+struct index_value *index_searchwild(struct index_file *in, const char *key)
 {
-	int pushed = 0;
-	int ch;
+	struct index_node_f *root = index_readroot(in);
+	struct buffer *buf = buf_create();
+	struct index_value *out = NULL;
 
-	while (node->prefix[j]) {
-		ch = node->prefix[j];
-
-		buf_pushchar(buf, ch);
-		pushed++;
-		j++;
-	}
-
-	for (ch = node->first; ch <= node->last; ch++) {
-		struct index_node_f *child = index_readchild(node, ch);
-
-		if (!child)
-			continue;
-
-		buf_pushchar(buf, ch);
-		index_searchwild__all(child, 0, buf, subkey, out);
-		buf_popchar(buf);
-	}
-
-	if (node->values) {
-		if (fnmatch(buf_str(buf), subkey, 0) == 0)
-			index_searchwild__allvalues(node, out);
-	} else {
-		index_close(node);
-	}
-
-	buf_popchars(buf, pushed);
-}
-
-static void index_searchwild__allvalues(struct index_node_f *node,
-					struct index_value **out)
-{
-	struct index_value *v;
-
-	for (v = node->values; v != NULL; v = v->next)
-		add_value(out, v->value, v->priority);
-
-	index_close(node);
+	index_searchwild__node(root, buf, key, 0, &out);
+	buf_destroy(buf);
+	return out;
 }
