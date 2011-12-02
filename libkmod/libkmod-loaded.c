@@ -210,7 +210,7 @@ KMOD_EXPORT int kmod_loaded_get_module_info(const struct kmod_list *entry,
 						const char **deps,
 						uintptr_t *addr)
 {
-	struct kmod_loaded_module *m;
+	const struct kmod_loaded_module *m;
 
 	if (entry == NULL)
 		return -ENOENT;

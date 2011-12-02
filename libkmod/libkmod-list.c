@@ -30,7 +30,7 @@ static inline struct list_node *list_node_init(struct list_node *node)
 	return node;
 }
 
-static inline struct list_node *list_node_next(struct list_node *node)
+static inline struct list_node *list_node_next(const struct list_node *node)
 {
 	if (node == NULL)
 		return NULL;
@@ -38,7 +38,7 @@ static inline struct list_node *list_node_next(struct list_node *node)
 	return node->next;
 }
 
-static inline struct list_node *list_node_prev(struct list_node *node)
+static inline struct list_node *list_node_prev(const struct list_node *node)
 {
 	if (node == NULL)
 		return NULL;
@@ -71,7 +71,7 @@ static inline struct list_node *list_node_remove(struct list_node *node)
 	return node->prev;
 }
 
-struct kmod_list *kmod_list_append(struct kmod_list *list, void *data)
+struct kmod_list *kmod_list_append(struct kmod_list *list, const void *data)
 {
 	struct kmod_list *new;
 
@@ -79,13 +79,13 @@ struct kmod_list *kmod_list_append(struct kmod_list *list, void *data)
 	if (new == NULL)
 		return NULL;
 
-	new->data = data;
+	new->data = (void *)data;
 	list_node_append(list ? &list->node : NULL, &new->node);
 
 	return list ? list : new;
 }
 
-struct kmod_list *kmod_list_prepend(struct kmod_list *list, void *data)
+struct kmod_list *kmod_list_prepend(struct kmod_list *list, const void *data)
 {
 	struct kmod_list *new;
 
@@ -93,7 +93,7 @@ struct kmod_list *kmod_list_prepend(struct kmod_list *list, void *data)
 	if (new == NULL)
 		return NULL;
 
-	new->data = data;
+	new->data = (void *)data;
 	list_node_append(list ? &list->node : NULL, &new->node);
 
 	return new;
@@ -166,8 +166,8 @@ struct kmod_list *kmod_list_remove_n_latest(struct kmod_list *list,
 	return list;
 }
 
-KMOD_EXPORT struct kmod_list *kmod_list_prev(struct kmod_list *list,
-							struct kmod_list *curr)
+KMOD_EXPORT struct kmod_list *kmod_list_prev(const struct kmod_list *list,
+							const struct kmod_list *curr)
 {
 	if (list == NULL || curr == NULL)
 		return NULL;
@@ -178,8 +178,8 @@ KMOD_EXPORT struct kmod_list *kmod_list_prev(struct kmod_list *list,
 	return container_of(curr->node.prev, struct kmod_list, node);
 }
 
-KMOD_EXPORT struct kmod_list *kmod_list_next(struct kmod_list *list,
-							struct kmod_list *curr)
+KMOD_EXPORT struct kmod_list *kmod_list_next(const struct kmod_list *list,
+							const struct kmod_list *curr)
 {
 	if (list == NULL || curr == NULL)
 		return NULL;

@@ -46,7 +46,7 @@ void kmod_set_log_fn(struct kmod_ctx *ctx,
 int kmod_get_log_priority(const struct kmod_ctx *ctx);
 void kmod_set_log_priority(struct kmod_ctx *ctx, int priority);
 void *kmod_get_userdata(const struct kmod_ctx *ctx);
-void kmod_set_userdata(struct kmod_ctx *ctx, void *userdata);
+void kmod_set_userdata(struct kmod_ctx *ctx, const void *userdata);
 
 /*
  * kmod_list
@@ -54,10 +54,10 @@ void kmod_set_userdata(struct kmod_ctx *ctx, void *userdata);
  * access to kmod generated lists
  */
 struct kmod_list;
-struct kmod_list *kmod_list_next(struct kmod_list *first_entry,
-						struct kmod_list *list_entry);
-struct kmod_list *kmod_list_prev(struct kmod_list *first_entry,
-						struct kmod_list *list_entry);
+struct kmod_list *kmod_list_next(const struct kmod_list *first_entry,
+						const struct kmod_list *list_entry);
+struct kmod_list *kmod_list_prev(const struct kmod_list *first_entry,
+						const struct kmod_list *list_entry);
 #define kmod_list_foreach(list_entry, first_entry) \
 	for (list_entry = first_entry; \
 		list_entry != NULL; \
@@ -108,14 +108,14 @@ int kmod_module_new_from_lookup(struct kmod_ctx *ctx, const char *alias,
 struct kmod_module *kmod_module_ref(struct kmod_module *mod);
 struct kmod_module *kmod_module_unref(struct kmod_module *mod);
 int kmod_module_unref_list(struct kmod_list *list);
-struct kmod_module *kmod_module_get_module(struct kmod_list *l);
-struct kmod_list *kmod_module_get_dependency(struct kmod_module *mod);
+struct kmod_module *kmod_module_get_module(const struct kmod_list *l);
+struct kmod_list *kmod_module_get_dependency(const struct kmod_module *mod);
 
 int kmod_module_remove_module(struct kmod_module *mod, unsigned int flags);
 int kmod_module_insert_module(struct kmod_module *mod, unsigned int flags);
 
-const char *kmod_module_get_name(struct kmod_module *mod);
-const char *kmod_module_get_path(struct kmod_module *mod);
+const char *kmod_module_get_name(const struct kmod_module *mod);
+const char *kmod_module_get_path(const struct kmod_module *mod);
 
 #ifdef __cplusplus
 } /* extern "C" */

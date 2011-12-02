@@ -50,8 +50,8 @@ struct kmod_ctx {
 	void (*log_fn)(struct kmod_ctx *ctx,
 			int priority, const char *file, int line,
 			const char *fn, const char *format, va_list args);
-	void *userdata;
-	const char *dirname;
+	const void *userdata;
+	char *dirname;
 	int log_priority;
 	struct kmod_config config;
 };
@@ -75,7 +75,7 @@ static void log_stderr(struct kmod_ctx *ctx,
 	vfprintf(stderr, format, args);
 }
 
-const char *kmod_get_dirname(struct kmod_ctx *ctx)
+const char *kmod_get_dirname(const struct kmod_ctx *ctx)
 {
 	return ctx->dirname;
 }
@@ -93,7 +93,7 @@ KMOD_EXPORT void *kmod_get_userdata(const struct kmod_ctx *ctx)
 {
 	if (ctx == NULL)
 		return NULL;
-	return ctx->userdata;
+	return (void *)ctx->userdata;
 }
 
 /**
@@ -103,7 +103,7 @@ KMOD_EXPORT void *kmod_get_userdata(const struct kmod_ctx *ctx)
  *
  * Store custom @userdata in the library context.
  **/
-KMOD_EXPORT void kmod_set_userdata(struct kmod_ctx *ctx, void *userdata)
+KMOD_EXPORT void kmod_set_userdata(struct kmod_ctx *ctx, const void *userdata)
 {
 	if (ctx == NULL)
 		return;
@@ -129,7 +129,7 @@ static int log_priority(const char *priority)
 
 static const char *dirname_default_prefix = "/lib/modules";
 
-static const char *get_kernel_release(const char *dirname)
+static char *get_kernel_release(const char *dirname)
 {
 	struct utsname u;
 	char *p;
@@ -217,7 +217,7 @@ KMOD_EXPORT struct kmod_ctx *kmod_unref(struct kmod_ctx *ctx)
 	if (--ctx->refcount > 0)
 		return ctx;
 	INFO(ctx, "context %p released\n", ctx);
-	free((char *)ctx->dirname);
+	free(ctx->dirname);
 	kmod_free_config(ctx, &ctx->config);
 	free(ctx);
 	return NULL;

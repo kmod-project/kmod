@@ -44,12 +44,12 @@ struct kmod_alias {
 };
 
 const char *kmod_alias_get_name(const struct kmod_list *l) {
-	struct kmod_alias *alias = l->data;
+	const struct kmod_alias *alias = l->data;
 	return alias->name;
 }
 
 const char *kmod_alias_get_modname(const struct kmod_list *l) {
-	struct kmod_alias *alias = l->data;
+	const struct kmod_alias *alias = l->data;
 	return alias->modname;
 }
 
@@ -261,7 +261,7 @@ int kmod_parse_config(struct kmod_ctx *ctx, struct kmod_config *config)
 {
 
 	size_t i, n = 0;
-	char **files = NULL;
+	const char **files;
 	int err = 0;
 	struct kmod_list *list = NULL, *l;
 
