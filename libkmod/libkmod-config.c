@@ -35,7 +35,6 @@
 static const char *config_files[] = {
 	"/run/modprobe.d",
 	"/etc/modprobe.d",
-	"/usr/local/lib/modprobe",
 	"/lib/modprobe.d",
 };
 
