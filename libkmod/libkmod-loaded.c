@@ -44,17 +44,17 @@
  */
 struct kmod_loaded {
 	struct kmod_ctx *ctx;
-	int refcount;
 	struct kmod_list *modules;
+	int refcount;
 	bool parsed;
 };
 
 struct kmod_loaded_module {
 	char *name;
 	long size;
-	int use_count;
 	char *deps;
 	uintptr_t addr;
+	int use_count;
 };
 
 KMOD_EXPORT int kmod_loaded_new(struct kmod_ctx *ctx, struct kmod_loaded **mod)

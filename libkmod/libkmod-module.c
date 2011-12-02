@@ -42,11 +42,10 @@
  */
 struct kmod_module {
 	struct kmod_ctx *ctx;
-	int refcount;
 	const char *path;
 	const char *name;
 	struct kmod_list *dep;
-
+	int refcount;
 	struct {
 		bool dep : 1;
 	} init;

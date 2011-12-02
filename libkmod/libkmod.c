@@ -47,12 +47,12 @@
  */
 struct kmod_ctx {
 	int refcount;
+	int log_priority;
 	void (*log_fn)(struct kmod_ctx *ctx,
 			int priority, const char *file, int line,
 			const char *fn, const char *format, va_list args);
 	const void *userdata;
 	char *dirname;
-	int log_priority;
 	struct kmod_config config;
 };
 
