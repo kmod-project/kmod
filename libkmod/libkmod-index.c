@@ -30,7 +30,7 @@
  * Index abstract data type (used only by depmod)
  */
 
-struct index_node *index_create()
+struct index_node *index_create(void)
 {
 	struct index_node *node;
 
@@ -275,7 +275,7 @@ void index_write(const struct index_node *node, FILE *out)
 
 
 
-static void read_error()
+static void read_error(void)
 {
 	fatal("Module index: unexpected error: %s\n"
 			"Try re-running depmod\n", errno ? strerror(errno) : "EOF");
@@ -324,7 +324,7 @@ static void buf__realloc(struct buffer *buf, unsigned size)
 	}
 }
 
-static struct buffer *buf_create()
+static struct buffer *buf_create(void)
 {
 	struct buffer *buf;
 
