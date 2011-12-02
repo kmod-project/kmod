@@ -53,7 +53,7 @@ struct kmod_ctx {
 			const char *fn, const char *format, va_list args);
 	const void *userdata;
 	char *dirname;
-	struct kmod_config config;
+	struct kmod_config *config;
 };
 
 void kmod_log(struct kmod_ctx *ctx,
@@ -161,6 +161,7 @@ KMOD_EXPORT struct kmod_ctx *kmod_new(const char *dirname)
 {
 	const char *env;
 	struct kmod_ctx *ctx;
+	int err;
 
 	ctx = calloc(1, sizeof(struct kmod_ctx));
 	if (!ctx)
@@ -177,7 +178,13 @@ KMOD_EXPORT struct kmod_ctx *kmod_new(const char *dirname)
 	if (env != NULL)
 		kmod_set_log_priority(ctx, log_priority(env));
 
-	kmod_parse_config(ctx, &ctx->config);
+	err = kmod_config_new(ctx, &ctx->config);
+	if (err < 0) {
+		ERR(ctx, "could not create config");
+		free(ctx->dirname);
+		free(ctx);
+		return NULL;
+	}
 
 	INFO(ctx, "ctx %p created\n", ctx);
 	DBG(ctx, "log_priority=%d\n", ctx->log_priority);
@@ -218,7 +225,8 @@ KMOD_EXPORT struct kmod_ctx *kmod_unref(struct kmod_ctx *ctx)
 		return ctx;
 	INFO(ctx, "context %p released\n", ctx);
 	free(ctx->dirname);
-	kmod_free_config(ctx, &ctx->config);
+	if (ctx->config)
+		kmod_config_free(ctx->config);
 	free(ctx);
 	return NULL;
 }
@@ -387,7 +395,7 @@ finish:
 int kmod_lookup_alias_from_config(struct kmod_ctx *ctx, const char *name,
 						struct kmod_list **list)
 {
-	struct kmod_config *config = &ctx->config;
+	struct kmod_config *config = ctx->config;
 	struct kmod_list *l;
 	int err, nmatch = 0;
 

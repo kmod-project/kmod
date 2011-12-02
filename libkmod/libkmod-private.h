@@ -63,12 +63,12 @@ int kmod_lookup_alias_from_moddep_file(struct kmod_ctx *ctx, const char *name, s
 
 /* libkmod-config.c */
 struct kmod_config {
+	struct kmod_ctx *ctx;
 	struct kmod_list *aliases;
 	struct kmod_list *blacklists;
 };
-int kmod_parse_config_file(struct kmod_ctx *ctx, const char *filename, struct kmod_config *config) __attribute__((nonnull(1, 2, 3)));
-int kmod_parse_config(struct kmod_ctx *ctx, struct kmod_config *config) __attribute__((nonnull(1, 2)));
-void kmod_free_config(struct kmod_ctx *ctx, struct kmod_config *config) __attribute__((nonnull(1, 2)));
+int kmod_config_new(struct kmod_ctx *ctx, struct kmod_config **config) __attribute__((nonnull(1)));
+void kmod_config_free(struct kmod_config *config) __attribute__((nonnull(1)));
 const char *kmod_alias_get_name(const struct kmod_list *l) __attribute__((nonnull(1)));
 const char *kmod_alias_get_modname(const struct kmod_list *l) __attribute__((nonnull(1)));
 

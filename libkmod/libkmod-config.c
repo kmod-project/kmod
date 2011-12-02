@@ -53,22 +53,38 @@ const char *kmod_alias_get_modname(const struct kmod_list *l) {
 	return alias->modname;
 }
 
-static struct kmod_list *add_alias(struct kmod_ctx *ctx,
-					struct kmod_list *aliases,
-					const char *name, const char *modname)
+static int kmod_config_add_alias(struct kmod_config *config,
+				const char *name, const char *modname)
 {
 	struct kmod_alias *alias;
+	struct kmod_list *list;
 
-	DBG(ctx, "name=%s modname=%s\n", name, modname);
+	DBG(config->ctx, "name=%s modname=%s\n", name, modname);
 
 	alias = malloc(sizeof(*alias));
+	if (!alias)
+		goto oom_error_init;
 	alias->name = strdup(name);
 	alias->modname = strdup(modname);
+	if (!alias->name || !alias->modname)
+		goto oom_error;
 
-	return kmod_list_append(aliases, alias);
+	list = kmod_list_append(config->aliases, alias);
+	if (!list)
+		goto oom_error;
+	config->aliases = list;
+	return 0;
+
+oom_error:
+	free(alias->name);
+	free(alias->modname);
+	free(alias);
+oom_error_init:
+	ERR(config->ctx, "out-of-memory name=%s modname=%s\n", name, modname);
+	return -ENOMEM;
 }
 
-static struct kmod_list *free_alias(struct kmod_ctx *ctx, struct kmod_list *l)
+static void kmod_config_free_alias(struct kmod_config *config, struct kmod_list *l)
 {
 	struct kmod_alias *alias = l->data;
 
@@ -76,33 +92,44 @@ static struct kmod_list *free_alias(struct kmod_ctx *ctx, struct kmod_list *l)
 	free(alias->name);
 	free(alias);
 
-	return kmod_list_remove(l);
+	config->aliases = kmod_list_remove(l);
 }
 
-static struct kmod_list *add_blacklist(struct kmod_ctx *ctx,
-					struct kmod_list *blacklist,
+static int kmod_config_add_blacklist(struct kmod_config *config,
 					const char *modname)
 {
 	char *p;
+	struct kmod_list *list;
 
-	DBG(ctx, "modname=%s\n", modname);
+	DBG(config->ctx, "modname=%s\n", modname);
 
 	p = strdup(modname);
+	if (!p)
+		goto oom_error_init;
 
-	return kmod_list_append(blacklist, p);
+	list = kmod_list_append(config->blacklists, p);
+	if (!list)
+		goto oom_error;
+	config->blacklists = list;
+	return 0;
+
+oom_error:
+	free(p);
+oom_error_init:
+	ERR(config->ctx, "out-of-memory modname=%s\n", modname);
+	return -ENOMEM;
 }
 
-static struct kmod_list *free_blacklist(struct kmod_ctx *ctx,
+static void kmod_config_free_blacklist(struct kmod_config *config,
 							struct kmod_list *l)
 {
 	free(l->data);
-	return kmod_list_remove(l);
+	config->blacklists = kmod_list_remove(l);
 }
 
-
-int kmod_parse_config_file(struct kmod_ctx *ctx, const char *filename,
-						struct kmod_config *config)
+static int kmod_config_parse(struct kmod_config *config, const char *filename)
 {
+	struct kmod_ctx *ctx = config->ctx;
 	char *line;
 	FILE *fp;
 	unsigned int linenum;
@@ -130,7 +157,7 @@ int kmod_parse_config_file(struct kmod_ctx *ctx, const char *filename,
 			if (alias == NULL || modname == NULL)
 				goto syntax_error;
 
-			config->aliases = add_alias(ctx, config->aliases,
+			kmod_config_add_alias(config,
 						underscores(ctx, alias),
 						underscores(ctx, modname));
 		} else if (!strcmp(cmd, "blacklist")) {
@@ -139,9 +166,8 @@ int kmod_parse_config_file(struct kmod_ctx *ctx, const char *filename,
 			if (modname == NULL)
 				goto syntax_error;
 
-			config->blacklists = add_blacklist(ctx,
-						config->blacklists,
-						underscores(ctx, modname));
+			kmod_config_add_blacklist(config,
+							underscores(ctx, modname));
 		} else if (!strcmp(cmd, "include") || !strcmp(cmd, "options")
 				|| !strcmp(cmd, "install")
 				|| !strcmp(cmd, "remove")
@@ -164,13 +190,15 @@ done_next:
 	return 0;
 }
 
-void kmod_free_config(struct kmod_ctx *ctx, struct kmod_config *config)
+void kmod_config_free(struct kmod_config *config)
 {
 	while (config->aliases)
-		config->aliases =  free_alias(ctx, config->aliases);
+		kmod_config_free_alias(config, config->aliases);
 
 	while (config->blacklists)
-		config->blacklists = free_blacklist(ctx, config->blacklists);
+		kmod_config_free_blacklist(config, config->blacklists);
+
+	free(config);
 }
 
 static bool conf_files_filter(struct kmod_ctx *ctx, const char *path,
@@ -257,13 +285,18 @@ static int base_cmp(const void *a, const void *b)
 	return strcmp(basename(s1), basename(s2));
 }
 
-int kmod_parse_config(struct kmod_ctx *ctx, struct kmod_config *config)
+int kmod_config_new(struct kmod_ctx *ctx, struct kmod_config **p_config)
 {
-
+	struct kmod_config *config;
 	size_t i, n = 0;
 	const char **files;
 	int err = 0;
 	struct kmod_list *list = NULL, *l;
+
+	*p_config = config = calloc(1, sizeof(struct kmod_config));
+	if (!config)
+		return -ENOMEM;
+	config->ctx = ctx;
 
 	for (i = 0; i < ARRAY_SIZE(config_files); i++)
 		conf_files_list(ctx, &list, config_files[i], &n);
@@ -283,7 +316,7 @@ int kmod_parse_config(struct kmod_ctx *ctx, struct kmod_config *config)
 	qsort(files, n, sizeof(char *), base_cmp);
 
 	for (i = 0; i < n; i++)
-		kmod_parse_config_file(ctx, files[i], config);
+		kmod_config_parse(config, files[i]);
 
 finish:
 	free(files);
