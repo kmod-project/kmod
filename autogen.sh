@@ -23,5 +23,5 @@ args="--prefix=/usr \
 --libdir=$(libdir /usr/lib)"
 
 if [ -z "$NOCONFIGURE" ]; then
-	./configure $args CFLAGS="${MYCFLAGS} ${CFLAGS}" $@
+	exec ./configure $args CFLAGS="${MYCFLAGS} ${CFLAGS}" "$@"
 fi
