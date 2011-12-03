@@ -76,7 +76,7 @@ const char *kmod_alias_get_modname(const struct kmod_list *l) __attribute__((non
 int kmod_module_parse_dep(struct kmod_module *mod, char *line) __attribute__((nonnull(1, 2)));
 
 /* util functions */
-char *getline_wrapped(FILE *fp, unsigned int *linenum) __attribute__((nonnull(1, 2)));
+char *getline_wrapped(FILE *fp, unsigned int *linenum) __attribute__((nonnull(1)));
 char *underscores(struct kmod_ctx *ctx, char *s) __attribute__((nonnull(1, 2)));
 #define streq(a, b) (strcmp((a), (b)) == 0)
 bool startswith(const char *s, const char *prefix) __attribute__((nonnull(1, 2)));
