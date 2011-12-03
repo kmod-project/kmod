@@ -35,3 +35,6 @@ Features:
 	- name
 	- path
 	- dependency
+
+* index: check implementations in order to allocate less stuff. There some
+  malloc()s that could be avoided
