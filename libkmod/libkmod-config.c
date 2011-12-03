@@ -167,7 +167,7 @@ static int kmod_config_parse(struct kmod_config *config, const char *filename)
 				goto syntax_error;
 
 			kmod_config_add_blacklist(config,
-							underscores(ctx, modname));
+						underscores(ctx, modname));
 		} else if (!strcmp(cmd, "include") || !strcmp(cmd, "options")
 				|| !strcmp(cmd, "install")
 				|| !strcmp(cmd, "remove")
@@ -294,8 +294,9 @@ int kmod_config_new(struct kmod_ctx *ctx, struct kmod_config **p_config)
 	struct kmod_list *list = NULL, *l;
 
 	*p_config = config = calloc(1, sizeof(struct kmod_config));
-	if (!config)
+	if (config == NULL)
 		return -ENOMEM;
+
 	config->ctx = ctx;
 
 	for (i = 0; i < ARRAY_SIZE(config_files); i++)
