@@ -11,12 +11,7 @@ global:
 	kmod_unref;
 	kmod_list_next;
 	kmod_list_prev;
-	kmod_loaded_new;
-	kmod_loaded_ref;
-	kmod_loaded_unref;
 	kmod_loaded_get_list;
-	kmod_loaded_get_module_info;
-	kmod_loaded_remove_module;
 
 	kmod_module_new_from_name;
 	kmod_module_new_from_path;
@@ -42,6 +37,8 @@ global:
 	kmod_module_section_get_address;
 
 	kmod_module_get_holders;
+
+	kmod_module_get_size;
 local:
         *;
 };

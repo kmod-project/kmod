@@ -63,27 +63,12 @@ struct kmod_list *kmod_list_prev(const struct kmod_list *first_entry,
 		list_entry != NULL; \
 		list_entry = kmod_list_next(first_entry, list_entry))
 
-/*
- * kmod_loaded
- *
- * retrieve info from /proc/modules regarding loaded modules
- */
-struct kmod_loaded;
-int kmod_loaded_new(struct kmod_ctx *ctx, struct kmod_loaded **mod);
-struct kmod_loaded *kmod_loaded_ref(struct kmod_loaded *mod);
-struct kmod_loaded *kmod_loaded_unref(struct kmod_loaded *mod);
-int kmod_loaded_get_list(struct kmod_loaded *mod, struct kmod_list **list);
-int kmod_loaded_get_module_info(const struct kmod_list *entry,
-				const char **name, long *size, int *use_count,
-				const char **deps, uintptr_t *addr);
+int kmod_loaded_get_list(struct kmod_ctx *ctx, struct kmod_list **list);
 
 enum kmod_remove {
 	KMOD_REMOVE_FORCE = O_TRUNC,
 	KMOD_REMOVE_NOWAIT = O_NONBLOCK,
 };
-
-int kmod_loaded_remove_module(struct kmod_loaded *kmod,
-				struct kmod_list *entry, unsigned int flags);
 
 enum kmod_insert {
 	KMOD_INSERT_FORCE_VERMAGIC = 0x1,
@@ -133,6 +118,7 @@ const char *kmod_module_section_get_name(const struct kmod_list *entry);
 unsigned long kmod_module_section_get_address(const struct kmod_list *entry);
 void kmod_module_section_free_list(struct kmod_list *list);
 
+long kmod_module_get_size(const struct kmod_module *mod);
 
 #ifdef __cplusplus
 } /* extern "C" */

@@ -12,9 +12,8 @@ int main(int argc, char *argv[])
 {
 	const char *modname = NULL;
 	struct kmod_ctx *ctx;
-	struct kmod_loaded *mod;
 	struct kmod_list *list, *itr;
-	int err;
+	int err, count = 0;
 
 	if (argc == 2)
 		modname = argv[1];
@@ -25,33 +24,33 @@ int main(int argc, char *argv[])
 
 	printf("libkmod version %s\n", VERSION);
 
-	err = kmod_loaded_new(ctx, &mod);
-	if (err < 0)
-		exit(EXIT_FAILURE);
-
-	err = kmod_loaded_get_list(mod, &list);
+	err = kmod_loaded_get_list(ctx, &list);
 	if (err < 0) {
 		fprintf(stderr, "%s\n", strerror(-err));
 		exit(EXIT_FAILURE);
 	}
 
+	err = 0;
 	kmod_list_foreach(itr, list) {
-		const char *name;
-		int use_count;
-
-		kmod_loaded_get_module_info(itr, &name, NULL, &use_count,
-								NULL, NULL);
+		struct kmod_module *mod = kmod_module_get_module(itr);
+		const char *name = kmod_module_get_name(mod);
 
 		if ((modname && !strcmp(modname, name)) ||
-					(modname == NULL && use_count == 0)) {
+		    (modname == NULL && kmod_module_get_refcnt(mod) < 1)) {
 			printf("Trying to remove '%s'\n", name);
-			kmod_loaded_remove_module(mod, itr, 0);
-			break;
+			err = kmod_module_remove_module(mod, 0);
+			if (err == 0)
+				count++;
+			else {
+				fprintf(stderr, "Error removing %s: %s\n",
+					name, strerror(-err));
+			}
 		}
-	}
 
-	kmod_loaded_unref(mod);
+		kmod_module_unref(mod);
+	}
+	kmod_module_unref_list(list);
 	kmod_unref(ctx);
 
-	return EXIT_SUCCESS;
+	return count > 0;
 }

@@ -11,7 +11,6 @@
 int main(int argc, char *argv[])
 {
 	struct kmod_ctx *ctx;
-	struct kmod_loaded *mod;
 	struct kmod_list *list, *itr;
 	int err;
 
@@ -21,11 +20,7 @@ int main(int argc, char *argv[])
 
 	printf("libkmod version %s\n", VERSION);
 
-	err = kmod_loaded_new(ctx, &mod);
-	if (err < 0)
-		exit(EXIT_FAILURE);
-
-	err = kmod_loaded_get_list(mod, &list);
+	err = kmod_loaded_get_list(ctx, &list);
 	if (err < 0) {
 		fprintf(stderr, "%s\n", strerror(-err));
 		exit(EXIT_FAILURE);
@@ -34,16 +29,31 @@ int main(int argc, char *argv[])
 	printf("Module                  Size  Used by\n");
 
 	kmod_list_foreach(itr, list) {
-		const char *name, *deps;
-		long size;
-		int use_count;
-		kmod_loaded_get_module_info(itr, &name, &size, &use_count,
-								&deps, NULL);
-		printf("%-19s %8ld  %d %s\n", name, size,
-					use_count, deps ? deps : "");
-	}
+		struct kmod_module *mod = kmod_module_get_module(itr);
+		const char *name = kmod_module_get_name(mod);
+		int use_count = kmod_module_get_refcnt(mod);
+		long size = kmod_module_get_size(mod);
+		struct kmod_list *holders, *hitr;
+		int first = 1;
 
-	kmod_loaded_unref(mod);
+		printf("%-19s %8ld  %d ", name, size, use_count);
+		holders = kmod_module_get_holders(mod);
+		kmod_list_foreach(hitr, holders) {
+			struct kmod_module *hm = kmod_module_get_module(hitr);
+
+			if (!first)
+				putchar(',');
+			else
+				first = 0;
+
+			fputs(kmod_module_get_name(hm), stdout);
+			kmod_module_unref(hm);
+		}
+		putchar('\n');
+		kmod_module_unref_list(holders);
+		kmod_module_unref(mod);
+	}
+	kmod_module_unref_list(list);
 
 	kmod_unref(ctx);
 

@@ -279,6 +279,54 @@ KMOD_EXPORT struct kmod_module *kmod_module_get_module(const struct kmod_list *e
 	return kmod_module_ref(entry->data);
 }
 
+KMOD_EXPORT long kmod_module_get_size(const struct kmod_module *mod)
+{
+	// FIXME TODO: this should be available from /sys/module/foo
+	FILE *fp;
+	char line[4096];
+	int lineno = 0;
+	long size = -ENOENT;
+
+	if (mod == NULL)
+		return -ENOENT;
+
+	fp = fopen("/proc/modules", "r");
+	if (fp == NULL) {
+		int err = -errno;
+		ERR(mod->ctx,
+		    "could not open /proc/modules: %s\n", strerror(errno));
+		return err;
+	}
+
+	while (fgets(line, sizeof(line), fp)) {
+		char *saveptr, *endptr, *tok = strtok_r(line, " \t", &saveptr);
+		long value;
+
+		lineno++;
+		if (tok == NULL || strcmp(tok, mod->name) != 0)
+			continue;
+
+		tok = strtok_r(NULL, " \t", &saveptr);
+		if (tok == NULL) {
+			ERR(mod->ctx,
+			"invalid line format at /proc/modules:%d\n", lineno);
+			break;
+		}
+
+		value = strtol(tok, &endptr, 10);
+		if (endptr == tok || *endptr != '\0') {
+			ERR(mod->ctx,
+			"invalid line format at /proc/modules:%d\n", lineno);
+			break;
+		}
+
+		size = value;
+		break;
+	}
+	fclose(fp);
+	return size;
+}
+
 KMOD_EXPORT const char *kmod_module_get_name(const struct kmod_module *mod)
 {
 	// FIXME calculate name if name == NULL
