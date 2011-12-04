@@ -270,10 +270,11 @@ KMOD_EXPORT struct kmod_list *kmod_module_get_dependency(const struct kmod_modul
 	return mod->dep;
 }
 
-KMOD_EXPORT struct kmod_module *kmod_module_get_module(const struct kmod_list *l)
+KMOD_EXPORT struct kmod_module *kmod_module_get_module(const struct kmod_list *entry)
 {
-	struct kmod_module *mod = l->data;
-	return kmod_module_ref(mod);
+	if (entry == NULL)
+		return NULL;
+	return kmod_module_ref(entry->data);
 }
 
 KMOD_EXPORT const char *kmod_module_get_name(const struct kmod_module *mod)
