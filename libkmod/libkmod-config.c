@@ -40,7 +40,7 @@ static const char *config_files[] = {
 
 struct kmod_alias {
 	char *name;
-	char *modname;
+	char modname[];
 };
 
 const char *kmod_alias_get_name(const struct kmod_list *l) {
@@ -58,16 +58,17 @@ static int kmod_config_add_alias(struct kmod_config *config,
 {
 	struct kmod_alias *alias;
 	struct kmod_list *list;
+	size_t namelen = strlen(name) + 1, modnamelen = strlen(modname) + 1;
 
 	DBG(config->ctx, "name=%s modname=%s\n", name, modname);
 
-	alias = malloc(sizeof(*alias));
+	alias = malloc(sizeof(*alias) + namelen + modnamelen);
 	if (!alias)
 		goto oom_error_init;
-	alias->name = strdup(name);
-	alias->modname = strdup(modname);
-	if (!alias->name || !alias->modname)
-		goto oom_error;
+	alias->name = sizeof(*alias) + modnamelen + (char *)alias;
+
+	memcpy(alias->modname, modname, modnamelen);
+	memcpy(alias->name, name, namelen);
 
 	list = kmod_list_append(config->aliases, alias);
 	if (!list)
@@ -76,8 +77,6 @@ static int kmod_config_add_alias(struct kmod_config *config,
 	return 0;
 
 oom_error:
-	free(alias->name);
-	free(alias->modname);
 	free(alias);
 oom_error_init:
 	ERR(config->ctx, "out-of-memory name=%s modname=%s\n", name, modname);
@@ -88,8 +87,6 @@ static void kmod_config_free_alias(struct kmod_config *config, struct kmod_list 
 {
 	struct kmod_alias *alias = l->data;
 
-	free(alias->modname);
-	free(alias->name);
 	free(alias);
 
 	config->aliases = kmod_list_remove(l);
