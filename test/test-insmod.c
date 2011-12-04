@@ -29,8 +29,10 @@ int main(int argc, char *argv[])
 	printf("libkmod version %s\n", VERSION);
 
 	err = kmod_module_new_from_path(ctx, path, &mod);
-	if (err < 0)
+	if (err < 0) {
+		kmod_unref(ctx);
 		exit(EXIT_FAILURE);
+	}
 
 	printf("Trying insmod '%s'\n", path);
 	err = kmod_module_insert_module(mod, 0);

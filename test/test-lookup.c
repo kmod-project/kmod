@@ -40,6 +40,7 @@ int main(int argc, char *argv[])
 	kmod_list_foreach(l, list) {
 		struct kmod_module *mod = kmod_module_get_module(l);
 		printf("\t%s\n", kmod_module_get_name(mod));
+		kmod_module_unref(mod);
 	}
 
 	kmod_module_unref_list(list);
