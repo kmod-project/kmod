@@ -117,6 +117,23 @@ int kmod_module_insert_module(struct kmod_module *mod, unsigned int flags);
 const char *kmod_module_get_name(const struct kmod_module *mod);
 const char *kmod_module_get_path(const struct kmod_module *mod);
 
+enum kmod_module_initstate {
+	KMOD_MODULE_BUILTIN = 0,
+	KMOD_MODULE_LIVE,
+	KMOD_MODULE_COMING,
+	KMOD_MODULE_GOING
+};
+const char *kmod_module_initstate_str(enum kmod_module_initstate initstate);
+int kmod_module_get_initstate(const struct kmod_module *mod);
+int kmod_module_get_refcnt(const struct kmod_module *mod);
+struct kmod_list *kmod_module_get_holders(const struct kmod_module *mod);
+
+struct kmod_list *kmod_module_get_sections(const struct kmod_module *mod);
+const char *kmod_module_section_get_name(const struct kmod_list *entry);
+unsigned long kmod_module_section_get_address(const struct kmod_list *entry);
+void kmod_module_section_free_list(struct kmod_list *list);
+
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

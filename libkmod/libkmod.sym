@@ -32,6 +32,16 @@ global:
 
 	kmod_module_get_name;
 	kmod_module_get_path;
+
+	kmod_module_initstate_str;
+	kmod_module_get_initstate;
+	kmod_module_get_refcnt;
+	kmod_module_get_sections;
+	kmod_module_section_free_list;
+	kmod_module_section_get_name;
+	kmod_module_section_get_address;
+
+	kmod_module_get_holders;
 local:
         *;
 };

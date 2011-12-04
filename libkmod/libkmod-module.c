@@ -27,6 +27,8 @@
 #include <string.h>
 #include <ctype.h>
 #include <inttypes.h>
+#include <limits.h>
+#include <dirent.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/mman.h>
@@ -358,4 +360,240 @@ KMOD_EXPORT int kmod_module_insert_module(struct kmod_module *mod,
 	close(fd);
 
 	return err;
+}
+
+KMOD_EXPORT const char *kmod_module_initstate_str(enum kmod_module_initstate state)
+{
+    switch (state) {
+    case KMOD_MODULE_BUILTIN:
+	return "builtin";
+    case KMOD_MODULE_LIVE:
+	return "live";
+    case KMOD_MODULE_COMING:
+	return "coming";
+    case KMOD_MODULE_GOING:
+	return "going";
+    default:
+	return NULL;
+    }
+}
+
+KMOD_EXPORT int kmod_module_get_initstate(const struct kmod_module *mod)
+{
+	char path[PATH_MAX], buf[32];
+	int fd, err, pathlen;
+
+	pathlen = snprintf(path, sizeof(path),
+				"/sys/module/%s/initstate", mod->name);
+	fd = open(path, O_RDONLY);
+	if (fd < 0) {
+		err = -errno;
+
+		if (pathlen > (int)sizeof("/initstate") - 1) {
+			struct stat st;
+			path[pathlen - (sizeof("/initstate") - 1)] = '\0';
+			if (stat(path, &st) == 0 && S_ISDIR(st.st_mode))
+				return KMOD_MODULE_BUILTIN;
+		}
+
+		ERR(mod->ctx, "could not open '%s': %s\n",
+			path, strerror(-err));
+		return err;
+	}
+
+	err = read_str_safe(fd, buf, sizeof(buf));
+	close(fd);
+	if (err < 0) {
+		ERR(mod->ctx, "could not read from '%s': %s\n",
+			path, strerror(-err));
+		return err;
+	}
+
+	if (strcmp(buf, "live\n") == 0)
+		return KMOD_MODULE_LIVE;
+	else if (strcmp(buf, "coming\n") == 0)
+		return KMOD_MODULE_COMING;
+	else if (strcmp(buf, "going\n") == 0)
+		return KMOD_MODULE_GOING;
+
+	ERR(mod->ctx, "unknown %s: '%s'\n", path, buf);
+	return -EINVAL;
+}
+
+KMOD_EXPORT int kmod_module_get_refcnt(const struct kmod_module *mod)
+{
+	char path[PATH_MAX];
+	long refcnt;
+	int fd, err;
+
+	snprintf(path, sizeof(path), "/sys/module/%s/refcnt", mod->name);
+	fd = open(path, O_RDONLY);
+	if (fd < 0) {
+		err = -errno;
+		ERR(mod->ctx, "could not open '%s': %s\n",
+			path, strerror(errno));
+		return err;
+	}
+
+	err = read_str_long(fd, &refcnt, 10);
+	close(fd);
+	if (err < 0) {
+		ERR(mod->ctx, "could not read integer from '%s': '%s'\n",
+			path, strerror(-err));
+		return err;
+	}
+
+	return (int)refcnt;
+}
+
+KMOD_EXPORT struct kmod_list *kmod_module_get_holders(const struct kmod_module *mod)
+{
+	char dname[PATH_MAX];
+	struct kmod_list *list = NULL;
+	DIR *d;
+	struct dirent *de;
+
+	if (mod == NULL)
+		return NULL;
+	snprintf(dname, sizeof(dname), "/sys/module/%s/holders", mod->name);
+
+	d = opendir(dname);
+	if (d == NULL) {
+		ERR(mod->ctx, "could not open '%s': %s\n",
+			dname, strerror(errno));
+		return NULL;
+	}
+
+	while ((de = readdir(d)) != NULL) {
+		struct kmod_list *node;
+		struct kmod_module *holder;
+		int err;
+
+		if (de->d_name[0] == '.') {
+			if (de->d_name[1] == '\0' ||
+			    (de->d_name[1] == '.' && de->d_name[2] == '\0'))
+				continue;
+		}
+
+		err = kmod_module_new_from_name(mod->ctx, de->d_name, &holder);
+		if (err < 0) {
+			ERR(mod->ctx, "could not create module for '%s': %s\n",
+				de->d_name, strerror(-err));
+			continue;
+		}
+
+		node = kmod_list_append(list, holder);
+		if (node)
+			list = node;
+		else {
+			ERR(mod->ctx, "out of memory\n");
+			kmod_module_unref(holder);
+		}
+	}
+
+	closedir(d);
+	return list;
+}
+
+struct kmod_module_section {
+	unsigned long address;
+	char name[];
+};
+
+static void kmod_module_section_free(struct kmod_module_section *section)
+{
+	free(section);
+}
+
+KMOD_EXPORT struct kmod_list *kmod_module_get_sections(const struct kmod_module *mod)
+{
+	char dname[PATH_MAX];
+	struct kmod_list *list = NULL;
+	DIR *d;
+	int dfd;
+	struct dirent *de;
+
+	if (mod == NULL)
+		return NULL;
+	snprintf(dname, sizeof(dname), "/sys/module/%s/sections", mod->name);
+
+	d = opendir(dname);
+	if (d == NULL) {
+		ERR(mod->ctx, "could not open '%s': %s\n",
+			dname, strerror(errno));
+		return NULL;
+	}
+
+	dfd = dirfd(d);
+	while ((de = readdir(d)) != NULL) {
+		struct kmod_module_section *section;
+		struct kmod_list *node;
+		unsigned long address;
+		size_t namesz;
+		int fd, err;
+
+		if (de->d_name[0] == '.') {
+			if (de->d_name[1] == '\0' ||
+			    (de->d_name[1] == '.' && de->d_name[2] == '\0'))
+				continue;
+		}
+
+		fd = openat(dfd, de->d_name, O_RDONLY);
+		if (fd < 0) {
+			ERR(mod->ctx, "could not open '%s/%s': %s\n",
+				dname, de->d_name, strerror(errno));
+			continue;
+		}
+
+		err = read_str_ulong(fd, &address, 16);
+		if (err < 0) {
+			ERR(mod->ctx, "could not read long from '%s/%s': %s\n",
+				dname, de->d_name, strerror(-err));
+			close(fd);
+			continue;
+		}
+
+		namesz = strlen(de->d_name) + 1;
+		section = malloc(sizeof(struct kmod_module_section) + namesz);
+		section->address = address;
+		memcpy(section->name, de->d_name, namesz);
+
+		node = kmod_list_append(list, section);
+		if (node)
+			list = node;
+		else {
+			ERR(mod->ctx, "out of memory\n");
+			free(section);
+		}
+		close(fd);
+	}
+
+	closedir(d);
+	return list;
+}
+
+KMOD_EXPORT const char *kmod_module_section_get_name(const struct kmod_list *entry)
+{
+	struct kmod_module_section *section;
+	if (entry == NULL)
+		return NULL;
+	section = entry->data;
+	return section->name;
+}
+
+KMOD_EXPORT unsigned long kmod_module_section_get_address(const struct kmod_list *entry)
+{
+	struct kmod_module_section *section;
+	if (entry == NULL)
+		return (unsigned long)-1;
+	section = entry->data;
+	return section->address;
+}
+
+KMOD_EXPORT void kmod_module_section_free_list(struct kmod_list *list)
+{
+	while (list) {
+		kmod_module_section_free(list->data);
+		list = kmod_list_remove(list);
+	}
 }
