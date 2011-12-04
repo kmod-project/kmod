@@ -142,6 +142,7 @@ KMOD_EXPORT int kmod_module_new_from_name(struct kmod_ctx *ctx,
 
 	m->ctx = kmod_ref(ctx);
 	m->name = strdup(name);
+	m->refcount = 1;
 
 	*mod = m;
 
@@ -171,6 +172,7 @@ KMOD_EXPORT int kmod_module_new_from_path(struct kmod_ctx *ctx,
 
 	m->ctx = kmod_ref(ctx);
 	m->path = strdup(path);
+	m->refcount = 1;
 
 	*mod = m;
 
