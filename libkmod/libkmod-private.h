@@ -80,6 +80,6 @@ char *getline_wrapped(FILE *fp, unsigned int *linenum) __attribute__((nonnull(1)
 char *underscores(struct kmod_ctx *ctx, char *s) __attribute__((nonnull(1, 2)));
 #define streq(a, b) (strcmp((a), (b)) == 0)
 bool startswith(const char *s, const char *prefix) __attribute__((nonnull(1, 2)));
-void *memdup(const void *p, size_t n) __attribute__((nonnull(1));
+void *memdup(const void *p, size_t n) __attribute__((nonnull(1)));
 
 #endif
