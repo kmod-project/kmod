@@ -377,9 +377,26 @@ KMOD_EXPORT const char *kmod_module_get_name(const struct kmod_module *mod)
 	return mod->name;
 }
 
+/*
+ * Relative paths are relative to dirname. Absolute paths are only used when
+ * user created kmod_module by giving a path
+ */
 KMOD_EXPORT const char *kmod_module_get_path(const struct kmod_module *mod)
 {
-	// FIXME calculate path if path == NULL
+	if (!mod->init.dep) {
+		/* lazy init */
+		char *line = kmod_search_moddep(mod->ctx, mod->name);
+
+		if (line == NULL)
+			return NULL;
+
+		kmod_module_parse_depline((struct kmod_module *) mod, line);
+		free(line);
+
+		if (!mod->init.dep)
+			return NULL;
+	}
+
 	return mod->path;
 }
 
