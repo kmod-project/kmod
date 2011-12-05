@@ -94,7 +94,7 @@ struct kmod_module *kmod_module_ref(struct kmod_module *mod);
 struct kmod_module *kmod_module_unref(struct kmod_module *mod);
 int kmod_module_unref_list(struct kmod_list *list);
 struct kmod_module *kmod_module_get_module(const struct kmod_list *entry);
-struct kmod_list *kmod_module_get_dependency(const struct kmod_module *mod);
+struct kmod_list *kmod_module_get_dependencies(const struct kmod_module *mod);
 
 int kmod_module_remove_module(struct kmod_module *mod, unsigned int flags);
 int kmod_module_insert_module(struct kmod_module *mod, unsigned int flags);

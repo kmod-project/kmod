@@ -274,13 +274,33 @@ KMOD_EXPORT int kmod_module_unref_list(struct kmod_list *list)
 	return 0;
 }
 
-/*
- * We don't increase the refcount. Maybe we should.
- */
-KMOD_EXPORT struct kmod_list *kmod_module_get_dependency(const struct kmod_module *mod)
+KMOD_EXPORT struct kmod_list *kmod_module_get_dependencies(const struct kmod_module *mod)
 {
-	// FIXME calculate dependency if it's not initialized
-	return mod->dep;
+	/* TODO: populate dependencies on demand */
+	struct kmod_list *l, *l_new, *list_new = NULL;
+
+	if (mod == NULL)
+		return NULL;
+
+	if (!mod->init.dep)
+		return NULL;
+
+	kmod_list_foreach(l, mod->dep) {
+		l_new = kmod_list_append(list_new, kmod_module_ref(l->data));
+		if (l_new == NULL) {
+			kmod_module_unref(l->data);
+			goto fail;
+		}
+
+		list_new = l_new;
+	}
+
+	return list_new;
+
+fail:
+	ERR(mod->ctx, "out of memory\n");
+	kmod_module_unref_list(list_new);
+	return NULL;
 }
 
 KMOD_EXPORT struct kmod_module *kmod_module_get_module(const struct kmod_list *entry)
