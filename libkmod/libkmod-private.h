@@ -66,6 +66,7 @@ int kmod_lookup_alias_from_config(struct kmod_ctx *ctx, const char *name, struct
 int kmod_lookup_alias_from_symbols_file(struct kmod_ctx *ctx, const char *name, struct kmod_list **list) __attribute__((nonnull(1, 2, 3)));
 int kmod_lookup_alias_from_aliases_file(struct kmod_ctx *ctx, const char *name, struct kmod_list **list) __attribute__((nonnull(1, 2, 3)));
 int kmod_lookup_alias_from_moddep_file(struct kmod_ctx *ctx, const char *name, struct kmod_list **list) __attribute__((nonnull(1, 2, 3)));
+char *kmod_search_moddep(struct kmod_ctx *ctx, const char *name) __attribute__((nonnull(1,2)));
 
 /* libkmod-config.c */
 struct kmod_config {
@@ -79,7 +80,7 @@ const char *kmod_alias_get_name(const struct kmod_list *l) __attribute__((nonnul
 const char *kmod_alias_get_modname(const struct kmod_list *l) __attribute__((nonnull(1)));
 
 /* libkmod-module.c */
-int kmod_module_parse_dep(struct kmod_module *mod, char *line) __attribute__((nonnull(1, 2)));
+int kmod_module_parse_depline(struct kmod_module *mod, char *line) __attribute__((nonnull(1, 2)));
 
 /* libkmod-hash.c */
 struct kmod_hash;

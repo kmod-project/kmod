@@ -346,7 +346,7 @@ int kmod_lookup_alias_from_aliases_file(struct kmod_ctx *ctx, const char *name,
 
 static const char *moddep_file = "modules.dep";
 
-static char *search_moddep(struct kmod_ctx *ctx, const char *name)
+char *kmod_search_moddep(struct kmod_ctx *ctx, const char *name)
 {
 	struct index_file *idx;
 	char fn[PATH_MAX];
@@ -381,7 +381,7 @@ int kmod_lookup_alias_from_moddep_file(struct kmod_ctx *ctx, const char *name,
 	if (strchr(name, ':'))
 		return 0;
 
-	line = search_moddep(ctx, name);
+	line = kmod_search_moddep(ctx, name);
 	if (line != NULL) {
 		struct kmod_module *mod;
 
@@ -392,7 +392,7 @@ int kmod_lookup_alias_from_moddep_file(struct kmod_ctx *ctx, const char *name,
 		}
 
 		*list = kmod_list_append(*list, mod);
-		kmod_module_parse_dep(mod, line);
+		kmod_module_parse_depline(mod, line);
 	}
 
 finish:

@@ -82,7 +82,7 @@ static char *path_to_modname(const char *path, char buf[NAME_MAX], size_t *len)
 	return modname;
 }
 
-int kmod_module_parse_dep(struct kmod_module *mod, char *line)
+int kmod_module_parse_depline(struct kmod_module *mod, char *line)
 {
 	struct kmod_ctx *ctx = mod->ctx;
 	struct kmod_list *list = NULL;
@@ -95,6 +95,10 @@ int kmod_module_parse_dep(struct kmod_module *mod, char *line)
 	p = strchr(line, ':');
 	if (p == NULL)
 		return 0;
+
+	*p = '\0';
+	if (mod->path == NULL)
+		mod->path = strdup(line);
 
 	p++;
 
@@ -276,14 +280,24 @@ KMOD_EXPORT int kmod_module_unref_list(struct kmod_list *list)
 
 KMOD_EXPORT struct kmod_list *kmod_module_get_dependencies(const struct kmod_module *mod)
 {
-	/* TODO: populate dependencies on demand */
 	struct kmod_list *l, *l_new, *list_new = NULL;
 
 	if (mod == NULL)
 		return NULL;
 
-	if (!mod->init.dep)
-		return NULL;
+	if (!mod->init.dep) {
+		/* lazy init */
+		char *line = kmod_search_moddep(mod->ctx, mod->name);
+
+		if (line == NULL)
+			return NULL;
+
+		kmod_module_parse_depline((struct kmod_module *)mod, line);
+		free(line);
+
+		if (!mod->init.dep)
+			return NULL;
+	}
 
 	kmod_list_foreach(l, mod->dep) {
 		l_new = kmod_list_append(list_new, kmod_module_ref(l->data));
