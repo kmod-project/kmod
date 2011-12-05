@@ -499,7 +499,6 @@ KMOD_EXPORT struct kmod_list *kmod_module_get_holders(const struct kmod_module *
 	char dname[PATH_MAX];
 	struct kmod_list *list = NULL;
 	DIR *d;
-	struct dirent *de;
 
 	if (mod == NULL)
 		return NULL;
@@ -508,39 +507,56 @@ KMOD_EXPORT struct kmod_list *kmod_module_get_holders(const struct kmod_module *
 	d = opendir(dname);
 	if (d == NULL) {
 		ERR(mod->ctx, "could not open '%s': %s\n",
-			dname, strerror(errno));
+						dname, strerror(errno));
 		return NULL;
 	}
 
-	while ((de = readdir(d)) != NULL) {
-		struct kmod_list *node;
+	for (;;) {
+		struct dirent de, *entp;
 		struct kmod_module *holder;
+		struct kmod_list *l;
 		int err;
 
-		if (de->d_name[0] == '.') {
-			if (de->d_name[1] == '\0' ||
-			    (de->d_name[1] == '.' && de->d_name[2] == '\0'))
+		err = readdir_r(d, &de, &entp);
+		if (err != 0) {
+			ERR(mod->ctx, "could not iterate for module '%s': %s\n",
+						mod->name, strerror(-err));
+			goto fail;
+		}
+
+		if (entp == NULL)
+			break;
+
+		if (de.d_name[0] == '.') {
+			if (de.d_name[1] == '\0' ||
+			    (de.d_name[1] == '.' && de.d_name[2] == '\0'))
 				continue;
 		}
 
-		err = kmod_module_new_from_name(mod->ctx, de->d_name, &holder);
+		err = kmod_module_new_from_name(mod->ctx, de.d_name, &holder);
 		if (err < 0) {
 			ERR(mod->ctx, "could not create module for '%s': %s\n",
-				de->d_name, strerror(-err));
-			continue;
+				de.d_name, strerror(-err));
+			goto fail;
 		}
 
-		node = kmod_list_append(list, holder);
-		if (node)
-			list = node;
-		else {
+		l = kmod_list_append(list, holder);
+		if (l != NULL) {
+			list = l;
+		} else {
 			ERR(mod->ctx, "out of memory\n");
 			kmod_module_unref(holder);
+			goto fail;
 		}
 	}
 
 	closedir(d);
 	return list;
+
+fail:
+	closedir(d);
+	kmod_module_unref_list(list);
+	return NULL;
 }
 
 struct kmod_module_section {
