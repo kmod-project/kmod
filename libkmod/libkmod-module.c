@@ -45,41 +45,41 @@
 struct kmod_module {
 	struct kmod_ctx *ctx;
 	const char *path;
-	const char *name;
 	struct kmod_list *dep;
 	int refcount;
 	struct {
 		bool dep : 1;
 	} init;
+	char name[];
 };
 
-static char *path_to_modname(const char *path, bool alloc)
+static char *path_to_modname(const char *path, char buf[NAME_MAX], size_t *len)
 {
 	char *modname;
 	char *c;
+	size_t s;
 
 	modname = basename(path);
 	if (modname == NULL || modname[0] == '\0')
 		return NULL;
 
-	if (alloc)
-		modname = strdup(modname);
-
-	for (c = modname; *c != '\0' && *c != '.'; c++) {
-		if (*c == '-')
-			*c = '_';
+	if (buf) {
+		buf[NAME_MAX] = '\0';
+		modname = strncpy(buf, modname, NAME_MAX - 1);
 	}
 
+	for (c = modname, s = 0; *c != '\0' && *c != '.'; c++) {
+		if (*c == '-')
+			*c = '_';
+		s++;
+	}
+
+	if (len)
+		*len = s;
+
 	*c = '\0';
+
 	return modname;
-}
-
-static const char *get_modname(struct kmod_module *mod)
-{
-	if (mod->name == NULL)
-		mod->name = path_to_modname(mod->path, true);
-
-	return mod->name;
 }
 
 int kmod_module_parse_dep(struct kmod_module *mod, char *line)
@@ -100,7 +100,7 @@ int kmod_module_parse_dep(struct kmod_module *mod, char *line)
 
 	for (p = strtok_r(p, " \t", &saveptr); p != NULL;
 					p = strtok_r(NULL, " \t", &saveptr)) {
-		const char *modname = path_to_modname(p, false);
+		const char *modname = path_to_modname(p, NULL, NULL);
 		struct kmod_module *depmod;
 
 		err = kmod_module_new_from_name(ctx, modname, &depmod);
@@ -132,18 +132,21 @@ KMOD_EXPORT int kmod_module_new_from_name(struct kmod_ctx *ctx,
 						struct kmod_module **mod)
 {
 	struct kmod_module *m;
+	size_t namelen;
 
 	if (ctx == NULL || name == NULL)
 		return -ENOENT;
 
-	m = calloc(1, sizeof(*m));
+	namelen = strlen(name) + 1;
+
+	m = calloc(1, sizeof(*m) + namelen);
 	if (m == NULL) {
 		free(m);
 		return -ENOMEM;
 	}
 
 	m->ctx = kmod_ref(ctx);
-	m->name = strdup(name);
+	memcpy(m->name, name, namelen);
 	m->refcount = 1;
 
 	*mod = m;
@@ -158,6 +161,8 @@ KMOD_EXPORT int kmod_module_new_from_path(struct kmod_ctx *ctx,
 	struct kmod_module *m;
 	int err;
 	struct stat st;
+	char name[NAME_MAX];
+	size_t namelen;
 
 	if (ctx == NULL || path == NULL)
 		return -ENOENT;
@@ -166,14 +171,21 @@ KMOD_EXPORT int kmod_module_new_from_path(struct kmod_ctx *ctx,
 	if (err < 0)
 		return -errno;
 
-	m = calloc(1, sizeof(*m));
-	if (m == NULL) {
+	path_to_modname(path, name, &namelen);
+
+	m = calloc(1, sizeof(*m) + namelen + 1);
+	if (m == NULL)
+		return -errno;
+
+	m->path = strdup(path);
+	if (m->path == NULL) {
+		err = -errno;
 		free(m);
-		return -ENOMEM;
+		return err;
 	}
 
 	m->ctx = kmod_ref(ctx);
-	m->path = strdup(path);
+	memcpy(m->name, name, namelen);
 	m->refcount = 1;
 
 	*mod = m;
@@ -194,7 +206,6 @@ KMOD_EXPORT struct kmod_module *kmod_module_unref(struct kmod_module *mod)
 	kmod_module_unref_list(mod->dep);
 	kmod_unref(mod->ctx);
 	free((char *) mod->path);
-	free((char *) mod->name);
 	free(mod);
 	return NULL;
 }
@@ -329,7 +340,6 @@ KMOD_EXPORT long kmod_module_get_size(const struct kmod_module *mod)
 
 KMOD_EXPORT const char *kmod_module_get_name(const struct kmod_module *mod)
 {
-	// FIXME calculate name if name == NULL
 	return mod->name;
 }
 
@@ -346,7 +356,6 @@ KMOD_EXPORT int kmod_module_remove_module(struct kmod_module *mod,
 							unsigned int flags)
 {
 	int err;
-	const char *modname;
 
 	if (mod == NULL)
 		return -ENOENT;
@@ -354,10 +363,9 @@ KMOD_EXPORT int kmod_module_remove_module(struct kmod_module *mod,
 	/* Filter out other flags */
 	flags &= (KMOD_REMOVE_FORCE | KMOD_REMOVE_NOWAIT);
 
-	modname = get_modname(mod);
-	err = delete_module(modname, flags);
+	err = delete_module(mod->name, flags);
 	if (err != 0) {
-		ERR(mod->ctx, "Removing '%s': %s\n", modname,
+		ERR(mod->ctx, "Removing '%s': %s\n", mod->name,
 							strerror(-err));
 		return err;
 	}
