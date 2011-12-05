@@ -106,7 +106,9 @@ enum kmod_module_initstate {
 	KMOD_MODULE_BUILTIN = 0,
 	KMOD_MODULE_LIVE,
 	KMOD_MODULE_COMING,
-	KMOD_MODULE_GOING
+	KMOD_MODULE_GOING,
+	/* Padding to make sure enum is not mapped to char */
+	_KMOD_MODULE_PAD = (1 << 31),
 };
 const char *kmod_module_initstate_str(enum kmod_module_initstate initstate);
 int kmod_module_get_initstate(const struct kmod_module *mod);
