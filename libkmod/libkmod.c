@@ -21,6 +21,7 @@
 #include <stdlib.h>
 #include <stddef.h>
 #include <stdarg.h>
+#include <limits.h>
 #include <unistd.h>
 #include <errno.h>
 #include <fnmatch.h>
@@ -345,11 +346,32 @@ int kmod_lookup_alias_from_aliases_file(struct kmod_ctx *ctx, const char *name,
 
 static const char *moddep_file = "modules.dep";
 
+static char *search_moddep(struct kmod_ctx *ctx, const char *name)
+{
+	struct index_file *idx;
+	char fn[PATH_MAX];
+	char *line;
+
+	snprintf(fn, sizeof(fn), "%s/%s.bin", ctx->dirname, moddep_file);
+
+	DBG(ctx, "file=%s modname=%s\n", fn, name);
+
+	idx = index_file_open(fn);
+	if (idx == NULL) {
+		ERR(ctx, "Could not open moddep file '%s'", fn);
+		return NULL;
+	}
+
+	line = index_search(idx, name);
+	index_file_close(idx);
+
+	return line;
+}
+
 int kmod_lookup_alias_from_moddep_file(struct kmod_ctx *ctx, const char *name,
 						struct kmod_list **list)
 {
-	char *fn, *line;
-	struct index_file *idx;
+	char *line;
 	int n = 0;
 
 	/*
@@ -359,18 +381,7 @@ int kmod_lookup_alias_from_moddep_file(struct kmod_ctx *ctx, const char *name,
 	if (strchr(name, ':'))
 		return 0;
 
-	if (asprintf(&fn, "%s/%s.bin", ctx->dirname, moddep_file) < 0)
-		return -ENOMEM;
-
-	DBG(ctx, "file=%s modname=%s\n", fn, name);
-
-	idx = index_file_open(fn);
-	if (idx == NULL) {
-		free(fn);
-		return -ENOSYS;
-	}
-
-	line = index_search(idx, name);
+	line = search_moddep(ctx, name);
 	if (line != NULL) {
 		struct kmod_module *mod;
 
@@ -386,8 +397,6 @@ int kmod_lookup_alias_from_moddep_file(struct kmod_ctx *ctx, const char *name,
 
 finish:
 	free(line);
-	index_file_close(idx);
-	free(fn);
 
 	return n;
 }
