@@ -575,7 +575,6 @@ KMOD_EXPORT struct kmod_list *kmod_module_get_sections(const struct kmod_module 
 	struct kmod_list *list = NULL;
 	DIR *d;
 	int dfd;
-	struct dirent *de;
 
 	if (mod == NULL)
 		return NULL;
@@ -589,51 +588,72 @@ KMOD_EXPORT struct kmod_list *kmod_module_get_sections(const struct kmod_module 
 	}
 
 	dfd = dirfd(d);
-	while ((de = readdir(d)) != NULL) {
+
+	for (;;) {
+		struct dirent de, *entp;
 		struct kmod_module_section *section;
-		struct kmod_list *node;
+		struct kmod_list *l;
 		unsigned long address;
 		size_t namesz;
 		int fd, err;
 
-		if (de->d_name[0] == '.') {
-			if (de->d_name[1] == '\0' ||
-			    (de->d_name[1] == '.' && de->d_name[2] == '\0'))
+		err = readdir_r(d, &de, &entp);
+		if (err != 0) {
+			ERR(mod->ctx, "could not iterate for module '%s': %s\n",
+						mod->name, strerror(-err));
+			goto fail;
+		}
+
+		if (de.d_name[0] == '.') {
+			if (de.d_name[1] == '\0' ||
+			    (de.d_name[1] == '.' && de.d_name[2] == '\0'))
 				continue;
 		}
 
-		fd = openat(dfd, de->d_name, O_RDONLY);
+		fd = openat(dfd, de.d_name, O_RDONLY);
 		if (fd < 0) {
-			ERR(mod->ctx, "could not open '%s/%s': %s\n",
-				dname, de->d_name, strerror(errno));
-			continue;
+			ERR(mod->ctx, "could not open '%s/%s': %m\n",
+							dname, de.d_name);
+			goto fail;
 		}
 
 		err = read_str_ulong(fd, &address, 16);
+		close(fd);
+
 		if (err < 0) {
-			ERR(mod->ctx, "could not read long from '%s/%s': %s\n",
-				dname, de->d_name, strerror(-err));
-			close(fd);
-			continue;
+			ERR(mod->ctx, "could not read long from '%s/%s': %m\n",
+							dname, de.d_name);
+			goto fail;
 		}
 
-		namesz = strlen(de->d_name) + 1;
-		section = malloc(sizeof(struct kmod_module_section) + namesz);
-		section->address = address;
-		memcpy(section->name, de->d_name, namesz);
+		namesz = strlen(de.d_name) + 1;
+		section = malloc(sizeof(*section) + namesz);
 
-		node = kmod_list_append(list, section);
-		if (node)
-			list = node;
-		else {
+		if (section == NULL) {
+			ERR(mod->ctx, "out of memory\n");
+			goto fail;
+		}
+
+		section->address = address;
+		memcpy(section->name, de.d_name, namesz);
+
+		l = kmod_list_append(list, section);
+		if (l != NULL) {
+			list = l;
+		} else {
 			ERR(mod->ctx, "out of memory\n");
 			free(section);
+			goto fail;
 		}
-		close(fd);
 	}
 
 	closedir(d);
 	return list;
+
+fail:
+	closedir(d);
+	kmod_module_unref_list(list);
+	return NULL;
 }
 
 KMOD_EXPORT const char *kmod_module_section_get_name(const struct kmod_list *entry)
