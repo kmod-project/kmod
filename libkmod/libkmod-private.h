@@ -81,6 +81,15 @@ const char *kmod_alias_get_modname(const struct kmod_list *l) __attribute__((non
 /* libkmod-module.c */
 int kmod_module_parse_dep(struct kmod_module *mod, char *line) __attribute__((nonnull(1, 2)));
 
+/* libkmod-hash.c */
+struct kmod_hash;
+struct kmod_hash *kmod_hash_new(unsigned int n_buckets, void (*free_value)(void *value));
+void kmod_hash_free(struct kmod_hash *hash);
+int kmod_hash_add(struct kmod_hash *hash, const char *key, const void *value);
+int kmod_hash_del(struct kmod_hash *hash, const char *key);
+void *kmod_hash_find(const struct kmod_hash *hash, const char *key);
+
+
 /* util functions */
 char *getline_wrapped(FILE *fp, unsigned int *linenum) __attribute__((nonnull(1)));
 char *underscores(struct kmod_ctx *ctx, char *s) __attribute__((nonnull(1, 2)));

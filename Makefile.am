@@ -31,6 +31,7 @@ libkmod_libkmod_la_SOURCES =\
 	libkmod/macro.h \
 	libkmod/libkmod.c \
 	libkmod/libkmod-list.c \
+	libkmod/libkmod-hash.c \
 	libkmod/libkmod-loaded.c \
 	libkmod/libkmod-config.c \
 	libkmod/libkmod-util.c \
