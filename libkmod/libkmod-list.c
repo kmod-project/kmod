@@ -71,6 +71,20 @@ static inline struct list_node *list_node_remove(struct list_node *node)
 	return node->prev;
 }
 
+static inline void list_node_insert_after(struct list_node *list,
+							struct list_node *node)
+{
+	if (list == NULL) {
+		list_node_init(node);
+		return;
+	}
+
+	node->prev = list;
+	node->next = list->next;
+	list->next->prev = node;
+	list->next = node;
+}
+
 struct kmod_list *kmod_list_append(struct kmod_list *list, const void *data)
 {
 	struct kmod_list *new;
@@ -83,6 +97,23 @@ struct kmod_list *kmod_list_append(struct kmod_list *list, const void *data)
 	list_node_append(list ? &list->node : NULL, &new->node);
 
 	return list ? list : new;
+}
+
+struct kmod_list *kmod_list_insert_after(struct kmod_list *list, const void *data)
+{
+	struct kmod_list *new;
+
+	if (list == NULL)
+		return kmod_list_append(list, data);
+
+	new = malloc(sizeof(*new));
+	if (new == NULL)
+		return NULL;
+
+	new->data = (void *)data;
+	list_node_insert_after(&list->node, &new->node);
+
+	return list;
 }
 
 struct kmod_list *kmod_list_prepend(struct kmod_list *list, const void *data)
