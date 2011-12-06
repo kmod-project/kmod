@@ -68,7 +68,7 @@ static inline struct list_node *list_node_remove(struct list_node *node)
 	node->prev->next = node->next;
 	node->next->prev = node->prev;
 
-	return node->prev;
+	return node->next;
 }
 
 static inline void list_node_insert_after(struct list_node *list,
