@@ -55,9 +55,9 @@ struct kmod_list *kmod_list_remove_n_latest(struct kmod_list *list,
 						unsigned int n) __must_check;
 #undef kmod_list_foreach
 #define kmod_list_foreach(list_entry, first_entry) \
-	for (list_entry = ((first_entry) == NULL) ? NULL : first_entry; \
+	for (list_entry = ((first_entry) == NULL) ? NULL : (first_entry); \
 		list_entry != NULL; \
-		list_entry = (list_entry->node.next == &first_entry->node) ? NULL : \
+		list_entry = (list_entry->node.next == &((first_entry)->node)) ? NULL : \
 		container_of(list_entry->node.next, struct kmod_list, node))
 
 /* libkmod.c */
