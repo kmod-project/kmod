@@ -54,6 +54,7 @@ struct kmod_list *kmod_list_remove_data(struct kmod_list *list,
 struct kmod_list *kmod_list_remove_n_latest(struct kmod_list *list,
 						unsigned int n) __must_check;
 struct kmod_list *kmod_list_insert_after(struct kmod_list *list, const void *data) __attribute__((nonnull(2)));
+struct kmod_list *kmod_list_insert_before(struct kmod_list *list, const void *data) __attribute__((nonnull(2)));
 
 #undef kmod_list_foreach
 #define kmod_list_foreach(list_entry, first_entry) \
