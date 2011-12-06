@@ -53,15 +53,11 @@ struct kmod_module {
 	char name[];
 };
 
-static char *path_to_modname(const char *path, char buf[NAME_MAX], size_t *len)
+static inline char *modname_normalize(char *modname, char buf[NAME_MAX],
+								size_t *len)
 {
-	char *modname;
 	char *c;
 	size_t s;
-
-	modname = basename(path);
-	if (modname == NULL || modname[0] == '\0')
-		return NULL;
 
 	if (buf) {
 		buf[NAME_MAX] = '\0';
@@ -80,6 +76,17 @@ static char *path_to_modname(const char *path, char buf[NAME_MAX], size_t *len)
 	*c = '\0';
 
 	return modname;
+}
+
+static char *path_to_modname(const char *path, char buf[NAME_MAX], size_t *len)
+{
+	char *modname;
+
+	modname = basename(path);
+	if (modname == NULL || modname[0] == '\0')
+		return NULL;
+
+	return modname_normalize(modname, buf, len);
 }
 
 int kmod_module_parse_depline(struct kmod_module *mod, char *line)
@@ -142,7 +149,7 @@ KMOD_EXPORT int kmod_module_new_from_name(struct kmod_ctx *ctx,
 	if (ctx == NULL || name == NULL)
 		return -ENOENT;
 
-	path_to_modname(name, name_norm, &namelen);
+	modname_normalize((char *)name, name_norm, &namelen);
 
 	m = kmod_pool_get_module(ctx, name_norm);
 	if (m != NULL) {
