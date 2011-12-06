@@ -137,20 +137,21 @@ KMOD_EXPORT int kmod_module_new_from_name(struct kmod_ctx *ctx,
 {
 	struct kmod_module *m;
 	size_t namelen;
+	char name_norm[NAME_MAX];
 
 	if (ctx == NULL || name == NULL)
 		return -ENOENT;
 
-	namelen = strlen(name) + 1;
+	path_to_modname(name, name_norm, &namelen);
 
-	m = calloc(1, sizeof(*m) + namelen);
+	m = calloc(1, sizeof(*m) + namelen + 1);
 	if (m == NULL) {
 		free(m);
 		return -ENOMEM;
 	}
 
 	m->ctx = kmod_ref(ctx);
-	memcpy(m->name, name, namelen);
+	memcpy(m->name, name_norm, namelen + 1);
 	m->refcount = 1;
 
 	*mod = m;
