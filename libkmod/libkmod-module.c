@@ -144,6 +144,12 @@ KMOD_EXPORT int kmod_module_new_from_name(struct kmod_ctx *ctx,
 
 	path_to_modname(name, name_norm, &namelen);
 
+	m = kmod_pool_get_module(ctx, name_norm);
+	if (m != NULL) {
+		*mod = kmod_module_ref(m);
+		return 0;
+	}
+
 	m = calloc(1, sizeof(*m) + namelen + 1);
 	if (m == NULL) {
 		free(m);
@@ -153,6 +159,8 @@ KMOD_EXPORT int kmod_module_new_from_name(struct kmod_ctx *ctx,
 	m->ctx = kmod_ref(ctx);
 	memcpy(m->name, name_norm, namelen + 1);
 	m->refcount = 1;
+
+	kmod_pool_add_module(ctx, m);
 
 	*mod = m;
 
@@ -178,6 +186,12 @@ KMOD_EXPORT int kmod_module_new_from_path(struct kmod_ctx *ctx,
 
 	path_to_modname(path, name, &namelen);
 
+	m = kmod_pool_get_module(ctx, name);
+	if (m != NULL) {
+		*mod = kmod_module_ref(m);
+		return 0;
+	}
+
 	m = calloc(1, sizeof(*m) + namelen + 1);
 	if (m == NULL)
 		return -errno;
@@ -192,6 +206,8 @@ KMOD_EXPORT int kmod_module_new_from_path(struct kmod_ctx *ctx,
 	m->ctx = kmod_ref(ctx);
 	memcpy(m->name, name, namelen);
 	m->refcount = 1;
+
+	kmod_pool_add_module(ctx, m);
 
 	*mod = m;
 

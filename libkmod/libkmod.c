@@ -33,6 +33,9 @@
 #include "libkmod-private.h"
 #include "libkmod-index.h"
 
+#define KMOD_HASH_SIZE (256)
+#define KMOD_LRU_MAX (128)
+
 /**
  * SECTION:libkmod
  * @short_description: libkmod context
@@ -55,6 +58,7 @@ struct kmod_ctx {
 	const void *userdata;
 	char *dirname;
 	struct kmod_config *config;
+	struct kmod_hash *modules_by_name;
 };
 
 void kmod_log(struct kmod_ctx *ctx,
@@ -181,16 +185,26 @@ KMOD_EXPORT struct kmod_ctx *kmod_new(const char *dirname)
 
 	err = kmod_config_new(ctx, &ctx->config);
 	if (err < 0) {
-		ERR(ctx, "could not create config");
-		free(ctx->dirname);
-		free(ctx);
-		return NULL;
+		ERR(ctx, "could not create config\n");
+		goto fail;
+	}
+
+	ctx->modules_by_name = kmod_hash_new(KMOD_HASH_SIZE, NULL);
+	if (ctx->modules_by_name == NULL) {
+		ERR(ctx, "could not create by-name hash\n");
+		goto fail;
 	}
 
 	INFO(ctx, "ctx %p created\n", ctx);
 	DBG(ctx, "log_priority=%d\n", ctx->log_priority);
 
 	return ctx;
+
+fail:
+	free(ctx->modules_by_name);
+	free(ctx->dirname);
+	free(ctx);
+	return NULL;
 }
 
 /**
@@ -225,6 +239,7 @@ KMOD_EXPORT struct kmod_ctx *kmod_unref(struct kmod_ctx *ctx)
 	if (--ctx->refcount > 0)
 		return ctx;
 	INFO(ctx, "context %p released\n", ctx);
+	kmod_hash_free(ctx->modules_by_name);
 	free(ctx->dirname);
 	if (ctx->config)
 		kmod_config_free(ctx->config);
@@ -276,6 +291,35 @@ KMOD_EXPORT void kmod_set_log_priority(struct kmod_ctx *ctx, int priority)
 	ctx->log_priority = priority;
 }
 
+struct kmod_module *kmod_pool_get_module(struct kmod_ctx *ctx,
+							const char *name)
+{
+	struct kmod_module *mod;
+
+	mod = kmod_hash_find(ctx->modules_by_name, name);
+
+	DBG(ctx, "get module name='%s' found=%p\n", name, mod);
+
+	return mod;
+}
+
+void kmod_pool_add_module(struct kmod_ctx *ctx, struct kmod_module *mod)
+{
+	const char *name = kmod_module_get_name(mod);
+
+	DBG(ctx, "add %p name='%s'\n", mod, name);
+
+	kmod_hash_add(ctx->modules_by_name, name, mod);
+}
+
+void kmod_pool_del_module(struct kmod_ctx *ctx, struct kmod_module *mod)
+{
+	const char *name = kmod_module_get_name(mod);
+
+	DBG(ctx, "del %p name='%s'\n", mod, name);
+
+	kmod_hash_del(ctx->modules_by_name, name);
+}
 
 static int kmod_lookup_alias_from_alias_bin(struct kmod_ctx *ctx,
 						const char *file,

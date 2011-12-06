@@ -66,11 +66,18 @@ struct kmod_list *kmod_list_append_list(struct kmod_list *list1, struct kmod_lis
 
 /* libkmod.c */
 const char *kmod_get_dirname(const struct kmod_ctx *ctx) __attribute__((nonnull(1)));
+
 int kmod_lookup_alias_from_config(struct kmod_ctx *ctx, const char *name, struct kmod_list **list) __attribute__((nonnull(1, 2, 3)));
 int kmod_lookup_alias_from_symbols_file(struct kmod_ctx *ctx, const char *name, struct kmod_list **list) __attribute__((nonnull(1, 2, 3)));
 int kmod_lookup_alias_from_aliases_file(struct kmod_ctx *ctx, const char *name, struct kmod_list **list) __attribute__((nonnull(1, 2, 3)));
 int kmod_lookup_alias_from_moddep_file(struct kmod_ctx *ctx, const char *name, struct kmod_list **list) __attribute__((nonnull(1, 2, 3)));
+
 char *kmod_search_moddep(struct kmod_ctx *ctx, const char *name) __attribute__((nonnull(1,2)));
+
+struct kmod_module *kmod_pool_get_module(struct kmod_ctx *ctx, const char *name) __attribute__((nonnull(1,2)));
+void kmod_pool_add_module(struct kmod_ctx *ctx, struct kmod_module *mod) __attribute__((nonnull(1,2)));
+void kmod_pool_del_module(struct kmod_ctx *ctx, struct kmod_module *mod) __attribute__((nonnull(1,2)));
+
 
 /* libkmod-config.c */
 struct kmod_config {
