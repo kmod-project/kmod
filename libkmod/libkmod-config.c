@@ -124,18 +124,26 @@ static void kmod_config_free_blacklist(struct kmod_config *config,
 	config->blacklists = kmod_list_remove(l);
 }
 
-static int kmod_config_parse(struct kmod_config *config, const char *filename)
+/*
+ * Take an fd and own it. It will be closed on return. filename is used only
+ * for debug messages
+ */
+static int kmod_config_parse(struct kmod_config *config, int fd,
+							const char *filename)
 {
 	struct kmod_ctx *ctx = config->ctx;
 	char *line;
 	FILE *fp;
 	unsigned int linenum;
+	int err;
 
-	DBG(ctx, "%s\n", filename);
-
-	fp = fopen(filename, "r");
-	if (fp == NULL)
-		return errno;
+	fp = fdopen(fd, "r");
+	if (fp == NULL) {
+		err = -errno;
+		ERR(config->ctx, "fd %d: %m", fd);
+		close(fd);
+		return err;
+	}
 
 	while ((line = getline_wrapped(fp, &linenum)) != NULL) {
 		char *cmd, *saveptr;
@@ -198,8 +206,8 @@ void kmod_config_free(struct kmod_config *config)
 	free(config);
 }
 
-static bool conf_files_filter(struct kmod_ctx *ctx, const char *path,
-							const char *fn)
+static bool conf_files_filter_out(struct kmod_ctx *ctx, const char *path,
+								const char *fn)
 {
 	size_t len = strlen(fn);
 
@@ -217,78 +225,84 @@ static bool conf_files_filter(struct kmod_ctx *ctx, const char *path,
 	return 0;
 }
 
-static int conf_files_list(struct kmod_ctx *ctx, struct kmod_list **list,
-						const char *path, size_t *n)
+static DIR *conf_files_list(struct kmod_ctx *ctx, struct kmod_list **list,
+							const char *path)
 {
 	struct stat st;
 	DIR *d;
 	int err;
 
 	if (stat(path, &st) < 0)
-		return -ENOENT;
+		return NULL;
 
 	if (!S_ISDIR(st.st_mode)) {
-		*list = kmod_list_append(*list, (void *)path);
-		*n += 1;
-		return 0;
+		*list = kmod_list_append(*list, path);
+		return NULL;
 	}
 
 	d = opendir(path);
 	if (d == NULL) {
 		err = errno;
 		ERR(ctx, "%m\n");
-		return -errno;
+		return NULL;
 	}
 
 	for (;;) {
 		struct dirent ent, *entp;
-		char *p;
+		struct kmod_list *l, *tmp;
+		const char *dname;
 
 		err = readdir_r(d, &ent, &entp);
 		if (err != 0) {
-			err = -err;
-			goto finish;
+			ERR(ctx, "reading entry %s\n", strerror(-err));
+			goto fail_read;
 		}
 
 		if (entp == NULL)
 			break;
 
-		if (conf_files_filter(ctx, path, entp->d_name) == 1)
+		if (conf_files_filter_out(ctx, path, entp->d_name) == 1)
 			continue;
 
-		if (asprintf(&p, "%s/%s", path, entp->d_name) < 0) {
-			err = -ENOMEM;
-			goto finish;
+		/* insert sorted */
+		kmod_list_foreach(l, *list) {
+			if (strcmp(entp->d_name, l->data) < 0)
+				break;
 		}
 
-		DBG(ctx, "%s\n", p);
+		dname = strdup(entp->d_name);
+		if (dname == NULL)
+			goto fail_oom;
 
-		*list = kmod_list_append(*list, p);
-		*n += 1;
+		if (l == NULL)
+			tmp = kmod_list_append(*list, dname);
+		else if (l == *list)
+			tmp = kmod_list_prepend(*list, dname);
+		else
+			tmp = kmod_list_insert_before(l, dname);
+
+		if (tmp == NULL)
+			goto fail_oom;
+
+		if (l == NULL || l == *list)
+			*list = tmp;
 	}
 
-finish:
+	return d;
+
+fail_oom:
+	ERR(ctx, "out of memory while scanning '%s'\n", path);
+fail_read:
+	for (; *list != NULL; *list = kmod_list_remove(*list))
+		free((*list)->data);
 	closedir(d);
-	return err;
-}
-
-static int base_cmp(const void *a, const void *b)
-{
-        const char *s1, *s2;
-
-        s1 = *(char * const *)a;
-        s2 = *(char * const *)b;
-
-	return strcmp(basename(s1), basename(s2));
+	return NULL;
 }
 
 int kmod_config_new(struct kmod_ctx *ctx, struct kmod_config **p_config)
 {
 	struct kmod_config *config;
-	size_t i, n = 0;
-	const char **files;
-	int err = 0;
-	struct kmod_list *list = NULL, *l;
+	size_t i;
 
 	*p_config = config = calloc(1, sizeof(struct kmod_config));
 	if (config == NULL)
@@ -296,33 +310,41 @@ int kmod_config_new(struct kmod_ctx *ctx, struct kmod_config **p_config)
 
 	config->ctx = ctx;
 
-	for (i = 0; i < ARRAY_SIZE(config_files); i++)
-		conf_files_list(ctx, &list, config_files[i], &n);
+	for (i = 0; i < ARRAY_SIZE(config_files); i++) {
+		struct kmod_list *list = NULL;
+		DIR *d;
+		int fd;
 
-	files = malloc(sizeof(char *) * n);
-	if (files == NULL) {
-		err = -ENOMEM;
-		goto finish;
+		d = conf_files_list(ctx, &list, config_files[i]);
+
+		/* there's no entry */
+		if (list == NULL)
+			continue;
+
+		/* there's only one entry, and it's a file */
+		if (d == NULL) {
+			DBG(ctx, "parsing file '%s'\n", config_files[i]);
+			list = kmod_list_remove(list);
+			fd = open(config_files[i], O_RDONLY);
+			if (fd >= 0)
+				kmod_config_parse(config, fd, config_files[i]);
+
+			continue;
+		}
+
+		/* treat all the entries in that dir */
+		for (; list != NULL; list = kmod_list_remove(list)) {
+			DBG(ctx, "parsing file '%s/%s'\n", config_files[i],
+							(char *) list->data);
+			fd = openat(dirfd(d), list->data, O_RDONLY);
+			if (fd >= 0)
+				kmod_config_parse(config, fd, list->data);
+
+			free(list->data);
+		}
+
+		closedir(d);
 	}
 
-	i = 0;
-	kmod_list_foreach(l, list) {
-		files[i] = l->data;
-		i++;
-	}
-
-	qsort(files, n, sizeof(char *), base_cmp);
-
-	for (i = 0; i < n; i++)
-		kmod_config_parse(config, files[i]);
-
-finish:
-	free(files);
-
-	while (list) {
-		free(list->data);
-		list = kmod_list_remove(list);
-	}
-
-	return err;
+	return 0;
 }
