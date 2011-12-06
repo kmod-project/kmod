@@ -6,3 +6,4 @@ test-rmmod2
 test-insmod
 test-lookup
 test-path-from-name
+test-get-dependencies
