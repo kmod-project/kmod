@@ -99,6 +99,26 @@ static inline void list_node_insert_before(struct list_node *list,
 	list->prev = node;
 }
 
+static inline void list_node_append_list(struct list_node *list1,
+							struct list_node *list2)
+{
+	struct list_node *list1_last;
+
+	if (list1 == NULL) {
+		list_node_init(list2);
+		return;
+	}
+
+	list1->prev->next = list2;
+	list2->prev->next = list1;
+
+	/* cache the last, because we will lose the pointer */
+	list1_last = list1->prev;
+
+	list1->prev = list2->prev;
+	list2->prev = list1_last;
+}
+
 struct kmod_list *kmod_list_append(struct kmod_list *list, const void *data)
 {
 	struct kmod_list *new;
@@ -145,6 +165,17 @@ struct kmod_list *kmod_list_insert_before(struct kmod_list *list, const void *da
 	list_node_insert_before(&list->node, &new->node);
 
 	return new;
+}
+
+struct kmod_list *kmod_list_append_list(struct kmod_list *list1,
+						struct kmod_list *list2)
+{
+	if (list1 == NULL)
+		return list2;
+
+	list_node_append_list(&list1->node, &list2->node);
+
+	return list1;
 }
 
 struct kmod_list *kmod_list_prepend(struct kmod_list *list, const void *data)
