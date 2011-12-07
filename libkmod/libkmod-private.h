@@ -117,6 +117,7 @@ int read_str_long(int fd, long *value, int base) __must_check __attribute__((non
 int read_str_ulong(int fd, unsigned long *value, int base) __must_check __attribute__((nonnull(2)));
 char *strchr_replace(char *s, int c, char r);
 bool path_is_absolute(const char *p) __must_check __attribute__((nonnull(1)));
+char *path_make_absolute_cwd(const char *p) __must_check __attribute__((nonnull(1)));
 
 
 #endif

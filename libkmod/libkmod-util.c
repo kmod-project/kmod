@@ -221,3 +221,32 @@ bool path_is_absolute(const char *p)
 
 	return p[0] == '/';
 }
+
+char *path_make_absolute_cwd(const char *p)
+{
+	char *cwd, *r;
+	size_t plen;
+	size_t cwdlen;
+
+	if (path_is_absolute(p))
+		return strdup(p);
+
+	cwd = get_current_dir_name();
+	if (cwd == NULL)
+		return NULL;
+
+	plen = strlen(p);
+	cwdlen = strlen(cwd);
+
+	/* cwd + '/' + p + '\0' */
+	r = realloc(cwd, cwdlen + 1 + plen + 1);
+	if (r == NULL) {
+		free(cwd);
+		return NULL;
+	}
+
+	r[plen] = '/';
+	memcpy(&r[plen + 1], p, plen + 1);
+
+	return r;
+}
