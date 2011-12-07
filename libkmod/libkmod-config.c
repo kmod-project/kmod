@@ -155,7 +155,7 @@ static int kmod_config_parse(struct kmod_config *config, int fd,
 		if (cmd == NULL)
 			goto done_next;
 
-		if (!strcmp(cmd, "alias")) {
+		if (streq(cmd, "alias")) {
 			char *alias = strtok_r(NULL, "\t ", &saveptr);
 			char *modname = strtok_r(NULL, "\t ", &saveptr);
 
@@ -165,7 +165,7 @@ static int kmod_config_parse(struct kmod_config *config, int fd,
 			kmod_config_add_alias(config,
 						underscores(ctx, alias),
 						underscores(ctx, modname));
-		} else if (!strcmp(cmd, "blacklist")) {
+		} else if (streq(cmd, "blacklist")) {
 			char *modname = strtok_r(NULL, "\t ", &saveptr);
 
 			if (modname == NULL)
@@ -173,11 +173,11 @@ static int kmod_config_parse(struct kmod_config *config, int fd,
 
 			kmod_config_add_blacklist(config,
 						underscores(ctx, modname));
-		} else if (!strcmp(cmd, "include") || !strcmp(cmd, "options")
-				|| !strcmp(cmd, "install")
-				|| !strcmp(cmd, "remove")
-				|| !strcmp(cmd, "softdep")
-				|| !strcmp(cmd, "config")) {
+		} else if (streq(cmd, "include") || streq(cmd, "options")
+				|| streq(cmd, "install")
+				|| streq(cmd, "remove")
+				|| streq(cmd, "softdep")
+				|| streq(cmd, "config")) {
 			INFO(ctx, "%s: command %s not implemented yet\n",
 								filename, cmd);
 		} else {
@@ -214,8 +214,8 @@ static bool conf_files_filter_out(struct kmod_ctx *ctx, const char *path,
 	if (fn[0] == '.')
 		return 1;
 
-	if (len < 6 || (strcmp(&fn[len - 5], ".conf") != 0
-				&& strcmp(&fn[len - 6], ".alias"))) {
+	if (len < 6 || (!streq(&fn[len - 5], ".conf")
+				&& !streq(&fn[len - 6], ".alias"))) {
 		INFO(ctx, "All config files need .conf: %s/%s, "
 				"it will be ignored in a future release\n",
 				path, fn);

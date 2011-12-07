@@ -372,7 +372,7 @@ KMOD_EXPORT long kmod_module_get_size(const struct kmod_module *mod)
 		long value;
 
 		lineno++;
-		if (tok == NULL || strcmp(tok, mod->name) != 0)
+		if (tok == NULL || !streq(tok, mod->name))
 			continue;
 
 		tok = strtok_r(NULL, " \t", &saveptr);
@@ -540,11 +540,11 @@ KMOD_EXPORT int kmod_module_get_initstate(const struct kmod_module *mod)
 		return err;
 	}
 
-	if (strcmp(buf, "live\n") == 0)
+	if (streq(buf, "live\n"))
 		return KMOD_MODULE_LIVE;
-	else if (strcmp(buf, "coming\n") == 0)
+	else if (streq(buf, "coming\n"))
 		return KMOD_MODULE_COMING;
-	else if (strcmp(buf, "going\n") == 0)
+	else if (streq(buf, "going\n"))
 		return KMOD_MODULE_GOING;
 
 	ERR(mod->ctx, "unknown %s: '%s'\n", path, buf);
