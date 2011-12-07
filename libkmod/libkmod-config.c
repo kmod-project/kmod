@@ -48,6 +48,11 @@ struct kmod_options {
 	char modname[];
 };
 
+struct kmod_command {
+	char *command;
+	char modname[];
+};
+
 const char *kmod_alias_get_name(const struct kmod_list *l) {
 	const struct kmod_alias *alias = l->data;
 	return alias->name;
@@ -56,6 +61,52 @@ const char *kmod_alias_get_name(const struct kmod_list *l) {
 const char *kmod_alias_get_modname(const struct kmod_list *l) {
 	const struct kmod_alias *alias = l->data;
 	return alias->modname;
+}
+
+static int kmod_config_add_command(struct kmod_config *config,
+						const char *modname,
+						const char *command,
+						const char *command_name,
+						struct kmod_list **list)
+{
+	struct kmod_command *cmd;
+	struct kmod_list *l;
+	size_t modnamelen = strlen(modname) + 1;
+	size_t commandlen = strlen(command) + 1;
+
+	DBG(config->ctx, "modname'%s' cmd='%s %s'\n", modname, command_name,
+								command);
+
+	cmd = malloc(sizeof(*cmd) + modnamelen + commandlen);
+	if (cmd == NULL)
+		goto oom_error_init;
+
+	cmd->command = sizeof(*cmd) + modnamelen + (char *)cmd;
+	memcpy(cmd->modname, modname, modnamelen);
+	memcpy(cmd->command, command, commandlen);
+
+	l = kmod_list_append(*list, cmd);
+	if (l == NULL)
+		goto oom_error;
+
+	*list = l;
+	return 0;
+
+oom_error:
+	free(cmd);
+oom_error_init:
+	ERR(config->ctx, "out-of-memory\n");
+	return -ENOMEM;
+}
+
+static void kmod_config_free_command(struct kmod_config *config,
+					struct kmod_list *l,
+					struct kmod_list **list)
+{
+	struct kmod_command *cmd = l->data;
+
+	free(cmd);
+	*list = kmod_list_remove(l);
 }
 
 static int kmod_config_add_options(struct kmod_config *config,
@@ -230,9 +281,27 @@ static int kmod_config_parse(struct kmod_config *config, int fd,
 			kmod_config_add_options(config,
 						underscores(ctx, modname),
 						strtok_r(NULL, "\0", &saveptr));
+		} else if streq(cmd, "install") {
+			char *modname = strtok_r(NULL, "\t ", &saveptr);
+
+			if (modname == NULL)
+				goto syntax_error;
+
+			kmod_config_add_command(config,
+					underscores(ctx, modname),
+					strtok_r(NULL, "\0", &saveptr),
+					cmd, &config->install_commands);
+		} else if streq(cmd, "remove") {
+			char *modname = strtok_r(NULL, "\t ", &saveptr);
+
+			if (modname == NULL)
+				goto syntax_error;
+
+			kmod_config_add_command(config,
+					underscores(ctx, modname),
+					strtok_r(NULL, "\0", &saveptr),
+					cmd, &config->remove_commands);
 		} else if (streq(cmd, "include")
-				|| streq(cmd, "install")
-				|| streq(cmd, "remove")
 				|| streq(cmd, "softdep")
 				|| streq(cmd, "config")) {
 			INFO(ctx, "%s: command %s not implemented yet\n",
@@ -262,6 +331,16 @@ void kmod_config_free(struct kmod_config *config)
 
 	while (config->options)
 		kmod_config_free_options(config, config->options);
+
+	while (config->install_commands) {
+		kmod_config_free_command(config, config->install_commands,
+						&config->install_commands);
+	}
+
+	while (config->remove_commands) {
+		kmod_config_free_command(config, config->remove_commands,
+						&config->remove_commands);
+	}
 
 	free(config);
 }

@@ -85,6 +85,8 @@ struct kmod_config {
 	struct kmod_list *aliases;
 	struct kmod_list *blacklists;
 	struct kmod_list *options;
+	struct kmod_list *remove_commands;
+	struct kmod_list *install_commands;
 };
 int kmod_config_new(struct kmod_ctx *ctx, struct kmod_config **config) __attribute__((nonnull(1)));
 void kmod_config_free(struct kmod_config *config) __attribute__((nonnull(1)));
