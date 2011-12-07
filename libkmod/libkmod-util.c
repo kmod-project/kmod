@@ -214,3 +214,10 @@ char *strchr_replace(char *s, int c, char r)
 
 	return s;
 }
+
+bool path_is_absolute(const char *p)
+{
+	assert(p != NULL);
+
+	return p[0] == '/';
+}
