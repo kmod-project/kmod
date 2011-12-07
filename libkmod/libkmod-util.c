@@ -204,3 +204,13 @@ int read_str_ulong(int fd, unsigned long *value, int base) {
 	*value = v;
 	return 0;
 }
+
+char *strchr_replace(char *s, int c, char r)
+{
+	char *p;
+
+	for (p = s; p != NULL; p = strchr(p, c))
+		*p = r;
+
+	return s;
+}

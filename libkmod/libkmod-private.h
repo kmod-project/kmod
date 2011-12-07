@@ -112,6 +112,7 @@ void *memdup(const void *p, size_t n) __attribute__((nonnull(1)));
 ssize_t read_str_safe(int fd, char *buf, size_t buflen) __must_check __attribute__((nonnull(2)));
 int read_str_long(int fd, long *value, int base) __must_check __attribute__((nonnull(2)));
 int read_str_ulong(int fd, unsigned long *value, int base) __must_check __attribute__((nonnull(2)));
+char *strchr_replace(char *s, int c, char r);
 
 
 #endif
