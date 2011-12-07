@@ -182,19 +182,27 @@ KMOD_EXPORT int kmod_module_new_from_path(struct kmod_ctx *ctx,
 	int err;
 	struct stat st;
 	char name[NAME_MAX];
+	char *abspath;
 	size_t namelen;
 
 	if (ctx == NULL || path == NULL)
 		return -ENOENT;
 
-	err = stat(path, &st);
-	if (err < 0)
+	abspath = path_make_absolute_cwd(path);
+	if (abspath == NULL)
+		return -ENOMEM;
+
+	err = stat(abspath, &st);
+	if (err < 0) {
+		free(abspath);
 		return -errno;
+	}
 
 	path_to_modname(path, name, &namelen);
 
 	m = kmod_pool_get_module(ctx, name);
 	if (m != NULL) {
+		free(abspath);
 		*mod = kmod_module_ref(m);
 		return 0;
 	}
@@ -203,15 +211,9 @@ KMOD_EXPORT int kmod_module_new_from_path(struct kmod_ctx *ctx,
 	if (m == NULL)
 		return -errno;
 
-	m->path = strdup(path);
-	if (m->path == NULL) {
-		err = -errno;
-		free(m);
-		return err;
-	}
-
 	m->ctx = kmod_ref(ctx);
 	memcpy(m->name, name, namelen);
+	m->path = abspath;
 	m->refcount = 1;
 
 	kmod_pool_add_module(ctx, m);
