@@ -202,7 +202,17 @@ KMOD_EXPORT int kmod_module_new_from_path(struct kmod_ctx *ctx,
 
 	m = kmod_pool_get_module(ctx, name);
 	if (m != NULL) {
-		free(abspath);
+		if (m->path == NULL)
+			m->path = abspath;
+		else if (streq(m->path, abspath))
+			free(abspath);
+		else {
+			ERR(ctx, "kmod_module '%s' already exists with different path\n",
+									name);
+			free(abspath);
+			return -EEXIST;
+		}
+
 		*mod = kmod_module_ref(m);
 		return 0;
 	}
