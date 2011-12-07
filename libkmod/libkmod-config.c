@@ -43,6 +43,11 @@ struct kmod_alias {
 	char modname[];
 };
 
+struct kmod_options {
+	char *options;
+	char modname[];
+};
+
 const char *kmod_alias_get_name(const struct kmod_list *l) {
 	const struct kmod_alias *alias = l->data;
 	return alias->name;
@@ -51,6 +56,49 @@ const char *kmod_alias_get_name(const struct kmod_list *l) {
 const char *kmod_alias_get_modname(const struct kmod_list *l) {
 	const struct kmod_alias *alias = l->data;
 	return alias->modname;
+}
+
+static int kmod_config_add_options(struct kmod_config *config,
+				const char *modname, const char *options)
+{
+	struct kmod_options *opt;
+	struct kmod_list *list;
+	size_t modnamelen = strlen(modname) + 1;
+	size_t optionslen = strlen(options) + 1;
+
+	DBG(config->ctx, "modname'%s' options='%s'\n", modname, options);
+
+	opt = malloc(sizeof(*opt) + modnamelen + optionslen);
+	if (opt == NULL)
+		goto oom_error_init;
+
+	opt->options = sizeof(*opt) + modnamelen + (char *)opt;
+
+	memcpy(opt->modname, modname, modnamelen);
+	memcpy(opt->options, options, optionslen);
+	strchr_replace(opt->options, '\t', ' ');
+
+	list = kmod_list_append(config->options, opt);
+	if (list == NULL)
+		goto oom_error;
+
+	config->options = list;
+	return 0;
+
+oom_error:
+	free(opt);
+oom_error_init:
+	ERR(config->ctx, "out-of-memory\n");
+	return -ENOMEM;
+}
+
+static void kmod_config_free_options(struct kmod_config *config, struct kmod_list *l)
+{
+	struct kmod_options *opt = l->data;
+
+	free(opt);
+
+	config->options = kmod_list_remove(l);
 }
 
 static int kmod_config_add_alias(struct kmod_config *config,
@@ -173,7 +221,16 @@ static int kmod_config_parse(struct kmod_config *config, int fd,
 
 			kmod_config_add_blacklist(config,
 						underscores(ctx, modname));
-		} else if (streq(cmd, "include") || streq(cmd, "options")
+		} else if (streq(cmd, "options")) {
+			char *modname = strtok_r(NULL, "\t ", &saveptr);
+
+			if (modname == NULL)
+				goto syntax_error;
+
+			kmod_config_add_options(config,
+						underscores(ctx, modname),
+						strtok_r(NULL, "\0", &saveptr));
+		} else if (streq(cmd, "include")
 				|| streq(cmd, "install")
 				|| streq(cmd, "remove")
 				|| streq(cmd, "softdep")
@@ -202,6 +259,9 @@ void kmod_config_free(struct kmod_config *config)
 
 	while (config->blacklists)
 		kmod_config_free_blacklist(config, config->blacklists);
+
+	while (config->options)
+		kmod_config_free_options(config, config->options);
 
 	free(config);
 }
