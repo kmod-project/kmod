@@ -34,7 +34,7 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	printf("Trying insmod '%s'\n", path);
+	printf("Trying insmod '%s' (%s)\n", kmod_module_get_name(mod), path);
 	err = kmod_module_insert_module(mod, 0);
 	if (err < 0) {
 		fprintf(stderr, "%s\n", strerror(-err));
