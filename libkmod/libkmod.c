@@ -52,32 +52,34 @@
 struct kmod_ctx {
 	int refcount;
 	int log_priority;
-	void (*log_fn)(struct kmod_ctx *ctx,
+	void (*log_fn)(void *data,
 			int priority, const char *file, int line,
 			const char *fn, const char *format, va_list args);
+	void *log_data;
 	const void *userdata;
 	char *dirname;
 	struct kmod_config *config;
 	struct kmod_hash *modules_by_name;
 };
 
-void kmod_log(struct kmod_ctx *ctx,
+void kmod_log(const struct kmod_ctx *ctx,
 		int priority, const char *file, int line, const char *fn,
 		const char *format, ...)
 {
 	va_list args;
 
 	va_start(args, format);
-	ctx->log_fn(ctx, priority, file, line, fn, format, args);
+	ctx->log_fn(ctx->log_data, priority, file, line, fn, format, args);
 	va_end(args);
 }
 
-static void log_stderr(struct kmod_ctx *ctx,
+static void log_filep(void *data,
 			int priority, const char *file, int line,
 			const char *fn, const char *format, va_list args)
 {
-	fprintf(stderr, "libkmod: %s: ", fn);
-	vfprintf(stderr, format, args);
+	FILE *fp = data;
+	fprintf(fp, "libkmod: %s: ", fn);
+	vfprintf(fp, format, args);
 }
 
 const char *kmod_get_dirname(const struct kmod_ctx *ctx)
@@ -173,7 +175,8 @@ KMOD_EXPORT struct kmod_ctx *kmod_new(const char *dirname)
 		return NULL;
 
 	ctx->refcount = 1;
-	ctx->log_fn = log_stderr;
+	ctx->log_fn = log_filep;
+	ctx->log_data = stderr;
 	ctx->log_priority = LOG_ERR;
 
 	ctx->dirname = get_kernel_release(dirname);
@@ -258,12 +261,14 @@ KMOD_EXPORT struct kmod_ctx *kmod_unref(struct kmod_ctx *ctx)
  *
  **/
 KMOD_EXPORT void kmod_set_log_fn(struct kmod_ctx *ctx,
-					void (*log_fn)(struct kmod_ctx *ctx,
+					void (*log_fn)(void *data,
 						int priority, const char *file,
 						int line, const char *fn,
-						const char *format, va_list args))
+						const char *format, va_list args),
+					const void *data)
 {
 	ctx->log_fn = log_fn;
+	ctx->log_data = (void *)data;
 	INFO(ctx, "custom logging function %p registered\n", log_fn);
 }
 

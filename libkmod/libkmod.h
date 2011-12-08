@@ -39,10 +39,11 @@ struct kmod_ctx *kmod_new(const char *dirname);
 struct kmod_ctx *kmod_ref(struct kmod_ctx *ctx);
 struct kmod_ctx *kmod_unref(struct kmod_ctx *ctx);
 void kmod_set_log_fn(struct kmod_ctx *ctx,
-			void (*log_fn)(struct kmod_ctx *ctx,
+			void (*log_fn)(void *log_data,
 				int priority, const char *file, int line,
 				const char *fn, const char *format,
-				va_list args));
+				va_list args),
+			const void *data);
 int kmod_get_log_priority(const struct kmod_ctx *ctx);
 void kmod_set_log_priority(struct kmod_ctx *ctx, int priority);
 void *kmod_get_userdata(const struct kmod_ctx *ctx);

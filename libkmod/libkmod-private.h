@@ -33,7 +33,7 @@ static __always_inline __printf_format(2, 3) void
 
 #define KMOD_EXPORT __attribute__ ((visibility("default")))
 
-void kmod_log(struct kmod_ctx *ctx,
+void kmod_log(const struct kmod_ctx *ctx,
 		int priority, const char *file, int line, const char *fn,
 		const char *format, ...) __attribute__((format(printf, 6, 7))) __attribute__((nonnull(1, 3, 5)));
 
