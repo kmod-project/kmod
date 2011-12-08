@@ -233,7 +233,7 @@ struct kmod_list *kmod_list_remove_data(struct kmod_list *list,
 
 /*
  * n must be greater to or equal the number of elements (we don't check the
- * condition
+ * condition)
  */
 struct kmod_list *kmod_list_remove_n_latest(struct kmod_list *list,
 							unsigned int n)
@@ -258,7 +258,19 @@ struct kmod_list *kmod_list_remove_n_latest(struct kmod_list *list,
 
 	return list;
 }
-
+/**
+ * kmod_list_prev:
+ * @list: the head of the list
+ * @curr: the current node in the list
+ *
+ * Get the previous node in @list relative to @curr as if @list was not a
+ * circular list. I.e.: the previous of the head is NULL. It can be used to
+ * iterate a list by checking for NULL return to know when all elements were
+ * iterated.
+ *
+ * Returns: node previous to @curr or NULL if either this node is the head of
+ * the list or the list is empty.
+ */
 KMOD_EXPORT struct kmod_list *kmod_list_prev(const struct kmod_list *list,
 							const struct kmod_list *curr)
 {
@@ -271,6 +283,19 @@ KMOD_EXPORT struct kmod_list *kmod_list_prev(const struct kmod_list *list,
 	return container_of(curr->node.prev, struct kmod_list, node);
 }
 
+/**
+ * kmod_list_next:
+ * @list: the head of the list
+ * @curr: the current node in the list
+ *
+ * Get the next node in @list relative to @curr as if @list was not a circular
+ * list. I.e. calling this function in the last node of the list returns
+ * NULL.. It can be used to iterate a list by checking for NULL return to know
+ * when all elements were iterated.
+ *
+ * Returns: node next to @curr or NULL if either this node is the last of or
+ * list is empty.
+ */
 KMOD_EXPORT struct kmod_list *kmod_list_next(const struct kmod_list *list,
 							const struct kmod_list *curr)
 {
