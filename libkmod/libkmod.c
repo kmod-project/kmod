@@ -44,6 +44,19 @@
  * and is passed to all library operations.
  */
 
+enum kmod_index {
+	KMOD_INDEX_DEP = 0,
+	KMOD_INDEX_ALIAS,
+	KMOD_INDEX_SYMBOL,
+	_KMOD_INDEX_LAST,
+};
+
+static const char* index_files[] = {
+	[KMOD_INDEX_DEP] = "modules.dep",
+	[KMOD_INDEX_ALIAS] = "modules.alias",
+	[KMOD_INDEX_SYMBOL] = "modules.symbols",
+};
+
 /**
  * kmod_ctx:
  *
@@ -382,27 +395,22 @@ fail:
 
 }
 
-static const char *symbols_file = "modules.symbols";
-
 int kmod_lookup_alias_from_symbols_file(struct kmod_ctx *ctx, const char *name,
 						struct kmod_list **list)
 {
 	if (!startswith(name, "symbol:"))
 		return 0;
 
-	return kmod_lookup_alias_from_alias_bin(ctx, symbols_file, name, list);
+	return kmod_lookup_alias_from_alias_bin(ctx,
+				index_files[KMOD_INDEX_SYMBOL], name, list);
 }
-
-
-static const char *aliases_file = "modules.alias";
 
 int kmod_lookup_alias_from_aliases_file(struct kmod_ctx *ctx, const char *name,
 						struct kmod_list **list)
 {
-	return kmod_lookup_alias_from_alias_bin(ctx, aliases_file, name, list);
+	return kmod_lookup_alias_from_alias_bin(ctx,
+				index_files[KMOD_INDEX_ALIAS], name, list);
 }
-
-static const char *moddep_file = "modules.dep";
 
 char *kmod_search_moddep(struct kmod_ctx *ctx, const char *name)
 {
@@ -410,7 +418,8 @@ char *kmod_search_moddep(struct kmod_ctx *ctx, const char *name)
 	char fn[PATH_MAX];
 	char *line;
 
-	snprintf(fn, sizeof(fn), "%s/%s.bin", ctx->dirname, moddep_file);
+	snprintf(fn, sizeof(fn), "%s/%s.bin", ctx->dirname,
+						index_files[KMOD_INDEX_DEP]);
 
 	DBG(ctx, "file=%s modname=%s\n", fn, name);
 
@@ -490,7 +499,6 @@ fail:
 	*list = kmod_list_remove_n_latest(*list, nmatch);
 	return err;
 }
-
 
 KMOD_EXPORT int kmod_module_get_filtered_blacklist(const struct kmod_ctx *ctx, const struct kmod_list *input, struct kmod_list **output)
 {
