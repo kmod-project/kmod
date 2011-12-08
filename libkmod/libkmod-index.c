@@ -46,13 +46,6 @@ static int add_value(struct index_value **values,
 		     const char *value, unsigned len, unsigned int priority)
 {
 	struct index_value *v;
-	int duplicate = 0;
-
-	/* report the presence of duplicate values */
-	for (v = *values; v; v = v->next) {
-		if (streq(v->value, value))
-			duplicate = 1;
-	}
 
 	/* find position to insert value */
 	while (*values && (*values)->priority < priority)
@@ -68,7 +61,7 @@ static int add_value(struct index_value **values,
 	v->value[len] = '\0';
 	*values = v;
 
-	return duplicate;
+	return 0;
 }
 
 static void read_error(void)
