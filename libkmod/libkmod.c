@@ -476,3 +476,46 @@ fail:
 	*list = kmod_list_remove_n_latest(*list, nmatch);
 	return err;
 }
+
+
+KMOD_EXPORT int kmod_module_get_filtered_blacklist(const struct kmod_ctx *ctx, const struct kmod_list *input, struct kmod_list **output)
+{
+	const struct kmod_config *config;
+	const struct kmod_list *li;
+
+	if (ctx == NULL || output == NULL)
+		return -ENOENT;
+
+	*output = NULL;
+	if (input == NULL)
+		return 0;
+
+	config = ctx->config;
+	kmod_list_foreach(li, input) {
+		struct kmod_module *mod = li->data;
+		const struct kmod_list *lb;
+		struct kmod_list *node;
+		bool filtered = false;
+		kmod_list_foreach(lb, config->blacklists) {
+			const char *name = lb->data;
+			if (streq(name, kmod_module_get_name(mod))) {
+				filtered = true;
+				break;
+			}
+		}
+		if (filtered)
+			continue;
+
+		node = kmod_list_append(*output, mod);
+		if (node == NULL)
+			goto fail;
+		*output = node;
+		kmod_module_ref(mod);
+	}
+	return 0;
+
+fail:
+	kmod_module_unref_list(*output);
+	*output = NULL;
+	return -ENOMEM;
+}

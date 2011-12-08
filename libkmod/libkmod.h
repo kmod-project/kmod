@@ -96,6 +96,8 @@ int kmod_module_unref_list(struct kmod_list *list);
 struct kmod_module *kmod_module_get_module(const struct kmod_list *entry);
 struct kmod_list *kmod_module_get_dependencies(const struct kmod_module *mod);
 
+int kmod_module_get_filtered_blacklist(const struct kmod_ctx *ctx, const struct kmod_list *input, struct kmod_list **output);
+
 int kmod_module_remove_module(struct kmod_module *mod, unsigned int flags);
 int kmod_module_insert_module(struct kmod_module *mod, unsigned int flags);
 

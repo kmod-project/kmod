@@ -25,6 +25,8 @@ global:
 	kmod_module_get_dependencies;
 	kmod_module_get_module;
 
+	kmod_module_get_filtered_blacklist;
+
 	kmod_module_get_name;
 	kmod_module_get_path;
 

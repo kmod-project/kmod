@@ -8,3 +8,4 @@ test-lookup
 test-path-from-name
 test-get-dependencies
 test-mod-double-ref
+test-blacklist
