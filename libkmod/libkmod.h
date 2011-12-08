@@ -48,6 +48,8 @@ int kmod_get_log_priority(const struct kmod_ctx *ctx);
 void kmod_set_log_priority(struct kmod_ctx *ctx, int priority);
 void *kmod_get_userdata(const struct kmod_ctx *ctx);
 void kmod_set_userdata(struct kmod_ctx *ctx, const void *userdata);
+int kmod_load_resources(struct kmod_ctx *ctx);
+void kmod_unload_resources(struct kmod_ctx *ctx);
 
 /*
  * kmod_list

@@ -73,6 +73,7 @@ struct kmod_ctx {
 	char *dirname;
 	struct kmod_config *config;
 	struct kmod_hash *modules_by_name;
+	struct index_mm *indexes[_KMOD_INDEX_LAST];
 };
 
 void kmod_log(const struct kmod_ctx *ctx,
@@ -257,11 +258,15 @@ KMOD_EXPORT struct kmod_ctx *kmod_unref(struct kmod_ctx *ctx)
 
 	if (--ctx->refcount > 0)
 		return ctx;
+
 	INFO(ctx, "context %p released\n", ctx);
+
+	kmod_unload_resources(ctx);
 	kmod_hash_free(ctx->modules_by_name);
 	free(ctx->dirname);
 	if (ctx->config)
 		kmod_config_free(ctx->config);
+
 	free(ctx);
 	return NULL;
 }
@@ -540,4 +545,43 @@ fail:
 	kmod_module_unref_list(*output);
 	*output = NULL;
 	return -ENOMEM;
+}
+
+KMOD_EXPORT int kmod_load_resources(struct kmod_ctx *ctx)
+{
+	size_t i;
+
+	if (ctx == NULL)
+		return -ENOENT;
+
+	for (i = 0; i < ARRAY_SIZE(index_files); i++) {
+		if (ctx->indexes[i] == NULL) {
+			const char *fn = index_files[i];
+
+			ctx->indexes[i] = index_mm_open(ctx, fn, true);
+			if (ctx->indexes[i] == NULL)
+				goto fail;
+		}
+	}
+
+	return 0;
+
+fail:
+	kmod_unload_resources(ctx);
+	return -ENOMEM;
+}
+
+KMOD_EXPORT void kmod_unload_resources(struct kmod_ctx *ctx)
+{
+	size_t i;
+
+	if (ctx == NULL)
+		return;
+
+	for (i = 0; i < ARRAY_SIZE(index_files); i++) {
+		if (ctx->indexes[i] != NULL) {
+			index_mm_close(ctx->indexes[i]);
+			ctx->indexes[i] = NULL;
+		}
+	}
 }
