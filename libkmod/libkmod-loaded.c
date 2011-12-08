@@ -36,6 +36,22 @@
  *
  * Information about currently loaded modules, as reported by Linux kernel
  */
+
+/**
+ * kmod_loaded_get_list:
+ * @ctx: kmod library context
+ * @list: where to save the list of loaded modules
+ *
+ * Get a list of all modules currently loaded in kernel. It uses /proc/modules
+ * to get a list of loaded modules and create kmod_module objects that are put
+ * in @list in no particular order.
+ *
+ * All the returned modules get their refcount incremented (or are created if
+ * they do not exist yet). After using the list, release the resources by
+ * calling kmod_module_unref_list().
+ *
+ * Returns: 0 on success or < 0 on error.
+ */
 KMOD_EXPORT int kmod_loaded_get_list(struct kmod_ctx *ctx,
 						struct kmod_list **list)
 {
