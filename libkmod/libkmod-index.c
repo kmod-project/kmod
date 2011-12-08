@@ -24,6 +24,7 @@
 #include <string.h>
 #include <errno.h>
 #include <fnmatch.h>
+#include <assert.h>
 
 #include "libkmod-private.h"
 #include "libkmod-index.h"
@@ -108,38 +109,48 @@ struct buffer {
 	unsigned used;
 };
 
-static void buf__realloc(struct buffer *buf, unsigned size)
+#define BUF_STEP (2048)
+static bool buf_grow(struct buffer *buf, size_t newsize)
 {
-	if (size > buf->size) {
-		buf->bytes = NOFAIL(realloc(buf->bytes, size));
-		buf->size = size;
-	}
+	void *tmp;
+	size_t sz;
+
+	if (newsize % BUF_STEP == 0)
+		sz = newsize;
+	else
+		sz = ((newsize / BUF_STEP) + 1) * BUF_STEP;
+
+	tmp = realloc(buf->bytes, sz);
+	if (sz > 0 && tmp == NULL)
+		return false;
+	buf->bytes = tmp;
+	buf->size = sz;
+	return true;
 }
 
-static struct buffer *buf_create(void)
+static void buf_init(struct buffer *buf)
 {
-	struct buffer *buf;
-
-	buf = NOFAIL(calloc(sizeof(struct buffer), 1));
-	buf__realloc(buf, 256);
-	return buf;
+	buf->bytes = NULL;
+	buf->size = 0;
+	buf->used = 0;
 }
 
-static void buf_destroy(struct buffer *buf)
+static void buf_release(struct buffer *buf)
 {
 	free(buf->bytes);
-	free(buf);
 }
 
 /* Destroy buffer and return a copy as a C string */
-static char *buf_detach(struct buffer *buf)
+static char *buf_steal(struct buffer *buf)
 {
 	char *bytes;
 
-	bytes = NOFAIL(realloc(buf->bytes, buf->used + 1));
+	bytes = realloc(buf->bytes, buf->used + 1);
+	if (!bytes) {
+		free(buf->bytes);
+		return NULL;
+	}
 	bytes[buf->used] = '\0';
-
-	free(buf);
 	return bytes;
 }
 
@@ -148,16 +159,19 @@ static char *buf_detach(struct buffer *buf)
  */
 static const char *buf_str(struct buffer *buf)
 {
-	buf__realloc(buf, buf->used + 1);
+	if (!buf_grow(buf, buf->used + 1))
+		return NULL;
 	buf->bytes[buf->used] = '\0';
 	return buf->bytes;
 }
 
-static void buf_pushchar(struct buffer *buf, char ch)
+static bool buf_pushchar(struct buffer *buf, char ch)
 {
-	buf__realloc(buf, buf->used + 1);
+	if (!buf_grow(buf, buf->used + 1))
+		return false;
 	buf->bytes[buf->used] = ch;
 	buf->used++;
+	return true;
 }
 
 static unsigned buf_freadchars(struct buffer *buf, FILE *in)
@@ -166,7 +180,8 @@ static unsigned buf_freadchars(struct buffer *buf, FILE *in)
 	int ch;
 
 	while ((ch = read_char(in))) {
-		buf_pushchar(buf, ch);
+		if (!buf_pushchar(buf, ch))
+			break;
 		i++;
 	}
 
@@ -175,11 +190,13 @@ static unsigned buf_freadchars(struct buffer *buf, FILE *in)
 
 static void buf_popchar(struct buffer *buf)
 {
+	assert(buf->used > 0);
 	buf->used--;
 }
 
 static void buf_popchars(struct buffer *buf, unsigned n)
 {
+	assert(buf->used >= n);
 	buf->used -= n;
 }
 
@@ -212,9 +229,10 @@ static struct index_node_f *index_read(FILE *in, uint32_t offset)
 	fseek(in, offset & INDEX_NODE_MASK, SEEK_SET);
 
 	if (offset & INDEX_NODE_PREFIX) {
-		struct buffer *buf = buf_create();
-		buf_freadchars(buf, in);
-		prefix = buf_detach(buf);
+		struct buffer buf;
+		buf_init(&buf);
+		buf_freadchars(&buf, in);
+		prefix = buf_steal(&buf);
 	} else
 		prefix = NOFAIL(strdup(""));
 
@@ -240,20 +258,21 @@ static struct index_node_f *index_read(FILE *in, uint32_t offset)
 	node->values = NULL;
 	if (offset & INDEX_NODE_VALUES) {
 		int value_count;
-		struct buffer *buf = buf_create();
+		struct buffer buf;
 		const char *value;
 		unsigned int priority;
 
 		value_count = read_long(in);
 
+		buf_init(&buf);
 		while (value_count--) {
 			priority = read_long(in);
-			buf_freadchars(buf, in);
-			value = buf_str(buf);
+			buf_freadchars(&buf, in);
+			value = buf_str(&buf);
 			add_value(&node->values, value, priority);
-			buf_clear(buf);
+			buf_clear(&buf);
 		}
-		buf_destroy(buf);
+		buf_release(&buf);
 	}
 
 	node->prefix = prefix;
@@ -504,11 +523,12 @@ static void index_searchwild__node(struct index_node_f *node,
 struct index_value *index_searchwild(struct index_file *in, const char *key)
 {
 	struct index_node_f *root = index_readroot(in);
-	struct buffer *buf = buf_create();
+	struct buffer buf;
 	struct index_value *out = NULL;
 
-	index_searchwild__node(root, buf, key, 0, &out);
-	buf_destroy(buf);
+	buf_init(&buf);
+	index_searchwild__node(root, &buf, key, 0, &out);
+	buf_release(&buf);
 	return out;
 }
 
@@ -903,10 +923,11 @@ static void index_mm_searchwild_node(struct index_mm_node *node,
 struct index_value *index_mm_searchwild(struct index_mm *idx, const char *key)
 {
 	struct index_mm_node *root = index_mm_readroot(idx);
-	struct buffer *buf = buf_create();
+	struct buffer buf;
 	struct index_value *out = NULL;
 
-	index_mm_searchwild_node(root, buf, key, 0, &out);
-	buf_destroy(buf);
+	buf_init(&buf);
+	index_mm_searchwild_node(root, &buf, key, 0, &out);
+	buf_release(&buf);
 	return out;
 }
