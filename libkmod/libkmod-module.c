@@ -44,7 +44,7 @@
  */
 struct kmod_module {
 	struct kmod_ctx *ctx;
-	const char *path;
+	char *path;
 	struct kmod_list *dep;
 	int refcount;
 	struct {
@@ -245,7 +245,7 @@ KMOD_EXPORT struct kmod_module *kmod_module_unref(struct kmod_module *mod)
 
 	kmod_module_unref_list(mod->dep);
 	kmod_unref(mod->ctx);
-	free((char *) mod->path);
+	free(mod->path);
 	free(mod);
 	return NULL;
 }
