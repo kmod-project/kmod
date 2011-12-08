@@ -120,6 +120,9 @@ static bool buf_grow(struct buffer *buf, size_t newsize)
 	else
 		sz = ((newsize / BUF_STEP) + 1) * BUF_STEP;
 
+	if (buf->size == sz)
+		return true;
+
 	tmp = realloc(buf->bytes, sz);
 	if (sz > 0 && tmp == NULL)
 		return false;
