@@ -86,12 +86,30 @@ static char *path_to_modname(const char *path, char buf[NAME_MAX], size_t *len)
 	return modname_normalize(modname, buf, len);
 }
 
+static inline const char *path_join(const char *path, size_t prefixlen, char buf[PATH_MAX])
+{
+	size_t pathlen;
+
+	if (path[0] == '/')
+		return path;
+
+	pathlen = strlen(path);
+	if (prefixlen + pathlen + 1 >= PATH_MAX)
+		return NULL;
+
+	memcpy(buf + prefixlen, path, pathlen + 1);
+	return buf;
+}
+
 int kmod_module_parse_depline(struct kmod_module *mod, char *line)
 {
 	struct kmod_ctx *ctx = mod->ctx;
 	struct kmod_list *list = NULL;
+	const char *dirname;
+	char buf[PATH_MAX];
 	char *p, *saveptr;
 	int err, n = 0;
+	size_t dirnamelen;
 
 	assert(!mod->init.dep && mod->dep == NULL);
 	mod->init.dep = true;
@@ -101,25 +119,45 @@ int kmod_module_parse_depline(struct kmod_module *mod, char *line)
 		return 0;
 
 	*p = '\0';
-	if (mod->path == NULL)
-		mod->path = strdup(line);
+	dirname = kmod_get_dirname(mod->ctx);
+	dirnamelen = strlen(dirname);
+	if (dirnamelen + 2 >= PATH_MAX)
+		return 0;
+	memcpy(buf, dirname, dirnamelen);
+	buf[dirnamelen] = '/';
+	dirnamelen++;
+	buf[dirnamelen] = '\0';
+
+	if (mod->path == NULL) {
+		const char *str = path_join(line, dirnamelen, buf);
+		if (str == NULL)
+			return 0;
+		mod->path = strdup(str);
+		if (mod->path == NULL)
+			return 0;
+	}
 
 	p++;
-
 	for (p = strtok_r(p, " \t", &saveptr); p != NULL;
 					p = strtok_r(NULL, " \t", &saveptr)) {
-		char buf[NAME_MAX];
-		const char *modname = path_to_modname(p, buf, NULL);
 		struct kmod_module *depmod;
+		const char *path;
 
-		err = kmod_module_new_from_name(ctx, modname, &depmod);
-		if (err < 0) {
-			ERR(ctx, "ctx=%p modname=%s error=%s\n",
-						ctx, modname, strerror(-err));
+		path = path_join(p, dirnamelen, buf);
+		if (path == NULL) {
+			ERR(ctx, "could not join path '%s' and '%s'.\n",
+			    dirname, p);
 			goto fail;
 		}
 
-		DBG(ctx, "add dep: %s\n", modname);
+		err = kmod_module_new_from_path(ctx, path, &depmod);
+		if (err < 0) {
+			ERR(ctx, "ctx=%p path=%s error=%s\n",
+						ctx, path, strerror(-err));
+			goto fail;
+		}
+
+		DBG(ctx, "add dep: %s\n", path);
 
 		list = kmod_list_append(list, depmod);
 		n++;
