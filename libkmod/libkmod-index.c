@@ -43,11 +43,10 @@ void index_values_free(struct index_value *values)
 }
 
 static int add_value(struct index_value **values,
-		     const char *value, unsigned int priority)
+		     const char *value, unsigned len, unsigned int priority)
 {
 	struct index_value *v;
 	int duplicate = 0;
-	int len;
 
 	/* report the presence of duplicate values */
 	for (v = *values; v; v = v->next) {
@@ -59,11 +58,14 @@ static int add_value(struct index_value **values,
 	while (*values && (*values)->priority < priority)
 		values = &(*values)->next;
 
-	len = strlen(value);
-	v = NOFAIL(calloc(sizeof(struct index_value) + len + 1, 1));
+	v = malloc(sizeof(struct index_value) + len + 1);
+	if (!v)
+		return -1;
 	v->next = *values;
 	v->priority = priority;
-	memcpy(v->value, value, len + 1);
+	v->len = len;
+	memcpy(v->value, value, len);
+	v->value[len] = '\0';
 	*values = v;
 
 	return duplicate;
@@ -272,7 +274,7 @@ static struct index_node_f *index_read(FILE *in, uint32_t offset)
 			priority = read_long(in);
 			buf_freadchars(&buf, in);
 			value = buf_str(&buf);
-			add_value(&node->values, value, priority);
+			add_value(&node->values, value, buf.used, priority);
 			buf_clear(&buf);
 		}
 		buf_release(&buf);
@@ -410,7 +412,7 @@ static void index_searchwild__allvalues(struct index_node_f *node,
 	struct index_value *v;
 
 	for (v = node->values; v != NULL; v = v->next)
-		add_value(out, v->value, v->priority);
+		add_value(out, v->value, v->len, v->priority);
 
 	index_close(node);
 }
@@ -585,11 +587,11 @@ static inline char *read_alloc_chars_mm(void **p)
 	return memdup(s, len);
 }
 
-static inline char *read_chars_mm(void **p)
+static inline char *read_chars_mm(void **p, unsigned *rlen)
 {
 	char *s = *((char **)p);
-	size_t len = strlen(s) + 1;
-	*p = ((char *)p) + len;
+	size_t len = *rlen = strlen(s);
+	*p = ((char *)p) + len + 1;
 
 	return s;
 }
@@ -638,10 +640,11 @@ static struct index_mm_node *index_mm_read_node(struct index_mm *idx,
 		for (j = read_long_mm(&p); j > 0; j--) {
 			unsigned int priority;
 			const char *value;
+			unsigned len;
 
 			priority = read_long_mm(&p);
-			value = read_chars_mm(&p);
-			add_value(&node->values, value, priority);
+			value = read_chars_mm(&p, &len);
+			add_value(&node->values, value, len, priority);
 		}
 	}
 
@@ -810,7 +813,7 @@ static void index_mm_searchwild_allvalues(struct index_mm_node *node,
 	struct index_value *v;
 
 	for (v = node->values; v != NULL; v = v->next)
-		add_value(out, v->value, v->priority);
+		add_value(out, v->value, v->len, v->priority);
 
 	index_mm_free_node(node);
 }

@@ -105,6 +105,7 @@
 struct index_value {
 	struct index_value *next;
 	unsigned int priority;
+	unsigned int len;
 	char value[0];
 };
 
