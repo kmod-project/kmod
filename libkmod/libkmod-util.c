@@ -245,8 +245,8 @@ char *path_make_absolute_cwd(const char *p)
 		return NULL;
 	}
 
-	r[plen] = '/';
-	memcpy(&r[plen + 1], p, plen + 1);
+	r[cwdlen] = '/';
+	memcpy(&r[cwdlen + 1], p, plen + 1);
 
 	return r;
 }
