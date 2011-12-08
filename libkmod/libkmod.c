@@ -68,6 +68,9 @@ void kmod_log(const struct kmod_ctx *ctx,
 {
 	va_list args;
 
+	if (ctx->log_fn == NULL)
+		return;
+
 	va_start(args, format);
 	ctx->log_fn(ctx->log_data, priority, file, line, fn, format, args);
 	va_end(args);
@@ -267,6 +270,8 @@ KMOD_EXPORT void kmod_set_log_fn(struct kmod_ctx *ctx,
 						const char *format, va_list args),
 					const void *data)
 {
+	if (ctx == NULL)
+		return;
 	ctx->log_fn = log_fn;
 	ctx->log_data = (void *)data;
 	INFO(ctx, "custom logging function %p registered\n", log_fn);
@@ -280,6 +285,8 @@ KMOD_EXPORT void kmod_set_log_fn(struct kmod_ctx *ctx,
  **/
 KMOD_EXPORT int kmod_get_log_priority(const struct kmod_ctx *ctx)
 {
+	if (ctx == NULL)
+		return -1;
 	return ctx->log_priority;
 }
 
@@ -293,6 +300,8 @@ KMOD_EXPORT int kmod_get_log_priority(const struct kmod_ctx *ctx)
  **/
 KMOD_EXPORT void kmod_set_log_priority(struct kmod_ctx *ctx, int priority)
 {
+	if (ctx == NULL)
+		return;
 	ctx->log_priority = priority;
 }
 
