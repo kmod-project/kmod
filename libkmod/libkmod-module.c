@@ -419,19 +419,22 @@ KMOD_EXPORT const char *kmod_module_get_name(const struct kmod_module *mod)
  */
 KMOD_EXPORT const char *kmod_module_get_path(const struct kmod_module *mod)
 {
-	if (!mod->init.dep) {
-		/* lazy init */
-		char *line = kmod_search_moddep(mod->ctx, mod->name);
+	char *line;
 
-		if (line == NULL)
-			return NULL;
+	DBG(mod->ctx, "name='%s' path='%s'", mod->name, mod->path);
 
-		kmod_module_parse_depline((struct kmod_module *) mod, line);
-		free(line);
+	if (mod->path != NULL)
+		return mod->path;
+	if (mod->init.dep)
+		return NULL;
 
-		if (!mod->init.dep)
-			return NULL;
-	}
+	/* lazy init */
+	line = kmod_search_moddep(mod->ctx, mod->name);
+	if (line == NULL)
+		return NULL;
+
+	kmod_module_parse_depline((struct kmod_module *) mod, line);
+	free(line);
 
 	return mod->path;
 }
