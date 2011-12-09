@@ -426,6 +426,9 @@ char *kmod_search_moddep(struct kmod_ctx *ctx, const char *name)
 
 	DBG(ctx, "file=%s modname=%s\n", fn, name);
 
+	if (ctx->indexes[KMOD_INDEX_DEP])
+		return index_mm_search(ctx->indexes[KMOD_INDEX_DEP], name);
+
 	idx = index_file_open(fn);
 	if (idx == NULL) {
 		ERR(ctx, "Could not open moddep file '%s'", fn);
