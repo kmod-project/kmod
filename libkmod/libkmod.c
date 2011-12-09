@@ -98,7 +98,7 @@ const char *kmod_get_dirname(const struct kmod_ctx *ctx)
  * to access from callbacks like a custom logging function.
  *
  * Returns: stored userdata
- **/
+ */
 KMOD_EXPORT void *kmod_get_userdata(const struct kmod_ctx *ctx)
 {
 	if (ctx == NULL)
@@ -112,7 +112,7 @@ KMOD_EXPORT void *kmod_get_userdata(const struct kmod_ctx *ctx)
  * @userdata: data pointer
  *
  * Store custom @userdata in the library context.
- **/
+ */
 KMOD_EXPORT void kmod_set_userdata(struct kmod_ctx *ctx, const void *userdata)
 {
 	if (ctx == NULL)
@@ -166,7 +166,7 @@ static char *get_kernel_release(const char *dirname)
  * release the resources of the kmod library context.
  *
  * Returns: a new kmod library context
- **/
+ */
 KMOD_EXPORT struct kmod_ctx *kmod_new(const char *dirname)
 {
 	const char *env;
@@ -220,7 +220,7 @@ fail:
  * Take a reference of the kmod library context.
  *
  * Returns: the passed kmod library context
- **/
+ */
 KMOD_EXPORT struct kmod_ctx *kmod_ref(struct kmod_ctx *ctx)
 {
 	if (ctx == NULL)
@@ -236,7 +236,7 @@ KMOD_EXPORT struct kmod_ctx *kmod_ref(struct kmod_ctx *ctx)
  * Drop a reference of the kmod library context. If the refcount
  * reaches zero, the resources of the context will be released.
  *
- **/
+ */
 KMOD_EXPORT struct kmod_ctx *kmod_unref(struct kmod_ctx *ctx)
 {
 	if (ctx == NULL)
@@ -262,7 +262,7 @@ KMOD_EXPORT struct kmod_ctx *kmod_unref(struct kmod_ctx *ctx)
  * overridden by a custom function, to plug log messages
  * into the user's logging functionality.
  *
- **/
+ */
 KMOD_EXPORT void kmod_set_log_fn(struct kmod_ctx *ctx,
 					void (*log_fn)(void *data,
 						int priority, const char *file,
@@ -282,7 +282,7 @@ KMOD_EXPORT void kmod_set_log_fn(struct kmod_ctx *ctx,
  * @ctx: kmod library context
  *
  * Returns: the current logging priority
- **/
+ */
 KMOD_EXPORT int kmod_get_log_priority(const struct kmod_ctx *ctx)
 {
 	if (ctx == NULL)
@@ -297,7 +297,7 @@ KMOD_EXPORT int kmod_get_log_priority(const struct kmod_ctx *ctx)
  *
  * Set the current logging priority. The value controls which messages
  * are logged.
- **/
+ */
 KMOD_EXPORT void kmod_set_log_priority(struct kmod_ctx *ctx, int priority)
 {
 	if (ctx == NULL)
@@ -491,7 +491,18 @@ fail:
 	return err;
 }
 
-
+/**
+ * kmod_module_get_filtered_blacklist:
+ * @ctx: kmod library context
+ * @input: list to be filtered with blacklist
+ * @output: where to save the new list
+ *
+ * Given a list @input, this function filter it out with config's blacklist
+ * ans save it in @output.
+ *
+ * Returns: 0 on success or < 0 otherwise. @output is saved with the updated
+ * list.
+ */
 KMOD_EXPORT int kmod_module_get_filtered_blacklist(const struct kmod_ctx *ctx, const struct kmod_list *input, struct kmod_list **output)
 {
 	const struct kmod_config *config;
