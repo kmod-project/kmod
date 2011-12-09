@@ -358,23 +358,29 @@ static int kmod_lookup_alias_from_alias_bin(struct kmod_ctx *ctx,
 						const char *name,
 						struct kmod_list **list)
 {
-	char fn[PATH_MAX];
 	int err, nmatch = 0;
 	struct index_file *idx;
 	struct index_value *realnames, *realname;
 
-	fn[PATH_MAX - 1] = '\0';
-	snprintf(fn, sizeof(fn) - 1, "%s/%s.bin", ctx->dirname,
+	if (ctx->indexes[index_number] != NULL) {
+		realnames = index_mm_searchwild(ctx->indexes[index_number],
+									name);
+	} else{
+		char fn[PATH_MAX];
+
+		fn[PATH_MAX - 1] = '\0';
+		snprintf(fn, sizeof(fn) - 1, "%s/%s.bin", ctx->dirname,
 						index_files[index_number]);
 
-	DBG(ctx, "file=%s name=%s\n", fn, name);
+		DBG(ctx, "file=%s name=%s\n", fn, name);
 
-	idx = index_file_open(fn);
-	if (idx == NULL)
-		return -ENOSYS;
+		idx = index_file_open(fn);
+		if (idx == NULL)
+			return -ENOSYS;
 
-	realnames = index_searchwild(idx, name);
-	index_file_close(idx);
+		realnames = index_searchwild(idx, name);
+		index_file_close(idx);
+	}
 
 	for (realname = realnames; realname; realname = realnames->next) {
 		struct kmod_module *mod;
@@ -390,7 +396,6 @@ static int kmod_lookup_alias_from_alias_bin(struct kmod_ctx *ctx,
 	}
 
 	index_values_free(realnames);
-
 	return nmatch;
 
 fail:
