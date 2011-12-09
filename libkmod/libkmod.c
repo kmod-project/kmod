@@ -354,7 +354,7 @@ void kmod_pool_del_module(struct kmod_ctx *ctx, struct kmod_module *mod)
 }
 
 static int kmod_lookup_alias_from_alias_bin(struct kmod_ctx *ctx,
-						const char *file,
+						enum kmod_index index_number,
 						const char *name,
 						struct kmod_list **list)
 {
@@ -364,7 +364,8 @@ static int kmod_lookup_alias_from_alias_bin(struct kmod_ctx *ctx,
 	struct index_value *realnames, *realname;
 
 	fn[PATH_MAX - 1] = '\0';
-	snprintf(fn, sizeof(fn) - 1, "%s/%s.bin", ctx->dirname, file);
+	snprintf(fn, sizeof(fn) - 1, "%s/%s.bin", ctx->dirname,
+						index_files[index_number]);
 
 	DBG(ctx, "file=%s name=%s\n", fn, name);
 
@@ -404,15 +405,15 @@ int kmod_lookup_alias_from_symbols_file(struct kmod_ctx *ctx, const char *name,
 	if (!startswith(name, "symbol:"))
 		return 0;
 
-	return kmod_lookup_alias_from_alias_bin(ctx,
-				index_files[KMOD_INDEX_SYMBOL], name, list);
+	return kmod_lookup_alias_from_alias_bin(ctx, KMOD_INDEX_SYMBOL, name,
+									list);
 }
 
 int kmod_lookup_alias_from_aliases_file(struct kmod_ctx *ctx, const char *name,
 						struct kmod_list **list)
 {
-	return kmod_lookup_alias_from_alias_bin(ctx,
-				index_files[KMOD_INDEX_ALIAS], name, list);
+	return kmod_lookup_alias_from_alias_bin(ctx, KMOD_INDEX_ALIAS, name,
+									list);
 }
 
 char *kmod_search_moddep(struct kmod_ctx *ctx, const char *name)
