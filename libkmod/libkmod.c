@@ -358,23 +358,23 @@ static int kmod_lookup_alias_from_alias_bin(struct kmod_ctx *ctx,
 						const char *name,
 						struct kmod_list **list)
 {
-	char *fn;
+	char fn[PATH_MAX];
 	int err, nmatch = 0;
 	struct index_file *idx;
 	struct index_value *realnames, *realname;
 
-	if (asprintf(&fn, "%s/%s.bin", ctx->dirname, file) < 0)
-		return -ENOMEM;
+	fn[PATH_MAX - 1] = '\0';
+	snprintf(fn, sizeof(fn) - 1, "%s/%s.bin", ctx->dirname, file);
 
 	DBG(ctx, "file=%s name=%s\n", fn, name);
 
 	idx = index_file_open(fn);
-	if (idx == NULL) {
-		free(fn);
+	if (idx == NULL)
 		return -ENOSYS;
-	}
 
 	realnames = index_searchwild(idx, name);
+	index_file_close(idx);
+
 	for (realname = realnames; realname; realname = realnames->next) {
 		struct kmod_module *mod;
 
@@ -389,8 +389,6 @@ static int kmod_lookup_alias_from_alias_bin(struct kmod_ctx *ctx,
 	}
 
 	index_values_free(realnames);
-	index_file_close(idx);
-	free(fn);
 
 	return nmatch;
 
