@@ -557,36 +557,38 @@ struct index_mm_node {
 
 static inline uint32_t read_long_mm(void **p)
 {
-	uint32_t v = **((uint32_t **)p);
+	uint8_t *addr = *(uint8_t **)p;
+	uint32_t v;
 
-	*p = *((uint8_t **)p) + sizeof(uint32_t);
+	/* addr may be unalined to uint32_t */
+	memcpy(&v, addr, sizeof(uint32_t));
 
+	*p = addr + sizeof(uint32_t);
 	return ntohl(v);
 }
 
 static inline uint8_t read_char_mm(void **p)
 {
-	uint8_t *v = *((uint8_t **)p);
-	*p = v + 1;
-	return *v;
+	uint8_t *addr = *(uint8_t **)p;
+	uint8_t v = *addr;
+	*p = addr + sizeof(uint8_t);
+	return v;
 }
 
 static inline char *read_alloc_chars_mm(void **p)
 {
-	char *s = *((char **)p);
-	size_t len = strlen(s) + 1;
-	*p = ((char *)p) + len;
-
-	return memdup(s, len);
+	char *addr = *(char **)p;
+	size_t len = strlen(addr) + 1;
+	*p = addr + len;
+	return memdup(addr, len);
 }
 
 static inline char *read_chars_mm(void **p, unsigned *rlen)
 {
-	char *s = *((char **)p);
-	size_t len = *rlen = strlen(s);
-	*p = ((char *)p) + len + 1;
-
-	return s;
+	char *addr = *(char **)p;
+	size_t len = *rlen = strlen(addr);
+	*p = addr + len + 1;
+	return addr;
 }
 
 static struct index_mm_node *index_mm_read_node(struct index_mm *idx,
