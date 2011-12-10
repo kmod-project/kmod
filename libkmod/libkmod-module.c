@@ -47,6 +47,7 @@ struct kmod_module {
 	char *path;
 	struct kmod_list *dep;
 	int refcount;
+	int n_dep;
 	struct {
 		bool dep : 1;
 	} init;
@@ -111,7 +112,9 @@ int kmod_module_parse_depline(struct kmod_module *mod, char *line)
 	int err, n = 0;
 	size_t dirnamelen;
 
-	assert(!mod->init.dep && mod->dep == NULL);
+	if (mod->init.dep)
+		return mod->n_dep;
+	assert(mod->dep == NULL);
 	mod->init.dep = true;
 
 	p = strchr(line, ':');
@@ -166,6 +169,7 @@ int kmod_module_parse_depline(struct kmod_module *mod, char *line)
 	DBG(ctx, "%d dependencies for %s\n", n, mod->name);
 
 	mod->dep = list;
+	mod->n_dep = n;
 	return n;
 
 fail:
