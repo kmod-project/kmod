@@ -623,15 +623,18 @@ KMOD_EXPORT void kmod_unload_resources(struct kmod_ctx *ctx)
 	}
 }
 
-KMOD_EXPORT int kmod_resolve_alias_options(struct kmod_ctx *ctx, const char *alias, char **options)
+KMOD_EXPORT int kmod_resolve_alias_options(struct kmod_ctx *ctx, const char *given_alias, char **options)
 {
 	struct kmod_list *modules = NULL, *l;
+	char alias[NAME_MAX];
 	char *opts = NULL;
 	size_t optslen = 0;
 	int err;
 
 	if (ctx == NULL || options == NULL)
 		return -ENOENT;
+
+	modname_normalize(given_alias, alias, NULL);
 
 	err = kmod_module_new_from_lookup(ctx, alias, &modules);
 	if (err >= 0) {

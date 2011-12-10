@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <syslog.h>
+#include <limits.h>
 
 #include "macro.h"
 #include "libkmod.h"
@@ -103,6 +104,7 @@ const char *kmod_command_get_modname(const struct kmod_list *l) __attribute__((n
 
 
 /* libkmod-module.c */
+char *modname_normalize(const char *modname, char buf[NAME_MAX], size_t *len)  __attribute__((nonnull(1, 2)));
 int kmod_module_parse_depline(struct kmod_module *mod, char *line) __attribute__((nonnull(1, 2)));
 
 /* libkmod-hash.c */

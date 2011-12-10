@@ -60,7 +60,7 @@ struct kmod_module {
 	char name[];
 };
 
-static inline char *modname_normalize(const char *modname, char buf[NAME_MAX],
+inline char *modname_normalize(const char *modname, char buf[NAME_MAX],
 								size_t *len)
 {
 	size_t s;
@@ -318,10 +318,11 @@ KMOD_EXPORT struct kmod_module *kmod_module_ref(struct kmod_module *mod)
 	} while (0)
 
 KMOD_EXPORT int kmod_module_new_from_lookup(struct kmod_ctx *ctx,
-						const char *alias,
+						const char *given_alias,
 						struct kmod_list **list)
 {
 	int err;
+	char alias[NAME_MAX];
 
 	if (ctx == NULL || alias == NULL)
 		return -ENOENT;
@@ -330,6 +331,8 @@ KMOD_EXPORT int kmod_module_new_from_lookup(struct kmod_ctx *ctx,
 		ERR(ctx, "An empty list is needed to create lookup\n");
 		return -ENOSYS;
 	}
+
+	modname_normalize(given_alias, alias, NULL);
 
 	/* Aliases from config file override all the others */
 	err = kmod_lookup_alias_from_config(ctx, alias, list);
