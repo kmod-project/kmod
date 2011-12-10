@@ -208,10 +208,9 @@ int read_str_ulong(int fd, unsigned long *value, int base) {
 char *strchr_replace(char *s, int c, char r)
 {
 	char *p;
-
-	for (p = s; p != NULL; p = strchr(p, c))
-		*p = r;
-
+	for (p = s; *p != '\0'; p++)
+		if (*p == c)
+			*p = r;
 	return s;
 }
 
