@@ -587,10 +587,21 @@ struct index_mm {
 	size_t size;
 };
 
+struct index_mm_value {
+	unsigned int priority;
+	unsigned int len;
+	const char *value;
+};
+
+struct index_mm_value_array {
+	struct index_mm_value *values;
+	unsigned int len;
+};
+
 struct index_mm_node {
 	struct index_mm *idx;
 	const char *prefix; /* mmape'd value */
-	struct index_value *values;
+	struct index_mm_value_array values;
 	unsigned char first;
 	unsigned char last;
 	uint32_t children[];
@@ -629,8 +640,9 @@ static struct index_mm_node *index_mm_read_node(struct index_mm *idx,
 	void *p = idx->mm;
 	struct index_mm_node *node;
 	const char *prefix;
-	int i, child_count = 0;
-
+	int i, child_count, value_count, children_padding;
+	uint32_t children[INDEX_CHILDMAX];
+	char first, last;
 
 	if ((offset & INDEX_NODE_MASK) == 0)
 		return NULL;
@@ -644,48 +656,56 @@ static struct index_mm_node *index_mm_read_node(struct index_mm *idx,
 		prefix = _idx_empty_str;
 
 	if (offset & INDEX_NODE_CHILDS) {
-		char first = read_char_mm(&p);
-		char last = read_char_mm(&p);
+		first = read_char_mm(&p);
+		last = read_char_mm(&p);
 		child_count = last - first + 1;
-
-		node = malloc(sizeof(*node) + sizeof(uint32_t) * child_count);
-
-		node->first = first;
-		node->last = last;
-
 		for (i = 0; i < child_count; i++)
-			node->children[i] = read_long_mm(&p);
+			children[i] = read_long_mm(&p);
 	} else {
-		node = malloc(sizeof(*node));
-		node->first = INDEX_CHILDMAX;
-		node->last = 0;
+		first = INDEX_CHILDMAX;
+		last = 0;
+		child_count = 0;
 	}
 
-	node->values = NULL;
+	children_padding = (offsetof(struct index_mm_node, children) +
+			    (sizeof(uint32_t) * child_count)) % sizeof(void *);
 
-	if (offset & INDEX_NODE_VALUES) {
-		uint32_t j;
+	if (offset & INDEX_NODE_VALUES)
+		value_count = read_long_mm(&p);
+	else
+		value_count = 0;
 
-		for (j = read_long_mm(&p); j > 0; j--) {
-			unsigned int priority;
-			const char *value;
-			unsigned len;
+	node = malloc(sizeof(struct index_mm_node)
+		      + sizeof(uint32_t) * child_count + children_padding
+		      + sizeof(struct index_mm_value) * value_count);
+	if (node == NULL)
+		return NULL;
 
-			priority = read_long_mm(&p);
-			value = read_chars_mm(&p, &len);
-			add_value(&node->values, value, len, priority);
-		}
-	}
-
-	node->prefix = prefix;
 	node->idx = idx;
+	node->prefix = prefix;
+	if (value_count == 0)
+		node->values.values = NULL;
+	else {
+		node->values.values = (struct index_mm_value *)
+			((char *)node + sizeof(struct index_mm_node) +
+			 sizeof(uint32_t) * child_count + children_padding);
+	}
+	node->values.len = value_count;
+	node->first = first;
+	node->last = last;
+	memcpy(node->children, children, sizeof(uint32_t) * child_count);
+
+	for (i = 0; i < value_count; i++) {
+		struct index_mm_value *v = node->values.values + i;
+		v->priority = read_long_mm(&p);
+		v->value = read_chars_mm(&p, &v->len);
+	}
 
 	return node;
 }
 
 static void index_mm_free_node(struct index_mm_node *node)
 {
-	index_values_free(node->values);
 	free(node);
 }
 
@@ -803,8 +823,8 @@ static char *index_mm_search_node(struct index_mm_node *node, const char *key,
 		i += j;
 
 		if (key[i] == '\0') {
-			if (node->values) {
-				value = strdup(node->values[0].value);
+			if (node->values.len > 0) {
+				value = strdup(node->values.values[0].value);
 				index_mm_free_node(node);
 				return value;
 			} else {
@@ -843,10 +863,12 @@ char *index_mm_search(struct index_mm *idx, const char *key)
 static void index_mm_searchwild_allvalues(struct index_mm_node *node,
 						struct index_value **out)
 {
-	struct index_value *v;
+	struct index_mm_value *itr, *itr_end;
 
-	for (v = node->values; v != NULL; v = v->next)
-		add_value(out, v->value, v->len, v->priority);
+	itr = node->values.values;
+	itr_end = itr + node->values.len;
+	for (; itr < itr_end; itr++)
+		add_value(out, itr->value, itr->len, itr->priority);
 
 	index_mm_free_node(node);
 }
@@ -882,7 +904,7 @@ static void index_mm_searchwild_all(struct index_mm_node *node, int j,
 		buf_popchar(buf);
 	}
 
-	if (node->values) {
+	if (node->values.len > 0) {
 		if (fnmatch(buf_str(buf), subkey, 0) == 0)
 			index_mm_searchwild_allvalues(node, out);
 	} else {
