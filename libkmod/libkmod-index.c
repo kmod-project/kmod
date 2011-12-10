@@ -483,6 +483,8 @@ static void index_searchwild__all(struct index_node_f *node, int j,
 	if (node->values) {
 		if (fnmatch(buf_str(buf), subkey, 0) == 0)
 			index_searchwild__allvalues(node, out);
+		else
+			index_close(node);
 	} else {
 		index_close(node);
 	}
@@ -907,6 +909,8 @@ static void index_mm_searchwild_all(struct index_mm_node *node, int j,
 	if (node->values.len > 0) {
 		if (fnmatch(buf_str(buf), subkey, 0) == 0)
 			index_mm_searchwild_allvalues(node, out);
+		else
+			index_mm_free_node(node);
 	} else {
 		index_mm_free_node(node);
 	}
