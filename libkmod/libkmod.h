@@ -102,7 +102,7 @@ struct kmod_list *kmod_module_get_dependencies(const struct kmod_module *mod);
 int kmod_module_get_filtered_blacklist(const struct kmod_ctx *ctx, const struct kmod_list *input, struct kmod_list **output);
 
 int kmod_module_remove_module(struct kmod_module *mod, unsigned int flags);
-int kmod_module_insert_module(struct kmod_module *mod, unsigned int flags);
+int kmod_module_insert_module(struct kmod_module *mod, unsigned int flags, const char *options);
 
 const char *kmod_module_get_name(const struct kmod_module *mod);
 const char *kmod_module_get_path(const struct kmod_module *mod);

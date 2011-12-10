@@ -518,13 +518,14 @@ KMOD_EXPORT int kmod_module_remove_module(struct kmod_module *mod,
 extern long init_module(void *mem, unsigned long len, const char *args);
 
 KMOD_EXPORT int kmod_module_insert_module(struct kmod_module *mod,
-							unsigned int flags)
+							unsigned int flags,
+							const char *options)
 {
 	int err;
 	void *mmaped_file;
 	struct stat st;
 	int fd;
-	const char *args = "";
+	const char *args = options ? options : "";
 
 	if (mod == NULL)
 		return -ENOENT;
