@@ -363,6 +363,8 @@ static int kmod_lookup_alias_from_alias_bin(struct kmod_ctx *ctx,
 	struct index_value *realnames, *realname;
 
 	if (ctx->indexes[index_number] != NULL) {
+		DBG(ctx, "use mmaped index '%s' for name=%s\n",
+			index_files[index_number], name);
 		realnames = index_mm_searchwild(ctx->indexes[index_number],
 									name);
 	} else{
