@@ -63,6 +63,26 @@ const char *kmod_alias_get_modname(const struct kmod_list *l) {
 	return alias->modname;
 }
 
+const char *kmod_option_get_options(const struct kmod_list *l) {
+	const struct kmod_options *alias = l->data;
+	return alias->options;
+}
+
+const char *kmod_option_get_modname(const struct kmod_list *l) {
+	const struct kmod_options *alias = l->data;
+	return alias->modname;
+}
+
+const char *kmod_command_get_command(const struct kmod_list *l) {
+	const struct kmod_command *alias = l->data;
+	return alias->command;
+}
+
+const char *kmod_command_get_modname(const struct kmod_list *l) {
+	const struct kmod_command *alias = l->data;
+	return alias->modname;
+}
+
 static int kmod_config_add_command(struct kmod_config *config,
 						const char *modname,
 						const char *command,

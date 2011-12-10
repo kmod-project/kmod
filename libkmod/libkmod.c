@@ -622,3 +622,102 @@ KMOD_EXPORT void kmod_unload_resources(struct kmod_ctx *ctx)
 		}
 	}
 }
+
+KMOD_EXPORT int kmod_resolve_alias_options(struct kmod_ctx *ctx, const char *alias, char **options)
+{
+	struct kmod_list *modules = NULL, *l;
+	char *opts = NULL;
+	size_t optslen = 0;
+	int err;
+
+	if (ctx == NULL || options == NULL)
+		return -ENOENT;
+
+	err = kmod_module_new_from_lookup(ctx, alias, &modules);
+	if (err >= 0) {
+		kmod_list_foreach(l, modules) {
+			const char *str = kmod_module_get_options(l->data);
+			size_t len;
+			void *tmp;
+
+			if (str == NULL)
+				continue;
+			len = strlen(str);
+
+			tmp = realloc(opts, optslen + len + 2);
+			if (tmp == NULL)
+				goto failed;
+			opts = tmp;
+			if (optslen > 0) {
+				opts[optslen] = ' ';
+				optslen++;
+			}
+			memcpy(opts + optslen, str, len);
+			optslen += len;
+			opts[optslen] = '\0';
+		}
+	}
+
+	kmod_list_foreach(l, ctx->config->options) {
+		const struct kmod_list *ml;
+		const char *modname = kmod_option_get_modname(l);
+		const char *str;
+		bool already_done = false;
+		size_t len;
+		void *tmp;
+
+		if (fnmatch(modname, alias, 0) != 0)
+			continue;
+
+		kmod_list_foreach(ml, modules) {
+			const char *mln = kmod_module_get_name(ml->data);
+			if (fnmatch(modname, mln, 0) == 0) {
+				already_done = true;
+				break;
+			}
+		}
+		if (already_done)
+			continue;
+
+		str = kmod_option_get_options(l);
+		len = strlen(str);
+		tmp = realloc(opts, optslen + len + 2);
+		if (tmp == NULL)
+			goto failed;
+		opts = tmp;
+		if (optslen > 0) {
+			opts[optslen] = ' ';
+			optslen++;
+		}
+		memcpy(opts + optslen, str, len);
+		optslen += len;
+		opts[optslen] = '\0';
+	}
+
+	DBG(ctx, "alias=%s  options='%s'\n", alias, opts);
+	kmod_module_unref_list(modules);
+	*options = opts;
+	return 0;
+
+failed:
+	kmod_module_unref_list(modules);
+	free(opts);
+	ERR(ctx, "out of memory\n");
+	*options = NULL;
+	return -ENOMEM;
+}
+
+const struct kmod_list *kmod_get_options(const struct kmod_ctx *ctx)
+{
+	return ctx->config->options;
+}
+
+const struct kmod_list *kmod_get_install_commands(const struct kmod_ctx *ctx)
+{
+	return ctx->config->install_commands;
+}
+
+const struct kmod_list *kmod_get_remove_commands(const struct kmod_ctx *ctx)
+{
+	return ctx->config->remove_commands;
+}

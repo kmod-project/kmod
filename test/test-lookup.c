@@ -33,8 +33,9 @@ int main(int argc, char *argv[])
 	const char *alias = NULL;
 	struct kmod_ctx *ctx;
 	struct kmod_list *list = NULL, *l;
+	char *options;
 	int load_resources = 0;
-	int i, err;
+	int err;
 
 	printf("libkmod version %s\n", VERSION);
 
@@ -93,8 +94,25 @@ int main(int argc, char *argv[])
 
 	kmod_list_foreach(l, list) {
 		struct kmod_module *mod = kmod_module_get_module(l);
+		const char *str;
+
 		printf("\t%s\n", kmod_module_get_name(mod));
+		str = kmod_module_get_options(mod);
+		if (str)
+			printf("\t\toptions: '%s'\n", str);
+		str = kmod_module_get_install_commands(mod);
+		if (str)
+			printf("\t\tinstall commands: '%s'\n", str);
+		str = kmod_module_get_remove_commands(mod);
+		if (str)
+			printf("\t\tremove commands: '%s'\n", str);
 		kmod_module_unref(mod);
+	}
+
+	err = kmod_resolve_alias_options(ctx, alias, &options);
+	if (err == 0) {
+		printf("Alias options: '%s'\n", options);
+		free(options);
 	}
 
 	kmod_module_unref_list(list);

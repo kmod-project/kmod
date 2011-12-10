@@ -78,6 +78,10 @@ struct kmod_module *kmod_pool_get_module(struct kmod_ctx *ctx, const char *name)
 void kmod_pool_add_module(struct kmod_ctx *ctx, struct kmod_module *mod) __attribute__((nonnull(1,2)));
 void kmod_pool_del_module(struct kmod_ctx *ctx, struct kmod_module *mod) __attribute__((nonnull(1,2)));
 
+const struct kmod_list *kmod_get_options(const struct kmod_ctx *ctx) __must_check __attribute__((nonnull(1)));
+const struct kmod_list *kmod_get_install_commands(const struct kmod_ctx *ctx) __must_check __attribute__((nonnull(1)));
+const struct kmod_list *kmod_get_remove_commands(const struct kmod_ctx *ctx) __must_check __attribute__((nonnull(1)));
+
 
 /* libkmod-config.c */
 struct kmod_config {
@@ -92,6 +96,11 @@ int kmod_config_new(struct kmod_ctx *ctx, struct kmod_config **config) __attribu
 void kmod_config_free(struct kmod_config *config) __attribute__((nonnull(1)));
 const char *kmod_alias_get_name(const struct kmod_list *l) __attribute__((nonnull(1)));
 const char *kmod_alias_get_modname(const struct kmod_list *l) __attribute__((nonnull(1)));
+const char *kmod_option_get_options(const struct kmod_list *l) __attribute__((nonnull(1)));
+const char *kmod_option_get_modname(const struct kmod_list *l) __attribute__((nonnull(1)));
+const char *kmod_command_get_command(const struct kmod_list *l) __attribute__((nonnull(1)));
+const char *kmod_command_get_modname(const struct kmod_list *l) __attribute__((nonnull(1)));
+
 
 /* libkmod-module.c */
 int kmod_module_parse_depline(struct kmod_module *mod, char *line) __attribute__((nonnull(1, 2)));
