@@ -6,27 +6,81 @@
 #include <inttypes.h>
 #include <string.h>
 #include <libkmod.h>
+#include <getopt.h>
 
+static const char cmdoptions_short[] = "lh";
+static const struct option cmdoptions[] = {
+	{"load-resources", no_argument, 0, 'l'},
+	{"help", no_argument, 0, 'h'},
+	{NULL, 0, 0, 0}
+};
+
+static void help(const char *progname)
+{
+	const struct option *itr_opt;
+	const char *itr_short;
+	printf("Usage:\n"
+	       "\t%s [options] <name-to-lookup>\n"
+	       "Options:\n",
+	       progname);
+	for (itr_opt = cmdoptions, itr_short = cmdoptions_short;
+	     itr_opt->name != NULL; itr_opt++, itr_short++)
+		printf("\t-%c, --%s\n", *itr_short, itr_opt->name);
+}
 
 int main(int argc, char *argv[])
 {
-	const char *alias;
+	const char *alias = NULL;
 	struct kmod_ctx *ctx;
 	struct kmod_list *list = NULL, *l;
-	int err;
+	int load_resources = 0;
+	int i, err;
 
 	printf("libkmod version %s\n", VERSION);
 
-	if (argc < 2) {
+	for (;;) {
+		int c, idx = 0;
+		c = getopt_long(argc, argv, cmdoptions_short, cmdoptions, &idx);
+		if (c == -1)
+			break;
+		switch (c) {
+		case 'l':
+			load_resources = 1;
+			break;
+		case 'h':
+			help(argv[0]);
+			return 0;
+		case '?':
+			return -1;
+		default:
+			fprintf(stderr,
+				"ERR: unexpected getopt_long() value %c\n", c);
+			return -1;
+		}
+	}
+
+	if (optind >= argc) {
 		fprintf(stderr, "ERR: Provide an alias name\n");
 		return EXIT_FAILURE;
 	}
 
-	alias = argv[1];
+	alias = argv[optind];
 
 	ctx = kmod_new(NULL);
-	if (ctx == NULL)
+	if (ctx == NULL) {
+		kmod_unref(ctx);
 		exit(EXIT_FAILURE);
+	}
+
+	if (load_resources) {
+		err = kmod_load_resources(ctx);
+		if (err < 0) {
+			printf("Could not load resources: %s\n",
+			       strerror(-err));
+			kmod_unref(ctx);
+			exit(EXIT_FAILURE);
+		}
+	}
 
 	err = kmod_module_new_from_lookup(ctx, alias, &list);
 	if (err < 0)
