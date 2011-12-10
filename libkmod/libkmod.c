@@ -560,6 +560,7 @@ fail:
 
 KMOD_EXPORT int kmod_load_resources(struct kmod_ctx *ctx)
 {
+	char path[PATH_MAX];
 	size_t i;
 
 	if (ctx == NULL)
@@ -568,6 +569,19 @@ KMOD_EXPORT int kmod_load_resources(struct kmod_ctx *ctx)
 	for (i = 0; i < ARRAY_SIZE(index_files); i++) {
 		if (ctx->indexes[i] == NULL) {
 			const char *fn = index_files[i];
+			size_t fnlen = strlen(fn);
+			const char *prefix = "";
+			const char *suffix = "";
+
+			if (fn[0] != '/')
+				prefix = ctx->dirname;
+
+			if (fnlen < 4 || !streq(fn + fnlen - 4, ".bin"))
+				suffix = ".bin";
+
+			snprintf(path, sizeof(path), "%s/%s%s",
+				 prefix, fn, suffix);
+			fn = path;
 
 			ctx->indexes[i] = index_mm_open(ctx, fn, true);
 			if (ctx->indexes[i] == NULL)
