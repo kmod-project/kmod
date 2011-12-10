@@ -534,6 +534,8 @@ struct index_value *index_searchwild(struct index_file *in, const char *key)
 #include <sys/stat.h>
 #include <unistd.h>
 
+static const char _idx_empty_str[] = "";
+
 /**************************************************************************/
 /*
  * Alternative implementation, using mmap to map all the file to memory when
@@ -548,7 +550,7 @@ struct index_mm {
 
 struct index_mm_node {
 	struct index_mm *idx;
-	char *prefix;
+	const char *prefix; /* mmape'd value */
 	struct index_value *values;
 	unsigned char first;
 	unsigned char last;
@@ -575,14 +577,6 @@ static inline uint8_t read_char_mm(void **p)
 	return v;
 }
 
-static inline char *read_alloc_chars_mm(void **p)
-{
-	char *addr = *(char **)p;
-	size_t len = strlen(addr) + 1;
-	*p = addr + len;
-	return memdup(addr, len);
-}
-
 static inline char *read_chars_mm(void **p, unsigned *rlen)
 {
 	char *addr = *(char **)p;
@@ -595,7 +589,7 @@ static struct index_mm_node *index_mm_read_node(struct index_mm *idx,
 							uint32_t offset) {
 	void *p = idx->mm;
 	struct index_mm_node *node;
-	char *prefix;
+	const char *prefix;
 	int i, child_count = 0;
 
 
@@ -604,10 +598,11 @@ static struct index_mm_node *index_mm_read_node(struct index_mm *idx,
 
 	p = (char *)p + (offset & INDEX_NODE_MASK);
 
-	if (offset & INDEX_NODE_PREFIX)
-		prefix = read_alloc_chars_mm(&p);
-	else
-		prefix = strdup("");
+	if (offset & INDEX_NODE_PREFIX) {
+		unsigned len;
+		prefix = read_chars_mm(&p, &len);
+	} else
+		prefix = _idx_empty_str;
 
 	if (offset & INDEX_NODE_CHILDS) {
 		char first = read_char_mm(&p);
@@ -651,7 +646,6 @@ static struct index_mm_node *index_mm_read_node(struct index_mm *idx,
 
 static void index_mm_free_node(struct index_mm_node *node)
 {
-	free(node->prefix);
 	index_values_free(node->values);
 	free(node);
 }
