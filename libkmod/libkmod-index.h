@@ -110,53 +110,6 @@ struct index_value {
 };
 
 /* In-memory index (depmod only) */
-
-#define INDEX_CHILDMAX 128
-struct index_node {
-	char *prefix;		/* path compression */
-	struct index_value *values;
-	unsigned char first;	/* range of child nodes */
-	unsigned char last;
-	struct index_node *children[INDEX_CHILDMAX]; /* indexed by character */
-};
-
-/* Disk format:
-
-   uint32_t magic = INDEX_MAGIC;
-   uint32_t version = INDEX_VERSION;
-   uint32_t root_offset;
-
-   (node_offset & INDEX_NODE_MASK) specifies the file offset of nodes:
-
-        char[] prefix; // nul terminated
-
-        char first;
-        char last;
-        uint32_t children[last - first + 1];
-
-        uint32_t value_count;
-        struct {
-            uint32_t priority;
-            char[] value; // nul terminated
-        } values[value_count];
-
-   (node_offset & INDEX_NODE_FLAGS) indicates which fields are present.
-   Empty prefixes are omitted, leaf nodes omit the three child-related fields.
-
-   This could be optimised further by adding a sparse child format
-   (indicated using a new flag).
- */
-
-/* Format of node offsets within index file */
-enum node_offset {
-	INDEX_NODE_FLAGS    = 0xF0000000, /* Flags in high nibble */
-	INDEX_NODE_PREFIX   = 0x80000000,
-	INDEX_NODE_VALUES = 0x40000000,
-	INDEX_NODE_CHILDS   = 0x20000000,
-
-	INDEX_NODE_MASK     = 0x0FFFFFFF, /* Offset value */
-};
-
 struct index_file;
 struct index_file *index_file_open(const char *filename);
 void index_file_close(struct index_file *idx);
