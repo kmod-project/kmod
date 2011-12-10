@@ -368,8 +368,7 @@ static int kmod_lookup_alias_from_alias_bin(struct kmod_ctx *ctx,
 	} else{
 		char fn[PATH_MAX];
 
-		fn[PATH_MAX - 1] = '\0';
-		snprintf(fn, sizeof(fn) - 1, "%s/%s.bin", ctx->dirname,
+		snprintf(fn, sizeof(fn), "%s/%s.bin", ctx->dirname,
 						index_files[index_number]);
 
 		DBG(ctx, "file=%s name=%s\n", fn, name);
