@@ -426,13 +426,16 @@ char *kmod_search_moddep(struct kmod_ctx *ctx, const char *name)
 	char fn[PATH_MAX];
 	char *line;
 
+	if (ctx->indexes[KMOD_INDEX_DEP]) {
+		DBG(ctx, "use mmaped index '%s' modname=%s\n",
+			index_files[KMOD_INDEX_DEP], name);
+		return index_mm_search(ctx->indexes[KMOD_INDEX_DEP], name);
+	}
+
 	snprintf(fn, sizeof(fn), "%s/%s.bin", ctx->dirname,
 						index_files[KMOD_INDEX_DEP]);
 
 	DBG(ctx, "file=%s modname=%s\n", fn, name);
-
-	if (ctx->indexes[KMOD_INDEX_DEP])
-		return index_mm_search(ctx->indexes[KMOD_INDEX_DEP], name);
 
 	idx = index_file_open(fn);
 	if (idx == NULL) {
