@@ -473,7 +473,7 @@ KMOD_EXPORT const char *kmod_module_get_path(const struct kmod_module *mod)
 {
 	char *line;
 
-	DBG(mod->ctx, "name='%s' path='%s'", mod->name, mod->path);
+	DBG(mod->ctx, "name='%s' path='%s'\n", mod->name, mod->path);
 
 	if (mod->path != NULL)
 		return mod->path;

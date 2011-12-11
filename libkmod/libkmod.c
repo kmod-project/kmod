@@ -441,7 +441,7 @@ char *kmod_search_moddep(struct kmod_ctx *ctx, const char *name)
 
 	idx = index_file_open(fn);
 	if (idx == NULL) {
-		ERR(ctx, "Could not open moddep file '%s'", fn);
+		ERR(ctx, "Could not open moddep file '%s'\n", fn);
 		return NULL;
 	}
 
@@ -500,7 +500,7 @@ int kmod_lookup_alias_from_config(struct kmod_ctx *ctx, const char *name,
 
 			err = kmod_module_new_from_name(ctx, modname, &mod);
 			if (err < 0) {
-				ERR(ctx, "%s", strerror(-err));
+				ERR(ctx, "%s\n", strerror(-err));
 				goto fail;
 			}
 
