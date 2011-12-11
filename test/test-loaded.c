@@ -23,6 +23,7 @@ int main(int argc, char *argv[])
 	err = kmod_loaded_get_list(ctx, &list);
 	if (err < 0) {
 		fprintf(stderr, "%s\n", strerror(-err));
+		kmod_unref(ctx);
 		exit(EXIT_FAILURE);
 	}
 

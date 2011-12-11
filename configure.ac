@@ -22,6 +22,11 @@ AC_C_TYPEOF
 AM_PROG_CC_C_O
 AC_PROG_GCC_TRADITIONAL
 
+AC_ARG_ENABLE([tools],
+        AS_HELP_STRING([--disable-tools], [disable building tools that provide same functionality as module-init-tools @<:@default=enabled@:>@]),
+	[], enable_tools=yes)
+AM_CONDITIONAL([BUILD_TOOLS], [test "x$enable_tools" = "xyes"])
+
 AC_ARG_ENABLE([logging],
 	AS_HELP_STRING([--disable-logging], [disable system logging @<:@default=enabled@:>@]),
 	[], enable_logging=yes)
@@ -97,11 +102,13 @@ AC_MSG_RESULT([
 	sysconfdir:		${sysconfdir}
 	libdir:			${libdir}
 	includedir:		${includedir}
+        bindir:                 ${bindir}
 
 	compiler:		${CC}
 	cflags:			${CFLAGS}
 	ldflags:		${LDFLAGS}
 
+        tools:                  ${enable_tools}
 	logging:		${enable_logging}
 	debug:			${enable_debug}
 ])
