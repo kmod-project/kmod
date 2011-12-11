@@ -595,7 +595,7 @@ KMOD_EXPORT int kmod_module_get_initstate(const struct kmod_module *mod)
 				return KMOD_MODULE_BUILTIN;
 		}
 
-		ERR(mod->ctx, "could not open '%s': %s\n",
+		DBG(mod->ctx, "could not open '%s': %s\n",
 			path, strerror(-err));
 		return err;
 	}
