@@ -124,7 +124,7 @@ int main(int argc, char *argv[])
 		opts[optslen] = '\0';
 	}
 
-	ctx = kmod_new(NULL);
+	ctx = kmod_new(NULL, NULL);
 	if (!ctx) {
 		fputs("Error: kmod_new() failed!\n", stderr);
 		free(opts);

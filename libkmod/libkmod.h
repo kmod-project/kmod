@@ -35,7 +35,7 @@ extern "C" {
  * environment, user variables, allows custom logging
  */
 struct kmod_ctx;
-struct kmod_ctx *kmod_new(const char *dirname);
+struct kmod_ctx *kmod_new(const char *dirname, const char * const *config_dirs);
 struct kmod_ctx *kmod_ref(struct kmod_ctx *ctx);
 struct kmod_ctx *kmod_unref(struct kmod_ctx *ctx);
 void kmod_set_log_fn(struct kmod_ctx *ctx,

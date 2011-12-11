@@ -57,6 +57,13 @@ static const char* index_files[] = {
 	[KMOD_INDEX_SYMBOL] = "modules.symbols",
 };
 
+static const char *default_config_paths[] = {
+	"/run/modprobe.d",
+	"/etc/modprobe.d",
+	"/lib/modprobe.d",
+	NULL
+};
+
 /**
  * kmod_ctx:
  *
@@ -179,9 +186,17 @@ static char *get_kernel_release(const char *dirname)
  * The initial refcount is 1, and needs to be decremented to
  * release the resources of the kmod library context.
  *
+ * @dirname: what to consider as linux module's directory, if NULL
+ *           defaults to /lib/modules/`uname -r`
+ * @config_paths: ordered array of paths (directories or files) where
+ *               to load user-defined configuration parameters such as
+ *               alias, blacklists, commands (install, remove). If
+ *               NULL defaults to /run/modprobe.d, /etc/modprobe.d and
+ *               /lib/modprobe.d.  This array must be null terminated.
+ *
  * Returns: a new kmod library context
  */
-KMOD_EXPORT struct kmod_ctx *kmod_new(const char *dirname)
+KMOD_EXPORT struct kmod_ctx *kmod_new(const char *dirname, const char * const *config_paths)
 {
 	const char *env;
 	struct kmod_ctx *ctx;
@@ -203,7 +218,9 @@ KMOD_EXPORT struct kmod_ctx *kmod_new(const char *dirname)
 	if (env != NULL)
 		kmod_set_log_priority(ctx, log_priority(env));
 
-	err = kmod_config_new(ctx, &ctx->config);
+	if (config_paths == NULL)
+		config_paths = default_config_paths;
+	err = kmod_config_new(ctx, &ctx->config, config_paths);
 	if (err < 0) {
 		ERR(ctx, "could not create config\n");
 		goto fail;

@@ -93,7 +93,7 @@ struct kmod_config {
 	struct kmod_list *remove_commands;
 	struct kmod_list *install_commands;
 };
-int kmod_config_new(struct kmod_ctx *ctx, struct kmod_config **config) __attribute__((nonnull(1)));
+int kmod_config_new(struct kmod_ctx *ctx, struct kmod_config **config, const char * const *config_paths) __attribute__((nonnull(1, 2,3)));
 void kmod_config_free(struct kmod_config *config) __attribute__((nonnull(1)));
 const char *kmod_alias_get_name(const struct kmod_list *l) __attribute__((nonnull(1)));
 const char *kmod_alias_get_modname(const struct kmod_list *l) __attribute__((nonnull(1)));

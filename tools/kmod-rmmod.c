@@ -146,7 +146,7 @@ int main(int argc, char *argv[])
 		return EXIT_FAILURE;
 	}
 
-	ctx = kmod_new(NULL);
+	ctx = kmod_new(NULL, NULL);
 	if (!ctx) {
 		fputs("Error: kmod_new() failed!\n", stderr);
 		return EXIT_FAILURE;

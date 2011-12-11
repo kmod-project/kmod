@@ -67,7 +67,7 @@ int main(int argc, char *argv[])
 
 	alias = argv[optind];
 
-	ctx = kmod_new(NULL);
+	ctx = kmod_new(NULL, NULL);
 	if (ctx == NULL) {
 		kmod_unref(ctx);
 		exit(EXIT_FAILURE);

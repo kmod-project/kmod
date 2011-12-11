@@ -947,11 +947,11 @@ int main(int argc, char **orig_argv)
 {
 	struct kmod_ctx *ctx;
 	char **args = NULL, **argv;
-	int nargs = 0;
+	const char **config_paths = NULL;
+	int nargs = 0, n_config_paths = 0;
 	char dirname_buf[PATH_MAX];
 	const char *dirname = NULL;
 	const char *root = NULL;
-	const char *config = NULL;
 	const char *kversion = NULL;
 	const char *list_type = NULL;
 	int use_all = 0;
@@ -1025,11 +1025,22 @@ int main(int argc, char **orig_argv)
 		case 'n':
 			dry_run = 1;
 			break;
-		case 'C':
+		case 'C': {
+			size_t bytes = sizeof(char *) * (n_config_paths + 2);
+			void *tmp = realloc(config_paths, bytes);
+			if (!tmp) {
+				fputs("Error: out-of-memory\n", stderr);
+				goto cmdline_failed;
+			}
+			config_paths = tmp;
+			config_paths[n_config_paths] = optarg;
+			n_config_paths++;
+			config_paths[n_config_paths] = NULL;
+
 			env_modprobe_options_append("-C");
 			env_modprobe_options_append(optarg);
-			config = optarg;
 			break;
+		}
 		case 'd':
 			root = optarg;
 			break;
@@ -1101,7 +1112,7 @@ int main(int argc, char **orig_argv)
 		dirname = dirname_buf;
 	}
 
-	ctx = kmod_new(dirname);
+	ctx = kmod_new(dirname, config_paths);
 	if (!ctx) {
 		fputs("Error: kmod_new() failed!\n", stderr);
 		goto cmdline_failed;
@@ -1140,11 +1151,12 @@ int main(int argc, char **orig_argv)
 
 	if (argv != orig_argv)
 		free(argv);
-
+	free(config_paths);
 	return err >= 0 ? EXIT_SUCCESS : EXIT_FAILURE;
 
 cmdline_failed:
 	if (argv != orig_argv)
 		free(argv);
+	free(config_paths);
 	return EXIT_FAILURE;
 }

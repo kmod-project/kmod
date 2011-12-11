@@ -24,7 +24,7 @@ int main(int argc, char *argv[])
 
 	alias = argv[1];
 
-	ctx = kmod_new(NULL);
+	ctx = kmod_new(NULL, NULL);
 	if (ctx == NULL)
 		exit(EXIT_FAILURE);
 

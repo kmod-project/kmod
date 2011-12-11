@@ -32,12 +32,6 @@
 #include "libkmod.h"
 #include "libkmod-private.h"
 
-static const char *config_files[] = {
-	"/run/modprobe.d",
-	"/etc/modprobe.d",
-	"/lib/modprobe.d",
-};
-
 struct kmod_alias {
 	char *name;
 	char modname[];
@@ -458,7 +452,7 @@ fail_read:
 	return NULL;
 }
 
-int kmod_config_new(struct kmod_ctx *ctx, struct kmod_config **p_config)
+int kmod_config_new(struct kmod_ctx *ctx, struct kmod_config **p_config, const char * const *config_paths)
 {
 	struct kmod_config *config;
 	size_t i;
@@ -469,33 +463,49 @@ int kmod_config_new(struct kmod_ctx *ctx, struct kmod_config **p_config)
 
 	config->ctx = ctx;
 
-	for (i = 0; i < ARRAY_SIZE(config_files); i++) {
+	for (i = 0; config_paths[i] != NULL; i++) {
+		const char *path = config_paths[i];
 		struct kmod_list *list = NULL;
+		struct stat st;
 		DIR *d;
-		int fd;
 
-		d = conf_files_list(ctx, &list, config_files[i]);
+		if (stat(path, &st) != 0) {
+			DBG(ctx, "could not load '%s': %s\n",
+				path, strerror(errno));
+			continue;
+		}
+
+		if (S_ISREG(st.st_mode)) {
+			int fd = open(path, O_RDONLY);
+			DBG(ctx, "parsing file '%s': %d\n", path, fd);
+			if (fd >= 0)
+				kmod_config_parse(config, fd, path);
+			continue;
+		} else if (!S_ISDIR(st.st_mode)) {
+			ERR(ctx, "unsupported file mode %s: %#x\n",
+				path, st.st_mode);
+			continue;
+		}
+
+		d = conf_files_list(ctx, &list, path);
 
 		/* there's no entry */
 		if (list == NULL)
 			continue;
-
-		/* there's only one entry, and it's a file */
 		if (d == NULL) {
-			DBG(ctx, "parsing file '%s'\n", config_files[i]);
-			list = kmod_list_remove(list);
-			fd = open(config_files[i], O_RDONLY);
-			if (fd >= 0)
-				kmod_config_parse(config, fd, config_files[i]);
-
+			ERR(ctx, "returned list but no directory?\n");
+			while (list) {
+				free(list->data);
+				kmod_list_remove(list);
+			}
 			continue;
 		}
 
 		/* treat all the entries in that dir */
 		for (; list != NULL; list = kmod_list_remove(list)) {
-			DBG(ctx, "parsing file '%s/%s'\n", config_files[i],
-							(char *) list->data);
-			fd = openat(dirfd(d), list->data, O_RDONLY);
+			int fd = openat(dirfd(d), list->data, O_RDONLY);
+			DBG(ctx, "parsing file '%s/%s': %d\n", path,
+				(const char *) list->data, fd);
 			if (fd >= 0)
 				kmod_config_parse(config, fd, list->data);
 
