@@ -7,7 +7,7 @@ AC_INIT([libkmod],
 
 AC_CONFIG_SRCDIR([libkmod/libkmod.c])
 AC_CONFIG_AUX_DIR([build-aux])
-AM_INIT_AUTOMAKE([check-news foreign 1.11 -Wall -Wno-portability silent-rules tar-pax dist-bzip2 subdir-objects])
+AM_INIT_AUTOMAKE([check-news foreign 1.11 silent-rules tar-pax dist-bzip2 subdir-objects])
 AC_PROG_CC_STDC
 AC_USE_SYSTEM_EXTENSIONS
 AC_SYS_LARGEFILE
@@ -35,6 +35,52 @@ AC_ARG_ENABLE([debug],
 AS_IF([test "x$enable_debug" = "xyes"], [
 	AC_DEFINE(ENABLE_DEBUG, [1], [Debug messages.])
 ])
+
+CC_CHECK_CFLAGS_APPEND([ \
+        -pipe \
+        -Wall \
+        -W \
+        -Wextra \
+        -Wno-inline \
+        -Wvla \
+        -Wundef \
+        -Wformat=2 \
+        -Wlogical-op \
+        -Wsign-compare \
+        -Wformat-security \
+        -Wmissing-include-dirs \
+        -Wformat-nonliteral \
+        -Wold-style-definition \
+        -Wpointer-arith \
+        -Winit-self \
+        -Wdeclaration-after-statement \
+        -Wfloat-equal \
+        -Wmissing-prototypes \
+        -Wstrict-prototypes \
+        -Wredundant-decls \
+        -Wmissing-declarations \
+        -Wmissing-noreturn \
+        -Wshadow \
+        -Wendif-labels \
+        -Wcast-align \
+        -Wstrict-aliasing=2 \
+        -Wwrite-strings \
+        -Wno-long-long \
+        -Wno-overlength-strings \
+        -Wno-unused-parameter \
+        -Wno-missing-field-initializers \
+        -Wno-unused-result \
+        -Wp,-D_FORTIFY_SOURCE=2 \
+        -ffast-math \
+        -fno-common \
+        -fdiagnostics-show-option \
+        -fno-strict-aliasing \
+        -fvisibility=hidden \
+        -ffunction-sections \
+        -fdata-sections \
+        -Wl,--as-needed \
+        -Wl,--gc-sections])
+
 
 AC_CONFIG_HEADERS(config.h)
 AC_CONFIG_FILES([
