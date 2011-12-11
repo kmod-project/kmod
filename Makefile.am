@@ -49,11 +49,13 @@ pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libkmod/libkmod.pc
 
 if BUILD_TOOLS
-bin_PROGRAMS = tools/kmod-insmod tools/kmod-rmmod tools/kmod-lsmod
+bin_PROGRAMS = tools/kmod-insmod tools/kmod-rmmod tools/kmod-lsmod \
+	tools/kmod-modprobe
 
 tools_kmod_insmod_LDADD = libkmod/libkmod.la
 tools_kmod_rmmod_LDADD = libkmod/libkmod.la
 tools_kmod_lsmod_LDADD = libkmod/libkmod.la
+tools_kmod_modprobe_LDADD = libkmod/libkmod.la
 endif
 
 TESTS = test/test-init test/test-loaded

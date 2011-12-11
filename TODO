@@ -14,5 +14,17 @@ Features:
   binary, and it's sufficient to return only the lists from lookups.
   ^-- investigate the best API
 
-* create test-mock library to be LD_PRELOA'ed before running the binaries
+* create test-mock library to be LD_PRELOAD'ed before running the binaries
   so we're able to create unit tests
+
+* provide ELF manipulation to implement modinfo
+
+* provide 1:1 compatibility with module-init-tools's modprobe, missing:
+   - parse options from kernel command line (modname.opt=val)
+   - provide softdeps
+   - show modversions (needs elf manipulation)
+   - show config (list all known options, install, remove, softdep...)
+   - show list (lists all modules known by modules.dep)
+   - return install/remove commands for non-modules:
+         install nonexistentmodule somecommand
+     modprobe nonexistentmodule -> runs somecommand
