@@ -565,6 +565,247 @@ KMOD_EXPORT int kmod_module_insert_module(struct kmod_module *mod,
 	return err;
 }
 
+KMOD_EXPORT const char *kmod_module_get_options(const struct kmod_module *mod)
+{
+	if (mod == NULL)
+		return NULL;
+
+	if (!mod->init.options) {
+		/* lazy init */
+		struct kmod_module *m = (struct kmod_module *)mod;
+		const struct kmod_list *l, *ctx_options;
+		char *opts = NULL;
+		size_t optslen = 0;
+
+		ctx_options = kmod_get_options(mod->ctx);
+
+		kmod_list_foreach(l, ctx_options) {
+			const char *modname = kmod_option_get_modname(l);
+			const char *str;
+			size_t len;
+			void *tmp;
+
+			if (strcmp(modname, mod->name) != 0)
+				continue;
+
+			str = kmod_option_get_options(l);
+			len = strlen(str);
+			if (len < 1)
+				continue;
+
+			tmp = realloc(opts, optslen + len + 2);
+			if (tmp == NULL) {
+				free(opts);
+				goto failed;
+			}
+
+			opts = tmp;
+
+			if (optslen > 0) {
+				opts[optslen] = ' ';
+				optslen++;
+			}
+
+			memcpy(opts + optslen, str, len);
+			optslen += len;
+			opts[optslen] = '\0';
+		}
+
+		m->init.options = true;
+		m->options = opts;
+	}
+
+	return mod->options;
+
+failed:
+	ERR(mod->ctx, "out of memory\n");
+	return NULL;
+}
+
+KMOD_EXPORT const char *kmod_module_get_install_commands(const struct kmod_module *mod)
+{
+	if (mod == NULL)
+		return NULL;
+
+	if (!mod->init.install_commands) {
+		/* lazy init */
+		struct kmod_module *m = (struct kmod_module *)mod;
+		const struct kmod_list *l, *ctx_install_commands;
+		char *cmds = NULL;
+		size_t cmdslen = 0;
+
+		ctx_install_commands = kmod_get_install_commands(mod->ctx);
+
+		kmod_list_foreach(l, ctx_install_commands) {
+			const char *modname = kmod_command_get_modname(l);
+			const char *str;
+			size_t len;
+			void *tmp;
+
+			if (strcmp(modname, mod->name) != 0)
+				continue;
+
+			str = kmod_command_get_command(l);
+			len = strlen(str);
+			if (len < 1)
+				continue;
+
+			tmp = realloc(cmds, cmdslen + len + 2);
+			if (tmp == NULL) {
+				free(cmds);
+				goto failed;
+			}
+
+			cmds = tmp;
+
+			if (cmdslen > 0) {
+				cmds[cmdslen] = ';';
+				cmdslen++;
+			}
+
+			memcpy(cmds + cmdslen, str, len);
+			cmdslen += len;
+			cmds[cmdslen] = '\0';
+		}
+
+		m->init.install_commands = true;
+		m->install_commands = cmds;
+	}
+
+	return mod->install_commands;
+
+failed:
+	ERR(mod->ctx, "out of memory\n");
+	return NULL;
+}
+
+KMOD_EXPORT const char *kmod_module_get_remove_commands(const struct kmod_module *mod)
+{
+	if (mod == NULL)
+		return NULL;
+
+	if (!mod->init.remove_commands) {
+		/* lazy init */
+		struct kmod_module *m = (struct kmod_module *)mod;
+		const struct kmod_list *l, *ctx_remove_commands;
+		char *cmds = NULL;
+		size_t cmdslen = 0;
+
+		ctx_remove_commands = kmod_get_remove_commands(mod->ctx);
+
+		kmod_list_foreach(l, ctx_remove_commands) {
+			const char *modname = kmod_command_get_modname(l);
+			const char *str;
+			size_t len;
+			void *tmp;
+
+			if (strcmp(modname, mod->name) != 0)
+				continue;
+
+			str = kmod_command_get_command(l);
+			len = strlen(str);
+			if (len < 1)
+				continue;
+
+			tmp = realloc(cmds, cmdslen + len + 2);
+			if (tmp == NULL) {
+				free(cmds);
+				goto failed;
+			}
+
+			cmds = tmp;
+
+			if (cmdslen > 0) {
+				cmds[cmdslen] = ';';
+				cmdslen++;
+			}
+
+			memcpy(cmds + cmdslen, str, len);
+			cmdslen += len;
+			cmds[cmdslen] = '\0';
+		}
+
+		m->init.remove_commands = true;
+		m->remove_commands = cmds;
+	}
+
+	return mod->remove_commands;
+
+failed:
+	ERR(mod->ctx, "out of memory\n");
+	return NULL;
+}
+
+/**
+ * SECTION:libkmod-loaded
+ * @short_description: currently loaded modules
+ *
+ * Information about currently loaded modules, as reported by Linux kernel.
+ * These information are not cached by libkmod and are always read from /sys
+ * and /proc/modules.
+ */
+
+/**
+ * kmod_module_new_from_loaded:
+ * @ctx: kmod library context
+ * @list: where to save the list of loaded modules
+ *
+ * Get a list of all modules currently loaded in kernel. It uses /proc/modules
+ * to get the names of loaded modules and to create kmod_module objects by
+ * calling kmod_module_new_from_name() in each of them. They are put are put
+ * in @list in no particular order.
+ *
+ * All the returned modules get their refcount incremented (or are created if
+ * they do not exist yet). After using the list, release the resources by
+ * calling kmod_module_unref_list().
+ *
+ * Returns: 0 on success or < 0 on error.
+ */
+KMOD_EXPORT int kmod_module_new_from_loaded(struct kmod_ctx *ctx,
+						struct kmod_list **list)
+{
+	struct kmod_list *l = NULL;
+	FILE *fp;
+	char line[4096];
+
+	if (ctx == NULL || list == NULL)
+		return -ENOENT;
+
+	fp = fopen("/proc/modules", "r");
+	if (fp == NULL) {
+		int err = -errno;
+		ERR(ctx, "could not open /proc/modules: %s\n", strerror(errno));
+		return err;
+	}
+
+	while (fgets(line, sizeof(line), fp)) {
+		struct kmod_module *m;
+		struct kmod_list *node;
+		int err;
+		char *saveptr, *name = strtok_r(line, " \t", &saveptr);
+
+		err = kmod_module_new_from_name(ctx, name, &m);
+		if (err < 0) {
+			ERR(ctx, "could not get module from name '%s': %s\n",
+				name, strerror(-err));
+			continue;
+		}
+
+		node = kmod_list_append(l, m);
+		if (node)
+			l = node;
+		else {
+			ERR(ctx, "out of memory\n");
+			kmod_module_unref(m);
+		}
+	}
+
+	fclose(fp);
+	*list = l;
+
+	return 0;
+}
+
 KMOD_EXPORT const char *kmod_module_initstate_str(enum kmod_module_initstate state)
 {
     switch (state) {
@@ -839,175 +1080,4 @@ KMOD_EXPORT void kmod_module_section_free_list(struct kmod_list *list)
 		kmod_module_section_free(list->data);
 		list = kmod_list_remove(list);
 	}
-}
-
-KMOD_EXPORT const char *kmod_module_get_options(const struct kmod_module *mod)
-{
-	if (mod == NULL)
-		return NULL;
-
-	if (!mod->init.options) {
-		/* lazy init */
-		struct kmod_module *m = (struct kmod_module *)mod;
-		const struct kmod_list *l, *ctx_options;
-		char *opts = NULL;
-		size_t optslen = 0;
-
-		ctx_options = kmod_get_options(mod->ctx);
-
-		kmod_list_foreach(l, ctx_options) {
-			const char *modname = kmod_option_get_modname(l);
-			const char *str;
-			size_t len;
-			void *tmp;
-
-			if (strcmp(modname, mod->name) != 0)
-				continue;
-
-			str = kmod_option_get_options(l);
-			len = strlen(str);
-			if (len < 1)
-				continue;
-
-			tmp = realloc(opts, optslen + len + 2);
-			if (tmp == NULL) {
-				free(opts);
-				goto failed;
-			}
-
-			opts = tmp;
-
-			if (optslen > 0) {
-				opts[optslen] = ' ';
-				optslen++;
-			}
-
-			memcpy(opts + optslen, str, len);
-			optslen += len;
-			opts[optslen] = '\0';
-		}
-
-		m->init.options = true;
-		m->options = opts;
-	}
-
-	return mod->options;
-
-failed:
-	ERR(mod->ctx, "out of memory\n");
-	return NULL;
-}
-
-KMOD_EXPORT const char *kmod_module_get_install_commands(const struct kmod_module *mod)
-{
-	if (mod == NULL)
-		return NULL;
-
-	if (!mod->init.install_commands) {
-		/* lazy init */
-		struct kmod_module *m = (struct kmod_module *)mod;
-		const struct kmod_list *l, *ctx_install_commands;
-		char *cmds = NULL;
-		size_t cmdslen = 0;
-
-		ctx_install_commands = kmod_get_install_commands(mod->ctx);
-
-		kmod_list_foreach(l, ctx_install_commands) {
-			const char *modname = kmod_command_get_modname(l);
-			const char *str;
-			size_t len;
-			void *tmp;
-
-			if (strcmp(modname, mod->name) != 0)
-				continue;
-
-			str = kmod_command_get_command(l);
-			len = strlen(str);
-			if (len < 1)
-				continue;
-
-			tmp = realloc(cmds, cmdslen + len + 2);
-			if (tmp == NULL) {
-				free(cmds);
-				goto failed;
-			}
-
-			cmds = tmp;
-
-			if (cmdslen > 0) {
-				cmds[cmdslen] = ';';
-				cmdslen++;
-			}
-
-			memcpy(cmds + cmdslen, str, len);
-			cmdslen += len;
-			cmds[cmdslen] = '\0';
-		}
-
-		m->init.install_commands = true;
-		m->install_commands = cmds;
-	}
-
-	return mod->install_commands;
-
-failed:
-	ERR(mod->ctx, "out of memory\n");
-	return NULL;
-}
-
-KMOD_EXPORT const char *kmod_module_get_remove_commands(const struct kmod_module *mod)
-{
-	if (mod == NULL)
-		return NULL;
-
-	if (!mod->init.remove_commands) {
-		/* lazy init */
-		struct kmod_module *m = (struct kmod_module *)mod;
-		const struct kmod_list *l, *ctx_remove_commands;
-		char *cmds = NULL;
-		size_t cmdslen = 0;
-
-		ctx_remove_commands = kmod_get_remove_commands(mod->ctx);
-
-		kmod_list_foreach(l, ctx_remove_commands) {
-			const char *modname = kmod_command_get_modname(l);
-			const char *str;
-			size_t len;
-			void *tmp;
-
-			if (strcmp(modname, mod->name) != 0)
-				continue;
-
-			str = kmod_command_get_command(l);
-			len = strlen(str);
-			if (len < 1)
-				continue;
-
-			tmp = realloc(cmds, cmdslen + len + 2);
-			if (tmp == NULL) {
-				free(cmds);
-				goto failed;
-			}
-
-			cmds = tmp;
-
-			if (cmdslen > 0) {
-				cmds[cmdslen] = ';';
-				cmdslen++;
-			}
-
-			memcpy(cmds + cmdslen, str, len);
-			cmdslen += len;
-			cmds[cmdslen] = '\0';
-		}
-
-		m->init.remove_commands = true;
-		m->remove_commands = cmds;
-	}
-
-	return mod->remove_commands;
-
-failed:
-	ERR(mod->ctx, "out of memory\n");
-	return NULL;
 }
