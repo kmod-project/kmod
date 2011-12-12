@@ -106,7 +106,7 @@ int main(int argc, char *argv[])
 	int flags = KMOD_REMOVE_NOWAIT;
 	int use_syslog = 0;
 	int verbose = 0;
-	int i, err;
+	int i, err = 0;
 
 	for (;;) {
 		int c, idx = 0;

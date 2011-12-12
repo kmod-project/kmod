@@ -117,7 +117,7 @@ int kmod_module_parse_depline(struct kmod_module *mod, char *line)
 	const char *dirname;
 	char buf[PATH_MAX];
 	char *p, *saveptr;
-	int err, n = 0;
+	int err = 0, n = 0;
 	size_t dirnamelen;
 
 	if (mod->init.dep)
