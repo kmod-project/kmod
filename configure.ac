@@ -7,7 +7,7 @@ AC_INIT([libkmod],
 
 AC_CONFIG_SRCDIR([libkmod/libkmod.c])
 AC_CONFIG_AUX_DIR([build-aux])
-AM_INIT_AUTOMAKE([check-news foreign 1.11 -Wall -Wno-portability silent-rules tar-pax dist-bzip2 subdir-objects])
+AM_INIT_AUTOMAKE([check-news foreign 1.11 silent-rules tar-pax dist-bzip2 subdir-objects])
 AC_PROG_CC_STDC
 AC_USE_SYSTEM_EXTENSIONS
 AC_SYS_LARGEFILE
@@ -22,6 +22,11 @@ AC_C_TYPEOF
 AM_PROG_CC_C_O
 AC_PROG_GCC_TRADITIONAL
 
+AC_ARG_ENABLE([tools],
+        AS_HELP_STRING([--disable-tools], [disable building tools that provide same functionality as module-init-tools @<:@default=enabled@:>@]),
+	[], enable_tools=yes)
+AM_CONDITIONAL([BUILD_TOOLS], [test "x$enable_tools" = "xyes"])
+
 AC_ARG_ENABLE([logging],
 	AS_HELP_STRING([--disable-logging], [disable system logging @<:@default=enabled@:>@]),
 	[], enable_logging=yes)
@@ -35,6 +40,52 @@ AC_ARG_ENABLE([debug],
 AS_IF([test "x$enable_debug" = "xyes"], [
 	AC_DEFINE(ENABLE_DEBUG, [1], [Debug messages.])
 ])
+
+CC_CHECK_CFLAGS_APPEND([ \
+        -pipe \
+        -Wall \
+        -W \
+        -Wextra \
+        -Wno-inline \
+        -Wvla \
+        -Wundef \
+        -Wformat=2 \
+        -Wlogical-op \
+        -Wsign-compare \
+        -Wformat-security \
+        -Wmissing-include-dirs \
+        -Wformat-nonliteral \
+        -Wold-style-definition \
+        -Wpointer-arith \
+        -Winit-self \
+        -Wdeclaration-after-statement \
+        -Wfloat-equal \
+        -Wmissing-prototypes \
+        -Wstrict-prototypes \
+        -Wredundant-decls \
+        -Wmissing-declarations \
+        -Wmissing-noreturn \
+        -Wshadow \
+        -Wendif-labels \
+        -Wcast-align \
+        -Wstrict-aliasing=2 \
+        -Wwrite-strings \
+        -Wno-long-long \
+        -Wno-overlength-strings \
+        -Wno-unused-parameter \
+        -Wno-missing-field-initializers \
+        -Wno-unused-result \
+        -Wp,-D_FORTIFY_SOURCE=2 \
+        -ffast-math \
+        -fno-common \
+        -fdiagnostics-show-option \
+        -fno-strict-aliasing \
+        -fvisibility=hidden \
+        -ffunction-sections \
+        -fdata-sections \
+        -Wl,--as-needed \
+        -Wl,--gc-sections])
+
 
 AC_CONFIG_HEADERS(config.h)
 AC_CONFIG_FILES([
@@ -51,11 +102,13 @@ AC_MSG_RESULT([
 	sysconfdir:		${sysconfdir}
 	libdir:			${libdir}
 	includedir:		${includedir}
+        bindir:                 ${bindir}
 
 	compiler:		${CC}
 	cflags:			${CFLAGS}
 	ldflags:		${LDFLAGS}
 
+        tools:                  ${enable_tools}
 	logging:		${enable_logging}
 	debug:			${enable_debug}
 ])

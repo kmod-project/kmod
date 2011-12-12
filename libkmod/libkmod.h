@@ -35,7 +35,7 @@ extern "C" {
  * environment, user variables, allows custom logging
  */
 struct kmod_ctx;
-struct kmod_ctx *kmod_new(const char *dirname);
+struct kmod_ctx *kmod_new(const char *dirname, const char * const *config_dirs);
 struct kmod_ctx *kmod_ref(struct kmod_ctx *ctx);
 struct kmod_ctx *kmod_unref(struct kmod_ctx *ctx);
 void kmod_set_log_fn(struct kmod_ctx *ctx,
@@ -48,6 +48,8 @@ int kmod_get_log_priority(const struct kmod_ctx *ctx);
 void kmod_set_log_priority(struct kmod_ctx *ctx, int priority);
 void *kmod_get_userdata(const struct kmod_ctx *ctx);
 void kmod_set_userdata(struct kmod_ctx *ctx, const void *userdata);
+int kmod_load_resources(struct kmod_ctx *ctx);
+void kmod_unload_resources(struct kmod_ctx *ctx);
 
 /*
  * kmod_list
@@ -100,7 +102,7 @@ struct kmod_list *kmod_module_get_dependencies(const struct kmod_module *mod);
 int kmod_module_get_filtered_blacklist(const struct kmod_ctx *ctx, const struct kmod_list *input, struct kmod_list **output);
 
 int kmod_module_remove_module(struct kmod_module *mod, unsigned int flags);
-int kmod_module_insert_module(struct kmod_module *mod, unsigned int flags);
+int kmod_module_insert_module(struct kmod_module *mod, unsigned int flags, const char *options);
 
 const char *kmod_module_get_name(const struct kmod_module *mod);
 const char *kmod_module_get_path(const struct kmod_module *mod);
@@ -124,6 +126,12 @@ unsigned long kmod_module_section_get_address(const struct kmod_list *entry);
 void kmod_module_section_free_list(struct kmod_list *list);
 
 long kmod_module_get_size(const struct kmod_module *mod);
+
+const char *kmod_module_get_options(const struct kmod_module *mod);
+const char *kmod_module_get_install_commands(const struct kmod_module *mod);
+const char *kmod_module_get_remove_commands(const struct kmod_module *mod);
+
+int kmod_resolve_alias_options(struct kmod_ctx *ctx, const char *alias, char **options);
 
 #ifdef __cplusplus
 } /* extern "C" */

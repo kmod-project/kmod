@@ -10,31 +10,21 @@ Features:
 * index: drop the "open(), seek(), read()" implementation and use another one
   with mmap(). When lookup() is called and the file is not mmaped, mmap it.
 
-* provide a kmod_preload_resources() so configs are parsed and files are mmaped
-  with MAP_POPULATE | MAP_LOCKED. Maybe it's a good idea to have a
-  kmod_unload_resources() too.
-
-* kmod_module: create a mempool with live and recently de-allocated modules.
-  This way we don't have to create a new one, parse dependencies and whatnot.
-  Just pick the already created node.
-
-* kmod_module: apply blacklist on module lookup. What's best? Return the whole
-  list and provide functions like kmod_module_filter_* or return the list
-  already filtered?
-  ^-- investigate the best API
-
 * insmod and rmmod with dependency handling. Maybe this should be done by the
   binary, and it's sufficient to return only the lists from lookups.
   ^-- investigate the best API
 
-* when preloading stuff, give the possibility to preload binary files. We need
-  to create alternative index_search* functions to operate on mmapped files.
-  Then on ctx creation we mmap all the files
+* create test-mock library to be LD_PRELOAD'ed before running the binaries
+  so we're able to create unit tests
 
-* kmod_module: calculate fields on demand if not available:
-	- name
-	- path
-	- dependency
+* provide ELF manipulation to implement modinfo
 
-* index: check implementations in order to allocate less stuff. There some
-  malloc()s that could be avoided
+* provide 1:1 compatibility with module-init-tools's modprobe, missing:
+   - parse options from kernel command line (modname.opt=val)
+   - provide softdeps
+   - show modversions (needs elf manipulation)
+   - show config (list all known options, install, remove, softdep...)
+   - show list (lists all modules known by modules.dep)
+   - return install/remove commands for non-modules:
+         install nonexistentmodule somecommand
+     modprobe nonexistentmodule -> runs somecommand

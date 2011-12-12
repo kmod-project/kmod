@@ -44,6 +44,26 @@
  * and is passed to all library operations.
  */
 
+enum kmod_index {
+	KMOD_INDEX_DEP = 0,
+	KMOD_INDEX_ALIAS,
+	KMOD_INDEX_SYMBOL,
+	_KMOD_INDEX_LAST,
+};
+
+static const char* index_files[] = {
+	[KMOD_INDEX_DEP] = "modules.dep",
+	[KMOD_INDEX_ALIAS] = "modules.alias",
+	[KMOD_INDEX_SYMBOL] = "modules.symbols",
+};
+
+static const char *default_config_paths[] = {
+	"/run/modprobe.d",
+	"/etc/modprobe.d",
+	"/lib/modprobe.d",
+	NULL
+};
+
 /**
  * kmod_ctx:
  *
@@ -60,6 +80,7 @@ struct kmod_ctx {
 	char *dirname;
 	struct kmod_config *config;
 	struct kmod_hash *modules_by_name;
+	struct index_mm *indexes[_KMOD_INDEX_LAST];
 };
 
 void kmod_log(const struct kmod_ctx *ctx,
@@ -165,9 +186,17 @@ static char *get_kernel_release(const char *dirname)
  * The initial refcount is 1, and needs to be decremented to
  * release the resources of the kmod library context.
  *
+ * @dirname: what to consider as linux module's directory, if NULL
+ *           defaults to /lib/modules/`uname -r`
+ * @config_paths: ordered array of paths (directories or files) where
+ *               to load user-defined configuration parameters such as
+ *               alias, blacklists, commands (install, remove). If
+ *               NULL defaults to /run/modprobe.d, /etc/modprobe.d and
+ *               /lib/modprobe.d.  This array must be null terminated.
+ *
  * Returns: a new kmod library context
  */
-KMOD_EXPORT struct kmod_ctx *kmod_new(const char *dirname)
+KMOD_EXPORT struct kmod_ctx *kmod_new(const char *dirname, const char * const *config_paths)
 {
 	const char *env;
 	struct kmod_ctx *ctx;
@@ -189,7 +218,9 @@ KMOD_EXPORT struct kmod_ctx *kmod_new(const char *dirname)
 	if (env != NULL)
 		kmod_set_log_priority(ctx, log_priority(env));
 
-	err = kmod_config_new(ctx, &ctx->config);
+	if (config_paths == NULL)
+		config_paths = default_config_paths;
+	err = kmod_config_new(ctx, &ctx->config, config_paths);
 	if (err < 0) {
 		ERR(ctx, "could not create config\n");
 		goto fail;
@@ -244,11 +275,15 @@ KMOD_EXPORT struct kmod_ctx *kmod_unref(struct kmod_ctx *ctx)
 
 	if (--ctx->refcount > 0)
 		return ctx;
+
 	INFO(ctx, "context %p released\n", ctx);
+
+	kmod_unload_resources(ctx);
 	kmod_hash_free(ctx->modules_by_name);
 	free(ctx->dirname);
 	if (ctx->config)
 		kmod_config_free(ctx->config);
+
 	free(ctx);
 	return NULL;
 }
@@ -336,27 +371,35 @@ void kmod_pool_del_module(struct kmod_ctx *ctx, struct kmod_module *mod)
 }
 
 static int kmod_lookup_alias_from_alias_bin(struct kmod_ctx *ctx,
-						const char *file,
+						enum kmod_index index_number,
 						const char *name,
 						struct kmod_list **list)
 {
-	char *fn;
 	int err, nmatch = 0;
 	struct index_file *idx;
 	struct index_value *realnames, *realname;
 
-	if (asprintf(&fn, "%s/%s.bin", ctx->dirname, file) < 0)
-		return -ENOMEM;
+	if (ctx->indexes[index_number] != NULL) {
+		DBG(ctx, "use mmaped index '%s' for name=%s\n",
+			index_files[index_number], name);
+		realnames = index_mm_searchwild(ctx->indexes[index_number],
+									name);
+	} else{
+		char fn[PATH_MAX];
 
-	DBG(ctx, "file=%s name=%s\n", fn, name);
+		snprintf(fn, sizeof(fn), "%s/%s.bin", ctx->dirname,
+						index_files[index_number]);
 
-	idx = index_file_open(fn);
-	if (idx == NULL) {
-		free(fn);
-		return -ENOSYS;
+		DBG(ctx, "file=%s name=%s\n", fn, name);
+
+		idx = index_file_open(fn);
+		if (idx == NULL)
+			return -ENOSYS;
+
+		realnames = index_searchwild(idx, name);
+		index_file_close(idx);
 	}
 
-	realnames = index_searchwild(idx, name);
 	for (realname = realnames; realname; realname = realnames->next) {
 		struct kmod_module *mod;
 
@@ -371,9 +414,6 @@ static int kmod_lookup_alias_from_alias_bin(struct kmod_ctx *ctx,
 	}
 
 	index_values_free(realnames);
-	index_file_close(idx);
-	free(fn);
-
 	return nmatch;
 
 fail:
@@ -382,27 +422,22 @@ fail:
 
 }
 
-static const char *symbols_file = "modules.symbols";
-
 int kmod_lookup_alias_from_symbols_file(struct kmod_ctx *ctx, const char *name,
 						struct kmod_list **list)
 {
 	if (!startswith(name, "symbol:"))
 		return 0;
 
-	return kmod_lookup_alias_from_alias_bin(ctx, symbols_file, name, list);
+	return kmod_lookup_alias_from_alias_bin(ctx, KMOD_INDEX_SYMBOL, name,
+									list);
 }
-
-
-static const char *aliases_file = "modules.alias";
 
 int kmod_lookup_alias_from_aliases_file(struct kmod_ctx *ctx, const char *name,
 						struct kmod_list **list)
 {
-	return kmod_lookup_alias_from_alias_bin(ctx, aliases_file, name, list);
+	return kmod_lookup_alias_from_alias_bin(ctx, KMOD_INDEX_ALIAS, name,
+									list);
 }
-
-static const char *moddep_file = "modules.dep";
 
 char *kmod_search_moddep(struct kmod_ctx *ctx, const char *name)
 {
@@ -410,13 +445,20 @@ char *kmod_search_moddep(struct kmod_ctx *ctx, const char *name)
 	char fn[PATH_MAX];
 	char *line;
 
-	snprintf(fn, sizeof(fn), "%s/%s.bin", ctx->dirname, moddep_file);
+	if (ctx->indexes[KMOD_INDEX_DEP]) {
+		DBG(ctx, "use mmaped index '%s' modname=%s\n",
+			index_files[KMOD_INDEX_DEP], name);
+		return index_mm_search(ctx->indexes[KMOD_INDEX_DEP], name);
+	}
+
+	snprintf(fn, sizeof(fn), "%s/%s.bin", ctx->dirname,
+						index_files[KMOD_INDEX_DEP]);
 
 	DBG(ctx, "file=%s modname=%s\n", fn, name);
 
 	idx = index_file_open(fn);
 	if (idx == NULL) {
-		ERR(ctx, "Could not open moddep file '%s'", fn);
+		ERR(ctx, "Could not open moddep file '%s'\n", fn);
 		return NULL;
 	}
 
@@ -475,7 +517,7 @@ int kmod_lookup_alias_from_config(struct kmod_ctx *ctx, const char *name,
 
 			err = kmod_module_new_from_name(ctx, modname, &mod);
 			if (err < 0) {
-				ERR(ctx, "%s", strerror(-err));
+				ERR(ctx, "%s\n", strerror(-err));
 				goto fail;
 			}
 
@@ -543,4 +585,159 @@ fail:
 	kmod_module_unref_list(*output);
 	*output = NULL;
 	return -ENOMEM;
+}
+
+KMOD_EXPORT int kmod_load_resources(struct kmod_ctx *ctx)
+{
+	char path[PATH_MAX];
+	size_t i;
+
+	if (ctx == NULL)
+		return -ENOENT;
+
+	for (i = 0; i < ARRAY_SIZE(index_files); i++) {
+		if (ctx->indexes[i] == NULL) {
+			const char *fn = index_files[i];
+			size_t fnlen = strlen(fn);
+			const char *prefix = "";
+			const char *suffix = "";
+
+			if (fn[0] != '/')
+				prefix = ctx->dirname;
+
+			if (fnlen < 4 || !streq(fn + fnlen - 4, ".bin"))
+				suffix = ".bin";
+
+			snprintf(path, sizeof(path), "%s/%s%s",
+				 prefix, fn, suffix);
+			fn = path;
+
+			ctx->indexes[i] = index_mm_open(ctx, fn, true);
+			if (ctx->indexes[i] == NULL)
+				goto fail;
+		}
+	}
+
+	return 0;
+
+fail:
+	kmod_unload_resources(ctx);
+	return -ENOMEM;
+}
+
+KMOD_EXPORT void kmod_unload_resources(struct kmod_ctx *ctx)
+{
+	size_t i;
+
+	if (ctx == NULL)
+		return;
+
+	for (i = 0; i < ARRAY_SIZE(index_files); i++) {
+		if (ctx->indexes[i] != NULL) {
+			index_mm_close(ctx->indexes[i]);
+			ctx->indexes[i] = NULL;
+		}
+	}
+}
+
+KMOD_EXPORT int kmod_resolve_alias_options(struct kmod_ctx *ctx, const char *given_alias, char **options)
+{
+	struct kmod_list *modules = NULL, *l;
+	char alias[NAME_MAX];
+	char *opts = NULL;
+	size_t optslen = 0;
+	int err;
+
+	if (ctx == NULL || options == NULL)
+		return -ENOENT;
+
+	modname_normalize(given_alias, alias, NULL);
+
+	err = kmod_module_new_from_lookup(ctx, alias, &modules);
+	if (err >= 0) {
+		kmod_list_foreach(l, modules) {
+			const char *str = kmod_module_get_options(l->data);
+			size_t len;
+			void *tmp;
+
+			if (str == NULL)
+				continue;
+			len = strlen(str);
+
+			tmp = realloc(opts, optslen + len + 2);
+			if (tmp == NULL)
+				goto failed;
+			opts = tmp;
+			if (optslen > 0) {
+				opts[optslen] = ' ';
+				optslen++;
+			}
+			memcpy(opts + optslen, str, len);
+			optslen += len;
+			opts[optslen] = '\0';
+		}
+	}
+
+	kmod_list_foreach(l, ctx->config->options) {
+		const struct kmod_list *ml;
+		const char *modname = kmod_option_get_modname(l);
+		const char *str;
+		bool already_done = false;
+		size_t len;
+		void *tmp;
+
+		if (fnmatch(modname, alias, 0) != 0)
+			continue;
+
+		kmod_list_foreach(ml, modules) {
+			const char *mln = kmod_module_get_name(ml->data);
+			if (fnmatch(modname, mln, 0) == 0) {
+				already_done = true;
+				break;
+			}
+		}
+		if (already_done)
+			continue;
+
+		str = kmod_option_get_options(l);
+		len = strlen(str);
+		tmp = realloc(opts, optslen + len + 2);
+		if (tmp == NULL)
+			goto failed;
+		opts = tmp;
+		if (optslen > 0) {
+			opts[optslen] = ' ';
+			optslen++;
+		}
+		memcpy(opts + optslen, str, len);
+		optslen += len;
+		opts[optslen] = '\0';
+	}
+
+	DBG(ctx, "alias=%s  options='%s'\n", alias, opts);
+	kmod_module_unref_list(modules);
+	*options = opts;
+	return 0;
+
+failed:
+	kmod_module_unref_list(modules);
+	free(opts);
+	ERR(ctx, "out of memory\n");
+	*options = NULL;
+	return -ENOMEM;
+}
+
+const struct kmod_list *kmod_get_options(const struct kmod_ctx *ctx)
+{
+	return ctx->config->options;
+}
+
+const struct kmod_list *kmod_get_install_commands(const struct kmod_ctx *ctx)
+{
+	return ctx->config->install_commands;
+}
+
+const struct kmod_list *kmod_get_remove_commands(const struct kmod_ctx *ctx)
+{
+	return ctx->config->remove_commands;
 }
