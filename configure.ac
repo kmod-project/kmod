@@ -42,53 +42,53 @@ AS_IF([test "x$enable_debug" = "xyes"], [
 ])
 
 CC_CHECK_CFLAGS_APPEND([ \
-        -pipe \
-        -Wall \
-        -W \
-        -Wextra \
-        -Wno-inline \
-        -Wvla \
-        -Wundef \
-        -Wformat=2 \
-        -Wlogical-op \
-        -Wsign-compare \
-        -Wformat-security \
-        -Wmissing-include-dirs \
-        -Wformat-nonliteral \
-        -Wold-style-definition \
-        -Wpointer-arith \
-        -Winit-self \
-        -Wdeclaration-after-statement \
-        -Wfloat-equal \
-        -Wmissing-prototypes \
-        -Wstrict-prototypes \
-        -Wredundant-decls \
-        -Wmissing-declarations \
-        -Wmissing-noreturn \
-        -Wshadow \
-        -Wendif-labels \
-        -Wcast-align \
-        -Wstrict-aliasing=2 \
-        -Wwrite-strings \
-        -Wno-long-long \
-        -Wno-overlength-strings \
-        -Wno-unused-parameter \
-        -Wno-missing-field-initializers \
-        -Wno-unused-result \
-	-Wnested-externs \
-	-Wchar-subscripts \
-	-Wtype-limits \
-	-Wuninitialized \
-        -Wp,-D_FORTIFY_SOURCE=2 \
-        -ffast-math \
-        -fno-common \
-        -fdiagnostics-show-option \
-        -fno-strict-aliasing \
-        -fvisibility=hidden \
-        -ffunction-sections \
-        -fdata-sections \
-        -Wl,--as-needed \
-        -Wl,--gc-sections])
+			-pipe \
+			-Wall \
+			-W \
+			-Wextra \
+			-Wno-inline \
+			-Wvla \
+			-Wundef \
+			-Wformat=2 \
+			-Wlogical-op \
+			-Wsign-compare \
+			-Wformat-security \
+			-Wmissing-include-dirs \
+			-Wformat-nonliteral \
+			-Wold-style-definition \
+			-Wpointer-arith \
+			-Winit-self \
+			-Wdeclaration-after-statement \
+			-Wfloat-equal \
+			-Wmissing-prototypes \
+			-Wstrict-prototypes \
+			-Wredundant-decls \
+			-Wmissing-declarations \
+			-Wmissing-noreturn \
+			-Wshadow \
+			-Wendif-labels \
+			-Wcast-align \
+			-Wstrict-aliasing=2 \
+			-Wwrite-strings \
+			-Wno-long-long \
+			-Wno-overlength-strings \
+			-Wno-unused-parameter \
+			-Wno-missing-field-initializers \
+			-Wno-unused-result \
+			-Wnested-externs \
+			-Wchar-subscripts \
+			-Wtype-limits \
+			-Wuninitialized \
+			-Wp,-D_FORTIFY_SOURCE=2 \
+			-ffast-math \
+			-fno-common \
+			-fdiagnostics-show-option \
+			-fno-strict-aliasing \
+			-fvisibility=hidden \
+			-ffunction-sections \
+			-fdata-sections \
+			-Wl,--as-needed \
+			-Wl,--gc-sections])
 
 
 AC_CONFIG_HEADERS(config.h)
@@ -106,13 +106,13 @@ AC_MSG_RESULT([
 	sysconfdir:		${sysconfdir}
 	libdir:			${libdir}
 	includedir:		${includedir}
-        bindir:                 ${bindir}
+	bindir:			${bindir}
 
 	compiler:		${CC}
 	cflags:			${CFLAGS}
 	ldflags:		${LDFLAGS}
 
-        tools:                  ${enable_tools}
+	tools:			${enable_tools}
 	logging:		${enable_logging}
 	debug:			${enable_debug}
 ])
