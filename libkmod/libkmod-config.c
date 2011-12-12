@@ -363,10 +363,11 @@ void kmod_config_free(struct kmod_config *config)
 	free(config);
 }
 
-static bool conf_files_filter_out(struct kmod_ctx *ctx, const char *path,
-								const char *fn)
+static bool conf_files_filter_out(struct kmod_ctx *ctx, DIR *d,
+					const char *path, const char *fn)
 {
 	size_t len = strlen(fn);
+	struct stat st;
 
 	if (fn[0] == '.')
 		return 1;
@@ -376,6 +377,14 @@ static bool conf_files_filter_out(struct kmod_ctx *ctx, const char *path,
 		INFO(ctx, "All config files need .conf: %s/%s, "
 				"it will be ignored in a future release\n",
 				path, fn);
+		return 1;
+	}
+
+	fstatat(dirfd(d), fn, &st, 0);
+
+	if (S_ISDIR(st.st_mode)) {
+		ERR(ctx, "Directories inside directories are not supported: "
+							"%s/%s\n", path, fn);
 		return 1;
 	}
 
@@ -415,7 +424,7 @@ static DIR *conf_files_list(struct kmod_ctx *ctx, struct kmod_list **list,
 		if (entp == NULL)
 			break;
 
-		if (conf_files_filter_out(ctx, path, entp->d_name) == 1)
+		if (conf_files_filter_out(ctx, d, path, entp->d_name) == 1)
 			continue;
 
 		/* insert sorted */
