@@ -10,7 +10,8 @@ libdir() {
 
 args="--prefix=/usr \
 --sysconfdir=/etc \
---libdir=$(libdir /usr/lib)"
+--libdir=$(libdir /usr/lib) \
+--enable-debug"
 
 if [ -z "$NOCONFIGURE" ]; then
 	exec ./configure $args CFLAGS="${MYCFLAGS} ${CFLAGS}" "$@"
