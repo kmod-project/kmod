@@ -727,19 +727,18 @@ struct index_mm *index_mm_open(struct kmod_ctx *ctx, const char *filename,
 
 	DBG(ctx, "file=%s\n", filename);
 
-	if ((fd = open(filename, O_RDONLY)) < 0) {
+	idx = malloc(sizeof(*idx));
+	if (idx == NULL) {
 		ERR(ctx, "%m\n");
 		return NULL;
 	}
 
-	fstat(fd, &st);
-
-	idx = malloc(sizeof(*idx));
-	if (idx == NULL) {
+	if ((fd = open(filename, O_RDONLY)) < 0) {
 		ERR(ctx, "%m\n");
-		goto fail;
+		goto fail_open;
 	}
 
+	fstat(fd, &st);
 	flags = MAP_PRIVATE;
 	if (populate)
 		flags |= MAP_POPULATE;
@@ -776,6 +775,7 @@ struct index_mm *index_mm_open(struct kmod_ctx *ctx, const char *filename,
 
 fail:
 	close(fd);
+fail_open:
 	if (idx->mm)
 		munmap(idx->mm, st.st_size);
 	free(idx);
