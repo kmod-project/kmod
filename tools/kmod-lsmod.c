@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
 		return EXIT_FAILURE;
 	}
 
-	err = kmod_loaded_get_list(ctx, &list);
+	err = kmod_module_new_from_loaded(ctx, &list);
 	if (err < 0) {
 		fprintf(stderr, "Error: could not get list of modules: %s\n",
 			strerror(-err));

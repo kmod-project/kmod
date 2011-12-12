@@ -11,7 +11,6 @@ global:
 	kmod_unref;
 	kmod_list_next;
 	kmod_list_prev;
-	kmod_loaded_get_list;
 
 	kmod_load_resources;
 	kmod_unload_resources;
@@ -19,6 +18,7 @@ global:
 	kmod_module_new_from_name;
 	kmod_module_new_from_path;
 	kmod_module_new_from_lookup;
+	kmod_module_new_from_loaded;
 	kmod_module_ref;
 	kmod_module_unref;
 	kmod_module_unref_list;

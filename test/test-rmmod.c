@@ -24,7 +24,7 @@ int main(int argc, char *argv[])
 
 	printf("libkmod version %s\n", VERSION);
 
-	err = kmod_loaded_get_list(ctx, &list);
+	err = kmod_module_new_from_loaded(ctx, &list);
 	if (err < 0) {
 		fprintf(stderr, "%s\n", strerror(-err));
 		kmod_unref(ctx);

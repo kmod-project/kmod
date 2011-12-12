@@ -66,8 +66,6 @@ struct kmod_list *kmod_list_prev(const struct kmod_list *first_entry,
 		list_entry != NULL; \
 		list_entry = kmod_list_next(first_entry, list_entry))
 
-int kmod_loaded_get_list(struct kmod_ctx *ctx, struct kmod_list **list);
-
 enum kmod_remove {
 	KMOD_REMOVE_FORCE = O_TRUNC,
 	KMOD_REMOVE_NOWAIT = O_NONBLOCK,
@@ -92,6 +90,7 @@ int kmod_module_new_from_path(struct kmod_ctx *ctx, const char *path,
 						struct kmod_module **mod);
 int kmod_module_new_from_lookup(struct kmod_ctx *ctx, const char *alias,
 						struct kmod_list **list);
+int kmod_module_new_from_loaded(struct kmod_ctx *ctx, struct kmod_list **list);
 
 struct kmod_module *kmod_module_ref(struct kmod_module *mod);
 struct kmod_module *kmod_module_unref(struct kmod_module *mod);

@@ -34,16 +34,19 @@
  * SECTION:libkmod-loaded
  * @short_description: currently loaded modules
  *
- * Information about currently loaded modules, as reported by Linux kernel
+ * Information about currently loaded modules, as reported by Linux kernel.
+ * These information are not cached by libkmod and are always read from /sys
+ * and /proc/modules.
  */
 
 /**
- * kmod_loaded_get_list:
+ * kmod_module_new_from_loaded:
  * @ctx: kmod library context
  * @list: where to save the list of loaded modules
  *
  * Get a list of all modules currently loaded in kernel. It uses /proc/modules
- * to get a list of loaded modules and create kmod_module objects that are put
+ * to get the names of loaded modules and to create kmod_module objects by
+ * calling kmod_module_new_from_name() in each of them. They are put are put
  * in @list in no particular order.
  *
  * All the returned modules get their refcount incremented (or are created if
@@ -52,7 +55,7 @@
  *
  * Returns: 0 on success or < 0 on error.
  */
-KMOD_EXPORT int kmod_loaded_get_list(struct kmod_ctx *ctx,
+KMOD_EXPORT int kmod_module_new_from_loaded(struct kmod_ctx *ctx,
 						struct kmod_list **list)
 {
 	struct kmod_list *l = NULL;
