@@ -2,7 +2,7 @@
 
 autoreconf --install --symlink
 
-MYCFLAGS="-g"
+MYCFLAGS="-g -O2 -Werror"
 
 libdir() {
 	echo $(cd $1/$(gcc -print-multi-os-directory); pwd)
