@@ -74,6 +74,7 @@ inline char *modname_normalize(const char *modname, char buf[NAME_MAX],
 		else
 			buf[s] = c;
 	}
+
 	buf[s] = '\0';
 
 	if (len)
@@ -133,6 +134,7 @@ int kmod_module_parse_depline(struct kmod_module *mod, char *line)
 	dirnamelen = strlen(dirname);
 	if (dirnamelen + 2 >= PATH_MAX)
 		return 0;
+
 	memcpy(buf, dirname, dirnamelen);
 	buf[dirnamelen] = '/';
 	dirnamelen++;
@@ -410,6 +412,7 @@ KMOD_EXPORT struct kmod_module *kmod_module_get_module(const struct kmod_list *e
 {
 	if (entry == NULL)
 		return NULL;
+
 	return kmod_module_ref(entry->data);
 }
 
@@ -730,6 +733,7 @@ KMOD_EXPORT struct kmod_list *kmod_module_get_sections(const struct kmod_module 
 
 	if (mod == NULL)
 		return NULL;
+
 	snprintf(dname, sizeof(dname), "/sys/module/%s/sections", mod->name);
 
 	d = opendir(dname);
@@ -771,7 +775,6 @@ KMOD_EXPORT struct kmod_list *kmod_module_get_sections(const struct kmod_module 
 
 		err = read_str_ulong(fd, &address, 16);
 		close(fd);
-
 		if (err < 0) {
 			ERR(mod->ctx, "could not read long from '%s/%s': %m\n",
 							dname, de.d_name);
@@ -811,8 +814,10 @@ fail:
 KMOD_EXPORT const char *kmod_module_section_get_name(const struct kmod_list *entry)
 {
 	struct kmod_module_section *section;
+
 	if (entry == NULL)
 		return NULL;
+
 	section = entry->data;
 	return section->name;
 }
@@ -820,8 +825,10 @@ KMOD_EXPORT const char *kmod_module_section_get_name(const struct kmod_list *ent
 KMOD_EXPORT unsigned long kmod_module_section_get_address(const struct kmod_list *entry)
 {
 	struct kmod_module_section *section;
+
 	if (entry == NULL)
 		return (unsigned long)-1;
+
 	section = entry->data;
 	return section->address;
 }
@@ -845,7 +852,9 @@ KMOD_EXPORT const char *kmod_module_get_options(const struct kmod_module *mod)
 		const struct kmod_list *l, *ctx_options;
 		char *opts = NULL;
 		size_t optslen = 0;
+
 		ctx_options = kmod_get_options(mod->ctx);
+
 		kmod_list_foreach(l, ctx_options) {
 			const char *modname = kmod_option_get_modname(l);
 			const char *str;
@@ -865,15 +874,19 @@ KMOD_EXPORT const char *kmod_module_get_options(const struct kmod_module *mod)
 				free(opts);
 				goto failed;
 			}
+
 			opts = tmp;
+
 			if (optslen > 0) {
 				opts[optslen] = ' ';
 				optslen++;
 			}
+
 			memcpy(opts + optslen, str, len);
 			optslen += len;
 			opts[optslen] = '\0';
 		}
+
 		m->init.options = true;
 		m->options = opts;
 	}
@@ -896,7 +909,9 @@ KMOD_EXPORT const char *kmod_module_get_install_commands(const struct kmod_modul
 		const struct kmod_list *l, *ctx_install_commands;
 		char *cmds = NULL;
 		size_t cmdslen = 0;
+
 		ctx_install_commands = kmod_get_install_commands(mod->ctx);
+
 		kmod_list_foreach(l, ctx_install_commands) {
 			const char *modname = kmod_command_get_modname(l);
 			const char *str;
@@ -916,15 +931,19 @@ KMOD_EXPORT const char *kmod_module_get_install_commands(const struct kmod_modul
 				free(cmds);
 				goto failed;
 			}
+
 			cmds = tmp;
+
 			if (cmdslen > 0) {
 				cmds[cmdslen] = ';';
 				cmdslen++;
 			}
+
 			memcpy(cmds + cmdslen, str, len);
 			cmdslen += len;
 			cmds[cmdslen] = '\0';
 		}
+
 		m->init.install_commands = true;
 		m->install_commands = cmds;
 	}
@@ -947,7 +966,9 @@ KMOD_EXPORT const char *kmod_module_get_remove_commands(const struct kmod_module
 		const struct kmod_list *l, *ctx_remove_commands;
 		char *cmds = NULL;
 		size_t cmdslen = 0;
+
 		ctx_remove_commands = kmod_get_remove_commands(mod->ctx);
+
 		kmod_list_foreach(l, ctx_remove_commands) {
 			const char *modname = kmod_command_get_modname(l);
 			const char *str;
@@ -967,15 +988,19 @@ KMOD_EXPORT const char *kmod_module_get_remove_commands(const struct kmod_module
 				free(cmds);
 				goto failed;
 			}
+
 			cmds = tmp;
+
 			if (cmdslen > 0) {
 				cmds[cmdslen] = ';';
 				cmdslen++;
 			}
+
 			memcpy(cmds + cmdslen, str, len);
 			cmdslen += len;
 			cmds[cmdslen] = '\0';
 		}
+
 		m->init.remove_commands = true;
 		m->remove_commands = cmds;
 	}

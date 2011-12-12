@@ -179,6 +179,7 @@ static int kmod_config_add_alias(struct kmod_config *config,
 	alias = malloc(sizeof(*alias) + namelen + modnamelen);
 	if (!alias)
 		goto oom_error_init;
+
 	alias->name = sizeof(*alias) + modnamelen + (char *)alias;
 
 	memcpy(alias->modname, modname, modnamelen);
@@ -187,6 +188,7 @@ static int kmod_config_add_alias(struct kmod_config *config,
 	list = kmod_list_append(config->aliases, alias);
 	if (!list)
 		goto oom_error;
+
 	config->aliases = list;
 	return 0;
 

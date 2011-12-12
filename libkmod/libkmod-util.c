@@ -45,6 +45,7 @@ char *getline_wrapped(FILE *fp, unsigned int *linenum)
 	int size = 256;
 	int i = 0;
 	char *buf = malloc(size);
+
 	for(;;) {
 		int ch = getc_unlocked(fp);
 
@@ -147,8 +148,10 @@ inline void *memdup(const void *p, size_t n)
 ssize_t read_str_safe(int fd, char *buf, size_t buflen) {
 	size_t todo = buflen;
 	size_t done;
+
 	do {
 		ssize_t r = read(fd, buf, todo);
+
 		if (r == 0)
 			break;
 		else if (r > 0)
@@ -161,7 +164,9 @@ ssize_t read_str_safe(int fd, char *buf, size_t buflen) {
 				return -errno;
 		}
 	} while (todo > 0);
+
 	done = buflen - todo;
+
 	if (done == 0)
 		buf[0] = '\0';
 	else {
@@ -170,6 +175,7 @@ ssize_t read_str_safe(int fd, char *buf, size_t buflen) {
 		else if (buf[done - 1] != '\0')
 			return -ENOSPC;
 	}
+
 	return done;
 }
 
@@ -177,6 +183,7 @@ int read_str_long(int fd, long *value, int base) {
 	char buf[32], *end;
 	long v;
 	int err;
+
 	*value = 0;
 	err = read_str_safe(fd, buf, sizeof(buf));
 	if (err < 0)
@@ -185,6 +192,7 @@ int read_str_long(int fd, long *value, int base) {
 	v = strtol(buf, &end, base);
 	if (end == buf || !isspace(*end))
 		return -EINVAL;
+
 	*value = v;
 	return 0;
 }
@@ -193,6 +201,7 @@ int read_str_ulong(int fd, unsigned long *value, int base) {
 	char buf[32], *end;
 	long v;
 	int err;
+
 	*value = 0;
 	err = read_str_safe(fd, buf, sizeof(buf));
 	if (err < 0)
@@ -208,9 +217,11 @@ int read_str_ulong(int fd, unsigned long *value, int base) {
 char *strchr_replace(char *s, int c, char r)
 {
 	char *p;
+
 	for (p = s; *p != '\0'; p++)
 		if (*p == c)
 			*p = r;
+
 	return s;
 }
 
