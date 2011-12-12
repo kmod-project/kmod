@@ -28,6 +28,7 @@
 int main(int argc, char *argv[])
 {
 	struct kmod_ctx *ctx;
+	const char *null_config = NULL;
 	struct kmod_list *list, *itr;
 	int err;
 
@@ -36,7 +37,7 @@ int main(int argc, char *argv[])
 		return EXIT_FAILURE;
 	}
 
-	ctx = kmod_new(NULL, NULL);
+	ctx = kmod_new(NULL, &null_config);
 	if (ctx == NULL) {
 		fputs("Error: kmod_new() failed!\n", stderr);
 		return EXIT_FAILURE;

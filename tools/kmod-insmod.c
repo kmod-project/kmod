@@ -66,6 +66,7 @@ int main(int argc, char *argv[])
 	char *opts = NULL;
 	size_t optslen = 0;
 	int i, err;
+	const char *null_config = NULL;
 
 	for (;;) {
 		int c, idx = 0;
@@ -124,7 +125,7 @@ int main(int argc, char *argv[])
 		opts[optslen] = '\0';
 	}
 
-	ctx = kmod_new(NULL, NULL);
+	ctx = kmod_new(NULL, &null_config);
 	if (!ctx) {
 		fputs("Error: kmod_new() failed!\n", stderr);
 		free(opts);

@@ -11,6 +11,7 @@
 int main(int argc, char *argv[])
 {
 	const char *modname = NULL;
+	const char *null_config = NULL;
 	struct kmod_ctx *ctx;
 	struct kmod_list *list, *itr;
 	int err, count = 0;
@@ -18,7 +19,7 @@ int main(int argc, char *argv[])
 	if (argc == 2)
 		modname = argv[1];
 
-	ctx = kmod_new(NULL, NULL);
+	ctx = kmod_new(NULL, &null_config);
 	if (ctx == NULL)
 		exit(EXIT_FAILURE);
 

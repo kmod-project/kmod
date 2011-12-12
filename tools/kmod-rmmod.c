@@ -102,6 +102,7 @@ static void log_syslog(void *data, int priority, const char *file, int line,
 int main(int argc, char *argv[])
 {
 	struct kmod_ctx *ctx;
+	const char *null_config = NULL;
 	int flags = KMOD_REMOVE_NOWAIT;
 	int use_syslog = 0;
 	int verbose = 0;
@@ -146,7 +147,7 @@ int main(int argc, char *argv[])
 		return EXIT_FAILURE;
 	}
 
-	ctx = kmod_new(NULL, NULL);
+	ctx = kmod_new(NULL, &null_config);
 	if (!ctx) {
 		fputs("Error: kmod_new() failed!\n", stderr);
 		return EXIT_FAILURE;

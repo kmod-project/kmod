@@ -9,8 +9,9 @@
 int main(int argc, char *argv[])
 {
 	struct kmod_ctx *ctx;
+	const char *null_config = NULL;
 
-	ctx = kmod_new(NULL, NULL);
+	ctx = kmod_new(NULL, &null_config);
 	if (ctx == NULL)
 		exit(EXIT_FAILURE);
 
