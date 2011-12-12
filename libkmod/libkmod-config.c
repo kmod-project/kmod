@@ -382,20 +382,15 @@ static bool conf_files_filter_out(struct kmod_ctx *ctx, const char *path,
 	return 0;
 }
 
+/*
+ * Iterate over a directory (given by @path) and save the list of
+ * configuration files in @list.
+ */
 static DIR *conf_files_list(struct kmod_ctx *ctx, struct kmod_list **list,
 							const char *path)
 {
-	struct stat st;
 	DIR *d;
 	int err;
-
-	if (stat(path, &st) < 0)
-		return NULL;
-
-	if (!S_ISDIR(st.st_mode)) {
-		*list = kmod_list_append(*list, path);
-		return NULL;
-	}
 
 	d = opendir(path);
 	if (d == NULL) {
@@ -403,6 +398,8 @@ static DIR *conf_files_list(struct kmod_ctx *ctx, struct kmod_list **list,
 		ERR(ctx, "%m\n");
 		return NULL;
 	}
+
+	*list = NULL;
 
 	for (;;) {
 		struct dirent ent, *entp;
@@ -470,7 +467,7 @@ int kmod_config_new(struct kmod_ctx *ctx, struct kmod_config **p_config,
 
 	for (i = 0; config_paths[i] != NULL; i++) {
 		const char *path = config_paths[i];
-		struct kmod_list *list = NULL;
+		struct kmod_list *list;
 		struct stat st;
 		DIR *d;
 
@@ -494,16 +491,6 @@ int kmod_config_new(struct kmod_ctx *ctx, struct kmod_config **p_config,
 
 		d = conf_files_list(ctx, &list, path);
 
-		if (d == NULL) {
-			ERR(ctx, "returned list but no directory?\n");
-			while (list) {
-				free(list->data);
-				kmod_list_remove(list);
-			}
-			continue;
-		}
-
-		/* treat all the entries in that dir */
 		for (; list != NULL; list = kmod_list_remove(list)) {
 			int fd = openat(dirfd(d), list->data, O_RDONLY);
 			DBG(ctx, "parsing file '%s/%s': %d\n", path,
