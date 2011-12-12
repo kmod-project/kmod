@@ -469,10 +469,6 @@ KMOD_EXPORT const char *kmod_module_get_name(const struct kmod_module *mod)
 	return mod->name;
 }
 
-/*
- * Relative paths are relative to dirname. Absolute paths are only used when
- * user created kmod_module by giving a path
- */
 KMOD_EXPORT const char *kmod_module_get_path(const struct kmod_module *mod)
 {
 	char *line;
