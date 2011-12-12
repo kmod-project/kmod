@@ -248,7 +248,10 @@ KMOD_EXPORT int kmod_module_new_from_path(struct kmod_ctx *ctx,
 		return -errno;
 	}
 
-	path_to_modname(path, name, &namelen);
+	if (path_to_modname(path, name, &namelen) == NULL) {
+		free(abspath);
+		return -ENOENT;
+	}
 
 	m = kmod_pool_get_module(ctx, name);
 	if (m != NULL) {
