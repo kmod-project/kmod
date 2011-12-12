@@ -402,14 +402,13 @@ static DIR *conf_files_list(struct kmod_ctx *ctx, struct kmod_list **list,
 	DIR *d;
 	int err;
 
+	*list = NULL;
+
 	d = opendir(path);
 	if (d == NULL) {
-		err = errno;
 		ERR(ctx, "%m\n");
 		return NULL;
 	}
-
-	*list = NULL;
 
 	for (;;) {
 		struct dirent ent, *entp;

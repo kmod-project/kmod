@@ -32,7 +32,6 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	err = 0;
 	kmod_list_foreach(itr, list) {
 		struct kmod_module *mod = kmod_module_get_module(itr);
 		const char *name = kmod_module_get_name(mod);
