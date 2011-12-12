@@ -370,14 +370,14 @@ static bool conf_files_filter_out(struct kmod_ctx *ctx, DIR *d,
 	struct stat st;
 
 	if (fn[0] == '.')
-		return 1;
+		return true;
 
 	if (len < 6 || (!streq(&fn[len - 5], ".conf")
 				&& !streq(&fn[len - 6], ".alias"))) {
 		INFO(ctx, "All config files need .conf: %s/%s, "
 				"it will be ignored in a future release\n",
 				path, fn);
-		return 1;
+		return true;
 	}
 
 	fstatat(dirfd(d), fn, &st, 0);
@@ -385,10 +385,10 @@ static bool conf_files_filter_out(struct kmod_ctx *ctx, DIR *d,
 	if (S_ISDIR(st.st_mode)) {
 		ERR(ctx, "Directories inside directories are not supported: "
 							"%s/%s\n", path, fn);
-		return 1;
+		return true;
 	}
 
-	return 0;
+	return false;
 }
 
 /*
@@ -424,7 +424,7 @@ static DIR *conf_files_list(struct kmod_ctx *ctx, struct kmod_list **list,
 		if (entp == NULL)
 			break;
 
-		if (conf_files_filter_out(ctx, d, path, entp->d_name) == 1)
+		if (conf_files_filter_out(ctx, d, path, entp->d_name))
 			continue;
 
 		/* insert sorted */
