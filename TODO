@@ -28,3 +28,5 @@ Features:
    - return install/remove commands for non-modules:
          install nonexistentmodule somecommand
      modprobe nonexistentmodule -> runs somecommand
+
+* Add coding-style.txt

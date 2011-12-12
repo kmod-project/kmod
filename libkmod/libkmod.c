@@ -196,7 +196,8 @@ static char *get_kernel_release(const char *dirname)
  *
  * Returns: a new kmod library context
  */
-KMOD_EXPORT struct kmod_ctx *kmod_new(const char *dirname, const char * const *config_paths)
+KMOD_EXPORT struct kmod_ctx *kmod_new(const char *dirname,
+					const char * const *config_paths)
 {
 	const char *env;
 	struct kmod_ctx *ctx;
@@ -545,7 +546,9 @@ fail:
  * Returns: 0 on success or < 0 otherwise. @output is saved with the updated
  * list.
  */
-KMOD_EXPORT int kmod_module_get_filtered_blacklist(const struct kmod_ctx *ctx, const struct kmod_list *input, struct kmod_list **output)
+KMOD_EXPORT int kmod_module_get_filtered_blacklist(const struct kmod_ctx *ctx,
+						const struct kmod_list *input,
+						struct kmod_list **output)
 {
 	const struct kmod_config *config;
 	const struct kmod_list *li;
@@ -640,7 +643,9 @@ KMOD_EXPORT void kmod_unload_resources(struct kmod_ctx *ctx)
 	}
 }
 
-KMOD_EXPORT int kmod_resolve_alias_options(struct kmod_ctx *ctx, const char *given_alias, char **options)
+KMOD_EXPORT int kmod_resolve_alias_options(struct kmod_ctx *ctx,
+						const char *given_alias,
+						char **options)
 {
 	struct kmod_list *modules = NULL, *l;
 	char alias[NAME_MAX];

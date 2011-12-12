@@ -43,7 +43,8 @@ struct kmod_hash {
 	struct kmod_hash_bucket buckets[];
 };
 
-struct kmod_hash *kmod_hash_new(unsigned int n_buckets, void (*free_value)(void *value))
+struct kmod_hash *kmod_hash_new(unsigned int n_buckets,
+					void (*free_value)(void *value))
 {
 	struct kmod_hash *hash = calloc(1, sizeof(struct kmod_hash) +
 				n_buckets * sizeof(struct kmod_hash_bucket));

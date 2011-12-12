@@ -157,7 +157,8 @@ oom_error_init:
 	return -ENOMEM;
 }
 
-static void kmod_config_free_options(struct kmod_config *config, struct kmod_list *l)
+static void kmod_config_free_options(struct kmod_config *config,
+							struct kmod_list *l)
 {
 	struct kmod_options *opt = l->data;
 
@@ -167,7 +168,7 @@ static void kmod_config_free_options(struct kmod_config *config, struct kmod_lis
 }
 
 static int kmod_config_add_alias(struct kmod_config *config,
-				const char *name, const char *modname)
+					const char *name, const char *modname)
 {
 	struct kmod_alias *alias;
 	struct kmod_list *list;
@@ -196,7 +197,8 @@ oom_error_init:
 	return -ENOMEM;
 }
 
-static void kmod_config_free_alias(struct kmod_config *config, struct kmod_list *l)
+static void kmod_config_free_alias(struct kmod_config *config,
+							struct kmod_list *l)
 {
 	struct kmod_alias *alias = l->data;
 
@@ -206,7 +208,7 @@ static void kmod_config_free_alias(struct kmod_config *config, struct kmod_list 
 }
 
 static int kmod_config_add_blacklist(struct kmod_config *config,
-					const char *modname)
+							const char *modname)
 {
 	char *p;
 	struct kmod_list *list;
@@ -452,7 +454,8 @@ fail_read:
 	return NULL;
 }
 
-int kmod_config_new(struct kmod_ctx *ctx, struct kmod_config **p_config, const char * const *config_paths)
+int kmod_config_new(struct kmod_ctx *ctx, struct kmod_config **p_config,
+					const char * const *config_paths)
 {
 	struct kmod_config *config;
 	size_t i;

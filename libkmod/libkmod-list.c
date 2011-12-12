@@ -133,7 +133,8 @@ struct kmod_list *kmod_list_append(struct kmod_list *list, const void *data)
 	return list ? list : new;
 }
 
-struct kmod_list *kmod_list_insert_after(struct kmod_list *list, const void *data)
+struct kmod_list *kmod_list_insert_after(struct kmod_list *list,
+							const void *data)
 {
 	struct kmod_list *new;
 
@@ -150,7 +151,8 @@ struct kmod_list *kmod_list_insert_after(struct kmod_list *list, const void *dat
 	return list;
 }
 
-struct kmod_list *kmod_list_insert_before(struct kmod_list *list, const void *data)
+struct kmod_list *kmod_list_insert_before(struct kmod_list *list,
+							const void *data)
 {
 	struct kmod_list *new;
 
@@ -272,7 +274,7 @@ struct kmod_list *kmod_list_remove_n_latest(struct kmod_list *list,
  * the list or the list is empty.
  */
 KMOD_EXPORT struct kmod_list *kmod_list_prev(const struct kmod_list *list,
-							const struct kmod_list *curr)
+						const struct kmod_list *curr)
 {
 	if (list == NULL || curr == NULL)
 		return NULL;
@@ -297,7 +299,7 @@ KMOD_EXPORT struct kmod_list *kmod_list_prev(const struct kmod_list *list,
  * list is empty.
  */
 KMOD_EXPORT struct kmod_list *kmod_list_next(const struct kmod_list *list,
-							const struct kmod_list *curr)
+						const struct kmod_list *curr)
 {
 	if (list == NULL || curr == NULL)
 		return NULL;

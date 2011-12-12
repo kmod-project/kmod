@@ -93,7 +93,8 @@ static char *path_to_modname(const char *path, char buf[NAME_MAX], size_t *len)
 	return modname_normalize(modname, buf, len);
 }
 
-static inline const char *path_join(const char *path, size_t prefixlen, char buf[PATH_MAX])
+static inline const char *path_join(const char *path, size_t prefixlen,
+							char buf[PATH_MAX])
 {
 	size_t pathlen;
 
