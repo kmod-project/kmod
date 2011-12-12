@@ -75,6 +75,10 @@ CC_CHECK_CFLAGS_APPEND([ \
         -Wno-unused-parameter \
         -Wno-missing-field-initializers \
         -Wno-unused-result \
+	-Wnested-externs \
+	-Wchar-subscripts \
+	-Wtype-limits \
+	-Wuninitialized \
         -Wp,-D_FORTIFY_SOURCE=2 \
         -ffast-math \
         -fno-common \

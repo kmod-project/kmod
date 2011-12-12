@@ -2,11 +2,7 @@
 
 autoreconf --install --symlink
 
-MYCFLAGS="-g \
--Wnested-externs \
--Wchar-subscripts \
--Wtype-limits \
--Wuninitialized"
+MYCFLAGS="-g"
 
 libdir() {
 	echo $(cd $1/$(gcc -print-multi-os-directory); pwd)
