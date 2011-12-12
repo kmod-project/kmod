@@ -494,9 +494,6 @@ int kmod_config_new(struct kmod_ctx *ctx, struct kmod_config **p_config,
 
 		d = conf_files_list(ctx, &list, path);
 
-		/* there's no entry */
-		if (list == NULL)
-			continue;
 		if (d == NULL) {
 			ERR(ctx, "returned list but no directory?\n");
 			while (list) {
