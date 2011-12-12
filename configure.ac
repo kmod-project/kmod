@@ -1,9 +1,9 @@
 AC_PREREQ(2.60)
-AC_INIT([libkmod],
-	[0.1],
+AC_INIT([kmod],
+	[1],
 	[],
-	[libkmod],
-	[http://git.profusion.mobi/cgit.cgi/lucas/libkmod/])
+	[kmod],
+	[http://git.profusion.mobi/cgit.cgi/kmod.git/])
 
 AC_CONFIG_SRCDIR([libkmod/libkmod.c])
 AC_CONFIG_AUX_DIR([build-aux])
