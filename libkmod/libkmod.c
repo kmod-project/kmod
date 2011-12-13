@@ -405,7 +405,7 @@ static int kmod_lookup_alias_from_alias_bin(struct kmod_ctx *ctx,
 	for (realname = realnames; realname; realname = realnames->next) {
 		struct kmod_module *mod;
 
-		err = kmod_module_new_from_name(ctx, realname->value, &mod);
+		err = kmod_module_new_from_alias(ctx, name, realname->value, &mod);
 		if (err < 0) {
 			ERR(ctx, "%s\n", strerror(-err));
 			goto fail;
@@ -517,7 +517,8 @@ int kmod_lookup_alias_from_config(struct kmod_ctx *ctx, const char *name,
 		if (fnmatch(aliasname, name, 0) == 0) {
 			struct kmod_module *mod;
 
-			err = kmod_module_new_from_name(ctx, modname, &mod);
+			err = kmod_module_new_from_alias(ctx, aliasname,
+								modname, &mod);
 			if (err < 0) {
 				ERR(ctx, "%s\n", strerror(-err));
 				goto fail;
