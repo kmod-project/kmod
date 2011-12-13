@@ -104,6 +104,7 @@ const char *kmod_command_get_modname(const struct kmod_list *l) __attribute__((n
 
 
 /* libkmod-module.c */
+int kmod_module_new_from_alias(struct kmod_ctx *ctx, const char *alias, const char *name, struct kmod_module **mod);
 char *modname_normalize(const char *modname, char buf[NAME_MAX], size_t *len)  __attribute__((nonnull(1, 2)));
 int kmod_module_parse_depline(struct kmod_module *mod, char *line) __attribute__((nonnull(1, 2)));
 
