@@ -118,6 +118,45 @@ char *underscores(struct kmod_ctx *ctx, char *s)
 	return s;
 }
 
+inline int alias_normalize(const char *alias, char buf[NAME_MAX], size_t *len)
+{
+	size_t s;
+
+	for (s = 0; s < NAME_MAX - 1; s++) {
+		const char c = alias[s];
+		switch (c) {
+		case '-':
+			buf[s] = '_';
+			break;
+		case ']':
+			return -EINVAL;
+		case '[':
+			while (alias[s] != ']' &&
+					alias[s] != '.' && alias[s] != '\0')
+				s++;
+
+			if (alias[s] != ']')
+				return -EINVAL;
+
+			s++;
+			break;
+		case '\0':
+		case '.':
+			goto finish;
+		default:
+			buf[s] = c;
+		}
+	}
+
+finish:
+	buf[s] = '\0';
+
+	if (len)
+		*len = s;
+
+	return 0;
+}
+
 bool startswith(const char *s, const char *prefix) {
         size_t sl, pl;
 
