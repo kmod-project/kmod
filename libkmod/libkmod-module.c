@@ -339,7 +339,8 @@ KMOD_EXPORT int kmod_module_new_from_lookup(struct kmod_ctx *ctx,
 		return -ENOSYS;
 	}
 
-	modname_normalize(given_alias, alias, NULL);
+	if (alias_normalize(given_alias, alias, NULL) < 0)
+		return -EINVAL;
 
 	/* Aliases from config file override all the others */
 	err = kmod_lookup_alias_from_config(ctx, alias, list);

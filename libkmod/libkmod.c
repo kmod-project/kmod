@@ -657,7 +657,9 @@ KMOD_EXPORT int kmod_resolve_alias_options(struct kmod_ctx *ctx,
 	if (ctx == NULL || options == NULL)
 		return -ENOENT;
 
-	modname_normalize(given_alias, alias, NULL);
+	if (alias_normalize(given_alias, alias, NULL) < 0)
+		return -EINVAL;
+
 
 	err = kmod_module_new_from_lookup(ctx, alias, &modules);
 	if (err >= 0) {
