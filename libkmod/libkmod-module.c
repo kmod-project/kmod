@@ -620,9 +620,12 @@ KMOD_EXPORT const char *kmod_module_get_options(const struct kmod_module *mod)
 			size_t len;
 			void *tmp;
 
-			if (strcmp(modname, mod->name) != 0)
+			DBG(mod->ctx, "modname=%s mod->name=%s mod->alias=%s\n", modname, mod->name, mod->alias);
+			if (!(streq(modname, mod->name) || (mod->alias != NULL &&
+						streq(modname, mod->alias))))
 				continue;
 
+			DBG(mod->ctx, "passed = modname=%s mod->name=%s mod->alias=%s\n", modname, mod->name, mod->alias);
 			str = kmod_option_get_options(l);
 			len = strlen(str);
 			if (len < 1)
