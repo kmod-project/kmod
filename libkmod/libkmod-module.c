@@ -45,6 +45,7 @@
  */
 struct kmod_module {
 	struct kmod_ctx *ctx;
+	char *name;
 	char *path;
 	struct kmod_list *dep;
 	char *options;
@@ -58,7 +59,6 @@ struct kmod_module {
 		bool install_commands : 1;
 		bool remove_commands : 1;
 	} init;
-	char name[];
 };
 
 inline char *modname_normalize(const char *modname, char buf[NAME_MAX],
@@ -214,6 +214,7 @@ KMOD_EXPORT int kmod_module_new_from_name(struct kmod_ctx *ctx,
 	}
 
 	m->ctx = kmod_ref(ctx);
+	m->name = (char *)m + sizeof(*m);
 	memcpy(m->name, name_norm, namelen + 1);
 	m->refcount = 1;
 
@@ -275,6 +276,7 @@ KMOD_EXPORT int kmod_module_new_from_path(struct kmod_ctx *ctx,
 		return -errno;
 
 	m->ctx = kmod_ref(ctx);
+	m->name = (char *)m + sizeof(*m);
 	memcpy(m->name, name, namelen);
 	m->path = abspath;
 	m->refcount = 1;
