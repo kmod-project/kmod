@@ -660,30 +660,30 @@ KMOD_EXPORT int kmod_resolve_alias_options(struct kmod_ctx *ctx,
 	if (alias_normalize(given_alias, alias, NULL) < 0)
 		return -EINVAL;
 
-
 	err = kmod_module_new_from_lookup(ctx, alias, &modules);
-	if (err >= 0) {
-		kmod_list_foreach(l, modules) {
-			const char *str = kmod_module_get_options(l->data);
-			size_t len;
-			void *tmp;
+	if (err < 0)
+		return err;
 
-			if (str == NULL)
-				continue;
-			len = strlen(str);
+	kmod_list_foreach(l, modules) {
+		const char *str = kmod_module_get_options(l->data);
+		size_t len;
+		void *tmp;
 
-			tmp = realloc(opts, optslen + len + 2);
-			if (tmp == NULL)
-				goto failed;
-			opts = tmp;
-			if (optslen > 0) {
-				opts[optslen] = ' ';
-				optslen++;
-			}
-			memcpy(opts + optslen, str, len);
-			optslen += len;
-			opts[optslen] = '\0';
+		if (str == NULL)
+			continue;
+		len = strlen(str);
+
+		tmp = realloc(opts, optslen + len + 2);
+		if (tmp == NULL)
+			goto failed;
+		opts = tmp;
+		if (optslen > 0) {
+			opts[optslen] = ' ';
+			optslen++;
 		}
+		memcpy(opts + optslen, str, len);
+		optslen += len;
+		opts[optslen] = '\0';
 	}
 
 	kmod_list_foreach(l, ctx->config->options) {
