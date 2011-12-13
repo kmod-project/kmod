@@ -331,7 +331,7 @@ KMOD_EXPORT int kmod_module_new_from_lookup(struct kmod_ctx *ctx,
 	int err;
 	char alias[NAME_MAX];
 
-	if (ctx == NULL || alias == NULL)
+	if (ctx == NULL || given_alias == NULL)
 		return -ENOENT;
 
 	if (list == NULL || *list != NULL) {
