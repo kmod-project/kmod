@@ -33,7 +33,6 @@ int main(int argc, char *argv[])
 	const char *alias = NULL;
 	struct kmod_ctx *ctx;
 	struct kmod_list *list = NULL, *l;
-	char *options;
 	int load_resources = 0;
 	int err;
 
@@ -107,12 +106,6 @@ int main(int argc, char *argv[])
 		if (str)
 			printf("\t\tremove commands: '%s'\n", str);
 		kmod_module_unref(mod);
-	}
-
-	err = kmod_resolve_alias_options(ctx, alias, &options);
-	if (err == 0) {
-		printf("Alias options: '%s'\n", options);
-		free(options);
 	}
 
 	kmod_module_unref_list(list);

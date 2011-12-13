@@ -131,8 +131,6 @@ const char *kmod_module_get_options(const struct kmod_module *mod);
 const char *kmod_module_get_install_commands(const struct kmod_module *mod);
 const char *kmod_module_get_remove_commands(const struct kmod_module *mod);
 
-int kmod_resolve_alias_options(struct kmod_ctx *ctx, const char *alias, char **options);
-
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
