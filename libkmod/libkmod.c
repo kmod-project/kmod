@@ -117,7 +117,7 @@ const char *kmod_get_dirname(const struct kmod_ctx *ctx)
  * @ctx: kmod library context
  *
  * Retrieve stored data pointer from library context. This might be useful
- * to access from callbacks like a custom logging function.
+ * to access from callbacks.
  *
  * Returns: stored userdata
  */
@@ -188,12 +188,13 @@ static char *get_kernel_release(const char *dirname)
  * release the resources of the kmod library context.
  *
  * @dirname: what to consider as linux module's directory, if NULL
- *           defaults to /lib/modules/`uname -r`
+ *           defaults to /lib/modules/`uname -r`.
  * @config_paths: ordered array of paths (directories or files) where
- *               to load user-defined configuration parameters such as
- *               alias, blacklists, commands (install, remove). If
- *               NULL defaults to /run/modprobe.d, /etc/modprobe.d and
- *               /lib/modprobe.d.  This array must be null terminated.
+ *                to load from user-defined configuration parameters such as
+ *                alias, blacklists, commands (install, remove). If
+ *                NULL defaults to /run/modprobe.d, /etc/modprobe.d and
+ *                /lib/modprobe.d. Give an empty vector if configuration should
+ *                not be read. This array must be null terminated.
  *
  * Returns: a new kmod library context
  */
@@ -268,7 +269,6 @@ KMOD_EXPORT struct kmod_ctx *kmod_ref(struct kmod_ctx *ctx)
  *
  * Drop a reference of the kmod library context. If the refcount
  * reaches zero, the resources of the context will be released.
- *
  */
 KMOD_EXPORT struct kmod_ctx *kmod_unref(struct kmod_ctx *ctx)
 {
@@ -298,7 +298,6 @@ KMOD_EXPORT struct kmod_ctx *kmod_unref(struct kmod_ctx *ctx)
  * The built-in logging writes to stderr. It can be
  * overridden by a custom function, to plug log messages
  * into the user's logging functionality.
- *
  */
 KMOD_EXPORT void kmod_set_log_fn(struct kmod_ctx *ctx,
 					void (*log_fn)(void *data,
@@ -539,7 +538,7 @@ fail:
 /**
  * kmod_module_get_filtered_blacklist:
  * @ctx: kmod library context
- * @input: list to be filtered with blacklist
+ * @input: list of kmod_module to be filtered with blacklist
  * @output: where to save the new list
  *
  * Given a list @input, this function filter it out with config's blacklist
@@ -592,6 +591,21 @@ fail:
 	return -ENOMEM;
 }
 
+/**
+ * kmod_load_resources:
+ * @ctx: kmod library context
+ *
+ * Load indexes and keep them open in @ctx. This way it's faster to lookup
+ * information within the indexes. If this function is not called before a
+ * search, the necessary index is always opened and closed.
+ *
+ * If user will do more than one or two lookups, insertions, deletions, most
+ * likely it's good to call this function first. Particularly in a daemon like
+ * udev that on bootup issues hundreds of calls to lookup the index, calling
+ * this function will speedup the searches.
+ *
+ * Returns: 0 on success or < 0 otherwise.
+ */
 KMOD_EXPORT int kmod_load_resources(struct kmod_ctx *ctx)
 {
 	char path[PATH_MAX];
@@ -630,6 +644,21 @@ fail:
 	return -ENOMEM;
 }
 
+/**
+ * kmod_unload_resources:
+ * @ctx: kmod library context
+ *
+ * Unload all the indexes. This will free the resources to maintain the index
+ * open and all subsequent searches will need to open and close the index.
+ *
+ * User is free to call kmod_load_resources() and kmod_unload_resources() as
+ * many times as wanted during the lifecycle of @ctx. For example, if a daemon
+ * knows that when starting up it will lookup a lot of modules, it could call
+ * kmod_load_resources() and after the first burst of searches is gone, it
+ * could free the resources by calling kmod_unload_resources().
+ *
+ * Returns: 0 on success or < 0 otherwise.
+ */
 KMOD_EXPORT void kmod_unload_resources(struct kmod_ctx *ctx)
 {
 	size_t i;
