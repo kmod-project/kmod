@@ -218,6 +218,7 @@ KMOD_EXPORT int kmod_module_new_from_name(struct kmod_ctx *ctx,
 	struct kmod_module *m;
 	size_t namelen;
 	char name_norm[NAME_MAX];
+	char *namesep;
 
 	if (ctx == NULL || name == NULL)
 		return -ENOENT;
@@ -241,9 +242,17 @@ KMOD_EXPORT int kmod_module_new_from_name(struct kmod_ctx *ctx,
 	m->ctx = kmod_ref(ctx);
 	m->name = (char *)m + sizeof(*m);
 	memcpy(m->name, name_norm, namelen + 1);
+
 	m->refcount = 1;
 
+	/* set alias later, so m->name is still modname/modalias */
 	kmod_pool_add_module(ctx, m);
+
+	namesep = strchr(m->name, '/');
+	if (namesep != NULL) {
+		*namesep = '\0';
+		m->alias = namesep + 1;
+	}
 
 	*mod = m;
 
@@ -254,29 +263,22 @@ int kmod_module_new_from_alias(struct kmod_ctx *ctx, const char *alias,
 				const char *name, struct kmod_module **mod)
 {
 	int err;
-	struct kmod_module *m;
+	char key[NAME_MAX];
+	size_t namelen = strlen(name);
+	size_t aliaslen = strlen(alias);
 
-	err = kmod_module_new_from_name(ctx, alias, mod);
+	if (namelen + aliaslen + 2 > NAME_MAX)
+		return -ENAMETOOLONG;
+
+	memcpy(key, name, namelen);
+	memcpy(key + namelen + 1, alias, aliaslen + 1);
+	key[namelen] = '/';
+
+	err = kmod_module_new_from_name(ctx, key, mod);
 	if (err < 0)
 		return err;
 
-	m = *mod;
-
-	/* if module did not came from pool */
-	if (m->alias == NULL) {
-		m->alias = m->name;
-		m->name = strdup(name);
-		if (m->name == NULL)
-			goto fail_oom;
-	}
-
 	return 0;
-
-fail_oom:
-	ERR(ctx, "out of memory\n");
-	kmod_module_unref(m);
-	*mod = NULL;
-	return err;
 }
 
 /**
@@ -391,8 +393,6 @@ KMOD_EXPORT struct kmod_module *kmod_module_unref(struct kmod_module *mod)
 	free(mod->install_commands);
 	free(mod->remove_commands);
 	free(mod->path);
-	if (mod->alias != NULL)
-		free(mod->name);
 	free(mod);
 	return NULL;
 }

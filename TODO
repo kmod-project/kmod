@@ -32,8 +32,5 @@ Features:
    - dump configuration
    - use softdep, install and remove commands
 
-Bugs:
+Known Bugs:
 
-* With last changes to the hash of kmod module's, if an alias resolves to more
-  than one module it will conflict in the table. The proper solution is to use
-  'modname/modalias' as the hash key.
