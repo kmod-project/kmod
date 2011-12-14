@@ -608,34 +608,22 @@ fail:
  */
 KMOD_EXPORT int kmod_load_resources(struct kmod_ctx *ctx)
 {
-	char path[PATH_MAX];
 	size_t i;
 
 	if (ctx == NULL)
 		return -ENOENT;
 
 	for (i = 0; i < ARRAY_SIZE(index_files); i++) {
-		const char *fn = index_files[i];
-		size_t fnlen = strlen(fn);
-		const char *prefix = "";
-		const char *suffix = "";
+		char path[PATH_MAX];
 
 		if (ctx->indexes[i] == NULL) {
-			INFO(ctx, "Index %s already loaded\n", fn);
+			INFO(ctx, "Index %s already loaded\n", index_files[i]);
 			continue;
 		}
 
-		if (fn[0] != '/')
-			prefix = ctx->dirname;
-
-		if (fnlen < 4 || !streq(fn + fnlen - 4, ".bin"))
-			suffix = ".bin";
-
-		snprintf(path, sizeof(path), "%s/%s%s",
-				prefix, fn, suffix);
-		fn = path;
-
-		ctx->indexes[i] = index_mm_open(ctx, fn, true);
+		snprintf(path, sizeof(path), "%s/%s.bin", ctx->dirname,
+							index_files[i]);
+		ctx->indexes[i] = index_mm_open(ctx, path, true);
 		if (ctx->indexes[i] == NULL)
 			goto fail;
 	}
