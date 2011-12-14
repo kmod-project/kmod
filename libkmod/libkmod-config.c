@@ -132,7 +132,7 @@ static int kmod_config_add_options(struct kmod_config *config,
 	size_t modnamelen = strlen(modname) + 1;
 	size_t optionslen = strlen(options) + 1;
 
-	DBG(config->ctx, "modname'%s' options='%s'\n", modname, options);
+	DBG(config->ctx, "modname='%s' options='%s'\n", modname, options);
 
 	opt = malloc(sizeof(*opt) + modnamelen + optionslen);
 	if (opt == NULL)
