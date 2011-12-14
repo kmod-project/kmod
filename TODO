@@ -5,28 +5,35 @@ Features:
   vector instead of a list. This way we could search in it by calling
   bsearch().
 
-* config: load on demand
-
 * index: drop the "open(), seek(), read()" implementation and use another one
   with mmap(). When lookup() is called and the file is not mmaped, mmap it.
-
-* insmod and rmmod with dependency handling. Maybe this should be done by the
-  binary, and it's sufficient to return only the lists from lookups.
-  ^-- investigate the best API
 
 * create test-mock library to be LD_PRELOAD'ed before running the binaries
   so we're able to create unit tests
 
 * provide ELF manipulation to implement modinfo
 
-* provide 1:1 compatibility with module-init-tools's modprobe, missing:
-   - parse options from kernel command line (modname.opt=val)
-   - provide softdeps
-   - show modversions (needs elf manipulation)
-   - show config (list all known options, install, remove, softdep...)
-   - show list (lists all modules known by modules.dep)
-   - return install/remove commands for non-modules:
-         install nonexistentmodule somecommand
-     modprobe nonexistentmodule -> runs somecommand
-
 * Add coding-style.txt
+
+* Add lookup for install commands in kmod_module_new_from_lookup()
+
+* Add lookup for remove commands
+
+* Add functions to dump configuration
+
+* Add functions list all modules known by modules.dep
+
+* Implement soft dependencies
+
+* Parse kernel command line (modname.opt=val)
+
+* provide 1:1 compatibility with module-init-tools's modprobe
+   - show modversions (needs elf manipulation)
+   - dump configuration
+   - use softdep, install and remove commands
+
+Bugs:
+
+* With last changes to the hash of kmod module's, if an alias resolves to more
+  than one module it will conflict in the table. The proper solution is to use
+  'modname/modalias' as the hash key.
