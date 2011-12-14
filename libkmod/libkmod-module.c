@@ -189,6 +189,28 @@ fail:
 	return err;
 }
 
+/**
+ * kmod_module_new_from_name:
+ * @ctx: kmod library context
+ * @name: name of the module
+ * @mod: where to save the created struct kmod_module
+ *
+ * Create a new struct kmod_module using the module name. @name can not be an
+ * alias, file name or anything else; it must be a module name. There's no
+ * check if the module does exists in the system.
+ *
+ * This function is also used internally by many others that return a new
+ * struct kmod_module or a new list of modules.
+ *
+ * The initial refcount is 1, and needs to be decremented to release the
+ * resources of the kmod_module. Since libkmod keeps track of all
+ * kmod_modules created, they are all released upon @ctx destruction too. Do
+ * not unref @ctx before all the desired operations with the returned
+ * kmod_module are done.
+ *
+ * Returns: 0 on success or < 0 otherwise. It fails if name is not a valid
+ * module name or if memory allocation failed.
+ */
 KMOD_EXPORT int kmod_module_new_from_name(struct kmod_ctx *ctx,
 						const char *name,
 						struct kmod_module **mod)
@@ -255,6 +277,27 @@ fail_oom:
 	return err;
 }
 
+/**
+ * kmod_module_new_from_path:
+ * @ctx: kmod library context
+ * @path: path where to find the given module
+ * @mod: where to save the created struct kmod_module
+ *
+ * Create a new struct kmod_module using the module path. @path must be an
+ * existent file with in the filesystem and must be accessible to libkmod.
+ *
+ * The initial refcount is 1, and needs to be decremented to release the
+ * resources of the kmod_module. Since libkmod keeps track of all
+ * kmod_modules created, they are all released upon @ctx destruction too. Do
+ * not unref @ctx before all the desired operations with the returned
+ * kmod_module are done.
+ *
+ * If @path is relative, it's treated as relative to the current working
+ * directory. Otherwise, give an absolute path.
+ *
+ * Returns: 0 on success or < 0 otherwise. It fails if file does not exist, if
+ * it's not a valid file for a kmod_module or if memory allocation failed.
+ */
 KMOD_EXPORT int kmod_module_new_from_path(struct kmod_ctx *ctx,
 						const char *path,
 						struct kmod_module **mod)
@@ -318,6 +361,16 @@ KMOD_EXPORT int kmod_module_new_from_path(struct kmod_ctx *ctx,
 	return 0;
 }
 
+/**
+ * kmod_module_unref:
+ * @mod: kmod module
+ *
+ * Drop a reference of the kmod module. If the refcount reaches zero, its
+ * resources are released.
+ *
+ * Returns: NULL if @mod is NULL or if the module was released. Otherwise it
+ * returns the passed @mod with its refcount decremented.
+ */
 KMOD_EXPORT struct kmod_module *kmod_module_unref(struct kmod_module *mod)
 {
 	if (mod == NULL)
@@ -340,6 +393,14 @@ KMOD_EXPORT struct kmod_module *kmod_module_unref(struct kmod_module *mod)
 	return NULL;
 }
 
+/**
+ * kmod_module_ref:
+ * @mod: kmod module
+ *
+ * Take a reference of the kmod module, incrementing its refcount.
+ *
+ * Returns: the passed @module with its refcount incremented.
+ */
 KMOD_EXPORT struct kmod_module *kmod_module_ref(struct kmod_module *mod)
 {
 	if (mod == NULL)
@@ -358,6 +419,33 @@ KMOD_EXPORT struct kmod_module *kmod_module_ref(struct kmod_module *mod)
 			goto finish;					\
 	} while (0)
 
+/**
+ * kmod_module_new_from_lookup:
+ * @ctx: kmod library context
+ * @given_alias: alias to look for
+ * @list: an empty list where to save the list of modules matching
+ * @given_alias
+ *
+ * Create a new list of kmod modules using an alias or module name and lookup
+ * libkmod's configuration files and indexes in order to find the module.
+ * Once it's found in one of the places, it stops searching and create the
+ * list of modules that is saved in @list.
+ *
+ * The search order is: 1. aliases in configuration file; 2. module names in
+ * modules.dep index; 3. symbol aliases in modules.symbols index; 4. aliases
+ * in modules.alias index.
+ *
+ * The initial refcount is 1, and needs to be decremented to release the
+ * resources of the kmod_module. The returned @list must be released by
+ * calling kmod_module_unref_list(). Since libkmod keeps track of all
+ * kmod_modules created, they are all released upon @ctx destruction too. Do
+ * not unref @ctx before all the desired operations with the returned list are
+ * completed.
+ *
+ * Returns: 0 on success or < 0 otherwise. It fails if any of the lookup
+ * methods failed, which is basically due to memory allocation fail. If module
+ * is not found, it still returns 0, but @list is an empty list.
+ */
 KMOD_EXPORT int kmod_module_new_from_lookup(struct kmod_ctx *ctx,
 						const char *given_alias,
 						struct kmod_list **list)
@@ -386,6 +474,8 @@ KMOD_EXPORT int kmod_module_new_from_lookup(struct kmod_ctx *ctx,
 	err = kmod_lookup_alias_from_symbols_file(ctx, alias, list);
 	CHECK_ERR_AND_FINISH(err, fail, list, finish);
 
+// TODO: add lookup for install commands here.
+
 	err = kmod_lookup_alias_from_aliases_file(ctx, alias, list);
 	CHECK_ERR_AND_FINISH(err, fail, list, finish);
 
@@ -399,7 +489,16 @@ fail:
 }
 #undef CHECK_ERR_AND_FINISH
 
-
+/**
+ * kmod_module_unref:
+ * @list: list of kmod modules
+ *
+ * Drop a reference of each kmod module in @list and releases the resources
+ * taken by the list itself.
+ *
+ * Returns: NULL if @mod is NULL or if the module was released. Otherwise it
+ * returns the passed @mod with its refcount decremented.
+ */
 KMOD_EXPORT int kmod_module_unref_list(struct kmod_list *list)
 {
 	for (; list != NULL; list = kmod_list_remove(list))
@@ -408,6 +507,18 @@ KMOD_EXPORT int kmod_module_unref_list(struct kmod_list *list)
 	return 0;
 }
 
+/**
+ * kmod_module_unref:
+ * @mod: kmod module
+ *
+ * Search the modules.dep index to find the dependencies of the given @mod.
+ * The result is cached in @mod, so subsequent calls to this function will
+ * return the already searched list of modules.
+ *
+ * Returns: NULL on failure or if there are any dependencies. Otherwise it
+ * returns a list of kmod modules that can be released by calling
+ * kmod_module_unref_list().
+ */
 KMOD_EXPORT struct kmod_list *kmod_module_get_dependencies(const struct kmod_module *mod)
 {
 	struct kmod_list *l, *l_new, *list_new = NULL;
@@ -447,6 +558,18 @@ fail:
 	return NULL;
 }
 
+/**
+ * kmod_module_get_module:
+ * @entry: an entry in a list of kmod modules.
+ *
+ * Get the kmod module of this @entry in the list, increasing its refcount.
+ * After it's used, unref it. Since the refcount is incremented upon return,
+ * you still have to call kmod_module_unref_list() to release the list of kmod
+ * modules.
+ *
+ * Returns: NULL on failure or the kmod_module contained in this list entry
+ * with its refcount incremented.
+ */
 KMOD_EXPORT struct kmod_module *kmod_module_get_module(const struct kmod_list *entry)
 {
 	if (entry == NULL)
@@ -455,6 +578,15 @@ KMOD_EXPORT struct kmod_module *kmod_module_get_module(const struct kmod_list *e
 	return kmod_module_ref(entry->data);
 }
 
+/**
+ * kmod_module_get_size:
+ * @mod: kmod module
+ *
+ * Get the size of this kmod module as returned by Linux kernel. It reads the
+ * file /proc/modules to search for this module and get its size.
+ *
+ * Returns: the size of this kmod module.
+ */
 KMOD_EXPORT long kmod_module_get_size(const struct kmod_module *mod)
 {
 	// FIXME TODO: this should be available from /sys/module/foo
@@ -503,11 +635,32 @@ KMOD_EXPORT long kmod_module_get_size(const struct kmod_module *mod)
 	return size;
 }
 
+/**
+ * kmod_module_get_name:
+ * @mod: kmod module
+ *
+ * Get the name of this kmod module. Name is always available, independently
+ * if it was created by kmod_module_new_from_name() or another function and
+ * it's always normalized (dashes are replaced with underscores).
+ *
+ * Returns: the name of this kmod module.
+ */
 KMOD_EXPORT const char *kmod_module_get_name(const struct kmod_module *mod)
 {
 	return mod->name;
 }
 
+/**
+ * kmod_module_get_path:
+ * @mod: kmod module
+ *
+ * Get the path of this kmod module. If this kmod module was not created by
+ * path, it can search the modules.dep index in order to find out the module
+ * under context's dirname (see kmod_get_dirname()).
+ *
+ * Returns: the path of this kmod module or NULL if such information is not
+ * available.
+ */
 KMOD_EXPORT const char *kmod_module_get_path(const struct kmod_module *mod)
 {
 	char *line;
@@ -533,6 +686,15 @@ KMOD_EXPORT const char *kmod_module_get_path(const struct kmod_module *mod)
 
 extern long delete_module(const char *name, unsigned int flags);
 
+/**
+ * kmod_module_remove_module:
+ * @mod: kmod module
+ * @flags: flags to pass to Linux kernel when removing the module
+ *
+ * Remove a module from Linux kernel.
+ *
+ * Returns: 0 on success or < 0 on failure.
+ */
 KMOD_EXPORT int kmod_module_remove_module(struct kmod_module *mod,
 							unsigned int flags)
 {
@@ -556,6 +718,18 @@ KMOD_EXPORT int kmod_module_remove_module(struct kmod_module *mod,
 
 extern long init_module(void *mem, unsigned long len, const char *args);
 
+/**
+ * kmod_module_insert_module:
+ * @mod: kmod module
+ * @flags: flags are not passed to Linux Kernel, but instead it dictates the
+ * behavior of this function. They are not implemented yet.
+ * @options: module's options to pass to Linux Kernel.
+ *
+ * Insert a module in Linux kernel. It opens the file pointed by @mod,
+ * mmap'ing it and passing to kernel.
+ *
+ * Returns: 0 on success or < 0 on failure.
+ */
 KMOD_EXPORT int kmod_module_insert_module(struct kmod_module *mod,
 							unsigned int flags,
 							const char *options)
@@ -600,6 +774,17 @@ KMOD_EXPORT int kmod_module_insert_module(struct kmod_module *mod,
 	return err;
 }
 
+/**
+ * kmod_module_get_options:
+ * @mod: kmod module
+ *
+ * Get options of this kmod module. Options come from the configuration file
+ * and are cached in @mod. The first call to this function will search for
+ * this module in configuration and subsequent calls return the cached string.
+ *
+ * Returns: a string with all the options separated by spaces. This string is
+ * owned by @mod, do not free it.
+ */
 KMOD_EXPORT const char *kmod_module_get_options(const struct kmod_module *mod)
 {
 	if (mod == NULL)
@@ -660,6 +845,20 @@ failed:
 	return NULL;
 }
 
+/**
+ * kmod_module_get_install_commands:
+ * @mod: kmod module
+ *
+ * Get install commands for this kmod module. Install commands come from the
+ * configuration file and are cached in @mod. The first call to this function
+ * will search for this module in configuration and subsequent calls return
+ * the cached string. The install commands are returned as they were in the
+ * configuration, concatenated by ';'. No other processing is made in this
+ * string.
+ *
+ * Returns: a string with all install commands separated by semicolons. This
+ * string is owned by @mod, do not free it.
+ */
 KMOD_EXPORT const char *kmod_module_get_install_commands(const struct kmod_module *mod)
 {
 	if (mod == NULL)
@@ -717,6 +916,20 @@ failed:
 	return NULL;
 }
 
+/**
+ * kmod_module_get_remove_commands:
+ * @mod: kmod module
+ *
+ * Get remove commands for this kmod module. Remove commands come from the
+ * configuration file and are cached in @mod. The first call to this function
+ * will search for this module in configuration and subsequent calls return
+ * the cached string. The remove commands are returned as they were in the
+ * configuration, concatenated by ';'. No other processing is made in this
+ * string.
+ *
+ * Returns: a string with all remove commands separated by semicolons. This
+ * string is owned by @mod, do not free it.
+ */
 KMOD_EXPORT const char *kmod_module_get_remove_commands(const struct kmod_module *mod)
 {
 	if (mod == NULL)
@@ -788,14 +1001,17 @@ failed:
  * @ctx: kmod library context
  * @list: where to save the list of loaded modules
  *
- * Get a list of all modules currently loaded in kernel. It uses /proc/modules
- * to get the names of loaded modules and to create kmod_module objects by
- * calling kmod_module_new_from_name() in each of them. They are put are put
- * in @list in no particular order.
+ * Create a new list of kmod modules with all modules currently loaded in
+ * kernel. It uses /proc/modules to get the names of loaded modules and to
+ * create kmod modules by calling kmod_module_new_from_name() in each of them.
+ * They are put are put in @list in no particular order.
  *
- * All the returned modules get their refcount incremented (or are created if
- * they do not exist yet). After using the list, release the resources by
- * calling kmod_module_unref_list().
+ * The initial refcount is 1, and needs to be decremented to release the
+ * resources of the kmod_module. The returned @list must be released by
+ * calling kmod_module_unref_list(). Since libkmod keeps track of all
+ * kmod_modules created, they are all released upon @ctx destruction too. Do
+ * not unref @ctx before all the desired operations with the returned list are
+ * completed.
  *
  * Returns: 0 on success or < 0 on error.
  */
@@ -844,6 +1060,15 @@ KMOD_EXPORT int kmod_module_new_from_loaded(struct kmod_ctx *ctx,
 	return 0;
 }
 
+/**
+ * kmod_module_initstate_str:
+ * @state: the state as returned by kmod_module_get_initstate()
+ *
+ * Translate a initstate to a string.
+ *
+ * Returns: the string associated to the @state. This string is statically
+ * allocated, do not free it.
+ */
 KMOD_EXPORT const char *kmod_module_initstate_str(enum kmod_module_initstate state)
 {
     switch (state) {
@@ -860,6 +1085,15 @@ KMOD_EXPORT const char *kmod_module_initstate_str(enum kmod_module_initstate sta
     }
 }
 
+/**
+ * kmod_module_get_initstate:
+ * @mod: kmod module
+ *
+ * Get the initstate of this @mod, as returned by Linux Kernel, by reading
+ * /sys filesystem.
+ *
+ * Returns: < 0 on error or enum kmod_initstate if module is found in kernel.
+ */
 KMOD_EXPORT int kmod_module_get_initstate(const struct kmod_module *mod)
 {
 	char path[PATH_MAX], buf[32];
@@ -902,6 +1136,15 @@ KMOD_EXPORT int kmod_module_get_initstate(const struct kmod_module *mod)
 	return -EINVAL;
 }
 
+/**
+ * kmod_module_get_refcnt:
+ * @mod: kmod module
+ *
+ * Get the ref count of this @mod, as returned by Linux Kernel, by reading
+ * /sys filesystem.
+ *
+ * Returns: 0 on success or < 0 on failure.
+ */
 KMOD_EXPORT int kmod_module_get_refcnt(const struct kmod_module *mod)
 {
 	char path[PATH_MAX];
@@ -928,6 +1171,15 @@ KMOD_EXPORT int kmod_module_get_refcnt(const struct kmod_module *mod)
 	return (int)refcnt;
 }
 
+/**
+ * kmod_module_get_holders:
+ * @mod: kmod module
+ *
+ * Get a list of kmod modules that are holding this @mod, as returned by Linux
+ * Kernel. After use, free the @list by calling kmod_module_unref_list().
+ *
+ * Returns: a new list of kmod modules on success or NULL on failure.
+ */
 KMOD_EXPORT struct kmod_list *kmod_module_get_holders(const struct kmod_module *mod)
 {
 	char dname[PATH_MAX];
@@ -1003,6 +1255,19 @@ static void kmod_module_section_free(struct kmod_module_section *section)
 	free(section);
 }
 
+/**
+ * kmod_module_get_sections:
+ * @mod: kmod module
+ *
+ * Get a list of kmod sections of this @mod, as returned by Linux Kernel. The
+ * structure contained in this list is internal to libkmod and their fields
+ * can be obtained by calling kmod_module_section_get_name() and
+ * kmod_module_section_get_address().
+ *
+ * After use, free the @list by calling kmod_module_section_free_list().
+ *
+ * Returns: a new list of kmod module sections on success or NULL on failure.
+ */
 KMOD_EXPORT struct kmod_list *kmod_module_get_sections(const struct kmod_module *mod)
 {
 	char dname[PATH_MAX];
@@ -1090,6 +1355,17 @@ fail:
 	return NULL;
 }
 
+/**
+ * kmod_module_section_get_module_name:
+ * @entry: a list entry representing a kmod module section
+ *
+ * Get the name of a kmod module section.
+ *
+ * After use, free the @list by calling kmod_module_section_free_list().
+ *
+ * Returns: the name of this kmod module section on success or NULL on
+ * failure. The string is owned by the section, do not free it.
+ */
 KMOD_EXPORT const char *kmod_module_section_get_name(const struct kmod_list *entry)
 {
 	struct kmod_module_section *section;
@@ -1101,6 +1377,17 @@ KMOD_EXPORT const char *kmod_module_section_get_name(const struct kmod_list *ent
 	return section->name;
 }
 
+/**
+ * kmod_module_section_get_address:
+ * @entry: a list entry representing a kmod module section
+ *
+ * Get the address of a kmod module section.
+ *
+ * After use, free the @list by calling kmod_module_section_free_list().
+ *
+ * Returns: the address of this kmod module section on success or ULONG_MAX
+ * on failure.
+ */
 KMOD_EXPORT unsigned long kmod_module_section_get_address(const struct kmod_list *entry)
 {
 	struct kmod_module_section *section;
@@ -1112,6 +1399,12 @@ KMOD_EXPORT unsigned long kmod_module_section_get_address(const struct kmod_list
 	return section->address;
 }
 
+/**
+ * kmod_module_section_free_list:
+ * @list: kmod module section list
+ *
+ * Release the resources taken by @list
+ */
 KMOD_EXPORT void kmod_module_section_free_list(struct kmod_list *list)
 {
 	while (list) {
