@@ -579,63 +579,6 @@ KMOD_EXPORT struct kmod_module *kmod_module_get_module(const struct kmod_list *e
 }
 
 /**
- * kmod_module_get_size:
- * @mod: kmod module
- *
- * Get the size of this kmod module as returned by Linux kernel. It reads the
- * file /proc/modules to search for this module and get its size.
- *
- * Returns: the size of this kmod module.
- */
-KMOD_EXPORT long kmod_module_get_size(const struct kmod_module *mod)
-{
-	// FIXME TODO: this should be available from /sys/module/foo
-	FILE *fp;
-	char line[4096];
-	int lineno = 0;
-	long size = -ENOENT;
-
-	if (mod == NULL)
-		return -ENOENT;
-
-	fp = fopen("/proc/modules", "r");
-	if (fp == NULL) {
-		int err = -errno;
-		ERR(mod->ctx,
-		    "could not open /proc/modules: %s\n", strerror(errno));
-		return err;
-	}
-
-	while (fgets(line, sizeof(line), fp)) {
-		char *saveptr, *endptr, *tok = strtok_r(line, " \t", &saveptr);
-		long value;
-
-		lineno++;
-		if (tok == NULL || !streq(tok, mod->name))
-			continue;
-
-		tok = strtok_r(NULL, " \t", &saveptr);
-		if (tok == NULL) {
-			ERR(mod->ctx,
-			"invalid line format at /proc/modules:%d\n", lineno);
-			break;
-		}
-
-		value = strtol(tok, &endptr, 10);
-		if (endptr == tok || *endptr != '\0') {
-			ERR(mod->ctx,
-			"invalid line format at /proc/modules:%d\n", lineno);
-			break;
-		}
-
-		size = value;
-		break;
-	}
-	fclose(fp);
-	return size;
-}
-
-/**
  * kmod_module_get_name:
  * @mod: kmod module
  *
@@ -1134,6 +1077,63 @@ KMOD_EXPORT int kmod_module_get_initstate(const struct kmod_module *mod)
 
 	ERR(mod->ctx, "unknown %s: '%s'\n", path, buf);
 	return -EINVAL;
+}
+
+/**
+ * kmod_module_get_size:
+ * @mod: kmod module
+ *
+ * Get the size of this kmod module as returned by Linux kernel. It reads the
+ * file /proc/modules to search for this module and get its size.
+ *
+ * Returns: the size of this kmod module.
+ */
+KMOD_EXPORT long kmod_module_get_size(const struct kmod_module *mod)
+{
+	// FIXME TODO: this should be available from /sys/module/foo
+	FILE *fp;
+	char line[4096];
+	int lineno = 0;
+	long size = -ENOENT;
+
+	if (mod == NULL)
+		return -ENOENT;
+
+	fp = fopen("/proc/modules", "r");
+	if (fp == NULL) {
+		int err = -errno;
+		ERR(mod->ctx,
+		    "could not open /proc/modules: %s\n", strerror(errno));
+		return err;
+	}
+
+	while (fgets(line, sizeof(line), fp)) {
+		char *saveptr, *endptr, *tok = strtok_r(line, " \t", &saveptr);
+		long value;
+
+		lineno++;
+		if (tok == NULL || !streq(tok, mod->name))
+			continue;
+
+		tok = strtok_r(NULL, " \t", &saveptr);
+		if (tok == NULL) {
+			ERR(mod->ctx,
+			"invalid line format at /proc/modules:%d\n", lineno);
+			break;
+		}
+
+		value = strtol(tok, &endptr, 10);
+		if (endptr == tok || *endptr != '\0') {
+			ERR(mod->ctx,
+			"invalid line format at /proc/modules:%d\n", lineno);
+			break;
+		}
+
+		size = value;
+		break;
+	}
+	fclose(fp);
+	return size;
 }
 
 /**
