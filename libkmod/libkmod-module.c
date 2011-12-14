@@ -230,11 +230,13 @@ KMOD_EXPORT int kmod_module_new_from_name(struct kmod_ctx *ctx,
 		return 0;
 	}
 
-	m = calloc(1, sizeof(*m) + namelen + 1);
+	m = malloc(sizeof(*m) + namelen + 1);
 	if (m == NULL) {
 		free(m);
 		return -ENOMEM;
 	}
+
+	memset(m, 0, sizeof(*m));
 
 	m->ctx = kmod_ref(ctx);
 	m->name = (char *)m + sizeof(*m);
@@ -344,9 +346,11 @@ KMOD_EXPORT int kmod_module_new_from_path(struct kmod_ctx *ctx,
 		return 0;
 	}
 
-	m = calloc(1, sizeof(*m) + namelen + 1);
+	m = malloc(sizeof(*m) + namelen + 1);
 	if (m == NULL)
 		return -errno;
+
+	memset(m, 0, sizeof(*m));
 
 	m->ctx = kmod_ref(ctx);
 	m->name = (char *)m + sizeof(*m);
