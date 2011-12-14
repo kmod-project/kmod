@@ -25,8 +25,6 @@ Features:
 
 * Implement soft dependencies
 
-* Parse kernel command line (modname.opt=val)
-
 * provide 1:1 compatibility with module-init-tools's modprobe
    - show modversions (needs elf manipulation)
    - dump configuration

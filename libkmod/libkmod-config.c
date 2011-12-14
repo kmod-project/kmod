@@ -242,6 +242,67 @@ static void kmod_config_free_blacklist(struct kmod_config *config,
 	config->blacklists = kmod_list_remove(l);
 }
 
+static void kcmdline_parse_result(struct kmod_config *config, char *modname,
+						char *param, char *value)
+{
+	if (modname == NULL || param == NULL || value == NULL)
+		return;
+
+	DBG(config->ctx, "%s %s\n", modname, param);
+
+	if (streq(modname, "modprobe") && !strncmp(param, "blacklist=", 10)) {
+		for (;;) {
+			char *t = strsep(&value, ",");
+			if (t == NULL)
+				break;
+
+			kmod_config_add_blacklist(config, t);
+		}
+	} else {
+		kmod_config_add_options(config,
+				underscores(config->ctx, modname), param);
+	}
+}
+
+static int kmod_config_parse_kcmdline(struct kmod_config *config)
+{
+	char buf[KCMD_LINE_SIZE];
+	int fd, err;
+	char *p, *modname,  *param = NULL, *value = NULL;
+
+	fd = open("/proc/cmdline", O_RDONLY);
+	err = read_str_safe(fd, buf, sizeof(buf));
+	close(fd);
+	if (err < 0) {
+		ERR(config->ctx, "could not read from '/proc/cmdline': %s\n",
+							strerror(-err));
+		return err;
+	}
+
+	for (p = buf, modname = buf; *p != '\0' && *p != '\n'; p++) {
+		switch (*p) {
+		case ' ':
+			*p = '\0';
+			kcmdline_parse_result(config, modname, param, value);
+			param = value = NULL;
+			modname = p + 1;
+			break;
+		case '.':
+			*p = '\0';
+			param = p + 1;
+			break;
+		case '=':
+			value = p + 1;
+			break;
+		}
+	}
+
+	*p = '\0';
+	kcmdline_parse_result(config, modname, param, value);
+
+	return 0;
+}
+
 /*
  * Take an fd and own it. It will be closed on return. filename is used only
  * for debug messages
@@ -512,6 +573,8 @@ int kmod_config_new(struct kmod_ctx *ctx, struct kmod_config **p_config,
 
 		closedir(d);
 	}
+
+	kmod_config_parse_kcmdline(config);
 
 	return 0;
 }
