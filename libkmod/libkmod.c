@@ -399,7 +399,7 @@ static int kmod_lookup_alias_from_alias_bin(struct kmod_ctx *ctx,
 		index_file_close(idx);
 	}
 
-	for (realname = realnames; realname; realname = realnames->next) {
+	for (realname = realnames; realname; realname = realname->next) {
 		struct kmod_module *mod;
 
 		err = kmod_module_new_from_alias(ctx, name, realname->value, &mod);
