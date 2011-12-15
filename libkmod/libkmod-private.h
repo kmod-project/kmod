@@ -77,9 +77,9 @@ int kmod_lookup_alias_from_moddep_file(struct kmod_ctx *ctx, const char *name, s
 
 char *kmod_search_moddep(struct kmod_ctx *ctx, const char *name) __attribute__((nonnull(1,2)));
 
-struct kmod_module *kmod_pool_get_module(struct kmod_ctx *ctx, const char *name) __attribute__((nonnull(1,2)));
-void kmod_pool_add_module(struct kmod_ctx *ctx, struct kmod_module *mod) __attribute__((nonnull(1,2)));
-void kmod_pool_del_module(struct kmod_ctx *ctx, struct kmod_module *mod) __attribute__((nonnull(1,2)));
+struct kmod_module *kmod_pool_get_module(struct kmod_ctx *ctx, const char *key) __attribute__((nonnull(1,2)));
+void kmod_pool_add_module(struct kmod_ctx *ctx, struct kmod_module *mod, const char *key) __attribute__((nonnull(1,2, 3)));
+void kmod_pool_del_module(struct kmod_ctx *ctx, struct kmod_module *mod, const char *key) __attribute__((nonnull(1,2, 3)));
 
 const struct kmod_list *kmod_get_options(const struct kmod_ctx *ctx) __must_check __attribute__((nonnull(1)));
 const struct kmod_list *kmod_get_install_commands(const struct kmod_ctx *ctx) __must_check __attribute__((nonnull(1)));

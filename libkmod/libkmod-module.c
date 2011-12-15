@@ -45,6 +45,7 @@
  */
 struct kmod_module {
 	struct kmod_ctx *ctx;
+	char *hashkey;
 	char *name;
 	char *path;
 	struct kmod_list *dep;
@@ -231,7 +232,8 @@ KMOD_EXPORT int kmod_module_new_from_name(struct kmod_ctx *ctx,
 		return 0;
 	}
 
-	m = malloc(sizeof(*m) + namelen + 1);
+	namesep = strchr(name_norm, '/');
+	m = malloc(sizeof(*m) + (namesep == NULL ? 1 : 2) * namelen + 2);
 	if (m == NULL) {
 		free(m);
 		return -ENOMEM;
@@ -243,17 +245,19 @@ KMOD_EXPORT int kmod_module_new_from_name(struct kmod_ctx *ctx,
 	m->name = (char *)m + sizeof(*m);
 	memcpy(m->name, name_norm, namelen + 1);
 
-	m->refcount = 1;
+	if (namesep) {
+		size_t len = namesep - name_norm;
 
-	/* set alias later, so m->name is still modname/modalias */
-	kmod_pool_add_module(ctx, m);
-
-	namesep = strchr(m->name, '/');
-	if (namesep != NULL) {
-		*namesep = '\0';
-		m->alias = namesep + 1;
+		m->name[len] = '\0';
+		m->alias = m->name + len + 1;
+		m->hashkey = m->name + namelen + 1;
+		memcpy(m->hashkey, name_norm, namelen + 1);
+	} else {
+		m->hashkey = m->name;
 	}
 
+	m->refcount = 1;
+	kmod_pool_add_module(ctx, m, m->hashkey);
 	*mod = m;
 
 	return 0;
@@ -358,9 +362,10 @@ KMOD_EXPORT int kmod_module_new_from_path(struct kmod_ctx *ctx,
 	m->name = (char *)m + sizeof(*m);
 	memcpy(m->name, name, namelen);
 	m->path = abspath;
+	m->hashkey = m->name;
 	m->refcount = 1;
 
-	kmod_pool_add_module(ctx, m);
+	kmod_pool_add_module(ctx, m, m->hashkey);
 
 	*mod = m;
 

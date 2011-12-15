@@ -342,33 +342,31 @@ KMOD_EXPORT void kmod_set_log_priority(struct kmod_ctx *ctx, int priority)
 }
 
 struct kmod_module *kmod_pool_get_module(struct kmod_ctx *ctx,
-							const char *name)
+							const char *key)
 {
 	struct kmod_module *mod;
 
-	mod = kmod_hash_find(ctx->modules_by_name, name);
+	mod = kmod_hash_find(ctx->modules_by_name, key);
 
-	DBG(ctx, "get module name='%s' found=%p\n", name, mod);
+	DBG(ctx, "get module name='%s' found=%p\n", key, mod);
 
 	return mod;
 }
 
-void kmod_pool_add_module(struct kmod_ctx *ctx, struct kmod_module *mod)
+void kmod_pool_add_module(struct kmod_ctx *ctx, struct kmod_module *mod,
+							const char *key)
 {
-	const char *name = kmod_module_get_name(mod);
+	DBG(ctx, "add %p key='%s'\n", mod, key);
 
-	DBG(ctx, "add %p name='%s'\n", mod, name);
-
-	kmod_hash_add(ctx->modules_by_name, name, mod);
+	kmod_hash_add(ctx->modules_by_name, key, mod);
 }
 
-void kmod_pool_del_module(struct kmod_ctx *ctx, struct kmod_module *mod)
+void kmod_pool_del_module(struct kmod_ctx *ctx, struct kmod_module *mod,
+							const char *key)
 {
-	const char *name = kmod_module_get_name(mod);
+	DBG(ctx, "del %p key='%s'\n", mod, key);
 
-	DBG(ctx, "del %p name='%s'\n", mod, name);
-
-	kmod_hash_del(ctx->modules_by_name, name);
+	kmod_hash_del(ctx->modules_by_name, key);
 }
 
 static int kmod_lookup_alias_from_alias_bin(struct kmod_ctx *ctx,
