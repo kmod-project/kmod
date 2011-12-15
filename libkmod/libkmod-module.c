@@ -392,6 +392,7 @@ KMOD_EXPORT struct kmod_module *kmod_module_unref(struct kmod_module *mod)
 
 	DBG(mod->ctx, "kmod_module %p released\n", mod);
 
+	kmod_pool_del_module(mod->ctx, mod, mod->hashkey);
 	kmod_module_unref_list(mod->dep);
 	kmod_unref(mod->ctx);
 	free(mod->options);
