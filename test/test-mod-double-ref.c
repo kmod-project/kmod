@@ -46,6 +46,28 @@ int main(int argc, char *argv[])
 
 	kmod_module_unref(mod1);
 	kmod_module_unref(mod2);
+
+	/* same thing, but now unref the first module */
+
+	err = kmod_module_new_from_name(ctx, modname, &mod1);
+	if (err < 0) {
+		fprintf(stderr, "error creating module: '%s'\n", strerror(-err));
+		goto fail;
+	}
+
+	printf("modname='%s' obj=%p\n", modname, mod1);
+
+	kmod_module_unref(mod1);
+
+	err = kmod_module_new_from_name(ctx, modname, &mod2);
+	if (err < 0) {
+		fprintf(stderr, "error creating module: '%s'\n", strerror(-err));
+		goto fail;
+	}
+
+	printf("modname='%s' obj=%p\n", modname, mod2);
+
+	kmod_module_unref(mod2);
 	kmod_unref(ctx);
 
 	return EXIT_SUCCESS;
