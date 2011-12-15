@@ -221,7 +221,7 @@ KMOD_EXPORT int kmod_module_new_from_name(struct kmod_ctx *ctx,
 	char name_norm[NAME_MAX];
 	char *namesep;
 
-	if (ctx == NULL || name == NULL)
+	if (ctx == NULL || name == NULL || mod == NULL)
 		return -ENOENT;
 
 	alias_normalize(name, name_norm, &namelen);
@@ -317,7 +317,7 @@ KMOD_EXPORT int kmod_module_new_from_path(struct kmod_ctx *ctx,
 	char *abspath;
 	size_t namelen;
 
-	if (ctx == NULL || path == NULL)
+	if (ctx == NULL || path == NULL || mod == NULL)
 		return -ENOENT;
 
 	abspath = path_make_absolute_cwd(path);
@@ -599,6 +599,9 @@ KMOD_EXPORT struct kmod_module *kmod_module_get_module(const struct kmod_list *e
  */
 KMOD_EXPORT const char *kmod_module_get_name(const struct kmod_module *mod)
 {
+	if (mod == NULL)
+		return NULL;
+
 	return mod->name;
 }
 
@@ -616,6 +619,9 @@ KMOD_EXPORT const char *kmod_module_get_name(const struct kmod_module *mod)
 KMOD_EXPORT const char *kmod_module_get_path(const struct kmod_module *mod)
 {
 	char *line;
+
+	if (mod == NULL)
+		return NULL;
 
 	DBG(mod->ctx, "name='%s' path='%s'\n", mod->name, mod->path);
 
@@ -1051,6 +1057,9 @@ KMOD_EXPORT int kmod_module_get_initstate(const struct kmod_module *mod)
 	char path[PATH_MAX], buf[32];
 	int fd, err, pathlen;
 
+	if (mod == NULL)
+		return -ENOENT;
+
 	pathlen = snprintf(path, sizeof(path),
 				"/sys/module/%s/initstate", mod->name);
 	fd = open(path, O_RDONLY);
@@ -1160,6 +1169,9 @@ KMOD_EXPORT int kmod_module_get_refcnt(const struct kmod_module *mod)
 	long refcnt;
 	int fd, err;
 
+	if (mod == NULL)
+		return -ENOENT;
+
 	snprintf(path, sizeof(path), "/sys/module/%s/refcnt", mod->name);
 	fd = open(path, O_RDONLY);
 	if (fd < 0) {
@@ -1197,6 +1209,7 @@ KMOD_EXPORT struct kmod_list *kmod_module_get_holders(const struct kmod_module *
 
 	if (mod == NULL)
 		return NULL;
+
 	snprintf(dname, sizeof(dname), "/sys/module/%s/holders", mod->name);
 
 	d = opendir(dname);
