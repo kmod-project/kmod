@@ -1,4 +1,4 @@
-LIBKMOD_0.1 {
+LIBKMOD_1 {
 global:
 	kmod_get_log_priority;
 	kmod_get_userdata;
