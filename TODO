@@ -13,8 +13,6 @@ Features:
 
 * provide ELF manipulation to implement modinfo
 
-* Add coding-style.txt
-
 * Add lookup for install commands in kmod_module_new_from_lookup()
 
 * Add lookup for remove commands

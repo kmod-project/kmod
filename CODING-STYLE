@@ -1,0 +1,57 @@
+Every project has its coding style, and kmod is not an exception. This
+document describes the preferred coding style for kmod code, in order to keep
+some level of consistency among developers so that code can be easily
+understood and maintained, and also to help your code survive under
+maintainer's fastidious eyes so that you can get a passport for your patch
+ASAP.
+
+First of all, kmod coding style must follow every rule for Linux kernel
+(http://www.kernel.org/doc/Documentation/CodingStyle). There also exists a tool
+named checkpatch.pl to help you check the compliance with it. Just type
+"checkpatch.pl --no-tree patch_name" to check your patch. In theory, you need
+to clean up all the warnings and errors except this one: "ERROR: Missing
+Signed-off-by: line(s)". kmod does not used Signed-Off lines, so including
+them is actually an error.  In certain circumstances one can ignore the 80
+character per line limit.  This is generally only allowed if the alternative
+would make the code even less readable.
+
+Besides the kernel coding style above, kmod coding style is havily based on
+oFono's and BlueZ's. Below some basic rules:
+
+1) Wrap line at 80 char limit. There are a few exceptions:
+	- Headers may or may not wrap
+	- If it's a string that is hitting the limit, it's preferred not to break
+	  in order to be able to grep for that string. E.g:
+
+		err = my_function(ctx, "this is a long string that will pass the 80chr limit");
+
+	- If code would become unreadable if line is wrapped
+	- If there's only one argument to the function, don't put it alone in a
+	  new line.
+
+2) It's better to return/exit early in a function than having a really long
+   "if (...) { }". Example:
+
+   if (x) {	// worse	|	if (!x)			// better
+	   ...			|		return b;
+	   ...			|
+	   ...			|	...
+	   ...			|	...
+	   ...			|	...
+	   ...			|	...
+	   ...			|	...
+	   ...			|	...
+   } else {			|	...
+	   return b;		|	return a;
+   }				|
+				|
+   return a;			|
+
+3) Don't initialize variable unnecessarily
+When declaring a variable, try not to initialize it unless necessary.
+
+Example:
+int i = 1;  // wrong
+
+for (i = 0; i < 3; i++) {
+}
