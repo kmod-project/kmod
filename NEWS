@@ -1,1 +1,24 @@
+kmod 1
+======
 
+First version of kmod and its library, libkmod.
+
+In the libkmod it's currently possible to:
+	- List modules currently loaded
+	- Get information about loaded modules such as initstate, refcount,
+	  holders, sections, address and size
+	- Lookup modules by alias, module name or path
+	- Insert modules: options from configuration and extra options can be
+	  passed, but flags are not implemented, yet
+	- Remove modules
+	- Filter list of modules using blacklist
+	- For each module, get the its list of options and install/remove
+	  commands
+	- Indexes can be loaded on startup to speedup lookups later
+
+Tools provided with the same set of options as in module-init-tools:
+	- kmod-lsmod
+	- kmod-insmod
+	- kmod-rmmod
+	- kmod-modprobe, with some functionality still missing (use of softdep,
+	  dump configuration, show modversions)

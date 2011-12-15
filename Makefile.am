@@ -18,7 +18,7 @@ AM_LDFLAGS = \
 	-Wl,--gc-sections \
 	-Wl,--as-needed
 
-LIBKMOD_CURRENT=0
+LIBKMOD_CURRENT=1
 LIBKMOD_REVISION=0
 LIBKMOD_AGE=0
 
