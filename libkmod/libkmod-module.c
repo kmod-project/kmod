@@ -494,7 +494,7 @@ fail:
 #undef CHECK_ERR_AND_FINISH
 
 /**
- * kmod_module_unref:
+ * kmod_module_unref_list:
  * @list: list of kmod modules
  *
  * Drop a reference of each kmod module in @list and releases the resources
@@ -512,7 +512,7 @@ KMOD_EXPORT int kmod_module_unref_list(struct kmod_list *list)
 }
 
 /**
- * kmod_module_unref:
+ * kmod_module_get_dependencies:
  * @mod: kmod module
  *
  * Search the modules.dep index to find the dependencies of the given @mod.
