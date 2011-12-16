@@ -50,8 +50,8 @@ struct kmod_module {
 	char *path;
 	struct kmod_list *dep;
 	char *options;
-	char *install_commands;
-	char *remove_commands;
+	const char *install_commands;	/* owned by kmod_config */
+	const char *remove_commands;	/* owned by kmod_config */
 	char *alias; /* only set if this module was created from an alias */
 	int n_dep;
 	int refcount;
@@ -396,8 +396,6 @@ KMOD_EXPORT struct kmod_module *kmod_module_unref(struct kmod_module *mod)
 	kmod_module_unref_list(mod->dep);
 	kmod_unref(mod->ctx);
 	free(mod->options);
-	free(mod->install_commands);
-	free(mod->remove_commands);
 	free(mod->path);
 	free(mod);
 	return NULL;
@@ -827,52 +825,28 @@ KMOD_EXPORT const char *kmod_module_get_install_commands(const struct kmod_modul
 		/* lazy init */
 		struct kmod_module *m = (struct kmod_module *)mod;
 		const struct kmod_list *l, *ctx_install_commands;
-		char *cmds = NULL;
-		size_t cmdslen = 0;
 
 		ctx_install_commands = kmod_get_install_commands(mod->ctx);
 
 		kmod_list_foreach(l, ctx_install_commands) {
 			const char *modname = kmod_command_get_modname(l);
-			const char *str;
-			size_t len;
-			void *tmp;
 
 			if (strcmp(modname, mod->name) != 0)
 				continue;
 
-			str = kmod_command_get_command(l);
-			len = strlen(str);
-			if (len < 1)
-				continue;
+			m->install_commands = kmod_command_get_command(l);
 
-			tmp = realloc(cmds, cmdslen + len + 2);
-			if (tmp == NULL) {
-				free(cmds);
-				goto failed;
-			}
-
-			cmds = tmp;
-
-			if (cmdslen > 0) {
-				cmds[cmdslen] = ';';
-				cmdslen++;
-			}
-
-			memcpy(cmds + cmdslen, str, len);
-			cmdslen += len;
-			cmds[cmdslen] = '\0';
+			/*
+			 * find only the first command, as modprobe from
+			 * module-init-tools does
+			 */
+			break;
 		}
 
 		m->init.install_commands = true;
-		m->install_commands = cmds;
 	}
 
 	return mod->install_commands;
-
-failed:
-	ERR(mod->ctx, "out of memory\n");
-	return NULL;
 }
 
 /**
@@ -898,52 +872,28 @@ KMOD_EXPORT const char *kmod_module_get_remove_commands(const struct kmod_module
 		/* lazy init */
 		struct kmod_module *m = (struct kmod_module *)mod;
 		const struct kmod_list *l, *ctx_remove_commands;
-		char *cmds = NULL;
-		size_t cmdslen = 0;
 
 		ctx_remove_commands = kmod_get_remove_commands(mod->ctx);
 
 		kmod_list_foreach(l, ctx_remove_commands) {
 			const char *modname = kmod_command_get_modname(l);
-			const char *str;
-			size_t len;
-			void *tmp;
 
 			if (strcmp(modname, mod->name) != 0)
 				continue;
 
-			str = kmod_command_get_command(l);
-			len = strlen(str);
-			if (len < 1)
-				continue;
+			m->remove_commands = kmod_command_get_command(l);
 
-			tmp = realloc(cmds, cmdslen + len + 2);
-			if (tmp == NULL) {
-				free(cmds);
-				goto failed;
-			}
-
-			cmds = tmp;
-
-			if (cmdslen > 0) {
-				cmds[cmdslen] = ';';
-				cmdslen++;
-			}
-
-			memcpy(cmds + cmdslen, str, len);
-			cmdslen += len;
-			cmds[cmdslen] = '\0';
+			/*
+			 * find only the first command, as modprobe from
+			 * module-init-tools does
+			 */
+			break;
 		}
 
 		m->init.remove_commands = true;
-		m->remove_commands = cmds;
 	}
 
 	return mod->remove_commands;
-
-failed:
-	ERR(mod->ctx, "out of memory\n");
-	return NULL;
 }
 
 /**
