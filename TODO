@@ -26,8 +26,6 @@ Features:
    - install and remove commands may exist when there's no module with that
      name. Properly handle this case
 
-* gzip support for modprobe
-
 Known Bugs:
 ===========
 

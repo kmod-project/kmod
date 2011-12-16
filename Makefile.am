@@ -36,7 +36,8 @@ libkmod_libkmod_la_SOURCES =\
 	libkmod/libkmod-util.c \
 	libkmod/libkmod-index.c \
 	libkmod/libkmod-index.h \
-	libkmod/libkmod-module.c
+	libkmod/libkmod-module.c \
+	libkmod/libkmod-file.c
 
 EXTRA_DIST += libkmod/libkmod.sym
 EXTRA_DIST += libkmod/COPYING libkmod/README
@@ -45,6 +46,7 @@ libkmod_libkmod_la_LDFLAGS = $(AM_LDFLAGS) \
 	-version-info $(LIBKMOD_CURRENT):$(LIBKMOD_REVISION):$(LIBKMOD_AGE) \
 	-Wl,--version-script=$(top_srcdir)/libkmod/libkmod.sym
 libkmod_libkmod_la_DEPENDENCIES = ${top_srcdir}/libkmod/libkmod.sym
+libkmod_libkmod_la_LIBADD = @zlib_libs@
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libkmod/libkmod.pc

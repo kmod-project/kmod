@@ -693,9 +693,9 @@ KMOD_EXPORT int kmod_module_insert_module(struct kmod_module *mod,
 							const char *options)
 {
 	int err;
-	void *mmaped_file;
-	struct stat st;
-	int fd;
+	void *mem;
+	off_t size;
+	struct kmod_file *file;
 	const char *args = options ? options : "";
 
 	if (mod == NULL)
@@ -709,25 +709,20 @@ KMOD_EXPORT int kmod_module_insert_module(struct kmod_module *mod,
 	if (flags != 0)
 		INFO(mod->ctx, "Flags are not implemented yet\n");
 
-	if ((fd = open(mod->path, O_RDONLY|O_CLOEXEC)) < 0) {
+	file = kmod_file_open(mod->path);
+	if (file == NULL) {
 		err = -errno;
 		return err;
 	}
 
-	fstat(fd, &st);
+	size = kmod_file_get_size(file);
+	mem = kmod_file_get_contents(file);
 
-	if ((mmaped_file = mmap(0, st.st_size, PROT_READ,
-					MAP_PRIVATE, fd, 0)) == MAP_FAILED) {
-		close(fd);
-		return -errno;
-	}
-
-	err = init_module(mmaped_file, st.st_size, args);
+	err = init_module(mem, size, args);
 	if (err < 0)
 		ERR(mod->ctx, "Failed to insert module '%s'\n", mod->path);
 
-	munmap(mmaped_file, st.st_size);
-	close(fd);
+	kmod_file_unref(file);
 
 	return err;
 }
