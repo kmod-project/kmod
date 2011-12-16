@@ -17,8 +17,6 @@ Features:
 
 * Add functions list all modules known by modules.dep
 
-* Implement soft dependencies
-
 * provide 1:1 compatibility with module-init-tools's modprobe
    - show modversions (needs elf manipulation)
    - dump configuration

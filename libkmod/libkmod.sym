@@ -45,6 +45,7 @@ global:
         kmod_module_get_options;
         kmod_module_get_install_commands;
         kmod_module_get_remove_commands;
+        kmod_module_get_softdeps;
 local:
         *;
 };

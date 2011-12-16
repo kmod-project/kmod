@@ -34,6 +34,7 @@
 #include <sys/types.h>
 #include <sys/mman.h>
 #include <string.h>
+#include <fnmatch.h>
 
 #include "libkmod.h"
 #include "libkmod-private.h"
@@ -52,6 +53,10 @@ struct kmod_module {
 	char *options;
 	const char *install_commands;	/* owned by kmod_config */
 	const char *remove_commands;	/* owned by kmod_config */
+	struct {
+		struct kmod_list *pre;
+		struct kmod_list *post;
+	} softdeps;
 	char *alias; /* only set if this module was created from an alias */
 	int n_dep;
 	int refcount;
@@ -60,6 +65,7 @@ struct kmod_module {
 		bool options : 1;
 		bool install_commands : 1;
 		bool remove_commands : 1;
+		bool softdeps : 1;
 	} init;
 };
 
@@ -393,6 +399,8 @@ KMOD_EXPORT struct kmod_module *kmod_module_unref(struct kmod_module *mod)
 	DBG(mod->ctx, "kmod_module %p released\n", mod);
 
 	kmod_pool_del_module(mod->ctx, mod, mod->hashkey);
+	kmod_module_unref_list(mod->softdeps.pre);
+	kmod_module_unref_list(mod->softdeps.post);
 	kmod_module_unref_list(mod->dep);
 	kmod_unref(mod->ctx);
 	free(mod->options);
@@ -850,6 +858,111 @@ void kmod_module_set_install_commands(struct kmod_module *mod, const char *cmd)
 	mod->init.install_commands = true;
 	mod->install_commands = cmd;
 }
+
+static struct kmod_list *lookup_softdep(struct kmod_ctx *ctx, const char * const * array, unsigned int count)
+{
+	struct kmod_list *ret = NULL;
+	unsigned i;
+
+	for (i = 0; i < count; i++) {
+		const char *depname = array[i];
+		struct kmod_list *lst = NULL;
+		int err;
+
+		err = kmod_module_new_from_lookup(ctx, depname, &lst);
+		if (err < 0) {
+			ERR(ctx, "failed to lookup soft dependency '%s', continuing anyway.\n", depname);
+			continue;
+		} else if (lst != NULL)
+			ret = kmod_list_append_list(ret, lst);
+	}
+	return ret;
+}
+
+/**
+ * kmod_module_get_softdeps:
+ * @mod: kmod module
+ * @pre: where to save the list of preceding soft dependencies.
+ * @post: where to save the list of post soft dependencies.
+ *
+ * Get soft dependencies for this kmod module. Soft dependencies come
+ * from configuration file and are cached in @mod. The first call
+ * to this function will search for this module in configuration and
+ * subsequent calls return the known results.
+ *
+ * Both @pre and @post are newly created list of kmod_module and
+ * should be unreferenced with kmod_module_unref_list().
+ *
+ * Returns: 0 on success or < 0 otherwise.
+ */
+KMOD_EXPORT int kmod_module_get_softdeps(const struct kmod_module *mod, struct kmod_list **pre, struct kmod_list **post)
+{
+	const struct kmod_list *l;
+	struct kmod_list *l_new;
+
+	if (mod == NULL || pre == NULL || post == NULL)
+		return -ENOENT;
+
+	assert(*pre == NULL);
+	assert(*post == NULL);
+
+	if (!mod->init.softdeps) {
+		/* lazy init */
+		struct kmod_module *m = (struct kmod_module *)mod;
+		const struct kmod_list *ctx_softdeps;
+
+		ctx_softdeps = kmod_get_softdeps(mod->ctx);
+
+		kmod_list_foreach(l, ctx_softdeps) {
+			const char *modname = kmod_softdep_get_name(l);
+			const char * const *array;
+			unsigned count;
+
+			if (fnmatch(modname, mod->name, 0) != 0)
+				continue;
+
+			array = kmod_softdep_get_pre(l, &count);
+			m->softdeps.pre = lookup_softdep(mod->ctx, array, count);
+			array = kmod_softdep_get_post(l, &count);
+			m->softdeps.post = lookup_softdep(mod->ctx, array, count);
+			/*
+			 * find only the first command, as modprobe from
+			 * module-init-tools does
+			 */
+			break;
+		}
+
+		m->init.softdeps = true;
+	}
+
+	kmod_list_foreach(l, mod->softdeps.pre) {
+		l_new = kmod_list_append(*pre, kmod_module_ref(l->data));
+		if (l_new == NULL) {
+			kmod_module_unref(l->data);
+			goto fail;
+		}
+		*pre = l_new;
+	}
+
+	kmod_list_foreach(l, mod->softdeps.post) {
+		l_new = kmod_list_append(*post, kmod_module_ref(l->data));
+		if (l_new == NULL) {
+			kmod_module_unref(l->data);
+			goto fail;
+		}
+		*post = l_new;
+	}
+
+	return 0;
+
+fail:
+	kmod_module_unref_list(*pre);
+	*pre = NULL;
+	kmod_module_unref_list(*post);
+	*post = NULL;
+	return -ENOMEM;
+}
+
 
 /**
  * kmod_module_get_remove_commands:

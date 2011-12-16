@@ -92,6 +92,7 @@ int main(int argc, char *argv[])
 		printf("Alias: '%s'\nModules matching:\n", alias);
 
 	kmod_list_foreach(l, list) {
+		struct kmod_list *d, *pre = NULL, *post = NULL;
 		struct kmod_module *mod = kmod_module_get_module(l);
 		const char *str;
 
@@ -105,6 +106,31 @@ int main(int argc, char *argv[])
 		str = kmod_module_get_remove_commands(mod);
 		if (str)
 			printf("\t\tremove commands: '%s'\n", str);
+
+		err = kmod_module_get_softdeps(mod, &pre, &post);
+		if (err == 0) {
+			if (pre != NULL || post != NULL)
+				puts("\t\tsoft dependencies:");
+			if (pre != NULL) {
+				fputs("\t\t\tpre:", stdout);
+				kmod_list_foreach(d, pre) {
+					struct kmod_module *dm = kmod_module_get_module(d);
+					printf(" %s", kmod_module_get_name(dm));
+				}
+				putchar('\n');
+				kmod_module_unref_list(pre);
+			}
+			if (post != NULL) {
+				fputs("\t\t\tpost:", stdout);
+				kmod_list_foreach(d, post) {
+					struct kmod_module *dm = kmod_module_get_module(d);
+					printf(" %s", kmod_module_get_name(dm));
+				}
+				putchar('\n');
+				kmod_module_unref_list(post);
+			}
+		}
+
 		kmod_module_unref(mod);
 	}
 

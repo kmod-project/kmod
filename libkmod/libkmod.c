@@ -754,3 +754,8 @@ const struct kmod_list *kmod_get_remove_commands(const struct kmod_ctx *ctx)
 {
 	return ctx->config->remove_commands;
 }
+
+const struct kmod_list *kmod_get_softdeps(const struct kmod_ctx *ctx)
+{
+	return ctx->config->softdeps;
+}

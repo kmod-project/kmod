@@ -48,6 +48,14 @@ struct kmod_command {
 	char modname[];
 };
 
+struct kmod_softdep {
+	char *name;
+	const char **pre;
+	const char **post;
+	unsigned int n_pre;
+	unsigned int n_post;
+};
+
 const char *kmod_alias_get_name(const struct kmod_list *l) {
 	const struct kmod_alias *alias = l->data;
 	return alias->name;
@@ -76,6 +84,23 @@ const char *kmod_command_get_command(const struct kmod_list *l) {
 const char *kmod_command_get_modname(const struct kmod_list *l) {
 	const struct kmod_command *alias = l->data;
 	return alias->modname;
+}
+
+const char *kmod_softdep_get_name(const struct kmod_list *l) {
+	const struct kmod_softdep *dep = l->data;
+	return dep->name;
+}
+
+const char * const *kmod_softdep_get_pre(const struct kmod_list *l, unsigned int *count) {
+	const struct kmod_softdep *dep = l->data;
+	*count = dep->n_pre;
+	return dep->pre;
+}
+
+const char * const *kmod_softdep_get_post(const struct kmod_list *l, unsigned int *count) {
+	const struct kmod_softdep *dep = l->data;
+	*count = dep->n_post;
+	return dep->post;
 }
 
 static int kmod_config_add_command(struct kmod_config *config,
@@ -242,6 +267,149 @@ static void kmod_config_free_blacklist(struct kmod_config *config,
 	config->blacklists = kmod_list_remove(l);
 }
 
+static int kmod_config_add_softdep(struct kmod_config *config,
+							const char *modname,
+							const char *line)
+{
+	struct kmod_list *list;
+	struct kmod_softdep *dep;
+	const char *s, *p;
+	char *itr;
+	unsigned int n_pre = 0, n_post = 0;
+	size_t modnamelen = strlen(modname) + 1;
+	size_t buflen = 0;
+	bool was_space = false;
+	enum { S_NONE, S_PRE, S_POST } mode = S_NONE;
+
+	DBG(config->ctx, "modname=%s\n", modname);
+
+	/* analyze and count */
+	for (p = s = line; ; s++) {
+		size_t plen;
+
+		if (*s != '\0') {
+			if (!isspace(*s)) {
+				was_space = false;
+				continue;
+			}
+
+			if (was_space) {
+				p = s + 1;
+				continue;
+			}
+			was_space = true;
+
+			if (p >= s)
+				continue;
+		}
+		plen = s - p;
+
+		if (plen == sizeof("pre:") - 1 &&
+				memcmp(p, "pre:", sizeof("pre:") - 1) == 0)
+			mode = S_PRE;
+		else if (plen == sizeof("post:") - 1 &&
+				memcmp(p, "post:", sizeof("post:") - 1) == 0)
+			mode = S_POST;
+		else if (*s != '\0' || (*s == '\0' && !was_space)) {
+			if (mode == S_PRE) {
+				buflen += plen + 1;
+				n_pre++;
+			} else if (mode == S_POST) {
+				buflen += plen + 1;
+				n_post++;
+			}
+		}
+		p = s + 1;
+		if (*s == '\0')
+			break;
+	}
+
+	DBG(config->ctx, "%u pre, %u post\n", n_pre, n_post);
+
+	dep = malloc(sizeof(struct kmod_softdep) + modnamelen +
+		     n_pre * sizeof(const char *) +
+		     n_post * sizeof(const char *) +
+		     buflen);
+	if (dep == NULL) {
+		ERR(config->ctx, "out-of-memory modname=%s\n", modname);
+		return -ENOMEM;
+	}
+	dep->n_pre = n_pre;
+	dep->n_post = n_post;
+	dep->pre = (const char **)((char *)dep + sizeof(struct kmod_softdep));
+	dep->post = dep->pre + n_pre;
+	dep->name = (char *)(dep->post + n_post);
+
+	memcpy(dep->name, modname, modnamelen);
+
+	/* copy strings */
+	itr = dep->name + modnamelen;
+	n_pre = 0;
+	n_post = 0;
+	mode = S_NONE;
+	for (p = s = line; ; s++) {
+		size_t plen;
+
+		if (*s != '\0') {
+			if (!isspace(*s)) {
+				was_space = false;
+				continue;
+			}
+
+			if (was_space) {
+				p = s + 1;
+				continue;
+			}
+			was_space = true;
+
+			if (p >= s)
+				continue;
+		}
+		plen = s - p;
+
+		if (plen == sizeof("pre:") - 1 &&
+				memcmp(p, "pre:", sizeof("pre:") - 1) == 0)
+			mode = S_PRE;
+		else if (plen == sizeof("post:") - 1 &&
+				memcmp(p, "post:", sizeof("post:") - 1) == 0)
+			mode = S_POST;
+		else if (*s != '\0' || (*s == '\0' && !was_space)) {
+			if (mode == S_PRE) {
+				dep->pre[n_pre] = itr;
+				memcpy(itr, p, plen);
+				itr[plen] = '\0';
+				itr += plen + 1;
+				n_pre++;
+			} else if (mode == S_POST) {
+				dep->post[n_post] = itr;
+				memcpy(itr, p, plen);
+				itr[plen] = '\0';
+				itr += plen + 1;
+				n_post++;
+			}
+		}
+		p = s + 1;
+		if (*s == '\0')
+			break;
+	}
+
+	list = kmod_list_append(config->softdeps, dep);
+	if (list == NULL) {
+		free(dep);
+		return -ENOMEM;
+	}
+	config->softdeps = list;
+
+	return 0;
+}
+
+static void kmod_config_free_softdep(struct kmod_config *config,
+							struct kmod_list *l)
+{
+	free(l->data);
+	config->softdeps = kmod_list_remove(l);
+}
+
 static void kcmdline_parse_result(struct kmod_config *config, char *modname,
 						char *param, char *value)
 {
@@ -381,8 +549,16 @@ static int kmod_config_parse(struct kmod_config *config, int fd,
 					underscores(ctx, modname),
 					strtok_r(NULL, "\0", &saveptr),
 					cmd, &config->remove_commands);
+		} else if streq(cmd, "softdep") {
+			char *modname = strtok_r(NULL, "\t ", &saveptr);
+
+			if (modname == NULL)
+				goto syntax_error;
+
+			kmod_config_add_softdep(config,
+					underscores(ctx, modname),
+					strtok_r(NULL, "\0", &saveptr));
 		} else if (streq(cmd, "include")
-				|| streq(cmd, "softdep")
 				|| streq(cmd, "config")) {
 			INFO(ctx, "%s: command %s not implemented yet\n",
 								filename, cmd);
@@ -421,6 +597,9 @@ void kmod_config_free(struct kmod_config *config)
 		kmod_config_free_command(config, config->remove_commands,
 						&config->remove_commands);
 	}
+
+	while (config->softdeps)
+		kmod_config_free_softdep(config, config->softdeps);
 
 	free(config);
 }
