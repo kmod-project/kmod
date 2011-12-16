@@ -710,7 +710,7 @@ KMOD_EXPORT int kmod_module_insert_module(struct kmod_module *mod,
 	if (flags != 0)
 		INFO(mod->ctx, "Flags are not implemented yet\n");
 
-	if ((fd = open(mod->path, O_RDONLY)) < 0) {
+	if ((fd = open(mod->path, O_RDONLY|O_CLOEXEC)) < 0) {
 		err = -errno;
 		return err;
 	}
@@ -984,7 +984,7 @@ KMOD_EXPORT int kmod_module_new_from_loaded(struct kmod_ctx *ctx,
 	if (ctx == NULL || list == NULL)
 		return -ENOENT;
 
-	fp = fopen("/proc/modules", "r");
+	fp = fopen("/proc/modules", "re");
 	if (fp == NULL) {
 		int err = -errno;
 		ERR(ctx, "could not open /proc/modules: %s\n", strerror(errno));
@@ -1063,7 +1063,7 @@ KMOD_EXPORT int kmod_module_get_initstate(const struct kmod_module *mod)
 
 	pathlen = snprintf(path, sizeof(path),
 				"/sys/module/%s/initstate", mod->name);
-	fd = open(path, O_RDONLY);
+	fd = open(path, O_RDONLY|O_CLOEXEC);
 	if (fd < 0) {
 		err = -errno;
 
@@ -1118,7 +1118,7 @@ KMOD_EXPORT long kmod_module_get_size(const struct kmod_module *mod)
 	if (mod == NULL)
 		return -ENOENT;
 
-	fp = fopen("/proc/modules", "r");
+	fp = fopen("/proc/modules", "re");
 	if (fp == NULL) {
 		int err = -errno;
 		ERR(mod->ctx,
@@ -1174,7 +1174,7 @@ KMOD_EXPORT int kmod_module_get_refcnt(const struct kmod_module *mod)
 		return -ENOENT;
 
 	snprintf(path, sizeof(path), "/sys/module/%s/refcnt", mod->name);
-	fd = open(path, O_RDONLY);
+	fd = open(path, O_RDONLY|O_CLOEXEC);
 	if (fd < 0) {
 		err = -errno;
 		ERR(mod->ctx, "could not open '%s': %s\n",

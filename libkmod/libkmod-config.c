@@ -270,7 +270,7 @@ static int kmod_config_parse_kcmdline(struct kmod_config *config)
 	int fd, err;
 	char *p, *modname,  *param = NULL, *value = NULL;
 
-	fd = open("/proc/cmdline", O_RDONLY);
+	fd = open("/proc/cmdline", O_RDONLY|O_CLOEXEC);
 	err = read_str_safe(fd, buf, sizeof(buf));
 	close(fd);
 	if (err < 0) {

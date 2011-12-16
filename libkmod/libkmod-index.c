@@ -336,7 +336,7 @@ struct index_file *index_file_open(const char *filename)
 	uint32_t magic, version;
 	struct index_file *new;
 
-	file = fopen(filename, "r");
+	file = fopen(filename, "re");
 	if (!file)
 		return NULL;
 	errno = EINVAL;
@@ -733,7 +733,7 @@ struct index_mm *index_mm_open(struct kmod_ctx *ctx, const char *filename,
 		return NULL;
 	}
 
-	if ((fd = open(filename, O_RDONLY)) < 0) {
+	if ((fd = open(filename, O_RDONLY|O_CLOEXEC)) < 0) {
 		ERR(ctx, "%m\n");
 		goto fail_open;
 	}
