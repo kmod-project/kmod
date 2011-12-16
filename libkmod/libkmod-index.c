@@ -775,9 +775,9 @@ struct index_mm *index_mm_open(struct kmod_ctx *ctx, const char *filename,
 
 fail:
 	close(fd);
-fail_open:
-	if (idx->mm)
+	if (idx->mm != MAP_FAILED)
 		munmap(idx->mm, st.st_size);
+fail_open:
 	free(idx);
 	return NULL;
 }
