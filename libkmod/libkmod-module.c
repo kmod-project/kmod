@@ -482,7 +482,8 @@ KMOD_EXPORT int kmod_module_new_from_lookup(struct kmod_ctx *ctx,
 	err = kmod_lookup_alias_from_symbols_file(ctx, alias, list);
 	CHECK_ERR_AND_FINISH(err, fail, list, finish);
 
-// TODO: add lookup for install commands here.
+	err = kmod_lookup_alias_from_commands(ctx, alias, list);
+	CHECK_ERR_AND_FINISH(err, fail, list, finish);
 
 	err = kmod_lookup_alias_from_aliases_file(ctx, alias, list);
 	CHECK_ERR_AND_FINISH(err, fail, list, finish);
@@ -849,6 +850,12 @@ KMOD_EXPORT const char *kmod_module_get_install_commands(const struct kmod_modul
 	return mod->install_commands;
 }
 
+void kmod_module_set_install_commands(struct kmod_module *mod, const char *cmd)
+{
+	mod->init.install_commands = true;
+	mod->install_commands = cmd;
+}
+
 /**
  * kmod_module_get_remove_commands:
  * @mod: kmod module
@@ -894,6 +901,12 @@ KMOD_EXPORT const char *kmod_module_get_remove_commands(const struct kmod_module
 	}
 
 	return mod->remove_commands;
+}
+
+void kmod_module_set_remove_commands(struct kmod_module *mod, const char *cmd)
+{
+	mod->init.remove_commands = true;
+	mod->remove_commands = cmd;
 }
 
 /**

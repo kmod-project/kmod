@@ -533,6 +533,83 @@ fail:
 	return err;
 }
 
+int kmod_lookup_alias_from_commands(struct kmod_ctx *ctx, const char *name,
+						struct kmod_list **list)
+{
+	struct kmod_config *config = ctx->config;
+	struct kmod_list *l, *node;
+	int err, nmatch = 0;
+
+	kmod_list_foreach(l, config->install_commands) {
+		const char *modname = kmod_command_get_modname(l);
+
+		if (streq(modname, name)) {
+			const char *cmd = kmod_command_get_command(l);
+			struct kmod_module *mod;
+
+			err = kmod_module_new_from_name(ctx, modname, &mod);
+			if (err < 0) {
+				ERR(ctx, "%s\n", strerror(-err));
+				return err;
+			}
+
+			node = kmod_list_append(*list, mod);
+			if (node == NULL) {
+				ERR(ctx, "out of memory\n");
+				return -ENOMEM;
+			}
+
+			*list = node;
+			nmatch = 1;
+
+			kmod_module_set_install_commands(mod, cmd);
+
+			/*
+			 * match only the first one, like modprobe from
+			 * module-init-tools does
+			 */
+			break;
+		}
+	}
+
+	if (nmatch)
+		return nmatch;
+
+	kmod_list_foreach(l, config->remove_commands) {
+		const char *modname = kmod_command_get_modname(l);
+
+		if (streq(modname, name)) {
+			const char *cmd = kmod_command_get_command(l);
+			struct kmod_module *mod;
+
+			err = kmod_module_new_from_name(ctx, modname, &mod);
+			if (err < 0) {
+				ERR(ctx, "%s\n", strerror(-err));
+				return err;
+			}
+
+			node = kmod_list_append(*list, mod);
+			if (node == NULL) {
+				ERR(ctx, "out of memory\n");
+				return -ENOMEM;
+			}
+
+			*list = node;
+			nmatch = 1;
+
+			kmod_module_set_remove_commands(mod, cmd);
+
+			/*
+			 * match only the first one, like modprobe from
+			 * module-init-tools does
+			 */
+			break;
+		}
+	}
+
+	return nmatch;
+}
+
 /**
  * kmod_module_get_filtered_blacklist:
  * @ctx: kmod library context
