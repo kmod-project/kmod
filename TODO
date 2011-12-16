@@ -1,5 +1,5 @@
-
 Features:
+=========
 
 * config: configs that do not need to be matched by fnmatch() could be using a
   vector instead of a list. This way we could search in it by calling
@@ -30,5 +30,25 @@ Features:
    - install and remove commands may exist when there's no module with that
      name. Properly handle this case
 
-Known Bugs:
+* gzip support for modprobe
 
+Known Bugs:
+===========
+
+* modprobe -R should not try to load module
+
+Notes for future development:
+=============================
+
+* Kill support for /etc/modprobe.conf
+
+* Kill support for map files
+
+Things to be added removed in kernel (check what is really needed):
+===================================================================
+
+* list of currently loaded modules
+
+* module's size should be available under /sys
+
+* kill /proc/modules ?
