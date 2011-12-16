@@ -38,7 +38,7 @@ static int use_syslog = 0;
 static int verbose = DEFAULT_VERBOSE;
 static int dry_run = 0;
 static int ignore_loaded = 0;
-static int show_resolved_aliases = 0;
+static int lookup_only = 0;
 static int first_time = 0;
 static int ignore_commands = 0;
 static int use_blacklist = 0;
@@ -725,7 +725,10 @@ static int insmod_alias(struct kmod_ctx *ctx, const char *alias, const char *ext
 
 	kmod_list_foreach(l, list) {
 		struct kmod_module *mod = kmod_module_get_module(l);
-		err = insmod_do(mod, extra_options);
+		if (lookup_only)
+			printf("%s\n", kmod_module_get_name(mod));
+		else
+			err = insmod_do(mod, extra_options);
 		kmod_module_unref(mod);
 		if (err < 0)
 			break;
@@ -986,7 +989,7 @@ int main(int argc, char **orig_argv)
 			remove_dependencies = 1;
 			break;
 		case 'R':
-			show_resolved_aliases = 1;
+			lookup_only = 1;
 			break;
 		case 3:
 			first_time = 1;

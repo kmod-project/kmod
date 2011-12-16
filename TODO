@@ -35,7 +35,6 @@ Features:
 Known Bugs:
 ===========
 
-* modprobe -R should not try to load module
 
 Notes for future development:
 =============================
