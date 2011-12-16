@@ -548,7 +548,7 @@ int kmod_config_new(struct kmod_ctx *ctx, struct kmod_config **p_config,
 		}
 
 		if (S_ISREG(st.st_mode)) {
-			int fd = open(path, O_RDONLY);
+			int fd = open(path, O_RDONLY|O_CLOEXEC);
 			DBG(ctx, "parsing file '%s': %d\n", path, fd);
 			if (fd >= 0)
 				kmod_config_parse(config, fd, path);
@@ -562,7 +562,7 @@ int kmod_config_new(struct kmod_ctx *ctx, struct kmod_config **p_config,
 		d = conf_files_list(ctx, &list, path);
 
 		for (; list != NULL; list = kmod_list_remove(list)) {
-			int fd = openat(dirfd(d), list->data, O_RDONLY);
+			int fd = openat(dirfd(d), list->data, O_RDONLY|O_CLOEXEC);
 			DBG(ctx, "parsing file '%s/%s': %d\n", path,
 				(const char *) list->data, fd);
 			if (fd >= 0)

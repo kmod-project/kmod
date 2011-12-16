@@ -1333,7 +1333,7 @@ KMOD_EXPORT struct kmod_list *kmod_module_get_sections(const struct kmod_module 
 				continue;
 		}
 
-		fd = openat(dfd, de.d_name, O_RDONLY);
+		fd = openat(dfd, de.d_name, O_RDONLY|O_CLOEXEC);
 		if (fd < 0) {
 			ERR(mod->ctx, "could not open '%s/%s': %m\n",
 							dname, de.d_name);
