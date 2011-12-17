@@ -11,7 +11,7 @@ global:
 	kmod_unref;
 	kmod_list_next;
 	kmod_list_prev;
-        kmod_list_last;
+	kmod_list_last;
 
 	kmod_load_resources;
 	kmod_unload_resources;
@@ -43,10 +43,10 @@ global:
 	kmod_module_get_holders;
 	kmod_module_get_size;
 
-        kmod_module_get_options;
-        kmod_module_get_install_commands;
-        kmod_module_get_remove_commands;
-        kmod_module_get_softdeps;
+	kmod_module_get_options;
+	kmod_module_get_install_commands;
+	kmod_module_get_remove_commands;
+	kmod_module_get_softdeps;
 local:
         *;
 };
