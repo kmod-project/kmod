@@ -11,6 +11,7 @@ global:
 	kmod_unref;
 	kmod_list_next;
 	kmod_list_prev;
+        kmod_list_last;
 
 	kmod_load_resources;
 	kmod_unload_resources;

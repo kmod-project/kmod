@@ -310,3 +310,23 @@ KMOD_EXPORT struct kmod_list *kmod_list_next(const struct kmod_list *list,
 
 	return container_of(curr->node.next, struct kmod_list, node);
 }
+
+/**
+ * kmod_list_last:
+ * @list: the head of the list
+ *
+ * Get the last element of the @list. As @list is a circular list,
+ * this is a cheap operation O(1) with the last element being the
+ * previous element.
+ *
+ * If the list has a single element it will return the list itself (as
+ * expected, and this is what differentiates from kmod_list_prev()).
+ *
+ * Returns: last node at @list or NULL if the list is empty.
+ */
+KMOD_EXPORT struct kmod_list *kmod_list_last(const struct kmod_list *list)
+{
+	if (list == NULL)
+		return NULL;
+	return container_of(list->node.prev, struct kmod_list, node);
+}

@@ -62,6 +62,8 @@ struct kmod_list *kmod_list_next(const struct kmod_list *first_entry,
 						const struct kmod_list *list_entry);
 struct kmod_list *kmod_list_prev(const struct kmod_list *first_entry,
 						const struct kmod_list *list_entry);
+struct kmod_list *kmod_list_last(const struct kmod_list *first_entry);
+
 #define kmod_list_foreach(list_entry, first_entry) \
 	for (list_entry = first_entry; \
 		list_entry != NULL; \
