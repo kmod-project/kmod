@@ -835,7 +835,7 @@ KMOD_EXPORT const char *kmod_module_get_install_commands(const struct kmod_modul
 		kmod_list_foreach(l, ctx_install_commands) {
 			const char *modname = kmod_command_get_modname(l);
 
-			if (strcmp(modname, mod->name) != 0)
+			if (fnmatch(modname, mod->name, 0) != 0)
 				continue;
 
 			m->install_commands = kmod_command_get_command(l);
@@ -993,7 +993,7 @@ KMOD_EXPORT const char *kmod_module_get_remove_commands(const struct kmod_module
 		kmod_list_foreach(l, ctx_remove_commands) {
 			const char *modname = kmod_command_get_modname(l);
 
-			if (strcmp(modname, mod->name) != 0)
+			if (fnmatch(modname, mod->name, 0) != 0)
 				continue;
 
 			m->remove_commands = kmod_command_get_command(l);
