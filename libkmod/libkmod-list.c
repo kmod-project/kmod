@@ -280,7 +280,7 @@ KMOD_EXPORT struct kmod_list *kmod_list_prev(const struct kmod_list *list,
 	if (list == NULL || curr == NULL)
 		return NULL;
 
-	if (curr->node.prev == &list->node)
+	if (list == curr)
 		return NULL;
 
 	return container_of(curr->node.prev, struct kmod_list, node);
