@@ -69,6 +69,11 @@ struct kmod_list *kmod_list_last(const struct kmod_list *first_entry);
 		list_entry != NULL; \
 		list_entry = kmod_list_next(first_entry, list_entry))
 
+#define kmod_list_foreach_reverse(list_entry, first_entry) \
+	for (list_entry = kmod_list_last(first_entry); \
+		list_entry != NULL; \
+		list_entry = kmod_list_prev(first_entry, list_entry))
+
 /* Removal flags, not implemented yet */
 enum kmod_remove {
 	KMOD_REMOVE_FORCE = O_TRUNC,

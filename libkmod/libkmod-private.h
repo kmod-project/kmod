@@ -67,6 +67,13 @@ struct kmod_list *kmod_list_append_list(struct kmod_list *list1, struct kmod_lis
 		list_entry = (list_entry->node.next == &((first_entry)->node)) ? NULL : \
 		container_of(list_entry->node.next, struct kmod_list, node))
 
+#undef kmod_list_foreach_reverse
+#define kmod_list_foreach_reverse(list_entry, first_entry) \
+	for (list_entry = (((first_entry) == NULL) ? NULL : container_of(first_entry->node.prev, struct kmod_list, node)); \
+		list_entry != NULL; \
+		list_entry = ((list_entry == first_entry) ? NULL :	\
+		container_of(list_entry->node.prev, struct kmod_list, node)))
+
 /* libkmod.c */
 const char *kmod_get_dirname(const struct kmod_ctx *ctx) __attribute__((nonnull(1)));
 
