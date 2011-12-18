@@ -140,6 +140,16 @@ const char *kmod_module_get_remove_commands(const struct kmod_module *mod);
 
 int kmod_module_get_softdeps(const struct kmod_module *mod, struct kmod_list **pre, struct kmod_list **post);
 
+int kmod_module_get_info(const struct kmod_module *mod, struct kmod_list **list);
+const char *kmod_module_info_get_key(const struct kmod_list *entry);
+const char *kmod_module_info_get_value(const struct kmod_list *entry);
+void kmod_module_info_free_list(struct kmod_list *list);
+
+int kmod_module_get_versions(const struct kmod_module *mod, struct kmod_list **list);
+const char *kmod_module_version_get_symbol(const struct kmod_list *entry);
+uint64_t kmod_module_version_get_crc(const struct kmod_list *entry);
+void kmod_module_versions_free_list(struct kmod_list *list);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

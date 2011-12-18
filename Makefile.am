@@ -37,7 +37,8 @@ libkmod_libkmod_la_SOURCES =\
 	libkmod/libkmod-index.c \
 	libkmod/libkmod-index.h \
 	libkmod/libkmod-module.c \
-	libkmod/libkmod-file.c
+	libkmod/libkmod-file.c \
+	libkmod/libkmod-elf.c
 
 EXTRA_DIST += libkmod/libkmod.sym
 EXTRA_DIST += libkmod/COPYING libkmod/README

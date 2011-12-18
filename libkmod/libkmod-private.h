@@ -140,6 +140,20 @@ void *kmod_file_get_contents(const struct kmod_file *file) __must_check __attrib
 off_t kmod_file_get_size(const struct kmod_file *file) __must_check __attribute__((nonnull(1)));
 void kmod_file_unref(struct kmod_file *file) __attribute__((nonnull(1)));
 
+/* libkmod-elf.c */
+struct kmod_elf;
+struct kmod_modversion {
+	uint64_t crc;
+	char *symbol;
+};
+
+struct kmod_elf *kmod_elf_new(const void *memory, off_t size) __must_check __attribute__((nonnull(1)));
+void kmod_elf_unref(struct kmod_elf *elf) __attribute__((nonnull(1)));
+const void *kmod_elf_get_memory(const struct kmod_elf *elf) __must_check __attribute__((nonnull(1)));
+int kmod_elf_get_strings(const struct kmod_elf *elf, const char *section, char ***array) __must_check __attribute__((nonnull(1,2,3)));
+int kmod_elf_get_modversions(const struct kmod_elf *elf, struct kmod_modversion **array) __must_check __attribute__((nonnull(1,2)));
+int kmod_elf_strip_section(struct kmod_elf *elf, const char *section) __must_check __attribute__((nonnull(1,2)));
+int kmod_elf_strip_vermagic(struct kmod_elf *elf) __must_check __attribute__((nonnull(1)));
 
 /* util functions */
 char *getline_wrapped(FILE *fp, unsigned int *linenum) __attribute__((nonnull(1)));

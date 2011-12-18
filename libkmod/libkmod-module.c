@@ -682,7 +682,7 @@ KMOD_EXPORT int kmod_module_remove_module(struct kmod_module *mod,
 	return 0;
 }
 
-extern long init_module(void *mem, unsigned long len, const char *args);
+extern long init_module(const void *mem, unsigned long len, const char *args);
 
 /**
  * kmod_module_insert_module:
@@ -701,23 +701,23 @@ KMOD_EXPORT int kmod_module_insert_module(struct kmod_module *mod,
 							const char *options)
 {
 	int err;
-	void *mem;
+	const void *mem;
 	off_t size;
 	struct kmod_file *file;
+	struct kmod_elf *elf = NULL;
+	const char *path;
 	const char *args = options ? options : "";
 
 	if (mod == NULL)
 		return -ENOENT;
 
-	if (mod->path == NULL) {
+	path = kmod_module_get_path(mod);
+	if (path == NULL) {
 		ERR(mod->ctx, "Not supported to load a module by name yet\n");
 		return -ENOSYS;
 	}
 
-	if (flags != 0)
-		INFO(mod->ctx, "Flags are not implemented yet\n");
-
-	file = kmod_file_open(mod->path);
+	file = kmod_file_open(path);
 	if (file == NULL) {
 		err = -errno;
 		return err;
@@ -726,10 +726,35 @@ KMOD_EXPORT int kmod_module_insert_module(struct kmod_module *mod,
 	size = kmod_file_get_size(file);
 	mem = kmod_file_get_contents(file);
 
+	if (flags & (KMOD_INSERT_FORCE_VERMAGIC | KMOD_INSERT_FORCE_MODVERSION)) {
+		elf = kmod_elf_new(mem, size);
+		if (elf == NULL) {
+			err = -errno;
+			goto elf_failed;
+		}
+
+		if (flags & KMOD_INSERT_FORCE_MODVERSION) {
+			err = kmod_elf_strip_section(elf, "__versions");
+			if (err < 0)
+				INFO(mod->ctx, "Failed to strip modversion: %s\n", strerror(-err));
+		}
+
+		if (flags & KMOD_INSERT_FORCE_VERMAGIC) {
+			err = kmod_elf_strip_vermagic(elf);
+			if (err < 0)
+				INFO(mod->ctx, "Failed to strip vermagic: %s\n", strerror(-err));
+		}
+
+		mem = kmod_elf_get_memory(elf);
+	}
+
 	err = init_module(mem, size, args);
 	if (err < 0)
-		ERR(mod->ctx, "Failed to insert module '%s'\n", mod->path);
+		ERR(mod->ctx, "Failed to insert module '%s'\n", path);
 
+	if (elf != NULL)
+		kmod_elf_unref(elf);
+elf_failed:
 	kmod_file_unref(file);
 
 	return err;
@@ -1503,6 +1528,354 @@ KMOD_EXPORT void kmod_module_section_free_list(struct kmod_list *list)
 {
 	while (list) {
 		kmod_module_section_free(list->data);
+		list = kmod_list_remove(list);
+	}
+}
+
+struct kmod_module_info {
+	char *key;
+	char value[];
+};
+
+static struct kmod_module_info *kmod_module_info_new(const char *key, size_t keylen, const char *value, size_t valuelen)
+{
+	struct kmod_module_info *info;
+
+	info = malloc(sizeof(struct kmod_module_info) + keylen + valuelen + 2);
+	if (info == NULL)
+		return NULL;
+
+	info->key = (char *)info + sizeof(struct kmod_module_info)
+		+ valuelen + 1;
+	memcpy(info->key, key, keylen);
+	info->key[keylen] = '\0';
+	memcpy(info->value, value, valuelen);
+	info->value[valuelen] = '\0';
+	return info;
+}
+
+static void kmod_module_info_free(struct kmod_module_info *info)
+{
+	free(info);
+}
+
+/**
+ * kmod_module_get_info:
+ * @mod: kmod module
+ * @list: where to return list of module information. Use
+ *        kmod_module_info_get_key() and
+ *        kmod_module_info_get_value(). Release this list with
+ *        kmod_module_info_unref_list()
+ *
+ * Get a list of entries in ELF section ".modinfo", these contain
+ * alias, license, depends, vermagic and other keys with respective
+ * values.
+ *
+ * After use, free the @list by calling kmod_module_info_free_list().
+ *
+ * Returns: 0 on success or < 0 otherwise.
+ */
+KMOD_EXPORT int kmod_module_get_info(const struct kmod_module *mod, struct kmod_list **list)
+{
+	struct kmod_file *file;
+	struct kmod_elf *elf;
+	const char *path;
+	const void *mem;
+	char **strings;
+	size_t size;
+	int i, count, ret = 0;
+
+	if (mod == NULL || list == NULL)
+		return -ENOENT;
+
+	assert(*list == NULL);
+
+	path = kmod_module_get_path(mod);
+	if (path == NULL)
+		return -ENOENT;
+
+	file = kmod_file_open(path);
+	if (file == NULL)
+		return -errno;
+
+	size = kmod_file_get_size(file);
+	mem = kmod_file_get_contents(file);
+
+	elf = kmod_elf_new(mem, size);
+	if (elf == NULL) {
+		ret = -errno;
+		goto elf_open_error;
+	}
+
+	count = kmod_elf_get_strings(elf, ".modinfo", &strings);
+	if (count < 0) {
+		ret = count;
+		goto get_strings_error;
+	}
+
+	for (i = 0; i < count; i++) {
+		struct kmod_module_info *info;
+		struct kmod_list *n;
+		const char *key, *value;
+		size_t keylen, valuelen;
+
+		key = strings[i];
+		value = strchr(key, '=');
+		if (value == NULL) {
+			keylen = strlen(key);
+			valuelen = 0;
+		} else {
+			keylen = value - key;
+			value++;
+			valuelen = strlen(value);
+		}
+
+		info = kmod_module_info_new(key, keylen, value, valuelen);
+		if (info == NULL) {
+			ret = -errno;
+			kmod_module_info_free_list(*list);
+			*list = NULL;
+			goto list_error;
+		}
+
+		n = kmod_list_append(*list, info);
+		if (n != NULL)
+			*list = n;
+		else {
+			kmod_module_info_free(info);
+			kmod_module_info_free_list(*list);
+			*list = NULL;
+			ret = -ENOMEM;
+			goto list_error;
+		}
+	}
+	ret = count;
+
+list_error:
+	free(strings);
+get_strings_error:
+	kmod_elf_unref(elf);
+elf_open_error:
+	kmod_file_unref(file);
+
+	return ret;
+}
+
+/**
+ * kmod_module_info_get_key:
+ * @entry: a list entry representing a kmod module info
+ *
+ * Get the key of a kmod module info.
+ *
+ * Returns: the key of this kmod module info on success or NULL on
+ * failure. The string is owned by the info, do not free it.
+ */
+KMOD_EXPORT const char *kmod_module_info_get_key(const struct kmod_list *entry)
+{
+	struct kmod_module_info *info;
+
+	if (entry == NULL)
+		return NULL;
+
+	info = entry->data;
+	return info->key;
+}
+
+/**
+ * kmod_module_info_get_value:
+ * @entry: a list entry representing a kmod module info
+ *
+ * Get the value of a kmod module info.
+ *
+ * Returns: the value of this kmod module info on success or NULL on
+ * failure. The string is owned by the info, do not free it.
+ */
+KMOD_EXPORT const char *kmod_module_info_get_value(const struct kmod_list *entry)
+{
+	struct kmod_module_info *info;
+
+	if (entry == NULL)
+		return NULL;
+
+	info = entry->data;
+	return info->value;
+}
+
+/**
+ * kmod_module_info_free_list:
+ * @list: kmod module info list
+ *
+ * Release the resources taken by @list
+ */
+KMOD_EXPORT void kmod_module_info_free_list(struct kmod_list *list)
+{
+	while (list) {
+		kmod_module_info_free(list->data);
+		list = kmod_list_remove(list);
+	}
+}
+
+struct kmod_module_version {
+	uint64_t crc;
+	char symbol[];
+};
+
+static struct kmod_module_version *kmod_module_versions_new(uint64_t crc, const char *symbol)
+{
+	struct kmod_module_version *mv;
+	size_t symbollen = strlen(symbol) + 1;
+
+	mv = malloc(sizeof(struct kmod_module_version) + symbollen);
+	if (mv == NULL)
+		return NULL;
+
+	mv->crc = crc;
+	memcpy(mv->symbol, symbol, symbollen);
+	return mv;
+}
+
+static void kmod_module_version_free(struct kmod_module_version *version)
+{
+	free(version);
+}
+
+/**
+ * kmod_module_get_versions:
+ * @mod: kmod module
+ * @list: where to return list of module versions. Use
+ *        kmod_module_versions_get_symbol() and
+ *        kmod_module_versions_get_crc(). Release this list with
+ *        kmod_module_versions_unref_list()
+ *
+ * Get a list of entries in ELF section "__versions".
+ *
+ * After use, free the @list by calling kmod_module_versions_free_list().
+ *
+ * Returns: 0 on success or < 0 otherwise.
+ */
+KMOD_EXPORT int kmod_module_get_versions(const struct kmod_module *mod, struct kmod_list **list)
+{
+	struct kmod_file *file;
+	struct kmod_elf *elf;
+	const char *path;
+	const void *mem;
+	struct kmod_modversion *versions;
+	size_t size;
+	int i, count, ret = 0;
+
+	if (mod == NULL || list == NULL)
+		return -ENOENT;
+
+	assert(*list == NULL);
+
+	path = kmod_module_get_path(mod);
+	if (path == NULL)
+		return -ENOENT;
+
+	file = kmod_file_open(path);
+	if (file == NULL)
+		return -errno;
+
+	size = kmod_file_get_size(file);
+	mem = kmod_file_get_contents(file);
+
+	elf = kmod_elf_new(mem, size);
+	if (elf == NULL) {
+		ret = -errno;
+		goto elf_open_error;
+	}
+
+	count = kmod_elf_get_modversions(elf, &versions);
+	if (count < 0) {
+		ret = count;
+		goto get_strings_error;
+	}
+
+	for (i = 0; i < count; i++) {
+		struct kmod_module_version *mv;
+		struct kmod_list *n;
+
+		mv = kmod_module_versions_new(versions[i].crc, versions[i].symbol);
+		if (mv == NULL) {
+			ret = -errno;
+			kmod_module_versions_free_list(*list);
+			*list = NULL;
+			goto list_error;
+		}
+
+		n = kmod_list_append(*list, mv);
+		if (n != NULL)
+			*list = n;
+		else {
+			kmod_module_version_free(mv);
+			kmod_module_versions_free_list(*list);
+			*list = NULL;
+			ret = -ENOMEM;
+			goto list_error;
+		}
+	}
+	ret = count;
+
+list_error:
+	free(versions);
+get_strings_error:
+	kmod_elf_unref(elf);
+elf_open_error:
+	kmod_file_unref(file);
+
+	return ret;
+}
+
+/**
+ * kmod_module_versions_get_symbol:
+ * @entry: a list entry representing a kmod module versions
+ *
+ * Get the symbol of a kmod module versions.
+ *
+ * Returns: the symbol of this kmod module versions on success or NULL
+ * on failure. The string is owned by the versions, do not free it.
+ */
+KMOD_EXPORT const char *kmod_module_version_get_symbol(const struct kmod_list *entry)
+{
+	struct kmod_module_version *version;
+
+	if (entry == NULL)
+		return NULL;
+
+	version = entry->data;
+	return version->symbol;
+}
+
+/**
+ * kmod_module_version_get_crc:
+ * @entry: a list entry representing a kmod module version
+ *
+ * Get the crc of a kmod module version.
+ *
+ * Returns: the crc of this kmod module version on success or NULL on
+ * failure. The string is owned by the version, do not free it.
+ */
+KMOD_EXPORT uint64_t kmod_module_version_get_crc(const struct kmod_list *entry)
+{
+	struct kmod_module_version *version;
+
+	if (entry == NULL)
+		return 0;
+
+	version = entry->data;
+	return version->crc;
+}
+
+/**
+ * kmod_module_versions_free_list:
+ * @list: kmod module versions list
+ *
+ * Release the resources taken by @list
+ */
+KMOD_EXPORT void kmod_module_versions_free_list(struct kmod_list *list)
+{
+	while (list) {
+		kmod_module_version_free(list->data);
 		list = kmod_list_remove(list);
 	}
 }

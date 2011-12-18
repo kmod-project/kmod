@@ -133,6 +133,33 @@ int main(int argc, char *argv[])
 			}
 		}
 
+		pre = NULL;
+		err = kmod_module_get_info(mod, &pre);
+		if (err > 0) {
+			puts("\t\tmodinfo:");
+			kmod_list_foreach(d, pre) {
+				const char *key, *val;
+				key = kmod_module_info_get_key(d);
+				val = kmod_module_info_get_value(d);
+				printf("\t\t\t%s: %s\n", key, val ? val : "");
+			}
+			kmod_module_info_free_list(pre);
+		}
+
+		pre = NULL;
+		err = kmod_module_get_versions(mod, &pre);
+		if (err > 0) {
+			puts("\t\tmodversions:");
+			kmod_list_foreach(d, pre) {
+				const char *symbol;
+				uint64_t crc;
+				symbol = kmod_module_version_get_symbol(d);
+				crc = kmod_module_version_get_crc(d);
+				printf("\t\t\t%s: %#"PRIx64"\n", symbol, crc);
+			}
+			kmod_module_versions_free_list(pre);
+		}
+
 		kmod_module_unref(mod);
 	}
 
