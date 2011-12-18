@@ -116,6 +116,7 @@ int main(int argc, char *argv[])
 				kmod_list_foreach(d, pre) {
 					struct kmod_module *dm = kmod_module_get_module(d);
 					printf(" %s", kmod_module_get_name(dm));
+					kmod_module_unref(dm);
 				}
 				putchar('\n');
 				kmod_module_unref_list(pre);
@@ -125,6 +126,7 @@ int main(int argc, char *argv[])
 				kmod_list_foreach(d, post) {
 					struct kmod_module *dm = kmod_module_get_module(d);
 					printf(" %s", kmod_module_get_name(dm));
+					kmod_module_unref(dm);
 				}
 				putchar('\n');
 				kmod_module_unref_list(post);
