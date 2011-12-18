@@ -366,7 +366,7 @@ KMOD_EXPORT int kmod_module_new_from_path(struct kmod_ctx *ctx,
 
 	m->ctx = kmod_ref(ctx);
 	m->name = (char *)m + sizeof(*m);
-	memcpy(m->name, name, namelen);
+	memcpy(m->name, name, namelen + 1);
 	m->path = abspath;
 	m->hashkey = m->name;
 	m->refcount = 1;
