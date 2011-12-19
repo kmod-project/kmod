@@ -417,27 +417,6 @@ static int rmmod_do(struct kmod_module *mod)
 	struct kmod_list *pre = NULL, *post = NULL;
 	int err;
 
-	if (!ignore_loaded) {
-		int state = kmod_module_get_initstate(mod);
-		if (state == KMOD_MODULE_BUILTIN) {
-			LOG("Module %s is builtin.\n", modname);
-			return -ENOENT;
-		} else if (state != KMOD_MODULE_LIVE) {
-			if (first_time) {
-				LOG("Module %s is not in kernel.\n", modname);
-				return -ENOENT;
-			} else
-				return 0;
-		}
-	}
-
-	/* not in original modprobe -r, but helpful */
-	if (remove_dependencies) {
-		err = rmmod_do_dependencies(mod);
-		if (err < 0)
-			return err;
-	}
-
 	if (!ignore_commands) {
 		const char *cmd;
 
@@ -460,6 +439,28 @@ static int rmmod_do(struct kmod_module *mod)
 			err = command_do(mod, "remove", cmd, NULL);
 			goto done;
 		}
+	}
+
+	if (!ignore_loaded) {
+		int state = kmod_module_get_initstate(mod);
+
+		if (state == KMOD_MODULE_BUILTIN) {
+			LOG("Module %s is builtin.\n", modname);
+			return -ENOENT;
+		} else if (state != KMOD_MODULE_LIVE) {
+			if (first_time) {
+				LOG("Module %s is not in kernel.\n", modname);
+				return -ENOENT;
+			} else
+				return 0;
+		}
+	}
+
+	/* not in original modprobe -r, but helpful */
+	if (remove_dependencies) {
+		err = rmmod_do_dependencies(mod);
+		if (err < 0)
+			return err;
 	}
 
 	if (!ignore_loaded) {
@@ -698,29 +699,6 @@ static int insmod_do(struct kmod_module *mod, const char *extra_opts)
 	char *opts = NULL;
 	int err;
 
-	if (!ignore_loaded) {
-		int state = kmod_module_get_initstate(mod);
-
-		if (state == KMOD_MODULE_BUILTIN) {
-			if (first_time) {
-				LOG("Module %s already in kernel (builtin).\n",
-				    modname);
-				return -EEXIST;
-			}
-			return 0;
-		} else if (state == KMOD_MODULE_LIVE) {
-			if (first_time) {
-				LOG("Module %s already in kernel.\n", modname);
-				return -EEXIST;
-			}
-			return 0;
-		}
-	}
-
-	err = insmod_do_dependencies(mod);
-	if (err < 0)
-		return err;
-
 	if (!ignore_commands) {
 		const char *cmd;
 
@@ -744,6 +722,29 @@ static int insmod_do(struct kmod_module *mod, const char *extra_opts)
 			goto done;
 		}
 	}
+
+	if (!ignore_loaded) {
+		int state = kmod_module_get_initstate(mod);
+
+		if (state == KMOD_MODULE_BUILTIN) {
+			if (first_time) {
+				LOG("Module %s already in kernel (builtin).\n",
+				    modname);
+				return -EEXIST;
+			}
+			return 0;
+		} else if (state == KMOD_MODULE_LIVE) {
+			if (first_time) {
+				LOG("Module %s already in kernel.\n", modname);
+				return -EEXIST;
+			}
+			return 0;
+		}
+	}
+
+	err = insmod_do_dependencies(mod);
+	if (err < 0)
+		return err;
 
 	if (conf_opts || extra_opts) {
 		if (conf_opts == NULL)
