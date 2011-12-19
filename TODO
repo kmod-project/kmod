@@ -20,8 +20,6 @@ Features:
 * provide 1:1 compatibility with module-init-tools's modprobe
    - show modversions (needs elf manipulation)
    - dump configuration
-   - install and remove commands may exist when there's no module with that
-     name. Properly handle this case
 
 Known Bugs:
 ===========

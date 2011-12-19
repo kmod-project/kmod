@@ -444,7 +444,10 @@ static int rmmod_do(struct kmod_module *mod)
 	if (!ignore_loaded) {
 		int state = kmod_module_get_initstate(mod);
 
-		if (state == KMOD_MODULE_BUILTIN) {
+		if (state < 0) {
+			LOG ("Module %s not found.\n", modname);
+			return -ENOENT;
+		} else if (state == KMOD_MODULE_BUILTIN) {
 			LOG("Module %s is builtin.\n", modname);
 			return -ENOENT;
 		} else if (state != KMOD_MODULE_LIVE) {
@@ -522,26 +525,17 @@ static int rmmod_path(struct kmod_ctx *ctx, const char *path)
 	return err;
 }
 
-static int rmmod_do_commands(struct kmod_ctx *ctx, const char *name)
-{
-	ERR("TODO - get commands for non modules!\n");
-	return -ENOENT;
-}
-
 static int rmmod_alias(struct kmod_ctx *ctx, const char *alias)
 {
 	struct kmod_list *l, *list = NULL;
 	int err;
 
 	err = kmod_module_new_from_lookup(ctx, alias, &list);
-	if (err < 0 || list == NULL) {
-		if (list == NULL) {
-			err = rmmod_do_commands(ctx, alias);
-			if (err < 0)
-				LOG("Module %s not found.\n", alias);
-		}
+	if (err < 0)
 		return err;
-	}
+
+	if (list == NULL)
+		LOG("Module %s not found.\n", alias);
 
 	kmod_list_foreach(l, list) {
 		struct kmod_module *mod = kmod_module_get_module(l);
@@ -558,6 +552,7 @@ static int rmmod_alias(struct kmod_ctx *ctx, const char *alias)
 static int rmmod(struct kmod_ctx *ctx, const char *name)
 {
 	struct stat st;
+
 	if (stat(name, &st) == 0)
 		return rmmod_path(ctx, name);
 	else
@@ -726,7 +721,10 @@ static int insmod_do(struct kmod_module *mod, const char *extra_opts)
 	if (!ignore_loaded) {
 		int state = kmod_module_get_initstate(mod);
 
-		if (state == KMOD_MODULE_BUILTIN) {
+		if (state < 0) {
+			LOG("Module %s not found.\n", modname);
+			return -ENOENT;
+		} else if (state == KMOD_MODULE_BUILTIN) {
 			if (first_time) {
 				LOG("Module %s already in kernel (builtin).\n",
 				    modname);
@@ -814,24 +812,17 @@ static int insmod_path(struct kmod_ctx *ctx, const char *path, const char *extra
 	return err;
 }
 
-static int insmod_do_commands(struct kmod_ctx *ctx, const char *name)
-{
-	ERR("TODO - get commands for non modules!\n");
-	return -ENOENT;
-}
-
 static int insmod_alias(struct kmod_ctx *ctx, const char *alias, const char *extra_options)
 {
 	struct kmod_list *l, *list = NULL;
 	int err;
 
 	err = kmod_module_new_from_lookup(ctx, alias, &list);
-	if (err < 0 || list == NULL) {
-		if (list == NULL) {
-			err = insmod_do_commands(ctx, alias);
-			if (err < 0)
-				LOG("Module %s not found.\n", alias);
-		}
+	if (err < 0)
+		return err;
+
+	if (list == NULL) {
+		LOG("Module %s not found.\n", alias);
 		return err;
 	}
 
