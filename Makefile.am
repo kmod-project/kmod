@@ -78,26 +78,11 @@ noinst_PROGRAMS = test/test-insmod test/test-rmmod test/test-rmmod2 \
 		  test/test-blacklist \
 		  $(check_PROGRAMS)
 
-test_test_rmmod_SOURCES = test/test-rmmod.c
 test_test_rmmod_LDADD = libkmod/libkmod.la
-
-test_test_rmmod2_SOURCES = test/test-rmmod2.c
 test_test_rmmod2_LDADD = libkmod/libkmod.la
-
-test_test_insmod_SOURCES = test/test-insmod.c
 test_test_insmod_LDADD = libkmod/libkmod.la
-
-test_test_lookup_SOURCES = test/test-lookup.c
 test_test_lookup_LDADD = libkmod/libkmod.la
-
-test_test_path_from_name_SOURCES = test/test-path-from-name.c
 test_test_path_from_name_LDADD = libkmod/libkmod.la
-
-test_test_get_dependencies_SOURCES = test/test-get-dependencies.c
 test_test_get_dependencies_LDADD = libkmod/libkmod.la
-
-test_test_mod_double_ref_SOURCES = test/test-mod-double-ref.c
 test_test_mod_double_ref_LDADD = libkmod/libkmod.la
-
-test_test_blacklist_SOURCES = test/test-blacklist.c
 test_test_blacklist_LDADD = libkmod/libkmod.la
