@@ -322,7 +322,7 @@ struct kmod_elf *kmod_elf_new(const void *memory, off_t size)
 		       elf->header.section.entry_size, shdr_size);
 		goto invalid;
 	}
-	min_size = hdr_size * shdr_size * elf->header.section.count;
+	min_size = hdr_size + shdr_size * elf->header.section.count;
 	if (min_size >= elf->size) {
 		ELFDBG(elf, "file is too short to hold sections\n");
 		goto invalid;
