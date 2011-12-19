@@ -106,7 +106,7 @@ test_test_loaded_LDADD = libkmod/libkmod.la
 noinst_PROGRAMS = test/test-insmod test/test-rmmod test/test-rmmod2 \
 		  test/test-lookup test/test-path-from-name \
 		  test/test-get-dependencies test/test-mod-double-ref \
-		  test/test-blacklist \
+		  test/test-blacklist test/test-elf \
 		  $(check_PROGRAMS)
 
 test_test_rmmod_LDADD = libkmod/libkmod.la
@@ -117,3 +117,6 @@ test_test_path_from_name_LDADD = libkmod/libkmod.la
 test_test_get_dependencies_LDADD = libkmod/libkmod.la
 test_test_mod_double_ref_LDADD = libkmod/libkmod.la
 test_test_blacklist_LDADD = libkmod/libkmod.la
+
+test_test_elf_SOURCES = test/test-elf.c
+test_test_elf_LDADD = libkmod/libkmod.la
