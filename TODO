@@ -21,6 +21,23 @@ Features:
    - show modversions (needs elf manipulation)
    - dump configuration
 
+* provide modules.archive, a cache file with all modules compressed
+  and a fast access. It's like a tar.gz, but with each entry
+  compressed as opposed to the whole tar compressed, easy to pick
+  individual entries, that is, more like .gz.tar. As zlib compression
+  does not store the uncompressed file size, this could provide
+  it. The file format should be something like:
+     MAGIC-ID
+     DIRECTORY-ENTRY-SIZE
+     DIRECTORY (hash-like format, points to file offset and size)
+     ENTRIES (each is a compressed module)
+  Helper binary to:
+     kmod-archive list
+     kmod-archive add path.ko
+     kmod-archive rm path.ko
+     kmod-archive get path.ko
+     kmod-archive exists path.ko
+
 Known Bugs:
 ===========
 
