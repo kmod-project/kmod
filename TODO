@@ -18,7 +18,6 @@ Features:
 * Add functions list all modules known by modules.dep
 
 * provide 1:1 compatibility with module-init-tools's modprobe
-   - show modversions (needs elf manipulation)
    - dump configuration
 
 * provide modules.archive, a cache file with all modules compressed

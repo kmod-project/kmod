@@ -232,15 +232,30 @@ static int show_config(struct kmod_ctx *ctx)
 
 static int show_modversions(struct kmod_ctx *ctx, const char *filename)
 {
-	ERR("TODO - modversions is missing in kmod.\n");
-	/*
-	  needs:
-	    struct kmod_list *kmod_module_get_modversions(struct kmod_module *mod);
-	    kmod_module_modversion_get_address() [needs better naming?]
-	    kmod_module_modversion_get_name() [needs better naming?]
-	    kmod_module_modversion_unref_list()
-	 */
-	return -ENOENT;
+	struct kmod_list *l, *list = NULL;
+	struct kmod_module *mod;
+	int err = kmod_module_new_from_path(ctx, filename, &mod);
+	if (err < 0) {
+		LOG("Module %s not found.\n", filename);
+		return err;
+	}
+
+	err = kmod_module_get_versions(mod, &list);
+	if (err < 0) {
+		LOG("Could not get modversions of %s: %s\n",
+			filename, strerror(-err));
+		kmod_module_unref(mod);
+		return err;
+	}
+
+	kmod_list_foreach(l, list) {
+		const char *symbol = kmod_module_version_get_symbol(l);
+		uint64_t crc = kmod_module_version_get_crc(l);
+		printf("0x%08"PRIx64"\t%s\n", crc, symbol);
+	}
+	kmod_module_versions_free_list(list);
+	kmod_module_unref(mod);
+	return 0;
 }
 
 static int command_do(struct kmod_module *module, const char *type, const char *command, const char *cmdline_opts)
