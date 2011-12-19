@@ -79,6 +79,92 @@ static struct param *add_param(const char *name, int namelen, const char *param,
 	return it;
 }
 
+static int process_parm(const char *key, const char *value, struct param **params)
+{
+	const char *name, *param, *type;
+	int namelen, paramlen, typelen;
+	struct param *it;
+	const char *colon = strchr(value, ':');
+	if (colon == NULL) {
+		LOG("Found invalid \"%s=%s\": missing ':'\n",
+		    key, value);
+		return 0;
+	}
+
+	name = value;
+	namelen = colon - value;
+	if (strcmp(key, "parm") == 0) {
+		param = colon + 1;
+		paramlen = strlen(param);
+		type = NULL;
+		typelen = 0;
+	} else {
+		param = NULL;
+		paramlen = 0;
+		type = colon + 1;
+		typelen = strlen(type);
+	}
+
+	it = add_param(name, namelen, param, paramlen, type, typelen, params);
+	if (it == NULL) {
+		LOG("Out of memory!\n");
+		return -ENOMEM;
+	}
+
+	return 0;
+}
+
+static int modinfo_params_do(const struct kmod_list *list)
+{
+	const struct kmod_list *l;
+	struct param *params = NULL;
+	int err = 0;
+
+	kmod_list_foreach(l, list) {
+		const char *key = kmod_module_info_get_key(l);
+		const char *value = kmod_module_info_get_value(l);
+		if (strcmp(key, "parm") != 0 &&
+		    strcmp(key, "parmtype") != 0)
+			continue;
+
+		err = process_parm(key, value, &params);
+		if (err < 0)
+			goto end;
+	}
+
+	while (params != NULL) {
+		struct param *p = params;
+		params = p->next;
+
+		if (p->param == NULL)
+			printf("%.*s: (%.*s)%c",
+			       p->namelen, p->name, p->typelen, p->type,
+			       separator);
+		else if (p->type != NULL)
+			printf("%.*s:%.*s (%.*s)%c",
+			       p->namelen, p->name,
+			       p->paramlen, p->param,
+			       p->typelen, p->type,
+			       separator);
+		else
+			printf("%.*s:%.*s%c",
+			       p->namelen, p->name,
+			       p->paramlen, p->param,
+			       separator);
+
+		free(p);
+	}
+
+end:
+	while (params != NULL) {
+		void *tmp = params;
+		params = params->next;
+		free(tmp);
+	}
+
+	return err;
+}
+
 static int modinfo_do(struct kmod_module *mod)
 {
 	struct kmod_list *l, *list = NULL;
@@ -100,6 +186,11 @@ static int modinfo_do(struct kmod_module *mod)
 		return err;
 	}
 
+	if (field != NULL && strcmp(field, "parm") == 0) {
+		err = modinfo_params_do(list);
+		goto end;
+	}
+
 	kmod_list_foreach(l, list) {
 		const char *key = kmod_module_info_get_key(l);
 		const char *value = kmod_module_info_get_value(l);
@@ -114,37 +205,9 @@ static int modinfo_do(struct kmod_module *mod)
 		}
 
 		if (strcmp(key, "parm") == 0 || strcmp(key, "parmtype") == 0) {
-			const char *name, *param, *type;
-			int namelen, paramlen, typelen;
-			struct param *it;
-			const char *colon = strchr(value, ':');
-			if (colon == NULL) {
-				LOG("Found invalid \"%s=%s\": missing ':'\n",
-					key, value);
-				continue;
-			}
-
-			name = value;
-			namelen = colon - value;
-			if (strcmp(key, "parm") == 0) {
-				param = colon + 1;
-				paramlen = strlen(param);
-				type = NULL;
-				typelen = 0;
-			} else {
-				param = NULL;
-				paramlen = 0;
-				type = colon + 1;
-				typelen = strlen(type);
-			}
-
-			it = add_param(name, namelen, param, paramlen,
-					type, typelen, &params);
-			if (it == NULL) {
-				LOG("Out of memory!\n");
+			err = process_parm(key, value, &params);
+			if (err < 0)
 				goto end;
-			}
-
 			continue;
 		}
 
