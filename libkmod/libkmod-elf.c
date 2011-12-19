@@ -510,6 +510,8 @@ int kmod_elf_get_modversions(const struct kmod_elf *elf, struct kmod_modversion 
 			struct kmod_modversion64 *mv;
 			symbol = elf_get_mem(elf, off + sizeof(mv->crc));
 		}
+		if (symbol[0] == '.')
+			symbol++;
 		slen += strlen(symbol) + 1;
 	}
 
@@ -532,6 +534,8 @@ int kmod_elf_get_modversions(const struct kmod_elf *elf, struct kmod_modversion 
 			crc = elf_get_uint(elf, off, sizeof(mv->crc));
 			symbol = elf_get_mem(elf, off + sizeof(mv->crc));
 		}
+		if (symbol[0] == '.')
+			symbol++;
 
 		a[i].crc = crc;
 		a[i].symbol = itr;
