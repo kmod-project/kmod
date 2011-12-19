@@ -152,6 +152,7 @@ void kmod_elf_unref(struct kmod_elf *elf) __attribute__((nonnull(1)));
 const void *kmod_elf_get_memory(const struct kmod_elf *elf) __must_check __attribute__((nonnull(1)));
 int kmod_elf_get_strings(const struct kmod_elf *elf, const char *section, char ***array) __must_check __attribute__((nonnull(1,2,3)));
 int kmod_elf_get_modversions(const struct kmod_elf *elf, struct kmod_modversion **array) __must_check __attribute__((nonnull(1,2)));
+int kmod_elf_get_symbols(const struct kmod_elf *elf, struct kmod_modversion **array) __must_check __attribute__((nonnull(1,2)));
 int kmod_elf_strip_section(struct kmod_elf *elf, const char *section) __must_check __attribute__((nonnull(1,2)));
 int kmod_elf_strip_vermagic(struct kmod_elf *elf) __must_check __attribute__((nonnull(1)));
 

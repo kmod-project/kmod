@@ -150,6 +150,11 @@ const char *kmod_module_version_get_symbol(const struct kmod_list *entry);
 uint64_t kmod_module_version_get_crc(const struct kmod_list *entry);
 void kmod_module_versions_free_list(struct kmod_list *list);
 
+int kmod_module_get_symbols(const struct kmod_module *mod, struct kmod_list **list);
+const char *kmod_module_symbol_get_symbol(const struct kmod_list *entry);
+uint64_t kmod_module_symbol_get_crc(const struct kmod_list *entry);
+void kmod_module_symbols_free_list(struct kmod_list *list);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

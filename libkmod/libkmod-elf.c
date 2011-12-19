@@ -627,3 +627,195 @@ int kmod_elf_strip_vermagic(struct kmod_elf *elf)
 	ELFDBG(elf, "no vermagic found in .modinfo\n");
 	return -ENOENT;
 }
+
+
+static int kmod_elf_get_symbols_symtab(const struct kmod_elf *elf, struct kmod_modversion **array)
+{
+	uint64_t i, last, size;
+	const void *buf;
+	const char *strings;
+	char *itr;
+	struct kmod_modversion *a;
+	int count, err;
+
+	*array = NULL;
+
+	err = kmod_elf_get_section(elf, "__ksymtab_strings", &buf, &size);
+	if (err < 0)
+		return err;
+	strings = buf;
+	if (strings == NULL || size == 0)
+		return 0;
+
+	/* skip zero padding */
+	while (strings[0] == '\0' && size > 1) {
+		strings++;
+		size--;
+	}
+	if (size <= 1)
+		return 0;
+
+	last = 0;
+	for (i = 0, count = 0; i < size; i++) {
+		if (strings[i] == '\0') {
+			if (last == i) {
+				last = i + 1;
+				continue;
+			}
+			count++;
+			last = i + 1;
+		}
+	}
+	if (strings[i - 1] != '\0')
+		count++;
+
+	*array = a = malloc(size + 1 + sizeof(struct kmod_modversion) * count);
+	if (*array == NULL)
+		return -errno;
+
+	itr = (char *)(a + count);
+	last = 0;
+	for (i = 0, count = 0; i < size; i++) {
+		if (strings[i] == '\0') {
+			size_t slen = i - last;
+			if (last == i) {
+				last = i + 1;
+				continue;
+			}
+			a[count].crc = 0;
+			a[count].symbol = itr;
+			memcpy(itr, strings + last, slen);
+			itr[slen] = '\0';
+			itr += slen + 1;
+			count++;
+			last = i + 1;
+		}
+	}
+	if (strings[i - 1] != '\0') {
+		size_t slen = i - last;
+		a[count].crc = 0;
+		a[count].symbol = itr;
+		memcpy(itr, strings + last, slen);
+		itr[slen] = '\0';
+		itr += slen + 1;
+		count++;
+	}
+
+	return count;
+}
+
+/* array will be allocated with strings in a single malloc, just free *array */
+int kmod_elf_get_symbols(const struct kmod_elf *elf, struct kmod_modversion **array)
+{
+	static const char crc_str[] = "__crc_";
+	static const size_t crc_strlen = sizeof(crc_str) - 1;
+	uint64_t strtablen, symtablen, str_off, sym_off;
+	const void *strtab, *symtab;
+	struct kmod_modversion *a;
+	char *itr;
+	size_t slen, symlen;
+	int i, count, symcount, err;
+
+	err = kmod_elf_get_section(elf, ".strtab", &strtab, &strtablen);
+	if (err < 0) {
+		ELFDBG(elf, "no .strtab found.\n");
+		goto fallback;
+	}
+
+	err = kmod_elf_get_section(elf, ".symtab", &symtab, &symtablen);
+	if (err < 0) {
+		ELFDBG(elf, "no .symtab found.\n");
+		goto fallback;
+	}
+
+	if (elf->class & KMOD_ELF_32)
+		symlen = sizeof(Elf32_Sym);
+	else
+		symlen = sizeof(Elf64_Sym);
+
+	if (symtablen % symlen != 0) {
+		ELFDBG(elf, "unexpected .symtab of length %"PRIu64", not multiple of %"PRIu64" as expected.\n", symtablen, symlen);
+		goto fallback;
+	}
+
+	symcount = symtablen / symlen;
+	count = 0;
+	slen = 0;
+	str_off = (const uint8_t *)strtab - elf->memory;
+	sym_off = (const uint8_t *)symtab - elf->memory + symlen;
+	for (i = 1; i < symcount; i++, sym_off += symlen) {
+		const char *name;
+		uint32_t name_off;
+
+#define READV(field)							\
+		elf_get_uint(elf, sym_off + offsetof(typeof(*s), field),\
+			     sizeof(s->field))
+		if (elf->class & KMOD_ELF_32) {
+			Elf32_Sym *s;
+			name_off = READV(st_name);
+		} else {
+			Elf64_Sym *s;
+			name_off = READV(st_name);
+		}
+#undef READV
+		if (name_off >= strtablen) {
+			ELFDBG(elf, ".strtab is %"PRIu64" bytes, but .symtab entry %d wants to access offset %"PRIu32".\n", strtablen, i, name_off);
+			goto fallback;
+		}
+
+		name = elf_get_mem(elf, str_off + name_off);
+
+		if (strncmp(name, crc_str, crc_strlen) != 0)
+			continue;
+		slen += strlen(name + crc_strlen) + 1;
+		count++;
+	}
+
+	if (count == 0)
+		goto fallback;
+
+	*array = a = malloc(sizeof(struct kmod_modversion) * count + slen);
+	if (*array == NULL)
+		return -errno;
+
+	itr = (char *)(a + count);
+	count = 0;
+	str_off = (const uint8_t *)strtab - elf->memory;
+	sym_off = (const uint8_t *)symtab - elf->memory + symlen;
+	for (i = 1; i < symcount; i++, sym_off += symlen) {
+		const char *name;
+		uint32_t name_off;
+		uint64_t crc;
+
+#define READV(field)							\
+		elf_get_uint(elf, sym_off + offsetof(typeof(*s), field),\
+			     sizeof(s->field))
+		if (elf->class & KMOD_ELF_32) {
+			Elf32_Sym *s;
+			name_off = READV(st_name);
+			crc = READV(st_value);
+		} else {
+			Elf64_Sym *s;
+			name_off = READV(st_name);
+			crc = READV(st_value);
+		}
+#undef READV
+		name = elf_get_mem(elf, str_off + name_off);
+		if (strncmp(name, crc_str, crc_strlen) != 0)
+			continue;
+		name += crc_strlen;
+
+		a[count].crc = crc;
+		a[count].symbol = itr;
+		slen = strlen(name);
+		memcpy(itr, name, slen);
+		itr[slen] = '\0';
+		itr += slen + 1;
+		count++;
+	}
+	return count;
+
+fallback:
+	ELFDBG(elf, "Falling back to __ksymtab_strings!\n");
+	return kmod_elf_get_symbols_symtab(elf, array);
+}

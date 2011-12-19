@@ -1896,3 +1896,168 @@ KMOD_EXPORT void kmod_module_versions_free_list(struct kmod_list *list)
 		list = kmod_list_remove(list);
 	}
 }
+
+struct kmod_module_symbol {
+	uint64_t crc;
+	char symbol[];
+};
+
+static struct kmod_module_symbol *kmod_module_symbols_new(uint64_t crc, const char *symbol)
+{
+	struct kmod_module_symbol *mv;
+	size_t symbollen = strlen(symbol) + 1;
+
+	mv = malloc(sizeof(struct kmod_module_symbol) + symbollen);
+	if (mv == NULL)
+		return NULL;
+
+	mv->crc = crc;
+	memcpy(mv->symbol, symbol, symbollen);
+	return mv;
+}
+
+static void kmod_module_symbol_free(struct kmod_module_symbol *symbol)
+{
+	free(symbol);
+}
+
+/**
+ * kmod_module_get_symbols:
+ * @mod: kmod module
+ * @list: where to return list of module symbols. Use
+ *        kmod_module_symbols_get_symbol() and
+ *        kmod_module_symbols_get_crc(). Release this list with
+ *        kmod_module_symbols_unref_list()
+ *
+ * Get a list of entries in ELF section ".symtab" or "__ksymtab_strings".
+ *
+ * After use, free the @list by calling kmod_module_symbols_free_list().
+ *
+ * Returns: 0 on success or < 0 otherwise.
+ */
+KMOD_EXPORT int kmod_module_get_symbols(const struct kmod_module *mod, struct kmod_list **list)
+{
+	struct kmod_file *file;
+	struct kmod_elf *elf;
+	const char *path;
+	const void *mem;
+	struct kmod_modversion *symbols;
+	size_t size;
+	int i, count, ret = 0;
+
+	if (mod == NULL || list == NULL)
+		return -ENOENT;
+
+	assert(*list == NULL);
+
+	path = kmod_module_get_path(mod);
+	if (path == NULL)
+		return -ENOENT;
+
+	file = kmod_file_open(path);
+	if (file == NULL)
+		return -errno;
+
+	size = kmod_file_get_size(file);
+	mem = kmod_file_get_contents(file);
+
+	elf = kmod_elf_new(mem, size);
+	if (elf == NULL) {
+		ret = -errno;
+		goto elf_open_error;
+	}
+
+	count = kmod_elf_get_symbols(elf, &symbols);
+	if (count < 0) {
+		ret = count;
+		goto get_strings_error;
+	}
+
+	for (i = 0; i < count; i++) {
+		struct kmod_module_symbol *mv;
+		struct kmod_list *n;
+
+		mv = kmod_module_symbols_new(symbols[i].crc, symbols[i].symbol);
+		if (mv == NULL) {
+			ret = -errno;
+			kmod_module_symbols_free_list(*list);
+			*list = NULL;
+			goto list_error;
+		}
+
+		n = kmod_list_append(*list, mv);
+		if (n != NULL)
+			*list = n;
+		else {
+			kmod_module_symbol_free(mv);
+			kmod_module_symbols_free_list(*list);
+			*list = NULL;
+			ret = -ENOMEM;
+			goto list_error;
+		}
+	}
+	ret = count;
+
+list_error:
+	free(symbols);
+get_strings_error:
+	kmod_elf_unref(elf);
+elf_open_error:
+	kmod_file_unref(file);
+
+	return ret;
+}
+
+/**
+ * kmod_module_symbols_get_symbol:
+ * @entry: a list entry representing a kmod module symbols
+ *
+ * Get the symbol of a kmod module symbols.
+ *
+ * Returns: the symbol of this kmod module symbols on success or NULL
+ * on failure. The string is owned by the symbols, do not free it.
+ */
+KMOD_EXPORT const char *kmod_module_symbol_get_symbol(const struct kmod_list *entry)
+{
+	struct kmod_module_symbol *symbol;
+
+	if (entry == NULL)
+		return NULL;
+
+	symbol = entry->data;
+	return symbol->symbol;
+}
+
+/**
+ * kmod_module_symbol_get_crc:
+ * @entry: a list entry representing a kmod module symbol
+ *
+ * Get the crc of a kmod module symbol.
+ *
+ * Returns: the crc of this kmod module symbol on success or NULL on
+ * failure. The string is owned by the symbol, do not free it.
+ */
+KMOD_EXPORT uint64_t kmod_module_symbol_get_crc(const struct kmod_list *entry)
+{
+	struct kmod_module_symbol *symbol;
+
+	if (entry == NULL)
+		return 0;
+
+	symbol = entry->data;
+	return symbol->crc;
+}
+
+/**
+ * kmod_module_symbols_free_list:
+ * @list: kmod module symbols list
+ *
+ * Release the resources taken by @list
+ */
+KMOD_EXPORT void kmod_module_symbols_free_list(struct kmod_list *list)
+{
+	while (list) {
+		kmod_module_symbol_free(list->data);
+		list = kmod_list_remove(list);
+	}
+}

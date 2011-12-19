@@ -160,6 +160,20 @@ int main(int argc, char *argv[])
 			kmod_module_versions_free_list(pre);
 		}
 
+		pre = NULL;
+		err = kmod_module_get_symbols(mod, &pre);
+		if (err > 0) {
+			puts("\t\tsymbols:");
+			kmod_list_foreach(d, pre) {
+				const char *symbol;
+				uint64_t crc;
+				symbol = kmod_module_symbol_get_symbol(d);
+				crc = kmod_module_symbol_get_crc(d);
+				printf("\t\t\t%s: %#"PRIx64"\n", symbol, crc);
+			}
+			kmod_module_symbols_free_list(pre);
+		}
+
 		kmod_module_unref(mod);
 	}
 
