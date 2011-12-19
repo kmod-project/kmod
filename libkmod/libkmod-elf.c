@@ -418,9 +418,16 @@ int kmod_elf_get_strings(const struct kmod_elf *elf, const char *section, char *
 	if (size <= 1)
 		return 0;
 
+	last = 0;
 	for (i = 0, count = 0; i < size; i++) {
-		if (strings[i] == '\0')
+		if (strings[i] == '\0') {
+			if (last == i) {
+				last = i + 1;
+				continue;
+			}
 			count++;
+			last = i + 1;
+		}
 	}
 	if (strings[i - 1] != '\0')
 		count++;
@@ -434,6 +441,10 @@ int kmod_elf_get_strings(const struct kmod_elf *elf, const char *section, char *
 	for (i = 0, count = 0; i < size; i++) {
 		if (strings[i] == '\0') {
 			size_t slen = i - last;
+			if (last == i) {
+				last = i + 1;
+				continue;
+			}
 			a[count] = itr;
 			memcpy(itr, strings + last, slen);
 			itr[slen] = '\0';
