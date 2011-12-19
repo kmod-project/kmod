@@ -126,7 +126,7 @@ static int modinfo_do(struct kmod_module *mod)
 
 			name = value;
 			namelen = colon - value;
-			if (strcmp(key, "param") == 0) {
+			if (strcmp(key, "parm") == 0) {
 				param = colon + 1;
 				paramlen = strlen(param);
 				type = NULL;
@@ -169,13 +169,13 @@ static int modinfo_do(struct kmod_module *mod)
 			       p->namelen, p->name, p->typelen, p->type,
 			       separator);
 		else if (p->type != NULL)
-			printf("%-16s%.*s%.*s (%.*s)%c", "parm:",
+			printf("%-16s%.*s:%.*s (%.*s)%c", "parm:",
 			       p->namelen, p->name,
 			       p->paramlen, p->param,
 			       p->typelen, p->type,
 			       separator);
 		else
-			printf("%-16s%.*s%.*s%c",
+			printf("%-16s%.*s:%.*s%c",
 			       "parm:",
 			       p->namelen, p->name,
 			       p->paramlen, p->param,
