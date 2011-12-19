@@ -114,7 +114,7 @@ static int kmod_config_add_command(struct kmod_config *config,
 	size_t modnamelen = strlen(modname) + 1;
 	size_t commandlen = strlen(command) + 1;
 
-	DBG(config->ctx, "modname'%s' cmd='%s %s'\n", modname, command_name,
+	DBG(config->ctx, "modname='%s' cmd='%s %s'\n", modname, command_name,
 								command);
 
 	cmd = malloc(sizeof(*cmd) + modnamelen + commandlen);
