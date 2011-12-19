@@ -227,7 +227,7 @@ static int modinfo_alias_do(struct kmod_ctx *ctx, const char *alias)
 	return err;
 }
 
-static const char cmdopts_s[] = "adlpn0F:Vh";
+static const char cmdopts_s[] = "adlpn0F:k:b:Vh";
 static const struct option cmdopts[] = {
 	{"author", no_argument, 0, 'a'},
 	{"description", no_argument, 0, 'd'},
