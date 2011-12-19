@@ -137,7 +137,7 @@ static inline uint64_t elf_get_uint(const struct kmod_elf *elf, uint64_t offset,
 	p = elf->memory + offset;
 	if (elf->class & KMOD_ELF_MSB) {
 		for (i = 0; i < size; i++)
-			ret = (ret << 8) | p[size];
+			ret = (ret << 8) | p[i];
 	} else {
 		for (i = 1; i <= size; i++)
 			ret = (ret << 8) | p[size - i];
