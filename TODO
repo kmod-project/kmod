@@ -11,8 +11,6 @@ Features:
 * create test-mock library to be LD_PRELOAD'ed before running the binaries
   so we're able to create unit tests
 
-* provide ELF manipulation to implement modinfo
-
 * Add functions to dump configuration
 
 * Add functions list all modules known by modules.dep

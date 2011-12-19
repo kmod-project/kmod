@@ -3,3 +3,4 @@ kmod-insmod
 kmod-rmmod
 kmod-lsmod
 kmod-modprobe
+kmod-modinfo
