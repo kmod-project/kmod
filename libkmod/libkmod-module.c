@@ -230,7 +230,10 @@ KMOD_EXPORT int kmod_module_new_from_name(struct kmod_ctx *ctx,
 	if (ctx == NULL || name == NULL || mod == NULL)
 		return -ENOENT;
 
-	alias_normalize(name, name_norm, &namelen);
+	if (alias_normalize(name, name_norm, &namelen) < 0) {
+		DBG(ctx, "invalid alias: %s\n", name);
+		return -EINVAL;
+	}
 
 	m = kmod_pool_get_module(ctx, name_norm);
 	if (m != NULL) {
