@@ -27,6 +27,11 @@ AC_C_BIGENDIAN
 
 required_private_libs=""
 
+AC_ARG_WITH([rootprefix],
+        AS_HELP_STRING([--with-rootprefix=DIR], [rootfs directory prefix for config files and kernel modules]),
+        [], [with_rootprefix=$prefix])
+AC_SUBST([rootprefix], [$with_rootprefix])
+
 AC_ARG_ENABLE([tools],
         AS_HELP_STRING([--disable-tools], [disable building tools that provide same functionality as module-init-tools @<:@default=enabled@:>@]),
 	[], enable_tools=yes)
@@ -147,6 +152,7 @@ AC_MSG_RESULT([
 	========
 
 	prefix:			${prefix}
+	rootprefix:		${rootprefix}
 	sysconfdir:		${sysconfdir}
 	libdir:			${libdir}
 	includedir:		${includedir}

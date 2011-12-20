@@ -125,8 +125,8 @@ static void help(const char *progname)
 		"\t-n, --dry-run               Do not execute operations, just print out\n"
 		"\t-n, --show                  Same as --dry-run\n"
 
-		"\t-C, --config=FILE           Use FILE instead of /etc/modprobe.d\n"
-		"\t-d, --dirname=DIR           Use DIR as filesystem root for /lib/modules\n"
+		"\t-C, --config=FILE           Use FILE instead of " SYSCONFDIR "/modprobe.d\n"
+		"\t-d, --dirname=DIR           Use DIR as filesystem root for " ROOTPREFIX "/lib/modules\n"
 		"\t-S, --set-version=VERSION   Use VERSION instead of `uname -r`\n"
 
 		"\t-s, --syslog                print to syslog, not stderr\n"
@@ -1252,7 +1252,7 @@ int main(int argc, char **orig_argv)
 			}
 			kversion = u.release;
 		}
-		snprintf(dirname_buf, sizeof(dirname_buf), "%s/lib/modules/%s",
+		snprintf(dirname_buf, sizeof(dirname_buf), "%s" ROOTPREFIX "/lib/modules/%s",
 			 root, kversion);
 		dirname = dirname_buf;
 	}

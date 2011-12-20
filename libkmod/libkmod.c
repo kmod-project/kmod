@@ -60,8 +60,8 @@ static const char* index_files[] = {
 
 static const char *default_config_paths[] = {
 	"/run/modprobe.d",
-	"/etc/modprobe.d",
-	"/lib/modprobe.d",
+	SYSCONFDIR "/modprobe.d",
+	ROOTPREFIX "/lib/modprobe.d",
 	NULL
 };
 
@@ -159,7 +159,7 @@ static int log_priority(const char *priority)
 	return 0;
 }
 
-static const char *dirname_default_prefix = "/lib/modules";
+static const char *dirname_default_prefix = ROOTPREFIX "/lib/modules";
 
 static char *get_kernel_release(const char *dirname)
 {
@@ -188,12 +188,12 @@ static char *get_kernel_release(const char *dirname)
  * release the resources of the kmod library context.
  *
  * @dirname: what to consider as linux module's directory, if NULL
- *           defaults to /lib/modules/`uname -r`.
+ *           defaults to $rootprefix/lib/modules/`uname -r`.
  * @config_paths: ordered array of paths (directories or files) where
  *                to load from user-defined configuration parameters such as
  *                alias, blacklists, commands (install, remove). If
  *                NULL defaults to /run/modprobe.d, /etc/modprobe.d and
- *                /lib/modprobe.d. Give an empty vector if configuration should
+ *                $rootprefix/lib/modprobe.d. Give an empty vector if configuration should
  *                not be read. This array must be null terminated.
  *
  * Returns: a new kmod library context

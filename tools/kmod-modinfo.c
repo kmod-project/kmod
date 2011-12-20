@@ -320,7 +320,7 @@ static void help(const char *progname)
 		"\t-0, --null                  Use \\0 instead of \\n\n"
 		"\t-F, --field=FIELD           Print only provided FIELD\n"
 		"\t-k, --set-version=VERSION   Use VERSION instead of `uname -r`\n"
-		"\t-b, --basedir=DIR           Use DIR as filesystem root for /lib/modules\n"
+		"\t-b, --basedir=DIR           Use DIR as filesystem root for " ROOTPREFIX "/lib/modules\n"
 		"\t-V, --version               Show version\n"
 		"\t-h, --help                  Show this help\n",
 		progname);
@@ -402,7 +402,7 @@ int main(int argc, char *argv[])
 			}
 			kversion = u.release;
 		}
-		snprintf(dirname_buf, sizeof(dirname_buf), "%s/lib/modules/%s",
+		snprintf(dirname_buf, sizeof(dirname_buf), "%s" ROOTPREFIX "/lib/modules/%s",
 			 root, kversion);
 		dirname = dirname_buf;
 	}
