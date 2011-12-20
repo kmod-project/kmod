@@ -45,33 +45,15 @@ AS_IF([test "x$enable_logging" = "xyes"], [
 ])
 
 AC_ARG_ENABLE([zlib],
-        AS_HELP_STRING([--enable-zlib], [handle gzipped modules (options: static or dynamic) @<:@default=disabled@:>@]),
+        AS_HELP_STRING([--enable-zlib], [handle gzipped modules @<:@default=disabled@:>@]),
 	[], enable_zlib=no)
-if test "x$enable_zlib" = "xyes" -o "x$enable_zlib" = "xstatic"; then
-        enable_zlib="static"
-        zlib_libs="-Wl,-Bstatic -lz -Wl,-Bdynamic"
-        SAVE_LIBS="${LIBS}"
-        LIBS="${LIBS} ${zlib_libs}"
-        AC_MSG_CHECKING([if static zlib exists])
-        AC_LINK_IFELSE([AC_LANG_PROGRAM([[
-                #include <zlib.h>
-        ]], [[
-                gzFile f = gzopen("/tmp", "rb");
-        ]])],
-        [have_zlib=yes], [have_zlib=no])
-        LIBS="${SAVE_LIBS}"
-        AC_MSG_RESULT([$have_zlib])
-        if test "x$have_zlib" != "xyes"; then
-                zlib_libs=""
-                AC_MSG_ERROR([static zlib is not present])
-        fi
-elif test "x$enable_zlib" = "xdynamic"; then
+if test "x$enable_zlib" != "xno"; then
         AC_CHECK_LIB([z], [gzopen],
                 [
                         zlib_libs="-lz"
                         required_private_libs="${required_private_libs} ${zlib_libs}"
                 ],
-                [AC_MSG_ERROR([dynamic zlib is not present])])
+                [AC_MSG_ERROR([zlib is not present])])
 else
         AC_MSG_NOTICE([zlib support not requested])
         zlib_libs=""
