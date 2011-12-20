@@ -74,13 +74,13 @@ struct kmod_list *kmod_list_last(const struct kmod_list *first_entry);
 		list_entry != NULL; \
 		list_entry = kmod_list_prev(first_entry, list_entry))
 
-/* Removal flags, not implemented yet */
+/* Removal flags */
 enum kmod_remove {
 	KMOD_REMOVE_FORCE = O_TRUNC,
 	KMOD_REMOVE_NOWAIT = O_NONBLOCK,
 };
 
-/* Insertion flags, not implemented yet */
+/* Insertion flags */
 enum kmod_insert {
 	KMOD_INSERT_FORCE_VERMAGIC = 0x1,
 	KMOD_INSERT_FORCE_MODVERSION = 0x2,
