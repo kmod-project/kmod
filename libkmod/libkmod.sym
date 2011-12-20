@@ -11,7 +11,6 @@ global:
 	kmod_unref;
 	kmod_list_next;
 	kmod_list_prev;
-	kmod_list_last;
 
 	kmod_load_resources;
 	kmod_unload_resources;
@@ -46,17 +45,21 @@ global:
 	kmod_module_get_options;
 	kmod_module_get_install_commands;
 	kmod_module_get_remove_commands;
-	kmod_module_get_softdeps;
+local:
+        *;
+};
 
+LIBKMOD_2 {
+global:
+	kmod_list_last;
+
+	kmod_module_get_softdeps;
 	kmod_module_get_info;
 	kmod_module_info_get_key;
 	kmod_module_info_get_value;
 	kmod_module_info_free_list;
-
 	kmod_module_get_versions;
 	kmod_module_version_get_symbol;
 	kmod_module_version_get_crc;
 	kmod_module_versions_free_list;
-local:
-        *;
-};
+} LIBKMOD_1;
