@@ -2061,3 +2061,193 @@ KMOD_EXPORT void kmod_module_symbols_free_list(struct kmod_list *list)
 		list = kmod_list_remove(list);
 	}
 }
+
+struct kmod_module_dependency_symbol {
+	uint64_t crc;
+	uint8_t bind;
+	char symbol[];
+};
+
+static struct kmod_module_dependency_symbol *kmod_module_dependency_symbols_new(uint64_t crc, uint8_t bind, const char *symbol)
+{
+	struct kmod_module_dependency_symbol *mv;
+	size_t symbollen = strlen(symbol) + 1;
+
+	mv = malloc(sizeof(struct kmod_module_dependency_symbol) + symbollen);
+	if (mv == NULL)
+		return NULL;
+
+	mv->crc = crc;
+	mv->bind = bind;
+	memcpy(mv->symbol, symbol, symbollen);
+	return mv;
+}
+
+static void kmod_module_dependency_symbol_free(struct kmod_module_dependency_symbol *dependency_symbol)
+{
+	free(dependency_symbol);
+}
+
+/**
+ * kmod_module_get_dependency_symbols:
+ * @mod: kmod module
+ * @list: where to return list of module dependency_symbols. Use
+ *        kmod_module_dependency_symbol_get_symbol() and
+ *        kmod_module_dependency_symbol_get_crc(). Release this list with
+ *        kmod_module_dependency_symbols_free_list()
+ *
+ * Get a list of entries in ELF section ".symtab" or "__ksymtab_strings".
+ *
+ * After use, free the @list by calling
+ * kmod_module_dependency_symbols_free_list().
+ *
+ * Returns: 0 on success or < 0 otherwise.
+ */
+KMOD_EXPORT int kmod_module_get_dependency_symbols(const struct kmod_module *mod, struct kmod_list **list)
+{
+	struct kmod_file *file;
+	struct kmod_elf *elf;
+	const char *path;
+	const void *mem;
+	struct kmod_modversion *symbols;
+	size_t size;
+	int i, count, ret = 0;
+
+	if (mod == NULL || list == NULL)
+		return -ENOENT;
+
+	assert(*list == NULL);
+
+	path = kmod_module_get_path(mod);
+	if (path == NULL)
+		return -ENOENT;
+
+	file = kmod_file_open(path);
+	if (file == NULL)
+		return -errno;
+
+	size = kmod_file_get_size(file);
+	mem = kmod_file_get_contents(file);
+
+	elf = kmod_elf_new(mem, size);
+	if (elf == NULL) {
+		ret = -errno;
+		goto elf_open_error;
+	}
+
+	count = kmod_elf_get_dependency_symbols(elf, &symbols);
+	if (count < 0) {
+		ret = count;
+		goto get_strings_error;
+	}
+
+	for (i = 0; i < count; i++) {
+		struct kmod_module_dependency_symbol *mv;
+		struct kmod_list *n;
+
+		mv = kmod_module_dependency_symbols_new(symbols[i].crc,
+							symbols[i].bind,
+							symbols[i].symbol);
+		if (mv == NULL) {
+			ret = -errno;
+			kmod_module_dependency_symbols_free_list(*list);
+			*list = NULL;
+			goto list_error;
+		}
+
+		n = kmod_list_append(*list, mv);
+		if (n != NULL)
+			*list = n;
+		else {
+			kmod_module_dependency_symbol_free(mv);
+			kmod_module_dependency_symbols_free_list(*list);
+			*list = NULL;
+			ret = -ENOMEM;
+			goto list_error;
+		}
+	}
+	ret = count;
+
+list_error:
+	free(symbols);
+get_strings_error:
+	kmod_elf_unref(elf);
+elf_open_error:
+	kmod_file_unref(file);
+
+	return ret;
+}
+
+/**
+ * kmod_module_dependency_symbol_get_symbol:
+ * @entry: a list entry representing a kmod module dependency_symbols
+ *
+ * Get the dependency symbol of a kmod module
+ *
+ * Returns: the symbol of this kmod module dependency_symbols on success or NULL
+ * on failure. The string is owned by the dependency_symbols, do not free it.
+ */
+KMOD_EXPORT const char *kmod_module_dependency_symbol_get_symbol(const struct kmod_list *entry)
+{
+	struct kmod_module_dependency_symbol *dependency_symbol;
+
+	if (entry == NULL)
+		return NULL;
+
+	dependency_symbol = entry->data;
+	return dependency_symbol->symbol;
+}
+
+/**
+ * kmod_module_dependency_symbol_get_crc:
+ * @entry: a list entry representing a kmod module dependency_symbol
+ *
+ * Get the crc of a kmod module dependency_symbol.
+ *
+ * Returns: the crc of this kmod module dependency_symbol on success or NULL on
+ * failure. The string is owned by the dependency_symbol, do not free it.
+ */
+KMOD_EXPORT uint64_t kmod_module_dependency_symbol_get_crc(const struct kmod_list *entry)
+{
+	struct kmod_module_dependency_symbol *dependency_symbol;
+
+	if (entry == NULL)
+		return 0;
+
+	dependency_symbol = entry->data;
+	return dependency_symbol->crc;
+}
+
+/**
+ * kmod_module_dependency_symbol_get_bind:
+ * @entry: a list entry representing a kmod module dependency_symbol
+ *
+ * Get the bind type of a kmod module dependency_symbol.
+ *
+ * Returns: the bind of this kmod module dependency_symbol on success
+ * or < 0 on failure.
+ */
+KMOD_EXPORT int kmod_module_dependency_symbol_get_bind(const struct kmod_list *entry)
+{
+	struct kmod_module_dependency_symbol *dependency_symbol;
+
+	if (entry == NULL)
+		return 0;
+
+	dependency_symbol = entry->data;
+	return dependency_symbol->bind;
+}
+
+/**
+ * kmod_module_dependency_symbols_free_list:
+ * @list: kmod module dependency_symbols list
+ *
+ * Release the resources taken by @list
+ */
+KMOD_EXPORT void kmod_module_dependency_symbols_free_list(struct kmod_list *list)
+{
+	while (list) {
+		kmod_module_dependency_symbol_free(list->data);
+		list = kmod_list_remove(list);
+	}
+}

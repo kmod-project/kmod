@@ -144,13 +144,7 @@ void kmod_file_unref(struct kmod_file *file) __attribute__((nonnull(1)));
 struct kmod_elf;
 struct kmod_modversion {
 	uint64_t crc;
-	enum kmod_modversion_bind {
-		KMOD_MODVERSION_NONE = '\0',
-		KMOD_MODVERSION_LOCAL = 'L',
-		KMOD_MODVERSION_GLOBAL = 'G',
-		KMOD_MODVERSION_WEAK = 'W',
-		KMOD_MODVERSION_UNDEF = 'U'
-	} bind;
+	enum kmod_symbol_bind bind;
 	char *symbol;
 };
 
@@ -160,6 +154,7 @@ const void *kmod_elf_get_memory(const struct kmod_elf *elf) __must_check __attri
 int kmod_elf_get_strings(const struct kmod_elf *elf, const char *section, char ***array) __must_check __attribute__((nonnull(1,2,3)));
 int kmod_elf_get_modversions(const struct kmod_elf *elf, struct kmod_modversion **array) __must_check __attribute__((nonnull(1,2)));
 int kmod_elf_get_symbols(const struct kmod_elf *elf, struct kmod_modversion **array) __must_check __attribute__((nonnull(1,2)));
+int kmod_elf_get_dependency_symbols(const struct kmod_elf *elf, struct kmod_modversion **array) __must_check __attribute__((nonnull(1,2)));
 int kmod_elf_strip_section(struct kmod_elf *elf, const char *section) __must_check __attribute__((nonnull(1,2)));
 int kmod_elf_strip_vermagic(struct kmod_elf *elf) __must_check __attribute__((nonnull(1)));
 

@@ -67,6 +67,12 @@ global:
 	kmod_module_symbol_get_symbol;
 	kmod_module_symbol_get_crc;
 	kmod_module_symbols_free_list;
+
+	kmod_module_get_dependency_symbols;
+	kmod_module_dependency_symbol_get_symbol;
+	kmod_module_dependency_symbol_get_crc;
+	kmod_module_dependency_symbol_get_bind;
+	kmod_module_dependency_symbols_free_list;
 local:
         *;
 };

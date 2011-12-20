@@ -80,6 +80,24 @@ int main(int argc, char *argv[])
 		kmod_module_symbols_free_list(list);
 	}
 
+	list = NULL;
+	err = kmod_module_get_dependency_symbols(mod, &list);
+	if (err <= 0)
+		printf("no dependency symbols! (%s)\n", strerror(-err));
+	else {
+		puts("dependency symbols:");
+		kmod_list_foreach(l, list) {
+			const char *symbol;
+			uint8_t bind;
+			uint64_t crc;
+			symbol = kmod_module_dependency_symbol_get_symbol(l);
+			bind = kmod_module_dependency_symbol_get_bind(l);
+			crc = kmod_module_dependency_symbol_get_crc(l);
+			printf("\t%s %c: %#"PRIx64"\n", symbol, bind, crc);
+		}
+		kmod_module_dependency_symbols_free_list(list);
+	}
+
 	kmod_module_unref(mod);
 module_error:
 	kmod_unref(ctx);

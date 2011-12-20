@@ -155,6 +155,20 @@ const char *kmod_module_symbol_get_symbol(const struct kmod_list *entry);
 uint64_t kmod_module_symbol_get_crc(const struct kmod_list *entry);
 void kmod_module_symbols_free_list(struct kmod_list *list);
 
+enum kmod_symbol_bind {
+	KMOD_SYMBOL_NONE = '\0',
+	KMOD_SYMBOL_LOCAL = 'L',
+	KMOD_SYMBOL_GLOBAL = 'G',
+	KMOD_SYMBOL_WEAK = 'W',
+	KMOD_SYMBOL_UNDEF = 'U'
+};
+
+int kmod_module_get_dependency_symbols(const struct kmod_module *mod, struct kmod_list **list);
+const char *kmod_module_dependency_symbol_get_symbol(const struct kmod_list *entry);
+int kmod_module_dependency_symbol_get_bind(const struct kmod_list *entry);
+uint64_t kmod_module_dependency_symbol_get_crc(const struct kmod_list *entry);
+void kmod_module_dependency_symbols_free_list(struct kmod_list *list);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

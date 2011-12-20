@@ -34,6 +34,17 @@ enum kmod_elf_class {
 	KMOD_ELF_MSB = (1 << 4)
 };
 
+/* as defined in module-init-tools */
+struct kmod_modversion32 {
+	uint32_t crc;
+	char name[64 - sizeof(uint32_t)];
+};
+
+struct kmod_modversion64 {
+	uint64_t crc;
+	char name[64 - sizeof(uint64_t)];
+};
+
 #ifdef WORDS_BIGENDIAN
 static const enum kmod_elf_class native_endianess = KMOD_ELF_MSB;
 #else
@@ -57,6 +68,7 @@ struct kmod_elf {
 			uint64_t offset;
 			uint32_t nameoff; /* offset in strings itself */
 		} strings;
+		uint16_t machine;
 	} header;
 };
 
@@ -296,7 +308,8 @@ struct kmod_elf *kmod_elf_new(const void *memory, off_t size)
 	elf->header.section.offset = READV(e_shoff);		\
 	elf->header.section.count = READV(e_shnum);		\
 	elf->header.section.entry_size = READV(e_shentsize);	\
-	elf->header.strings.section = READV(e_shstrndx)
+	elf->header.strings.section = READV(e_shstrndx);	\
+	elf->header.machine = READV(e_machine)
 	if (elf->class & KMOD_ELF_32) {
 		const Elf32_Ehdr *hdr = elf_get_mem(elf, 0);
 		LOAD_HEADER;
@@ -473,14 +486,6 @@ int kmod_elf_get_modversions(const struct kmod_elf *elf, struct kmod_modversion 
 	const void *buf;
 	char *itr;
 	int i, count, err;
-	struct kmod_modversion32 {
-		uint32_t crc;
-		char name[64 - sizeof(uint32_t)];
-	};
-	struct kmod_modversion64 {
-		uint64_t crc;
-		char name[64 - sizeof(uint64_t)];
-	};
 #define MODVERSION_SEC_SIZE (sizeof(struct kmod_modversion64))
 
 	assert(sizeof(struct kmod_modversion64) ==
@@ -533,7 +538,7 @@ int kmod_elf_get_modversions(const struct kmod_elf *elf, struct kmod_modversion 
 			symbol++;
 
 		a[i].crc = crc;
-		a[i].bind = KMOD_MODVERSION_UNDEF;
+		a[i].bind = KMOD_SYMBOL_UNDEF;
 		a[i].symbol = itr;
 		symbollen = strlen(symbol) + 1;
 		memcpy(itr, symbol, symbollen);
@@ -684,7 +689,7 @@ static int kmod_elf_get_symbols_symtab(const struct kmod_elf *elf, struct kmod_m
 				continue;
 			}
 			a[count].crc = 0;
-			a[count].bind = KMOD_MODVERSION_GLOBAL;
+			a[count].bind = KMOD_SYMBOL_GLOBAL;
 			a[count].symbol = itr;
 			memcpy(itr, strings + last, slen);
 			itr[slen] = '\0';
@@ -696,7 +701,7 @@ static int kmod_elf_get_symbols_symtab(const struct kmod_elf *elf, struct kmod_m
 	if (strings[i - 1] != '\0') {
 		size_t slen = i - last;
 		a[count].crc = 0;
-		a[count].bind = KMOD_MODVERSION_GLOBAL;
+		a[count].bind = KMOD_SYMBOL_GLOBAL;
 		a[count].symbol = itr;
 		memcpy(itr, strings + last, slen);
 		itr[slen] = '\0';
@@ -707,17 +712,17 @@ static int kmod_elf_get_symbols_symtab(const struct kmod_elf *elf, struct kmod_m
 	return count;
 }
 
-static inline uint8_t kmod_modversion_bind_from_elf(uint8_t elf_value)
+static inline uint8_t kmod_symbol_bind_from_elf(uint8_t elf_value)
 {
 	switch (elf_value) {
 	case STB_LOCAL:
-		return KMOD_MODVERSION_LOCAL;
+		return KMOD_SYMBOL_LOCAL;
 	case STB_GLOBAL:
-		return KMOD_MODVERSION_GLOBAL;
+		return KMOD_SYMBOL_GLOBAL;
 	case STB_WEAK:
-		return KMOD_MODVERSION_WEAK;
+		return KMOD_SYMBOL_WEAK;
 	default:
-		return KMOD_MODVERSION_NONE;
+		return KMOD_SYMBOL_NONE;
 	}
 }
 
@@ -831,7 +836,7 @@ int kmod_elf_get_symbols(const struct kmod_elf *elf, struct kmod_modversion **ar
 			bind = ELF64_ST_BIND(info);
 
 		a[count].crc = crc;
-		a[count].bind = kmod_modversion_bind_from_elf(bind);
+		a[count].bind = kmod_symbol_bind_from_elf(bind);
 		a[count].symbol = itr;
 		slen = strlen(name);
 		memcpy(itr, name, slen);
@@ -844,4 +849,316 @@ int kmod_elf_get_symbols(const struct kmod_elf *elf, struct kmod_modversion **ar
 fallback:
 	ELFDBG(elf, "Falling back to __ksymtab_strings!\n");
 	return kmod_elf_get_symbols_symtab(elf, array);
+}
+
+static int kmod_elf_crc_find(const struct kmod_elf *elf, const void *versions, uint64_t versionslen, const char *name, uint64_t *crc)
+{
+	size_t verlen, crclen, off;
+	uint64_t i;
+
+	if (elf->class & KMOD_ELF_32) {
+		struct kmod_modversion32 *mv;
+		verlen = sizeof(*mv);
+		crclen = sizeof(mv->crc);
+	} else {
+		struct kmod_modversion64 *mv;
+		verlen = sizeof(*mv);
+		crclen = sizeof(mv->crc);
+	}
+
+	off = (const uint8_t *)versions - elf->memory;
+	for (i = 0; i < versionslen; i += verlen) {
+		const char *symbol = elf_get_mem(elf, off + i + crclen);
+		if (!streq(name, symbol))
+			continue;
+		*crc = elf_get_uint(elf, off + i, crclen);
+		return i / verlen;
+	}
+
+	ELFDBG(elf, "could not find crc for symbol '%s'\n", name);
+	*crc = 0;
+	return -1;
+}
+
+/* from module-init-tools:elfops_core.c */
+#ifndef STT_REGISTER
+#define STT_REGISTER    13              /* Global register reserved to app. */
+#endif
+
+/* array will be allocated with strings in a single malloc, just free *array */
+int kmod_elf_get_dependency_symbols(const struct kmod_elf *elf, struct kmod_modversion **array)
+{
+	uint64_t versionslen, strtablen, symtablen, str_off, sym_off, ver_off;
+	const void *versions, *strtab, *symtab;
+	struct kmod_modversion *a;
+	char *itr;
+	size_t slen, verlen, symlen, crclen;
+	int i, count, symcount, vercount, err;
+	bool handle_register_symbols;
+	uint8_t *visited_versions;
+	uint64_t *symcrcs;
+
+	err = kmod_elf_get_section(elf, "__versions", &versions, &versionslen);
+	if (err < 0) {
+		versions = NULL;
+		versionslen = 0;
+		verlen = 0;
+		crclen = 0;
+	} else {
+		if (elf->class & KMOD_ELF_32) {
+			struct kmod_modversion32 *mv;
+			verlen = sizeof(*mv);
+			crclen = sizeof(mv->crc);
+		} else {
+			struct kmod_modversion64 *mv;
+			verlen = sizeof(*mv);
+			crclen = sizeof(mv->crc);
+		}
+		if (versionslen % verlen != 0) {
+			ELFDBG(elf, "unexpected __versions of length %"PRIu64", not multiple of %zd as expected.\n", versionslen, verlen);
+			versions = NULL;
+			versionslen = 0;
+		}
+	}
+
+	err = kmod_elf_get_section(elf, ".strtab", &strtab, &strtablen);
+	if (err < 0) {
+		ELFDBG(elf, "no .strtab found.\n");
+		return -EINVAL;
+	}
+
+	err = kmod_elf_get_section(elf, ".symtab", &symtab, &symtablen);
+	if (err < 0) {
+		ELFDBG(elf, "no .symtab found.\n");
+		return -EINVAL;
+	}
+
+	if (elf->class & KMOD_ELF_32)
+		symlen = sizeof(Elf32_Sym);
+	else
+		symlen = sizeof(Elf64_Sym);
+
+	if (symtablen % symlen != 0) {
+		ELFDBG(elf, "unexpected .symtab of length %"PRIu64", not multiple of %"PRIu64" as expected.\n", symtablen, symlen);
+		return -EINVAL;
+	}
+
+	if (versionslen == 0) {
+		vercount = 0;
+		visited_versions = NULL;
+	} else {
+		vercount = versionslen / verlen;
+		visited_versions = calloc(vercount, sizeof(uint8_t));
+		if (visited_versions == NULL)
+			return -ENOMEM;
+	}
+
+	handle_register_symbols = (elf->header.machine == EM_SPARC ||
+				   elf->header.machine == EM_SPARCV9);
+
+	symcount = symtablen / symlen;
+	count = 0;
+	slen = 0;
+	str_off = (const uint8_t *)strtab - elf->memory;
+	sym_off = (const uint8_t *)symtab - elf->memory + symlen;
+
+	symcrcs = calloc(symcount, sizeof(uint64_t));
+	if (symcrcs == NULL) {
+		free(visited_versions);
+		return -ENOMEM;
+	}
+
+	for (i = 1; i < symcount; i++, sym_off += symlen) {
+		const char *name;
+		uint64_t crc;
+		uint32_t name_off;
+		uint16_t secidx;
+		uint8_t info;
+		int idx;
+
+#define READV(field)							\
+		elf_get_uint(elf, sym_off + offsetof(typeof(*s), field),\
+			     sizeof(s->field))
+		if (elf->class & KMOD_ELF_32) {
+			Elf32_Sym *s;
+			name_off = READV(st_name);
+			secidx = READV(st_shndx);
+			info = READV(st_info);
+		} else {
+			Elf64_Sym *s;
+			name_off = READV(st_name);
+			secidx = READV(st_shndx);
+			info = READV(st_info);
+		}
+#undef READV
+		if (secidx != SHN_UNDEF)
+			continue;
+
+		if (handle_register_symbols) {
+			uint8_t type;
+			if (elf->class & KMOD_ELF_32)
+				type = ELF32_ST_TYPE(info);
+			else
+				type = ELF64_ST_TYPE(info);
+
+			/* Not really undefined: sparc gcc 3.3 creates
+			 * U references when you have global asm
+			 * variables, to avoid anyone else misusing
+			 * them.
+			 */
+			if (type == STT_REGISTER)
+				continue;
+		}
+
+		if (name_off >= strtablen) {
+			ELFDBG(elf, ".strtab is %"PRIu64" bytes, but .symtab entry %d wants to access offset %"PRIu32".\n", strtablen, i, name_off);
+			free(visited_versions);
+			free(symcrcs);
+			return -EINVAL;
+		}
+
+		name = elf_get_mem(elf, str_off + name_off);
+		if (name[0] == '\0') {
+			ELFDBG(elf, "empty symbol name at index %"PRIu64"\n", i);
+			continue;
+		}
+
+		slen += strlen(name) + 1;
+		count++;
+
+		idx = kmod_elf_crc_find(elf, versions, versionslen, name, &crc);
+		if (idx >= 0 && visited_versions != NULL)
+			visited_versions[idx] = 1;
+		symcrcs[i] = crc;
+	}
+
+	if (visited_versions != NULL) {
+		/* module_layout/struct_module are not visited, but needed */
+		ver_off = (const uint8_t *)versions - elf->memory;
+		for (i = 0; i < vercount; i++) {
+			if (visited_versions[i] == 0) {
+				const char *name;
+				name = elf_get_mem(elf, ver_off + i * verlen + crclen);
+				slen += strlen(name) + 1;
+
+				count++;
+			}
+		}
+	}
+
+	if (count == 0) {
+		free(visited_versions);
+		free(symcrcs);
+		return 0;
+	}
+
+	*array = a = malloc(sizeof(struct kmod_modversion) * count + slen);
+	if (*array == NULL) {
+		free(visited_versions);
+		free(symcrcs);
+		return -errno;
+	}
+
+	itr = (char *)(a + count);
+	count = 0;
+	str_off = (const uint8_t *)strtab - elf->memory;
+	sym_off = (const uint8_t *)symtab - elf->memory + symlen;
+	for (i = 1; i < symcount; i++, sym_off += symlen) {
+		const char *name;
+		uint64_t crc;
+		uint32_t name_off;
+		uint16_t secidx;
+		uint8_t info, bind;
+
+#define READV(field)							\
+		elf_get_uint(elf, sym_off + offsetof(typeof(*s), field),\
+			     sizeof(s->field))
+		if (elf->class & KMOD_ELF_32) {
+			Elf32_Sym *s;
+			name_off = READV(st_name);
+			secidx = READV(st_shndx);
+			info = READV(st_info);
+		} else {
+			Elf64_Sym *s;
+			name_off = READV(st_name);
+			secidx = READV(st_shndx);
+			info = READV(st_info);
+		}
+#undef READV
+		if (secidx != SHN_UNDEF)
+			continue;
+
+		if (handle_register_symbols) {
+			uint8_t type;
+			if (elf->class & KMOD_ELF_32)
+				type = ELF32_ST_TYPE(info);
+			else
+				type = ELF64_ST_TYPE(info);
+
+			/* Not really undefined: sparc gcc 3.3 creates
+			 * U references when you have global asm
+			 * variables, to avoid anyone else misusing
+			 * them.
+			 */
+			if (type == STT_REGISTER)
+				continue;
+		}
+
+		name = elf_get_mem(elf, str_off + name_off);
+		if (name[0] == '\0') {
+			ELFDBG(elf, "empty symbol name at index %"PRIu64"\n", i);
+			continue;
+		}
+
+		if (elf->class & KMOD_ELF_32)
+			bind = ELF32_ST_BIND(info);
+		else
+			bind = ELF64_ST_BIND(info);
+		if (bind == STB_WEAK)
+			bind = KMOD_SYMBOL_WEAK;
+		else
+			bind = KMOD_SYMBOL_UNDEF;
+
+		slen = strlen(name);
+		crc = symcrcs[i];
+
+		a[count].crc = crc;
+		a[count].bind = bind;
+		a[count].symbol = itr;
+		memcpy(itr, name, slen);
+		itr[slen] = '\0';
+		itr += slen + 1;
+
+		count++;
+	}
+
+	free(symcrcs);
+
+	if (visited_versions == NULL)
+		return count;
+
+	/* add unvisited (module_layout/struct_module) */
+	ver_off = (const uint8_t *)versions - elf->memory;
+	for (i = 0; i < vercount; i++) {
+		const char *name;
+		uint64_t crc;
+
+		if (visited_versions[i] != 0)
+			continue;
+
+		name = elf_get_mem(elf, ver_off + i * verlen + crclen);
+		slen = strlen(name);
+		crc = elf_get_uint(elf, ver_off + i * verlen, crclen);
+
+		a[count].crc = crc;
+		a[count].bind = KMOD_SYMBOL_UNDEF;
+		a[count].symbol = itr;
+		memcpy(itr, name, slen);
+		itr[slen] = '\0';
+		itr += slen + 1;
+
+		count++;
+	}
+	free(visited_versions);
+	return count;
 }
