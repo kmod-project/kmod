@@ -327,16 +327,21 @@ KMOD_EXPORT int kmod_module_new_from_path(struct kmod_ctx *ctx,
 		return -ENOENT;
 
 	abspath = path_make_absolute_cwd(path);
-	if (abspath == NULL)
+	if (abspath == NULL) {
+		DBG(ctx, "no absolute path for %s\n", path);
 		return -ENOMEM;
+	}
 
 	err = stat(abspath, &st);
 	if (err < 0) {
+		err = -errno;
+		DBG(ctx, "stat %s: %s\n", path, strerror(errno));
 		free(abspath);
-		return -errno;
+		return err;
 	}
 
 	if (path_to_modname(path, name, &namelen) == NULL) {
+		DBG(ctx, "could not get modname from path %s\n", path);
 		free(abspath);
 		return -ENOENT;
 	}
@@ -477,29 +482,38 @@ KMOD_EXPORT int kmod_module_new_from_lookup(struct kmod_ctx *ctx,
 		return -ENOSYS;
 	}
 
-	if (alias_normalize(given_alias, alias, NULL) < 0)
+	if (alias_normalize(given_alias, alias, NULL) < 0) {
+		DBG(ctx, "invalid alias: %s\n", given_alias);
 		return -EINVAL;
+	}
+
+	DBG(ctx, "input alias=%s, normalized=%s\n", given_alias, alias);
 
 	/* Aliases from config file override all the others */
 	err = kmod_lookup_alias_from_config(ctx, alias, list);
 	CHECK_ERR_AND_FINISH(err, fail, list, finish);
 
+	DBG(ctx, "lookup modules.dep %s\n", alias);
 	err = kmod_lookup_alias_from_moddep_file(ctx, alias, list);
 	CHECK_ERR_AND_FINISH(err, fail, list, finish);
 
+	DBG(ctx, "lookup modules.symbols %s\n", alias);
 	err = kmod_lookup_alias_from_symbols_file(ctx, alias, list);
 	CHECK_ERR_AND_FINISH(err, fail, list, finish);
 
+	DBG(ctx, "lookup install and remove commands %s\n", alias);
 	err = kmod_lookup_alias_from_commands(ctx, alias, list);
 	CHECK_ERR_AND_FINISH(err, fail, list, finish);
 
+	DBG(ctx, "lookup modules.aliases %s\n", alias);
 	err = kmod_lookup_alias_from_aliases_file(ctx, alias, list);
 	CHECK_ERR_AND_FINISH(err, fail, list, finish);
 
 finish:
-
+	DBG(ctx, "lookup %s=%d, list=%p\n", alias, err, *list);
 	return err;
 fail:
+	DBG(ctx, "Failed to lookup %s\n", alias);
 	kmod_module_unref_list(*list);
 	*list = NULL;
 	return err;
