@@ -362,7 +362,7 @@ const void *kmod_elf_get_memory(const struct kmod_elf *elf)
 	return elf->memory;
 }
 
-static int kmod_elf_get_section(const struct kmod_elf *elf, const char *section, const void **buf, size_t *buf_size)
+static int kmod_elf_get_section(const struct kmod_elf *elf, const char *section, const void **buf, uint64_t *buf_size)
 {
 	uint64_t nameslen;
 	const char *names = elf_get_strings_section(elf, &nameslen);
@@ -395,7 +395,8 @@ static int kmod_elf_get_section(const struct kmod_elf *elf, const char *section,
 /* array will be allocated with strings in a single malloc, just free *array */
 int kmod_elf_get_strings(const struct kmod_elf *elf, const char *section, char ***array)
 {
-	size_t i, j, size, count;
+	size_t i, j, count;
+	uint64_t size;
 	const void *buf;
 	const char *strings;
 	char *s, **a;
@@ -466,7 +467,8 @@ int kmod_elf_get_strings(const struct kmod_elf *elf, const char *section, char *
 /* array will be allocated with strings in a single malloc, just free *array */
 int kmod_elf_get_modversions(const struct kmod_elf *elf, struct kmod_modversion **array)
 {
-	size_t off, offcrc, size, slen;
+	size_t off, offcrc, slen;
+	uint64_t size;
 	struct kmod_modversion *a;
 	const void *buf;
 	char *itr;
