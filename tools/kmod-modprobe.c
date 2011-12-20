@@ -125,7 +125,7 @@ static void help(const char *progname)
 		"\t-n, --dry-run               Do not execute operations, just print out\n"
 		"\t-n, --show                  Same as --dry-run\n"
 
-		"\t-C, --config=FILE           Use FILE instead of " SYSCONFDIR "/modprobe.d\n"
+		"\t-C, --config=FILE           Use FILE instead of default search paths\n"
 		"\t-d, --dirname=DIR           Use DIR as filesystem root for " ROOTPREFIX "/lib/modules\n"
 		"\t-S, --set-version=VERSION   Use VERSION instead of `uname -r`\n"
 
