@@ -406,6 +406,7 @@ int kmod_elf_get_strings(const struct kmod_elf *elf, const char *section, char *
 	err = kmod_elf_get_section(elf, section, &buf, &size);
 	if (err < 0)
 		return err;
+
 	strings = buf;
 	if (strings == NULL || size == 0)
 		return 0;
@@ -415,6 +416,7 @@ int kmod_elf_get_strings(const struct kmod_elf *elf, const char *section, char *
 		strings++;
 		size--;
 	}
+
 	if (size <= 1)
 		return 0;
 
@@ -427,9 +429,11 @@ int kmod_elf_get_strings(const struct kmod_elf *elf, const char *section, char *
 			last = i + 1;
 			continue;
 		}
+
 		count++;
 		last = i + 1;
 	}
+
 	if (strings[i - 1] != '\0')
 		count++;
 
@@ -440,6 +444,7 @@ int kmod_elf_get_strings(const struct kmod_elf *elf, const char *section, char *
 	a[count] = NULL;
 	itr = (char *)(a + count);
 	last = 0;
+
 	for (i = 0, count = 0; i < size; i++) {
 		if (strings[i] == '\0') {
 			size_t slen = i - last;
@@ -455,6 +460,7 @@ int kmod_elf_get_strings(const struct kmod_elf *elf, const char *section, char *
 			last = i + 1;
 		}
 	}
+
 	if (strings[i - 1] != '\0') {
 		size_t slen = i - last;
 		a[count] = itr;
