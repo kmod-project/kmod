@@ -15,7 +15,7 @@ static __always_inline __printf_format(2, 3) void
 #define kmod_log_cond(ctx, prio, arg...) \
 	do { \
 		if (kmod_get_log_priority(ctx) >= prio) \
-		kmod_log(ctx, prio, __FILE__, __LINE__, __FUNCTION__, ## arg);\
+		kmod_log(ctx, prio, __FILE__, __LINE__, __func__, ## arg);\
 	} while (0)
 
 #ifdef ENABLE_LOGGING

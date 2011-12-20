@@ -64,7 +64,7 @@ struct kmod_elf {
 
 #if defined(ENABLE_LOGGING) && defined(ENABLE_ELFDBG)
 #define ELFDBG(elf, ...)			\
-	_elf_dbg(elf, __FILE__, __LINE__, __FUNCTION__, __VA_ARGS__);
+	_elf_dbg(elf, __FILE__, __LINE__, __func__, __VA_ARGS__);
 
 static inline void _elf_dbg(const struct kmod_elf *elf, const char *fname, unsigned line, const char *func, const char *fmt, ...)
 {
