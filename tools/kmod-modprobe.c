@@ -740,10 +740,7 @@ static int insmod_do(struct kmod_module *mod, const char *extra_opts)
 	if (!ignore_loaded) {
 		int state = kmod_module_get_initstate(mod);
 
-		if (state < 0) {
-			LOG("Module %s not found.\n", modname);
-			return -ENOENT;
-		} else if (state == KMOD_MODULE_BUILTIN) {
+		if (state == KMOD_MODULE_BUILTIN) {
 			if (first_time) {
 				LOG("Module %s already in kernel (builtin).\n",
 				    modname);
@@ -757,6 +754,16 @@ static int insmod_do(struct kmod_module *mod, const char *extra_opts)
 			}
 			return 0;
 		}
+	}
+
+	/*
+	 * At this point it's not possible to be a install/remove command
+	 * anymore. So if we can't get module's path, it's because it was
+	 * really intended to be a module and it doesn't exist
+	 */
+	if (kmod_module_get_path(mod) == NULL) {
+		LOG("Module %s not found.\n", modname);
+		return -ENOENT;
 	}
 
 	err = insmod_do_dependencies(mod);
