@@ -456,7 +456,7 @@ int kmod_elf_get_strings(const struct kmod_elf *elf, const char *section, char *
 /* array will be allocated with strings in a single malloc, just free *array */
 int kmod_elf_get_modversions(const struct kmod_elf *elf, struct kmod_modversion **array)
 {
-	uint64_t size, slen, off;
+	size_t off, offcrc, size, slen;
 	struct kmod_modversion *a;
 	const void *buf;
 	char *itr;
@@ -474,6 +474,11 @@ int kmod_elf_get_modversions(const struct kmod_elf *elf, struct kmod_modversion 
 	assert(sizeof(struct kmod_modversion64) ==
 					sizeof(struct kmod_modversion32));
 
+	if (elf->class == KMOD_ELF_32)
+		offcrc = sizeof(uint32_t);
+	else
+		offcrc = sizeof(uint64_t);
+
 	*array = NULL;
 
 	err = kmod_elf_get_section(elf, "__versions", &buf, &size);
@@ -490,17 +495,13 @@ int kmod_elf_get_modversions(const struct kmod_elf *elf, struct kmod_modversion 
 
 	off = (const uint8_t *)buf - elf->memory;
 	slen = 0;
+
 	for (i = 0; i < count; i++, off += MODVERSION_SEC_SIZE) {
-		const char *symbol;
-		if (elf->class & KMOD_ELF_32) {
-			struct kmod_modversion32 *mv;
-			symbol = elf_get_mem(elf, off + sizeof(mv->crc));
-		} else {
-			struct kmod_modversion64 *mv;
-			symbol = elf_get_mem(elf, off + sizeof(mv->crc));
-		}
+		const char *symbol = elf_get_mem(elf, off + offcrc);
+
 		if (symbol[0] == '.')
 			symbol++;
+
 		slen += strlen(symbol) + 1;
 	}
 
@@ -510,19 +511,12 @@ int kmod_elf_get_modversions(const struct kmod_elf *elf, struct kmod_modversion 
 
 	itr = (char *)(a + count);
 	off = (const uint8_t *)buf - elf->memory;
+
 	for (i = 0; i < count; i++, off += MODVERSION_SEC_SIZE) {
-		uint64_t crc;
-		const char *symbol;
+		uint64_t crc = elf_get_uint(elf, off, offcrc);
+		const char *symbol = elf_get_mem(elf, off + offcrc);
 		size_t symbollen;
-		if (elf->class & KMOD_ELF_32) {
-			struct kmod_modversion32 *mv;
-			crc = elf_get_uint(elf, off, sizeof(mv->crc));
-			symbol = elf_get_mem(elf, off + sizeof(mv->crc));
-		} else {
-			struct kmod_modversion64 *mv;
-			crc = elf_get_uint(elf, off, sizeof(mv->crc));
-			symbol = elf_get_mem(elf, off + sizeof(mv->crc));
-		}
+
 		if (symbol[0] == '.')
 			symbol++;
 
