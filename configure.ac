@@ -29,7 +29,7 @@ required_private_libs=""
 
 AC_ARG_WITH([rootprefix],
         AS_HELP_STRING([--with-rootprefix=DIR], [rootfs directory prefix for config files and kernel modules]),
-        [], [with_rootprefix=$prefix])
+        [], [with_rootprefix=""])
 AC_SUBST([rootprefix], [$with_rootprefix])
 
 AC_ARG_ENABLE([tools],
