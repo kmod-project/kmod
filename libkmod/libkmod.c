@@ -691,7 +691,7 @@ KMOD_EXPORT int kmod_load_resources(struct kmod_ctx *ctx)
 	for (i = 0; i < ARRAY_SIZE(index_files); i++) {
 		char path[PATH_MAX];
 
-		if (ctx->indexes[i] == NULL) {
+		if (ctx->indexes[i] != NULL) {
 			INFO(ctx, "Index %s already loaded\n", index_files[i]);
 			continue;
 		}
