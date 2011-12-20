@@ -456,7 +456,7 @@ int kmod_elf_get_strings(const struct kmod_elf *elf, const char *section, char *
 /* array will be allocated with strings in a single malloc, just free *array */
 int kmod_elf_get_modversions(const struct kmod_elf *elf, struct kmod_modversion **array)
 {
-	uint64_t size, secsize, slen, off;
+	uint64_t size, slen, off;
 	struct kmod_modversion *a;
 	const void *buf;
 	char *itr;
@@ -469,27 +469,28 @@ int kmod_elf_get_modversions(const struct kmod_elf *elf, struct kmod_modversion 
 		uint64_t crc;
 		char name[64 - sizeof(uint64_t)];
 	};
+#define MODVERSION_SEC_SIZE (sizeof(struct kmod_modversion64))
+
+	assert(sizeof(struct kmod_modversion64) ==
+					sizeof(struct kmod_modversion32));
 
 	*array = NULL;
 
 	err = kmod_elf_get_section(elf, "__versions", &buf, &size);
 	if (err < 0)
 		return err;
+
 	if (buf == NULL || size == 0)
 		return 0;
 
-	if (elf->class & KMOD_ELF_32)
-		secsize = sizeof(struct kmod_modversion32);
-	else
-		secsize = sizeof(struct kmod_modversion64);
-
-	if (size % secsize != 0)
+	if (size % MODVERSION_SEC_SIZE != 0)
 		return -EINVAL;
-	count = size / secsize;
+
+	count = size / MODVERSION_SEC_SIZE;
 
 	off = (const uint8_t *)buf - elf->memory;
 	slen = 0;
-	for (i = 0; i < count; i++, off += secsize) {
+	for (i = 0; i < count; i++, off += MODVERSION_SEC_SIZE) {
 		const char *symbol;
 		if (elf->class & KMOD_ELF_32) {
 			struct kmod_modversion32 *mv;
@@ -509,7 +510,7 @@ int kmod_elf_get_modversions(const struct kmod_elf *elf, struct kmod_modversion 
 
 	itr = (char *)(a + count);
 	off = (const uint8_t *)buf - elf->memory;
-	for (i = 0; i < count; i++, off += secsize) {
+	for (i = 0; i < count; i++, off += MODVERSION_SEC_SIZE) {
 		uint64_t crc;
 		const char *symbol;
 		size_t symbollen;
