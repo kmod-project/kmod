@@ -420,14 +420,15 @@ int kmod_elf_get_strings(const struct kmod_elf *elf, const char *section, char *
 
 	last = 0;
 	for (i = 0, count = 0; i < size; i++) {
-		if (strings[i] == '\0') {
-			if (last == i) {
-				last = i + 1;
-				continue;
-			}
-			count++;
+		if (strings[i] != '\0')
+			continue;
+
+		if (last == i) {
 			last = i + 1;
+			continue;
 		}
+		count++;
+		last = i + 1;
 	}
 	if (strings[i - 1] != '\0')
 		count++;
