@@ -460,7 +460,8 @@ static int kmod_config_parse_kcmdline(struct kmod_config *config)
 			param = p + 1;
 			break;
 		case '=':
-			value = p + 1;
+			if (param != NULL)
+				value = p + 1;
 			break;
 		}
 	}
