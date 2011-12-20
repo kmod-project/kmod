@@ -67,10 +67,7 @@ endif
 TESTS = test/test-init test/test-loaded
 
 check_PROGRAMS = test/test-init test/test-loaded
-test_test_init_SOURCES = test/test-init.c
 test_test_init_LDADD = libkmod/libkmod.la
-
-test_test_loaded_SOURCES = test/test-loaded.c
 test_test_loaded_LDADD = libkmod/libkmod.la
 
 noinst_PROGRAMS = test/test-insmod test/test-rmmod test/test-rmmod2 \
