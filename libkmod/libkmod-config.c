@@ -633,28 +633,100 @@ static bool conf_files_filter_out(struct kmod_ctx *ctx, DIR *d,
 	return false;
 }
 
+struct conf_file {
+	const char *path;
+	bool is_single;
+	char name[];
+};
+
+static int conf_files_insert_sorted(struct kmod_ctx *ctx,
+					struct kmod_list **list,
+					const char *path, const char *name)
+{
+	struct kmod_list *lpos, *tmp;
+	struct conf_file *cf;
+	size_t namelen;
+	int cmp = -1;
+	bool is_single = false;
+
+	if (name == NULL) {
+		name = basename(path);
+		is_single = true;
+	}
+
+	kmod_list_foreach(lpos, *list) {
+		cf = lpos->data;
+
+		if ((cmp = strcmp(name, cf->name)) <= 0)
+			break;
+	}
+
+	if (cmp == 0) {
+		DBG(ctx, "Ignoring duplicate config file: %s/%s\n", path,
+									name);
+		return -EEXIST;
+	}
+
+	namelen = strlen(name);
+	cf = malloc(sizeof(*cf) + namelen + 1);
+	if (cf == NULL)
+		return -ENOMEM;
+
+	memcpy(cf->name, name, namelen + 1);
+	cf->path = path;
+	cf->is_single = is_single;
+
+	if (lpos == NULL)
+		tmp = kmod_list_append(*list, cf);
+	else if (lpos == *list)
+		tmp = kmod_list_prepend(*list, cf);
+	else
+		tmp = kmod_list_insert_before(lpos, cf);
+
+	if (tmp == NULL) {
+		free(cf);
+		return -ENOMEM;
+	}
+
+	if (lpos == NULL || lpos == *list)
+		*list = tmp;
+
+	return 0;
+}
+
 /*
- * Iterate over a directory (given by @path) and save the list of
- * configuration files in @list.
+ * Insert configuration files in @list, ignoring duplicates
  */
-static DIR *conf_files_list(struct kmod_ctx *ctx, struct kmod_list **list,
+static int conf_files_list(struct kmod_ctx *ctx, struct kmod_list **list,
 							const char *path)
 {
 	DIR *d;
 	int err;
+	struct stat st;
 
-	*list = NULL;
+	if (stat(path, &st) != 0) {
+		err = -errno;
+		DBG(ctx, "could not stat '%s': %m\n", path);
+		return err;
+	}
+
+	if (S_ISREG(st.st_mode)) {
+		conf_files_insert_sorted(ctx, list, path, NULL);
+		return 0;
+	} if (!S_ISDIR(st.st_mode)) {
+		ERR(ctx, "unsupported file mode %s: %#x\n",
+							path, st.st_mode);
+		return -EINVAL;
+	}
 
 	d = opendir(path);
 	if (d == NULL) {
 		ERR(ctx, "%m\n");
-		return NULL;
+		return -EINVAL;
 	}
 
 	for (;;) {
 		struct dirent ent, *entp;
-		struct kmod_list *l, *tmp;
-		const char *dname;
 
 		err = readdir_r(d, &ent, &entp);
 		if (err != 0) {
@@ -668,45 +740,22 @@ static DIR *conf_files_list(struct kmod_ctx *ctx, struct kmod_list **list,
 		if (conf_files_filter_out(ctx, d, path, entp->d_name))
 			continue;
 
-		/* insert sorted */
-		kmod_list_foreach(l, *list) {
-			if (strcmp(entp->d_name, l->data) < 0)
-				break;
-		}
-
-		dname = strdup(entp->d_name);
-		if (dname == NULL)
-			goto fail_oom;
-
-		if (l == NULL)
-			tmp = kmod_list_append(*list, dname);
-		else if (l == *list)
-			tmp = kmod_list_prepend(*list, dname);
-		else
-			tmp = kmod_list_insert_before(l, dname);
-
-		if (tmp == NULL)
-			goto fail_oom;
-
-		if (l == NULL || l == *list)
-			*list = tmp;
+		conf_files_insert_sorted(ctx, list, path, entp->d_name);
 	}
 
-	return d;
-
-fail_oom:
-	ERR(ctx, "out of memory while scanning '%s'\n", path);
-fail_read:
-	for (; *list != NULL; *list = kmod_list_remove(*list))
-		free((*list)->data);
 	closedir(d);
-	return NULL;
+	return 0;
+
+fail_read:
+	closedir(d);
+	return err;
 }
 
 int kmod_config_new(struct kmod_ctx *ctx, struct kmod_config **p_config,
 					const char * const *config_paths)
 {
 	struct kmod_config *config;
+	struct kmod_list *list = NULL;
 	size_t i;
 
 	*p_config = config = calloc(1, sizeof(struct kmod_config));
@@ -717,41 +766,28 @@ int kmod_config_new(struct kmod_ctx *ctx, struct kmod_config **p_config,
 
 	for (i = 0; config_paths[i] != NULL; i++) {
 		const char *path = config_paths[i];
-		struct kmod_list *list;
-		struct stat st;
-		DIR *d;
 
-		if (stat(path, &st) != 0) {
-			DBG(ctx, "could not load '%s': %s\n",
-				path, strerror(errno));
-			continue;
-		}
+		conf_files_list(ctx, &list, path);
+	}
 
-		if (S_ISREG(st.st_mode)) {
-			int fd = open(path, O_RDONLY|O_CLOEXEC);
-			DBG(ctx, "parsing file '%s': %d\n", path, fd);
-			if (fd >= 0)
-				kmod_config_parse(config, fd, path);
-			continue;
-		} else if (!S_ISDIR(st.st_mode)) {
-			ERR(ctx, "unsupported file mode %s: %#x\n",
-				path, st.st_mode);
-			continue;
-		}
+	for (; list != NULL; list = kmod_list_remove(list)) {
+		char fn[PATH_MAX];
+		struct conf_file *cf = list->data;
+		int fd;
 
-		d = conf_files_list(ctx, &list, path);
+		if (cf->is_single)
+			strcpy(fn, cf->path);
+		else
+			snprintf(fn, sizeof(fn),"%s/%s", cf->path,
+					cf->name);
 
-		for (; list != NULL; list = kmod_list_remove(list)) {
-			int fd = openat(dirfd(d), list->data, O_RDONLY|O_CLOEXEC);
-			DBG(ctx, "parsing file '%s/%s': %d\n", path,
-				(const char *) list->data, fd);
-			if (fd >= 0)
-				kmod_config_parse(config, fd, list->data);
+		fd = open(fn, O_RDONLY|O_CLOEXEC);
+		DBG(ctx, "parsing file '%s' fd=%d\n", fn, fd);
 
-			free(list->data);
-		}
+		if (fd >= 0)
+			kmod_config_parse(config, fd, fn);
 
-		closedir(d);
+		free(cf);
 	}
 
 	kmod_config_parse_kcmdline(config);
