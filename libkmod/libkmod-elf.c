@@ -395,11 +395,11 @@ static int kmod_elf_get_section(const struct kmod_elf *elf, const char *section,
 /* array will be allocated with strings in a single malloc, just free *array */
 int kmod_elf_get_strings(const struct kmod_elf *elf, const char *section, char ***array)
 {
-	uint64_t i, last, size;
+	size_t i, j, size, count;
 	const void *buf;
 	const char *strings;
-	char *itr, **a;
-	int count, err;
+	char *s, **a;
+	int err;
 
 	*array = NULL;
 
@@ -434,33 +434,20 @@ int kmod_elf_get_strings(const struct kmod_elf *elf, const char *section, char *
 	if (*array == NULL)
 		return -errno;
 
+	s = (char *)(a + count + 1);
+	memcpy(s, strings, size);
+
+	/* make sure the last string is NULL-terminated */
+	s[size] = '\0';
 	a[count] = NULL;
-	itr = (char *)(a + count);
-	last = 0;
+	a[0] = s;
 
-	for (i = 0, count = 0; i < size; i++) {
-		if (strings[i] == '\0') {
-			size_t slen = i - last;
-			if (last == i) {
-				last = i + 1;
-				continue;
-			}
-			a[count] = itr;
-			memcpy(itr, strings + last, slen);
-			itr[slen] = '\0';
-			itr += slen + 1;
-			count++;
-			last = i + 1;
-		}
-	}
+	for (i = 0, j = 1; j < count && i < size; i++) {
+		if (s[i] != '\0')
+			continue;
 
-	if (strings[i - 1] != '\0') {
-		size_t slen = i - last;
-		a[count] = itr;
-		memcpy(itr, strings + last, slen);
-		itr[slen] = '\0';
-		itr += slen + 1;
-		count++;
+		a[j] = &s[i + 1];
+		j++;
 	}
 
 	return count;
