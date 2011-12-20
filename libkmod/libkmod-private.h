@@ -144,6 +144,13 @@ void kmod_file_unref(struct kmod_file *file) __attribute__((nonnull(1)));
 struct kmod_elf;
 struct kmod_modversion {
 	uint64_t crc;
+	enum kmod_modversion_bind {
+		KMOD_MODVERSION_NONE = '\0',
+		KMOD_MODVERSION_LOCAL = 'L',
+		KMOD_MODVERSION_GLOBAL = 'G',
+		KMOD_MODVERSION_WEAK = 'W',
+		KMOD_MODVERSION_UNDEF = 'U'
+	} bind;
 	char *symbol;
 };
 

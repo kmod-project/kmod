@@ -533,6 +533,7 @@ int kmod_elf_get_modversions(const struct kmod_elf *elf, struct kmod_modversion 
 			symbol++;
 
 		a[i].crc = crc;
+		a[i].bind = KMOD_MODVERSION_UNDEF;
 		a[i].symbol = itr;
 		symbollen = strlen(symbol) + 1;
 		memcpy(itr, symbol, symbollen);
@@ -683,6 +684,7 @@ static int kmod_elf_get_symbols_symtab(const struct kmod_elf *elf, struct kmod_m
 				continue;
 			}
 			a[count].crc = 0;
+			a[count].bind = KMOD_MODVERSION_GLOBAL;
 			a[count].symbol = itr;
 			memcpy(itr, strings + last, slen);
 			itr[slen] = '\0';
@@ -694,6 +696,7 @@ static int kmod_elf_get_symbols_symtab(const struct kmod_elf *elf, struct kmod_m
 	if (strings[i - 1] != '\0') {
 		size_t slen = i - last;
 		a[count].crc = 0;
+		a[count].bind = KMOD_MODVERSION_GLOBAL;
 		a[count].symbol = itr;
 		memcpy(itr, strings + last, slen);
 		itr[slen] = '\0';
@@ -702,6 +705,20 @@ static int kmod_elf_get_symbols_symtab(const struct kmod_elf *elf, struct kmod_m
 	}
 
 	return count;
+}
+
+static inline uint8_t kmod_modversion_bind_from_elf(uint8_t elf_value)
+{
+	switch (elf_value) {
+	case STB_LOCAL:
+		return KMOD_MODVERSION_LOCAL;
+	case STB_GLOBAL:
+		return KMOD_MODVERSION_GLOBAL;
+	case STB_WEAK:
+		return KMOD_MODVERSION_WEAK;
+	default:
+		return KMOD_MODVERSION_NONE;
+	}
 }
 
 /* array will be allocated with strings in a single malloc, just free *array */
@@ -786,6 +803,7 @@ int kmod_elf_get_symbols(const struct kmod_elf *elf, struct kmod_modversion **ar
 		const char *name;
 		uint32_t name_off;
 		uint64_t crc;
+		uint8_t info, bind;
 
 #define READV(field)							\
 		elf_get_uint(elf, sym_off + offsetof(typeof(*s), field),\
@@ -794,10 +812,12 @@ int kmod_elf_get_symbols(const struct kmod_elf *elf, struct kmod_modversion **ar
 			Elf32_Sym *s;
 			name_off = READV(st_name);
 			crc = READV(st_value);
+			info = READV(st_info);
 		} else {
 			Elf64_Sym *s;
 			name_off = READV(st_name);
 			crc = READV(st_value);
+			info = READV(st_info);
 		}
 #undef READV
 		name = elf_get_mem(elf, str_off + name_off);
@@ -805,7 +825,13 @@ int kmod_elf_get_symbols(const struct kmod_elf *elf, struct kmod_modversion **ar
 			continue;
 		name += crc_strlen;
 
+		if (elf->class & KMOD_ELF_32)
+			bind = ELF32_ST_BIND(info);
+		else
+			bind = ELF64_ST_BIND(info);
+
 		a[count].crc = crc;
+		a[count].bind = kmod_modversion_bind_from_elf(bind);
 		a[count].symbol = itr;
 		slen = strlen(name);
 		memcpy(itr, name, slen);
