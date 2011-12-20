@@ -433,10 +433,11 @@ int kmod_elf_get_strings(const struct kmod_elf *elf, const char *section, char *
 	if (strings[i - 1] != '\0')
 		count++;
 
-	*array = a = malloc(size + 1 + sizeof(char *) * count);
+	*array = a = malloc(size + 1 + sizeof(char *) * (count + 1));
 	if (*array == NULL)
 		return -errno;
 
+	a[count] = NULL;
 	itr = (char *)(a + count);
 	last = 0;
 	for (i = 0, count = 0; i < size; i++) {
