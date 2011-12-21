@@ -1,6 +1,6 @@
 *.o
-*.tar.bz2
-*.tar.gz
+/*.tar.xz
+/*.md5sum
 .deps/
 .libs/
 Makefile
