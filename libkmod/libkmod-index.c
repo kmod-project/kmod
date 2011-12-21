@@ -669,7 +669,7 @@ static struct index_mm_node *index_mm_read_node(struct index_mm *idx,
 		child_count = 0;
 	}
 
-	children_padding = (offsetof(struct index_mm_node, children) +
+	children_padding = (sizeof(struct index_mm_node) +
 			    (sizeof(uint32_t) * child_count)) % sizeof(void *);
 
 	if (offset & INDEX_NODE_VALUES)
