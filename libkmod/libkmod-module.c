@@ -704,8 +704,8 @@ extern long init_module(const void *mem, unsigned long len, const char *args);
 /**
  * kmod_module_insert_module:
  * @mod: kmod module
- * @flags: flags are not passed to Linux Kernel, but instead it dictates the
- * behavior of this function. They are not implemented yet.
+ * @flags: flags are not passed to Linux Kernel, but instead they dictate the
+ * behavior of this function.
  * @options: module's options to pass to Linux Kernel.
  *
  * Insert a module in Linux kernel. It opens the file pointed by @mod,
