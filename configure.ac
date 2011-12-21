@@ -25,6 +25,9 @@ AM_PROG_CC_C_O
 AC_PROG_GCC_TRADITIONAL
 AC_C_BIGENDIAN
 
+AC_PROG_SED
+AC_PROG_MKDIR_P
+
 required_private_libs=""
 
 AC_ARG_WITH([rootprefix],
@@ -122,7 +125,6 @@ AC_SUBST(required_private_libs)
 AC_CONFIG_HEADERS(config.h)
 AC_CONFIG_FILES([
 	Makefile
-	libkmod/libkmod.pc
 ])
 
 AC_OUTPUT

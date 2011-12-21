@@ -19,6 +19,19 @@ AM_LDFLAGS = \
 	-Wl,--gc-sections \
 	-Wl,--as-needed
 
+SED_PROCESS = \
+	$(AM_V_GEN)$(MKDIR_P) $(dir $@) && $(SED) \
+	-e 's,@VERSION\@,$(VERSION),g' \
+	-e 's,@prefix\@,$(prefix),g' \
+	-e 's,@exec_prefix\@,$(exec_prefix),g' \
+	-e 's,@libdir\@,$(libdir),g' \
+	-e 's,@includedir\@,$(includedir),g' \
+	-e 's,@required_private_libs\@,$(required_private_libs),g' \
+	< $< > $@ || rm $@
+
+%.pc: %.pc.in Makefile
+	$(SED_PROCESS)
+
 LIBKMOD_CURRENT=2
 LIBKMOD_REVISION=0
 LIBKMOD_AGE=1
@@ -52,6 +65,8 @@ libkmod_libkmod_la_LIBADD = @zlib_libs@
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libkmod/libkmod.pc
+EXTRA_DIST += libkmod/libkmod.pc.in
+CLEANFILES += libkmod/libkmod.pc
 
 if BUILD_TOOLS
 bin_PROGRAMS = tools/kmod-insmod tools/kmod-rmmod tools/kmod-lsmod \
