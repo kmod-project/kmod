@@ -1,3 +1,35 @@
+kmod 2
+======
+
+Some bugs fixed: the worst of them was with an infinite loop when an alias
+matched more than one module.
+
+- New APIs in libkmod to:
+	- Get soft dependencies
+	- Get info from module files parsing ELF
+	- Get modversions from files parsing ELF
+
+- Support to load gzipped kernel modules: kmod can be compiled with support to
+  gzipped modules by giving the --enable-zlib flag
+
+- Support to forcefully load modules, both vermagic and modversion
+
+- Support to force and nowait removal flags
+
+- Configuration files are parsed in the same order as modprobe: files are
+  sorted alphabetically (independently of their dir) and files with the same
+  name obey a precedence order
+
+- New tool: kmod-modinfo
+
+- kmod-modprobe gained several features to be a 1:1 replacement for modprobe.
+  The only missing things are the options '--showconfig' and '-t / -l'. These
+  last ones have been deprecated long ago and they will be removed from
+  modprobe. A lot of effort has been put on kmod-modprobe to ensure it
+  maintains compabitility with modprobe.
+
+- linux-modules@vger.kernel.org became the official mailing list for kmod
+
 kmod 1
 ======
 

@@ -19,9 +19,9 @@ AM_LDFLAGS = \
 	-Wl,--gc-sections \
 	-Wl,--as-needed
 
-LIBKMOD_CURRENT=1
+LIBKMOD_CURRENT=2
 LIBKMOD_REVISION=0
-LIBKMOD_AGE=0
+LIBKMOD_AGE=1
 
 include_HEADERS = libkmod/libkmod.h
 lib_LTLIBRARIES = libkmod/libkmod.la
