@@ -99,7 +99,6 @@ CC_CHECK_CFLAGS_APPEND([ \
 			-Wmissing-noreturn \
 			-Wshadow \
 			-Wendif-labels \
-			-Wcast-align \
 			-Wstrict-aliasing=2 \
 			-Wwrite-strings \
 			-Wno-long-long \
