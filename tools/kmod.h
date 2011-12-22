@@ -30,5 +30,6 @@ struct kmod_cmd {
 extern const struct kmod_cmd kmod_cmd_compat_lsmod;
 extern const struct kmod_cmd kmod_cmd_compat_rmmod;
 extern const struct kmod_cmd kmod_cmd_compat_insmod;
+extern const struct kmod_cmd kmod_cmd_compat_modinfo;
 
 #endif

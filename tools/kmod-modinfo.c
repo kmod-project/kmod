@@ -326,7 +326,7 @@ static void help(const char *progname)
 		progname);
 }
 
-int main(int argc, char *argv[])
+static int do_modinfo(int argc, char *argv[])
 {
 	struct kmod_ctx *ctx;
 	char dirname_buf[PATH_MAX];
@@ -432,3 +432,20 @@ int main(int argc, char *argv[])
 	kmod_unref(ctx);
 	return err >= 0 ? EXIT_SUCCESS : EXIT_FAILURE;
 }
+
+#ifndef KMOD_BUNDLE_TOOL
+int main(int argc, char *argv[])
+{
+	return do_modinfo(argc, argv);
+}
+
+#else
+#include "kmod.h"
+
+const struct kmod_cmd kmod_cmd_compat_modinfo = {
+	.name = "modinfo",
+	.cmd = do_modinfo,
+	.help = "compat modinfo command",
+};
+
+#endif

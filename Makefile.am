@@ -91,7 +91,8 @@ tools_kmod_modprobe_LDADD = libkmod/libkmod.la
 tools_kmod_modinfo_LDADD = libkmod/libkmod.la
 
 tools_kmod_SOURCES = tools/kmod.c tools/kmod.h tools/kmod-lsmod.c \
-		     tools/kmod-rmmod.c tools/kmod-insmod.c
+		     tools/kmod-rmmod.c tools/kmod-insmod.c \
+		     tools/kmod-modinfo.c
 tools_kmod_CPPFLAGS = $(AM_CPPFLAGS) -DKMOD_BUNDLE_TOOL=1
 tools_kmod_LDADD = libkmod/libkmod.la
 endif

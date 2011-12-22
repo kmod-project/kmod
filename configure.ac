@@ -80,6 +80,7 @@ AS_IF([test "x$enable_debug" = "xyes"], [
 
 CC_CHECK_CFLAGS_APPEND([ \
 			-pipe \
+			-DANOTHER_BRICK_IN_THE \
 			-Wall \
 			-W \
 			-Wextra \
