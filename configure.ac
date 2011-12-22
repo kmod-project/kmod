@@ -35,6 +35,11 @@ AC_ARG_WITH([rootprefix],
         [], [with_rootprefix=""])
 AC_SUBST([rootprefix], [$with_rootprefix])
 
+AC_ARG_WITH([rootlibdir],
+        AS_HELP_STRING([--with-rootlibdir=DIR], [rootfs directory to install shared libraries]),
+        [], [with_rootlibdir=$libdir])
+AC_SUBST([rootlibdir], [$with_rootlibdir])
+
 AC_ARG_ENABLE([tools],
         AS_HELP_STRING([--disable-tools], [disable building tools that provide same functionality as module-init-tools @<:@default=enabled@:>@]),
 	[], enable_tools=yes)
@@ -135,6 +140,7 @@ AC_MSG_RESULT([
 	rootprefix:		${rootprefix}
 	sysconfdir:		${sysconfdir}
 	libdir:			${libdir}
+	rootlibdir:		${rootlibdir}
 	includedir:		${includedir}
 	bindir:			${bindir}
 

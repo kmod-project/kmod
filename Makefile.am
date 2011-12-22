@@ -68,6 +68,18 @@ pkgconfig_DATA = libkmod/libkmod.pc
 EXTRA_DIST += libkmod/libkmod.pc.in
 CLEANFILES += libkmod/libkmod.pc
 
+install-exec-hook:
+	if test "$(libdir)" != "$(rootlibdir)"; then \
+		mkdir -p $(DESTDIR)$(rootlibdir) && \
+		so_img_name=$$(readlink $(DESTDIR)$(libdir)/libkmod.so) && \
+		so_img_rel_target_prefix=$$(echo $(libdir) | sed 's,\(^/\|\)[^/][^/]*,..,g') && \
+		ln -sf $$so_img_rel_target_prefix$(rootlibdir)/$$so_img_name $(DESTDIR)$(libdir)/libkmod.so && \
+		mv $(DESTDIR)$(libdir)/libkmod.so.* $(DESTDIR)$(rootlibdir); \
+	fi
+
+uninstall-hook:
+	rm -f $(DESTDIR)$(rootlibdir)/libkmod.so*
+
 if BUILD_TOOLS
 bin_PROGRAMS = tools/kmod-insmod tools/kmod-rmmod tools/kmod-lsmod \
 	tools/kmod-modprobe tools/kmod-modinfo
