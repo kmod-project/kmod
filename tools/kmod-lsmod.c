@@ -26,7 +26,7 @@
 #include "libkmod.h"
 
 
-int main(int argc, char *argv[])
+static int do_lsmod(int argc, char *argv[])
 {
 	struct kmod_ctx *ctx;
 	const char *null_config = NULL;
@@ -84,3 +84,20 @@ int main(int argc, char *argv[])
 
 	return EXIT_SUCCESS;
 }
+
+#ifndef KMOD_BUNDLE_TOOL
+int main(int argc, char *argv[])
+{
+	return do_lsmod(argc, argv);
+}
+
+#else
+#include "kmod.h"
+
+const struct kmod_cmd kmod_cmd_compat_lsmod = {
+	.name = "lsmod",
+	.cmd = do_lsmod,
+	.help = "compat lsmod command",
+};
+
+#endif

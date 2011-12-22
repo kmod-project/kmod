@@ -38,6 +38,10 @@ static const struct kmod_cmd *kmod_cmds[] = {
 	&kmod_cmd_help,
 };
 
+static const struct kmod_cmd *kmod_compat_cmds[] = {
+	&kmod_cmd_compat_lsmod,
+};
+
 static int kmod_help(int argc, char *argv[])
 {
 	size_t i;
@@ -57,8 +61,14 @@ static int kmod_help(int argc, char *argv[])
 		}
 	}
 
-	puts("\nkmod will also handle gracefully if called\n"
-			"from a symlink to previous tools\n");
+	puts("\nkmod also handles gracefully if called from following symlinks:");
+
+	for (i = 0; i < ARRAY_SIZE(kmod_compat_cmds); i++) {
+		if (kmod_compat_cmds[i]->help != NULL) {
+			printf("  %-12s %s\n", kmod_compat_cmds[i]->name,
+						kmod_compat_cmds[i]->help);
+		}
+	}
 
 	return EXIT_SUCCESS;
 }
@@ -120,6 +130,25 @@ finish:
 	return err;
 }
 
+
+static int handle_kmod_compat_commands(int argc, char *argv[])
+{
+	const char *cmd;
+	int err = -ENOENT;
+	size_t i;
+
+	cmd = basename(argv[0]);
+
+	for (i = 0; i < ARRAY_SIZE(kmod_compat_cmds); i++) {
+		if (strcmp(kmod_compat_cmds[i]->name, cmd) != 0)
+			continue;
+
+		err = kmod_compat_cmds[i]->cmd(argc, argv);
+	}
+
+	return err;
+}
+
 int main(int argc, char *argv[])
 {
 	const char *binname = basename(argv[0]);
@@ -128,7 +157,7 @@ int main(int argc, char *argv[])
 	if (strcmp(binname, "kmod") == 0)
 		err = handle_kmod_commands(argc, argv);
 	else
-		err = -ENOENT;
+		err = handle_kmod_compat_commands(argc, argv);
 
 	return err;
 }

@@ -27,4 +27,6 @@ struct kmod_cmd {
 	const char *help;
 };
 
+extern const struct kmod_cmd kmod_cmd_compat_lsmod;
+
 #endif
