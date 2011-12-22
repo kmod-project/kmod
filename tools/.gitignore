@@ -4,4 +4,5 @@ kmod-rmmod
 kmod-lsmod
 kmod-modprobe
 kmod-modinfo
+kmod-depmod
 kmod
