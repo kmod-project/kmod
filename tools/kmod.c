@@ -57,6 +57,9 @@ static int kmod_help(int argc, char *argv[])
 		}
 	}
 
+	puts("\nkmod will also handle gracefully if called\n"
+			"from a symlink to previous tools\n");
+
 	return EXIT_SUCCESS;
 }
 
@@ -66,7 +69,7 @@ static const struct kmod_cmd kmod_cmd_help = {
 	.help = "Show help message",
 };
 
-int main(int argc, char *argv[])
+static int handle_kmod_commands(int argc, char *argv[])
 {
 	const char *cmd;
 	int err = 0;
@@ -113,6 +116,19 @@ finish:
 		fputs("missing or unknown command; "
 			"see 'kmod help' for a list of available commands\n", stderr);
 	}
+
+	return err;
+}
+
+int main(int argc, char *argv[])
+{
+	const char *binname = basename(argv[0]);
+	int err;
+
+	if (strcmp(binname, "kmod") == 0)
+		err = handle_kmod_commands(argc, argv);
+	else
+		err = -ENOENT;
 
 	return err;
 }
