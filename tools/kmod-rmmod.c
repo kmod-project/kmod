@@ -100,7 +100,7 @@ static void log_syslog(void *data, int priority, const char *file, int line,
 	(void)data;
 }
 
-int main(int argc, char *argv[])
+static int do_rmmod(int argc, char *argv[])
 {
 	struct kmod_ctx *ctx;
 	const char *null_config = NULL;
@@ -193,3 +193,20 @@ int main(int argc, char *argv[])
 
 	return err >= 0 ? EXIT_SUCCESS : EXIT_FAILURE;
 }
+
+#ifndef KMOD_BUNDLE_TOOL
+int main(int argc, char *argv[])
+{
+	return do_rmmod(argc, argv);
+}
+
+#else
+#include "kmod.h"
+
+const struct kmod_cmd kmod_cmd_compat_rmmod = {
+	.name = "rmmod",
+	.cmd = do_rmmod,
+	.help = "compat rmmod command",
+};
+
+#endif
