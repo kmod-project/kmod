@@ -1208,11 +1208,13 @@ int main(int argc, char **orig_argv)
 			puts(PACKAGE " version " VERSION);
 			if (argv != orig_argv)
 				free(argv);
+			free(config_paths);
 			return EXIT_SUCCESS;
 		case 'h':
 			help(argv[0]);
 			if (argv != orig_argv)
 				free(argv);
+			free(config_paths);
 			return EXIT_SUCCESS;
 		case '?':
 			goto cmdline_failed;
