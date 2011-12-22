@@ -482,7 +482,7 @@ static int kmod_config_parse(struct kmod_config *config, int fd,
 	struct kmod_ctx *ctx = config->ctx;
 	char *line;
 	FILE *fp;
-	unsigned int linenum;
+	unsigned int linenum = 0;
 	int err;
 
 	fp = fdopen(fd, "r");
