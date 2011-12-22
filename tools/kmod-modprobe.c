@@ -1088,7 +1088,7 @@ static void log_syslog(void *data, int priority, const char *file, int line,
 	(void)data;
 }
 
-int main(int argc, char **orig_argv)
+static int do_modprobe(int argc, char **orig_argv)
 {
 	struct kmod_ctx *ctx;
 	char **args = NULL, **argv;
@@ -1307,3 +1307,20 @@ cmdline_failed:
 	free(config_paths);
 	return EXIT_FAILURE;
 }
+
+#ifndef KMOD_BUNDLE_TOOL
+int main(int argc, char *argv[])
+{
+	return do_modprobe(argc, argv);
+}
+
+#else
+#include "kmod.h"
+
+const struct kmod_cmd kmod_cmd_compat_modprobe = {
+	.name = "modprobe",
+	.cmd = do_modprobe,
+	.help = "compat modprobe command",
+};
+
+#endif
