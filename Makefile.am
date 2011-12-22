@@ -82,13 +82,16 @@ uninstall-hook:
 
 if BUILD_TOOLS
 bin_PROGRAMS = tools/kmod-insmod tools/kmod-rmmod tools/kmod-lsmod \
-	tools/kmod-modprobe tools/kmod-modinfo
+	tools/kmod-modprobe tools/kmod-modinfo tools/kmod
 
 tools_kmod_insmod_LDADD = libkmod/libkmod.la
 tools_kmod_rmmod_LDADD = libkmod/libkmod.la
 tools_kmod_lsmod_LDADD = libkmod/libkmod.la
 tools_kmod_modprobe_LDADD = libkmod/libkmod.la
 tools_kmod_modinfo_LDADD = libkmod/libkmod.la
+
+tools_kmod_SOURCES = tools/kmod.c tools/kmod.h
+tools_kmod_LDADD = libkmod/libkmod.la
 endif
 
 TESTS = test/test-init test/test-loaded
