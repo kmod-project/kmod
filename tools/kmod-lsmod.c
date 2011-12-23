@@ -100,4 +100,10 @@ const struct kmod_cmd kmod_cmd_compat_lsmod = {
 	.help = "compat lsmod command",
 };
 
+const struct kmod_cmd kmod_cmd_list = {
+	.name = "list",
+	.cmd = do_lsmod,
+	.help = "list currently loaded modules",
+};
+
 #endif

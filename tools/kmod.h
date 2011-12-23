@@ -33,4 +33,5 @@ extern const struct kmod_cmd kmod_cmd_compat_insmod;
 extern const struct kmod_cmd kmod_cmd_compat_modinfo;
 extern const struct kmod_cmd kmod_cmd_compat_modprobe;
 
+extern const struct kmod_cmd kmod_cmd_list;
 #endif
