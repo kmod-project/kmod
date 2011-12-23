@@ -1676,6 +1676,28 @@ static int depmod_load(struct depmod *depmod)
 	return 0;
 }
 
+static int output_symbols(struct depmod *depmod, FILE *out)
+{
+	size_t i;
+
+	fputs("# Aliases for symbols, used by symbol_request().\n", out);
+
+	for (i = 0; i < depmod->symbols->n_buckets; i++) {
+		const struct hash_bucket *b = depmod->symbols->buckets + i;
+		unsigned j;
+		for (j = 0; j < b->used; j++) {
+			const struct hash_entry *e = b->entries + j;
+			const struct symbol *sym = e->value;
+			if (sym->owner == NULL)
+				continue;
+			fprintf(out, "alias symbol:%s %s\n",
+				sym->name, sym->owner->modname);
+		}
+	}
+
+	return 0;
+}
+
 static int output_devname(struct depmod *depmod, FILE *out)
 {
 	size_t i;
@@ -1740,7 +1762,7 @@ static int depmod_output(struct depmod *depmod, FILE *out)
 		//{"modules.alias", output_aliases},
 		//{"modules.alias.bin", output_aliases_bin},
 		//{"modules.softdep", output_softdeps},
-		//{"modules.symbols", output_symbols},
+		{"modules.symbols", output_symbols},
 		//{"modules.symbols.bin", output_symbols_bin},
 		//{"modules.builtin.bin", output_builtin_bin},
 		{"modules.devname", output_devname},
