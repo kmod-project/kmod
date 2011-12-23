@@ -113,26 +113,29 @@ static int handle_kmod_commands(int argc, char *argv[])
 	}
 
 	if (optind >= argc) {
-		err = -ENOENT;
-		goto finish;
+		fputs("missing command\n", stderr);
+		goto fail;
 	}
 
 	cmd = argv[optind];
 
-	for (i = 0; i < ARRAY_SIZE(kmod_cmds); i++) {
+	for (i = 0, err = -EINVAL; i < ARRAY_SIZE(kmod_cmds); i++) {
 		if (strcmp(kmod_cmds[i]->name, cmd) != 0)
 			continue;
 
 		err = kmod_cmds[i]->cmd(--argc, ++argv);
 	}
 
-finish:
 	if (err < 0) {
-		fputs("missing or unknown command\n", stderr);
-		kmod_help(argc, argv);
+		fprintf(stderr, "invalid command '%s'\n", cmd);
+		goto fail;
 	}
 
 	return err;
+
+fail:
+	kmod_help(argc, argv);
+	return EXIT_FAILURE;
 }
 
 
