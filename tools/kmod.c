@@ -20,9 +20,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <getopt.h>
 #include <string.h>
 #include <libkmod.h>
 #include "kmod.h"
+
+static const char options_s[] = "+hV";
+static const struct option options[] = {
+	{ "help", no_argument, NULL, 'h' },
+	{ "version", no_argument, NULL, 'V' },
+	{}
+};
 
 static const struct kmod_cmd kmod_cmd_help;
 
@@ -34,9 +42,13 @@ static int kmod_help(int argc, char *argv[])
 {
 	size_t i;
 
-	puts("Manage kernel modules: list, load, unload, etc\n"
-			"Usage: kmod COMMAND [COMMAND_OPTIONS]\n\n"
-			"Available commands:");
+	printf("Manage kernel modules: list, load, unload, etc\n"
+			"Usage:\n"
+			"\t%s [options] command [command_options]\n\n"
+			"Options:\n"
+			"\t-V, --version     show version\n"
+			"\t-h, --help        show this help\n\n"
+			"Commands:\n", basename(argv[0]));
 
 	for (i = 0; i < ARRAY_SIZE(kmod_cmds); i++) {
 		if (kmod_cmds[i]->help != NULL) {
@@ -60,12 +72,34 @@ int main(int argc, char *argv[])
 	int err = 0;
 	size_t i;
 
-	if (argc < 2) {
+	for (;;) {
+		int c;
+
+		c = getopt_long(argc, argv, options_s, options, NULL);
+		if (c == -1)
+			break;
+
+		switch (c) {
+		case 'h':
+			kmod_help(argc, argv);
+			return EXIT_SUCCESS;
+		case 'V':
+			puts("kmod version " VERSION);
+			return EXIT_SUCCESS;
+		case '?':
+			return EXIT_FAILURE;
+		default:
+			fprintf(stderr, "Error: unexpected getopt_long() value '%c'.\n", c);
+			return EXIT_FAILURE;
+		}
+	}
+
+	if (optind >= argc) {
 		err = -ENOENT;
 		goto finish;
 	}
 
-	cmd = argv[1];
+	cmd = argv[optind];
 
 	for (i = 0; i < ARRAY_SIZE(kmod_cmds); i++) {
 		if (strcmp(kmod_cmds[i]->name, cmd) != 0)
