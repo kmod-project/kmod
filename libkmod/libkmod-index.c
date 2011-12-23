@@ -342,8 +342,10 @@ struct index_file *index_file_open(const char *filename)
 	errno = EINVAL;
 
 	magic = read_long(file);
-	if (magic != INDEX_MAGIC)
+	if (magic != INDEX_MAGIC) {
+		fclose(file);
 		return NULL;
+	}
 
 	version = read_long(file);
 	if (version >> 16 != INDEX_VERSION_MAJOR)
