@@ -33,6 +33,7 @@
 #include "libkmod.h"
 
 #define streq(a, b) (strcmp(a, b) == 0)
+#define strstartswith(a, b) (strncmp(a, b, strlen(b)) == 0)
 
 #define DEFAULT_VERBOSE LOG_WARNING
 static int verbose = DEFAULT_VERBOSE;
@@ -1675,6 +1676,140 @@ static int depmod_load(struct depmod *depmod)
 	return 0;
 }
 
+static int output_devname(struct depmod *depmod, FILE *out)
+{
+	size_t i;
+
+	fputs("# Device nodes to trigger on-demand module loading.\n", out);
+
+	for (i = 0; i < depmod->modules.count; i++) {
+		const struct mod *mod = depmod->modules.array[i];
+		struct kmod_list *l, *list = NULL;
+		const char *devname = NULL;
+		char type = '\0';
+		unsigned int major = 0, minor = 0;
+		int r;
+
+		r = kmod_module_get_info(mod->kmod, &list);
+		if (r < 0 || list == NULL)
+			continue;
+
+		kmod_list_foreach(l, list) {
+			const char *key = kmod_module_info_get_key(l);
+			const char *value = kmod_module_info_get_value(l);
+			unsigned int maj, min;
+
+			if (!streq(key, "alias"))
+				continue;
+
+			if (strstartswith(value, "devname:"))
+				devname = value + sizeof("devname:") - 1;
+			else if (sscanf(value, "char-major-%u-%u",
+						&maj, &min) == 2) {
+				type = 'c';
+				major = maj;
+				minor = min;
+			} else if (sscanf(value, "block-major-%u-%u",
+						&maj, &min) == 2) {
+				type = 'b';
+				major = maj;
+				minor = min;
+			}
+
+			if (type != '\0' && devname != NULL) {
+				fprintf(out, "%s %s %c%u:%u\n",
+					kmod_module_get_name(mod->kmod),
+					devname, type, major, minor);
+				break;
+			}
+		}
+		kmod_module_info_free_list(list);
+	}
+
+	return 0;
+}
+
+static int depmod_output(struct depmod *depmod, FILE *out)
+{
+	static const struct depfile {
+		const char *name;
+		int (*cb)(struct depmod *depmod, FILE *out);
+	} *itr, depfiles[] = {
+		//{"modules.dep", output_deps},
+		//{"modules.dep.bin", output_deps_bin},
+		//{"modules.alias", output_aliases},
+		//{"modules.alias.bin", output_aliases_bin},
+		//{"modules.softdep", output_softdeps},
+		//{"modules.symbols", output_symbols},
+		//{"modules.symbols.bin", output_symbols_bin},
+		//{"modules.builtin.bin", output_builtin_bin},
+		{"modules.devname", output_devname},
+		{NULL, NULL}
+	};
+	const char *dname = depmod->cfg->dirname;
+	int dfd, err = 0;
+
+	if (out != NULL)
+		dfd = -1;
+	else {
+		dfd = open(dname, O_RDONLY);
+		if (dfd < 0) {
+			err = -errno;
+			CRIT("Could not open directory %s: %m\n", dname);
+			return err;
+		}
+	}
+
+	for (itr = depfiles; itr->name != NULL; itr++) {
+		FILE *fp = out;
+		char tmp[NAME_MAX] = "";
+		int r;
+
+		if (fp == NULL) {
+			int flags = O_CREAT | O_TRUNC | O_WRONLY;
+			int mode = 0644;
+			int fd;
+
+			snprintf(tmp, sizeof(tmp), "%s.tmp", itr->name);
+			fd = openat(dfd, tmp, flags, mode);
+			if (fd < 0) {
+				ERR("openat(%s, %s, %o, %o): %m\n",
+				    dname, tmp, flags, mode);
+				continue;
+			}
+			fp = fdopen(fd, "wb");
+			if (fp == NULL) {
+				ERR("fdopen(%d=%s/%s): %m\n", fd, dname, tmp);
+				close(fd);
+				continue;
+			}
+		}
+
+		r = itr->cb(depmod, fp);
+		if (fp == out)
+			continue;
+
+		fclose(fp);
+		if (r < 0) {
+			if (unlinkat(dfd, tmp, 0) != 0)
+				ERR("unlinkat(%s, %s): %m\n", dname, tmp);
+		} else {
+			unlinkat(dfd, itr->name, 0);
+			if (renameat(dfd, tmp, dfd, itr->name) != 0) {
+				err = -errno;
+				CRIT("renameat(%s, %s, %s, %s): %m\n",
+				     dname, tmp, dname, itr->name);
+				break;
+			}
+		}
+	}
+
+	if (dfd >= 0)
+		close(dfd);
+	return err;
+}
+
+
 static int depfile_up_to_date(const char *dirname)
 {
 	ERR("TODO depfile_up_to_date()\n");
@@ -1872,8 +2007,7 @@ int main(int argc, char *argv[])
 	if (err < 0)
 		goto cmdline_modules_failed;
 
-
-	ERR("TODO - dump files\n");
+	err = depmod_output(&depmod, out);
 
 done:
 	depmod_shutdown(&depmod);
