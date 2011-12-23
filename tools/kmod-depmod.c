@@ -1676,6 +1676,119 @@ static int depmod_load(struct depmod *depmod)
 	return 0;
 }
 
+static size_t mod_count_all_dependencies(const struct mod *mod)
+{
+	size_t i, count = 0;
+	for (i = 0; i < mod->deps.count; i++) {
+		const struct mod *d = mod->deps.array[i];
+		count += 1 + mod_count_all_dependencies(d);
+	}
+	return count;
+}
+
+static int mod_fill_all_unique_dependencies(const struct mod *mod, const struct mod **deps, size_t n_deps, size_t *last)
+{
+	size_t i;
+	int err = 0;
+	for (i = 0; i < mod->deps.count; i++) {
+		const struct mod *d = mod->deps.array[i];
+		size_t j;
+		uint8_t exists = 0;
+
+		for (j = 0; j < *last; j++) {
+			if (deps[j] == d) {
+				exists = 1;
+				break;
+			}
+		}
+
+		if (exists)
+			continue;
+
+		if (*last >= n_deps)
+			return -ENOSPC;
+		deps[*last] = d;
+		(*last)++;
+		err = mod_fill_all_unique_dependencies(d, deps, n_deps, last);
+		if (err < 0)
+			break;
+	}
+	return err;
+}
+
+static const struct mod **mod_get_all_sorted_dependencies(const struct mod *mod, size_t *n_deps)
+{
+	const struct mod **deps;
+	size_t last = 0;
+
+	*n_deps = mod_count_all_dependencies(mod);
+	if (*n_deps == 0)
+		return NULL;
+
+	deps = malloc(sizeof(struct mod *) * (*n_deps));
+	if (deps == NULL)
+		return NULL;
+
+	if (mod_fill_all_unique_dependencies(mod, deps, *n_deps, &last) < 0) {
+		free(deps);
+		return NULL;
+	}
+
+	qsort(deps, last, sizeof(struct mod *), dep_cmp);
+	*n_deps = last;
+	return deps;
+}
+
+static inline const char *mod_get_compressed_path(const struct mod *mod)
+{
+	if (mod->relpath != NULL)
+		return mod->relpath;
+	return mod->path;
+}
+
+static int output_deps(struct depmod *depmod, FILE *out)
+{
+	size_t i;
+
+	for (i = 0; i < depmod->modules.count; i++) {
+		const struct mod **deps, *mod = depmod->modules.array[i];
+		const char *p = mod_get_compressed_path(mod);
+		size_t j, n_deps;
+
+		if (mod->dep_loop) {
+			DBG("Ignored %s due dependency loops\n", p);
+			continue;
+		}
+
+		fprintf(out, "%s:", p);
+
+		if (mod->deps.count == 0)
+			goto end;
+
+		deps = mod_get_all_sorted_dependencies(mod, &n_deps);
+		if (deps == NULL) {
+			ERR("Could not get all sorted dependencies of %s\n", p);
+			goto end;
+		}
+
+		for (j = 0; j < n_deps; j++) {
+			const struct mod *d = deps[j];
+			if (d->dep_loop) {
+				DBG("Ignored %s (dependency of %s) "
+				    "due dependency loops\n",
+				    mod_get_compressed_path(d), p);
+				continue;
+			}
+			fprintf(out, " %s", mod_get_compressed_path(d));
+		}
+		free(deps);
+	end:
+		putc('\n', out);
+	}
+
+	return 0;
+}
+
 static int output_aliases(struct depmod *depmod, FILE *out)
 {
 	size_t i;
@@ -1815,7 +1928,7 @@ static int depmod_output(struct depmod *depmod, FILE *out)
 		const char *name;
 		int (*cb)(struct depmod *depmod, FILE *out);
 	} *itr, depfiles[] = {
-		//{"modules.dep", output_deps},
+		{"modules.dep", output_deps},
 		//{"modules.dep.bin", output_deps_bin},
 		{"modules.alias", output_aliases},
 		//{"modules.alias.bin", output_aliases_bin},
