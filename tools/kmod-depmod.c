@@ -1676,6 +1676,36 @@ static int depmod_load(struct depmod *depmod)
 	return 0;
 }
 
+static int output_softdeps(struct depmod *depmod, FILE *out)
+{
+	size_t i;
+
+	fputs("# Soft dependencies extracted from modules themselves.\n", out);
+	fputs("# Copy, with a .conf extension, to /etc/modprobe.d to use "
+	      "it with modprobe.\n", out);
+
+	for (i = 0; i < depmod->modules.count; i++) {
+		const struct mod *mod = depmod->modules.array[i];
+		struct kmod_list *l, *list = NULL;
+		int r = kmod_module_get_info(mod->kmod, &list);
+		if (r < 0 || list == NULL)
+			continue;
+		kmod_list_foreach(l, list) {
+			const char *key = kmod_module_info_get_key(l);
+			const char *value = kmod_module_info_get_value(l);
+
+			if (!streq(key, "softdep"))
+				continue;
+
+			fprintf(out, "softdep %s %s\n",
+				kmod_module_get_name(mod->kmod), value);
+		}
+		kmod_module_info_free_list(list);
+	}
+
+	return 0;
+}
+
 static int output_symbols(struct depmod *depmod, FILE *out)
 {
 	size_t i;
@@ -1761,7 +1791,7 @@ static int depmod_output(struct depmod *depmod, FILE *out)
 		//{"modules.dep.bin", output_deps_bin},
 		//{"modules.alias", output_aliases},
 		//{"modules.alias.bin", output_aliases_bin},
-		//{"modules.softdep", output_softdeps},
+		{"modules.softdep", output_softdeps},
 		{"modules.symbols", output_symbols},
 		//{"modules.symbols.bin", output_symbols_bin},
 		//{"modules.builtin.bin", output_builtin_bin},
