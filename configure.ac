@@ -53,23 +53,21 @@ AS_IF([test "x$enable_logging" = "xyes"], [
 ])
 
 AC_ARG_ENABLE([zlib],
-        AS_HELP_STRING([--enable-zlib], [handle gzipped modules @<:@default=disabled@:>@]),
+	AS_HELP_STRING([--enable-zlib], [handle gzipped modules @<:@default=disabled@:>@]),
 	[], enable_zlib=no)
-if test "x$enable_zlib" != "xno"; then
-        AC_CHECK_LIB([z], [gzopen],
-                [
-                        zlib_libs="-lz"
-                        required_private_libs="${required_private_libs} ${zlib_libs}"
-                ],
-                [AC_MSG_ERROR([zlib is not present])])
-else
-        AC_MSG_NOTICE([zlib support not requested])
-        zlib_libs=""
-fi
-if test "x$zlib_libs" != "x"; then
-        AC_DEFINE(ENABLE_ZLIB, [1], [Enable zlib for modules.])
-fi
-AC_SUBST(zlib_libs)
+AS_IF([test "x$enable_zlib" != "xno"], [
+	AC_CHECK_LIB([z], [gzopen], [
+		zlib_libs="-lz"
+		required_private_libs="${required_private_libs} ${zlib_libs}"
+		AC_DEFINE(ENABLE_ZLIB, [1], [Enable zlib for modules.])
+		AC_SUBST(zlib_libs)
+	],
+		[AC_MSG_ERROR([zlib is not present])
+	])
+], [
+	AC_MSG_NOTICE([zlib support not requested])
+	zlib_libs=""
+])
 
 AC_ARG_ENABLE([debug],
 	AS_HELP_STRING([--enable-debug], [enable debug messages @<:@default=disabled@:>@]),
