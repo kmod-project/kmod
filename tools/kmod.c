@@ -51,7 +51,7 @@ static int kmod_help(int argc, char *argv[])
 {
 	size_t i;
 
-	printf("Manage kernel modules: list, load, unload, etc\n"
+	printf("kmod - Manage kernel modules: list, load, unload, etc\n"
 			"Usage:\n"
 			"\t%s [options] command [command_options]\n\n"
 			"Options:\n"
@@ -128,8 +128,8 @@ static int handle_kmod_commands(int argc, char *argv[])
 
 finish:
 	if (err < 0) {
-		fputs("missing or unknown command; "
-			"see 'kmod help' for a list of available commands\n", stderr);
+		fputs("missing or unknown command\n", stderr);
+		kmod_help(argc, argv);
 	}
 
 	return err;
