@@ -740,6 +740,11 @@ KMOD_EXPORT void kmod_unload_resources(struct kmod_ctx *ctx)
 	}
 }
 
+const struct kmod_list *kmod_get_blacklists(const struct kmod_ctx *ctx)
+{
+	return ctx->config->blacklists;
+}
+
 const struct kmod_list *kmod_get_options(const struct kmod_ctx *ctx)
 {
 	return ctx->config->options;

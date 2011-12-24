@@ -56,6 +56,11 @@ struct kmod_softdep {
 	unsigned int n_post;
 };
 
+const char *kmod_blacklist_get_modname(const struct kmod_list *l)
+{
+	return l->data;
+}
+
 const char *kmod_alias_get_name(const struct kmod_list *l) {
 	const struct kmod_alias *alias = l->data;
 	return alias->name;
