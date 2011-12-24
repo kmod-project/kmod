@@ -2342,6 +2342,47 @@ static int output_symbols(struct depmod *depmod, FILE *out)
 	return 0;
 }
 
+static int output_symbols_bin(struct depmod *depmod, FILE *out)
+{
+	struct index_node *idx;
+	char alias[1024];
+	size_t i, baselen = sizeof("symbol:") - 1;
+
+	if (out == stdout)
+		return 0;
+
+	idx = index_create();
+	if (idx == NULL)
+		return -ENOMEM;
+
+	memcpy(alias, "symbol:", baselen);
+
+	for (i = 0; i < depmod->symbols->n_buckets; i++) {
+		const struct hash_bucket *b = depmod->symbols->buckets + i;
+		unsigned j;
+		for (j = 0; j < b->used; j++) {
+			const struct hash_entry *e = b->entries + j;
+			const struct symbol *sym = e->value;
+			int duplicate;
+
+			if (sym->owner == NULL)
+				continue;
+
+			strcpy(alias + baselen, sym->name);
+			duplicate = index_insert(idx, alias,
+						 sym->owner->modname,
+						 sym->owner->idx);
+			if (duplicate && depmod->cfg->warn_dups)
+				WRN("duplicate module syms:\n%s %s\n",
+				    alias, sym->owner->modname);
+		}
+	}
+
+	index_write(idx, out);
+	index_destroy(idx);
+	return 0;
+}
+
 static int output_builtin_bin(struct depmod *depmod, FILE *out)
 {
 	FILE *in;
@@ -2448,7 +2489,7 @@ static int depmod_output(struct depmod *depmod, FILE *out)
 		//{"modules.alias.bin", output_aliases_bin},
 		{"modules.softdep", output_softdeps},
 		{"modules.symbols", output_symbols},
-		//{"modules.symbols.bin", output_symbols_bin},
+		{"modules.symbols.bin", output_symbols_bin},
 		{"modules.builtin.bin", output_builtin_bin},
 		{"modules.devname", output_devname},
 		{NULL, NULL}
