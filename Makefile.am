@@ -8,7 +8,8 @@ AM_CPPFLAGS = \
 	-I$(top_srcdir)/libkmod \
 	-DROOTPREFIX=\""$(rootprefix)"\" \
 	-DSYSCONFDIR=\""$(sysconfdir)"\" \
-	-DLIBEXECDIR=\""$(libexecdir)"\"
+	-DLIBEXECDIR=\""$(libexecdir)"\" \
+	${zlib_CFLAGS}
 
 AM_CFLAGS = \
 	-fvisibility=hidden \
@@ -26,7 +27,8 @@ SED_PROCESS = \
 	-e 's,@exec_prefix\@,$(exec_prefix),g' \
 	-e 's,@libdir\@,$(libdir),g' \
 	-e 's,@includedir\@,$(includedir),g' \
-	-e 's,@required_private_libs\@,$(required_private_libs),g' \
+	-e 's,@zlib_CFLAGS\@,${zlib_CFLAGS},g' \
+	-e 's,@zlib_LIBS\@,${zlib_LIBS},g' \
 	< $< > $@ || rm $@
 
 %.pc: %.pc.in Makefile
@@ -61,7 +63,7 @@ libkmod_libkmod_la_LDFLAGS = $(AM_LDFLAGS) \
 	-version-info $(LIBKMOD_CURRENT):$(LIBKMOD_REVISION):$(LIBKMOD_AGE) \
 	-Wl,--version-script=$(top_srcdir)/libkmod/libkmod.sym
 libkmod_libkmod_la_DEPENDENCIES = ${top_srcdir}/libkmod/libkmod.sym
-libkmod_libkmod_la_LIBADD = @zlib_libs@
+libkmod_libkmod_la_LIBADD = ${zlib_LIBS}
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libkmod/libkmod.pc
