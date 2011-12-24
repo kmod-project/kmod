@@ -27,8 +27,7 @@ AC_C_BIGENDIAN
 
 AC_PROG_SED
 AC_PROG_MKDIR_P
-
-required_private_libs=""
+PKG_PROG_PKG_CONFIG
 
 AC_ARG_WITH([rootprefix],
         AS_HELP_STRING([--with-rootprefix=DIR], [rootfs directory prefix for config files and kernel modules]),
@@ -52,21 +51,24 @@ AS_IF([test "x$enable_logging" = "xyes"], [
 	AC_DEFINE(ENABLE_LOGGING, [1], [System logging.])
 ])
 
-AC_ARG_ENABLE([zlib],
-	AS_HELP_STRING([--enable-zlib], [handle gzipped modules @<:@default=disabled@:>@]),
-	[], enable_zlib=no)
-AS_IF([test "x$enable_zlib" != "xno"], [
-	AC_CHECK_LIB([z], [gzopen], [
-		zlib_libs="-lz"
-		required_private_libs="${required_private_libs} ${zlib_libs}"
-		AC_DEFINE(ENABLE_ZLIB, [1], [Enable zlib for modules.])
-		AC_SUBST(zlib_libs)
-	],
-		[AC_MSG_ERROR([zlib is not present])
-	])
+AC_ARG_WITH([xz],
+	AS_HELP_STRING([--with-xz], [handle Xz-compressed modules @<:@default=disabled@:>@]),
+	[], [with_xz=no])
+AS_IF([test "x$with_xz" != "xno"], [
+	PKG_CHECK_MODULES([liblzma], [liblzma >= 4.99])
+	AC_DEFINE([ENABLE_XZ], [1], [Enable Xz for modules.])
+], [
+	AC_MSG_NOTICE([Xz support not requested])
+])
+
+AC_ARG_WITH([zlib],
+	AS_HELP_STRING([--with-zlib], [handle gzipped modules @<:@default=disabled@:>@]),
+	[], [with_zlib=no])
+AS_IF([test "x$with_zlib" != "xno"], [
+	PKG_CHECK_MODULES([zlib], [zlib])
+	AC_DEFINE([ENABLE_ZLIB], [1], [Enable zlib for modules.])
 ], [
 	AC_MSG_NOTICE([zlib support not requested])
-	zlib_libs=""
 ])
 
 AC_ARG_ENABLE([debug],
@@ -123,8 +125,6 @@ CC_CHECK_CFLAGS_APPEND([ \
 			-Wl,--gc-sections])
 
 
-AC_SUBST(required_private_libs)
-
 AC_CONFIG_HEADERS(config.h)
 AC_CONFIG_FILES([
 	Makefile
@@ -149,6 +149,6 @@ AC_MSG_RESULT([
 
 	tools:			${enable_tools}
 	logging:		${enable_logging}
-        zlib:                   ${enable_zlib}
+	compression:		xz=${with_xz}  zlib=${with_zlib}
 	debug:			${enable_debug}
 ])
