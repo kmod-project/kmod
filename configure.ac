@@ -51,10 +51,10 @@ AS_IF([test "x$enable_logging" = "xyes"], [
 	AC_DEFINE(ENABLE_LOGGING, [1], [System logging.])
 ])
 
-AC_ARG_ENABLE([zlib],
-	AS_HELP_STRING([--enable-zlib], [handle gzipped modules @<:@default=disabled@:>@]),
-	[], enable_zlib=no)
-AS_IF([test "x$enable_zlib" != "xno"], [
+AC_ARG_WITH([zlib],
+	AS_HELP_STRING([--with-zlib], [handle gzipped modules @<:@default=disabled@:>@]),
+	[], [with_zlib=no])
+AS_IF([test "x$with_zlib" != "xno"], [
 	PKG_CHECK_MODULES([zlib], [zlib])
 	AC_DEFINE([ENABLE_ZLIB], [1], [Enable zlib for modules.])
 ], [
@@ -139,6 +139,6 @@ AC_MSG_RESULT([
 
 	tools:			${enable_tools}
 	logging:		${enable_logging}
-        zlib:                   ${enable_zlib}
+	zlib:			${with_zlib}
 	debug:			${enable_debug}
 ])
