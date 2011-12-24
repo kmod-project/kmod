@@ -2262,6 +2262,89 @@ static int output_deps(struct depmod *depmod, FILE *out)
 	return 0;
 }
 
+static int output_deps_bin(struct depmod *depmod, FILE *out)
+{
+	struct index_node *idx;
+	size_t i;
+
+	if (out == stdout)
+		return 0;
+
+	idx = index_create();
+	if (idx == NULL)
+		return -ENOMEM;
+
+	for (i = 0; i < depmod->modules.count; i++) {
+		const struct mod **deps, *mod = depmod->modules.array[i];
+		const char *p = mod_get_compressed_path(mod);
+		char *line;
+		size_t j, n_deps, linepos, linelen, slen;
+		int duplicate;
+
+		if (mod->dep_loop) {
+			DBG("Ignored %s due dependency loops\n", p);
+			continue;
+		}
+
+		deps = mod_get_all_sorted_dependencies(mod, &n_deps);
+		if (deps == NULL && n_deps > 0) {
+			ERR("Could not get all sorted dependencies of %s\n", p);
+			continue;
+		}
+
+		linelen = strlen(p) + 1;
+		for (j = 0; j < n_deps; j++) {
+			const struct mod *d = deps[j];
+			if (d->dep_loop) {
+				DBG("Ignored %s (dependency of %s) "
+				    "due dependency loops\n",
+				    mod_get_compressed_path(d), p);
+				continue;
+			}
+			linelen += 1 + strlen(mod_get_compressed_path(d));
+		}
+
+		line = malloc(linelen + 1);
+		if (line == NULL) {
+			free(deps);
+			ERR("modules.deps.bin: out of memory\n");
+			continue;
+		}
+
+		linepos = 0;
+		slen = strlen(p);
+		memcpy(line + linepos, p, slen);
+		linepos += slen;
+		line[linepos] = ':';
+		linepos++;
+
+		for (j = 0; j < n_deps; j++) {
+			const struct mod *d = deps[j];
+			const char *dp;
+			if (d->dep_loop)
+				continue;
+			line[linepos] = ' ';
+			linepos++;
+
+			dp = mod_get_compressed_path(d);
+			slen = strlen(dp);
+			memcpy(line + linepos, dp, slen);
+			linepos += slen;
+		}
+		line[linepos] = '\0';
+
+		duplicate = index_insert(idx, mod->modname, line, mod->idx);
+		if (duplicate && depmod->cfg->warn_dups)
+			WRN("duplicate module deps:\n%s\n", line);
+		free(line);
+	}
+
+	index_write(idx, out);
+	index_destroy(idx);
+
+	return 0;
+}
+
 static int output_aliases(struct depmod *depmod, FILE *out)
 {
 	size_t i;
@@ -2532,7 +2615,7 @@ static int depmod_output(struct depmod *depmod, FILE *out)
 		int (*cb)(struct depmod *depmod, FILE *out);
 	} *itr, depfiles[] = {
 		{"modules.dep", output_deps},
-		//{"modules.dep.bin", output_deps_bin},
+		{"modules.dep.bin", output_deps_bin},
 		{"modules.alias", output_aliases},
 		{"modules.alias.bin", output_aliases_bin},
 		{"modules.softdep", output_softdeps},
