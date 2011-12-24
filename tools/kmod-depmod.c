@@ -902,6 +902,75 @@ static void array_sort(struct array *array, int (*cmp)(const void *a, const void
 	qsort(array->array, array->count, sizeof(void *), cmp);
 }
 
+/* utils (similar to libkmod-utils.c) *********************************/
+static const char *underscores(const char *input, char *output, size_t outputlen)
+{
+	size_t i;
+
+	for (i = 0; input[i] != '\0' && i < outputlen - 1; i++) {
+		switch (input[i]) {
+		case '-':
+			output[i] = '_';
+			break;
+
+		case ']':
+			WRN("Unmatched bracket in %s\n", input);
+			return NULL;
+
+		case '[': {
+			size_t off = strcspn(input + i, "]");
+			if (input[i + off] == '\0') {
+				WRN("Unmatched bracket in %s\n", input);
+				return NULL;
+			}
+			memcpy(output + i, input + i, off + 1);
+			i += off;
+			break;
+		}
+
+		default:
+			output[i] = input[i];
+		}
+	}
+	output[i] = '\0';
+
+	return output;
+}
+
+static inline char *modname_normalize(const char *modname, char buf[NAME_MAX],
+						size_t *len)
+{
+	size_t s;
+
+	for (s = 0; s < NAME_MAX - 1; s++) {
+		const char c = modname[s];
+		if (c == '-')
+			buf[s] = '_';
+		else if (c == '\0' || c == '.')
+			break;
+		else
+			buf[s] = c;
+	}
+
+	buf[s] = '\0';
+
+	if (len)
+		*len = s;
+
+	return buf;
+}
+
+static char *path_to_modname(const char *path, char buf[NAME_MAX], size_t *len)
+{
+	char *modname;
+
+	modname = basename(path);
+	if (modname == NULL || modname[0] == '\0')
+		return NULL;
+
+	return modname_normalize(modname, buf, len);
+}
+
 /* configuration parsing **********************************************/
 struct cfg_override {
 	struct cfg_override *next;
