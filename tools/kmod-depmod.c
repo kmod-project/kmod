@@ -166,6 +166,409 @@ static inline void _log(int prio, const char *fmt, ...)
 #define SHOW(...) _show(__VA_ARGS__)
 
 
+/* binary index write *************************************************/
+#include <arpa/inet.h>
+#define NOFAIL(x) x
+/* BEGIN: code from module-init-tools/index.c just modified to compile here.
+ *
+ * Original copyright:
+ *   index.c: module index file shared functions for modprobe and depmod
+ *   Copyright (C) 2008  Alan Jenkins <alan-jenkins@tuffmail.co.uk>.
+ *
+ *   These programs are free software; you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation; either version 2 of the License, or
+ *   (at your option) any later version.
+ *
+ *   This program is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU General Public License for more details.
+ *
+ *   You should have received a copy of the GNU General Public License
+ *   along with these programs.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/* Integers are stored as 32 bit unsigned in "network" order, i.e. MSB first.
+   All files start with a magic number.
+
+   Magic spells "BOOTFAST". Second one used on newer versioned binary files.
+ */
+/* #define INDEX_MAGIC_OLD 0xB007FA57 */
+#define INDEX_MAGIC 0xB007F457
+
+/* We use a version string to keep track of changes to the binary format
+ * This is stored in the form: INDEX_MAJOR (hi) INDEX_MINOR (lo) just in
+ * case we ever decide to have minor changes that are not incompatible.
+ */
+
+#define INDEX_VERSION_MAJOR 0x0002
+#define INDEX_VERSION_MINOR 0x0001
+#define INDEX_VERSION ((INDEX_VERSION_MAJOR<<16)|INDEX_VERSION_MINOR)
+
+/* The index file maps keys to values. Both keys and values are ASCII strings.
+   Each key can have multiple values. Values are sorted by an integer priority.
+
+   The reader also implements a wildcard search (including range expressions)
+   where the keys in the index are treated as patterns.
+   This feature is required for module aliases.
+*/
+
+/* Implementation is based on a radix tree, or "trie".
+   Each arc from parent to child is labelled with a character.
+   Each path from the root represents a string.
+
+   == Example strings ==
+
+   ask
+   ate
+   on
+   once
+   one
+
+   == Key ==
+    + Normal node
+    * Marked node, representing a key and it's values.
+
+   +
+   |-a-+-s-+-k-*
+   |   |
+   |   `-t-+-e-*
+   |
+   `-o-+-n-*-c-+-e-*
+           |
+           `-e-*
+
+   Naive implementations tend to be very space inefficient; child pointers
+   are stored in arrays indexed by character, but most child pointers are null.
+
+   Our implementation uses a scheme described by Wikipedia as a Patrica trie,
+
+       "easiest to understand as a space-optimized trie where
+        each node with only one child is merged with its child"
+
+   +
+   |-a-+-sk-*
+   |   |
+   |   `-te-*
+   |
+   `-on-*-ce-*
+        |
+        `-e-*
+
+   We still use arrays of child pointers indexed by a single character;
+   the remaining characters of the label are stored as a "prefix" in the child.
+
+   The paper describing the original Patrica trie works on individiual bits -
+   each node has a maximum of two children, which increases space efficiency.
+   However for this application it is simpler to use the ASCII character set.
+   Since the index file is read-only, it can be compressed by omitting null
+   child pointers at the start and end of arrays.
+*/
+
+#define INDEX_PRIORITY_MIN UINT32_MAX
+
+struct index_value {
+	struct index_value *next;
+	unsigned int priority;
+	char value[0];
+};
+
+/* In-memory index (depmod only) */
+
+#define INDEX_CHILDMAX 128
+struct index_node {
+	char *prefix;		/* path compression */
+	struct index_value *values;
+	unsigned char first;	/* range of child nodes */
+	unsigned char last;
+	struct index_node *children[INDEX_CHILDMAX]; /* indexed by character */
+};
+
+/* Disk format:
+
+   uint32_t magic = INDEX_MAGIC;
+   uint32_t version = INDEX_VERSION;
+   uint32_t root_offset;
+
+   (node_offset & INDEX_NODE_MASK) specifies the file offset of nodes:
+
+        char[] prefix; // nul terminated
+
+        char first;
+        char last;
+        uint32_t children[last - first + 1];
+
+        uint32_t value_count;
+        struct {
+            uint32_t priority;
+            char[] value; // nul terminated
+        } values[value_count];
+
+   (node_offset & INDEX_NODE_FLAGS) indicates which fields are present.
+   Empty prefixes are ommitted, leaf nodes omit the three child-related fields.
+
+   This could be optimised further by adding a sparse child format
+   (indicated using a new flag).
+ */
+
+/* Format of node offsets within index file */
+enum node_offset {
+	INDEX_NODE_FLAGS    = 0xF0000000, /* Flags in high nibble */
+	INDEX_NODE_PREFIX   = 0x80000000,
+	INDEX_NODE_VALUES = 0x40000000,
+	INDEX_NODE_CHILDS   = 0x20000000,
+
+	INDEX_NODE_MASK     = 0x0FFFFFFF, /* Offset value */
+};
+
+static struct index_node *index_create(void)
+{
+	struct index_node *node;
+
+	node = NOFAIL(calloc(sizeof(struct index_node), 1));
+	node->prefix = NOFAIL(strdup(""));
+	node->first = INDEX_CHILDMAX;
+
+	return node;
+}
+
+static void index_values_free(struct index_value *values)
+{
+	while (values) {
+		struct index_value *value = values;
+
+		values = value->next;
+		free(value);
+	}
+}
+
+static void index_destroy(struct index_node *node)
+{
+	int c;
+
+	for (c = node->first; c <= node->last; c++) {
+		struct index_node *child = node->children[c];
+
+		if (child)
+			index_destroy(child);
+	}
+	index_values_free(node->values);
+	free(node->prefix);
+	free(node);
+}
+
+static void index__checkstring(const char *str)
+{
+	int i;
+
+	for (i = 0; str[i]; i++) {
+		int ch = str[i];
+
+		if (ch >= INDEX_CHILDMAX)
+			CRIT("Module index: bad character '%c'=0x%x - only 7-bit ASCII is supported:"
+			      "\n%s\n", (char) ch, (int) ch, str);
+	}
+}
+
+static int index_add_value(struct index_value **values,
+				const char *value, unsigned int priority)
+{
+	struct index_value *v;
+	int duplicate = 0;
+	int len;
+
+	/* report the presence of duplicate values */
+	for (v = *values; v; v = v->next) {
+		if (streq(v->value, value))
+			duplicate = 1;
+	}
+
+	/* find position to insert value */
+	while (*values && (*values)->priority < priority)
+		values = &(*values)->next;
+
+	len = strlen(value);
+	v = NOFAIL(calloc(sizeof(struct index_value) + len + 1, 1));
+	v->next = *values;
+	v->priority = priority;
+	memcpy(v->value, value, len + 1);
+	*values = v;
+
+	return duplicate;
+}
+
+static int index_insert(struct index_node *node, const char *key,
+			const char *value, unsigned int priority)
+{
+	int i = 0; /* index within str */
+	int ch;
+
+	index__checkstring(key);
+	index__checkstring(value);
+
+	while(1) {
+		int j; /* index within node->prefix */
+
+		/* Ensure node->prefix is a prefix of &str[i].
+		   If it is not already, then we must split node. */
+		for (j = 0; node->prefix[j]; j++) {
+			ch = node->prefix[j];
+
+			if (ch != key[i+j]) {
+				char *prefix = node->prefix;
+				struct index_node *n;
+
+				/* New child is copy of node with prefix[j+1..N] */
+				n = NOFAIL(calloc(sizeof(struct index_node), 1));
+				memcpy(n, node, sizeof(struct index_node));
+				n->prefix = NOFAIL(strdup(&prefix[j+1]));
+
+				/* Parent has prefix[0..j], child at prefix[j] */
+				memset(node, 0, sizeof(struct index_node));
+				prefix[j] = '\0';
+				node->prefix = prefix;
+				node->first = ch;
+				node->last = ch;
+				node->children[ch] = n;
+
+				break;
+			}
+		}
+		/* j is now length of node->prefix */
+		i += j;
+
+		ch = key[i];
+		if(ch == '\0')
+			return index_add_value(&node->values, value, priority);
+
+		if (!node->children[ch]) {
+			struct index_node *child;
+
+			if (ch < node->first)
+				node->first = ch;
+			if (ch > node->last)
+				node->last = ch;
+			node->children[ch] = NOFAIL(calloc(sizeof(struct index_node), 1));
+
+			child = node->children[ch];
+			child->prefix = NOFAIL(strdup(&key[i+1]));
+			child->first = INDEX_CHILDMAX;
+			index_add_value(&child->values, value, priority);
+
+			return 0;
+		}
+
+		/* Descend into child node and continue */
+		node = node->children[ch];
+		i++;
+	}
+}
+
+static int index__haschildren(const struct index_node *node)
+{
+	return node->first < INDEX_CHILDMAX;
+}
+
+/* Recursive post-order traversal
+
+   Pre-order would make for better read-side buffering / readahead / caching.
+   (post-order means you go backwards in the file as you descend the tree).
+   However, index reading is already fast enough.
+   Pre-order is simpler for writing, and depmod is already slow.
+ */
+static uint32_t index_write__node(const struct index_node *node, FILE *out)
+{
+	uint32_t *child_offs = NULL;
+	int child_count = 0;
+	long offset;
+
+	if (!node)
+		return 0;
+
+	/* Write children and save their offsets */
+	if (index__haschildren(node)) {
+		const struct index_node *child;
+		int i;
+
+		child_count = node->last - node->first + 1;
+		child_offs = NOFAIL(malloc(child_count * sizeof(uint32_t)));
+
+		for (i = 0; i < child_count; i++) {
+			child = node->children[node->first + i];
+			child_offs[i] = htonl(index_write__node(child, out));
+		}
+	}
+
+	/* Now write this node */
+	offset = ftell(out);
+
+	if (node->prefix[0]) {
+		fputs(node->prefix, out);
+		fputc('\0', out);
+		offset |= INDEX_NODE_PREFIX;
+	}
+
+	if (child_count) {
+		fputc(node->first, out);
+		fputc(node->last, out);
+		fwrite(child_offs, sizeof(uint32_t), child_count, out);
+		free(child_offs);
+		offset |= INDEX_NODE_CHILDS;
+	}
+
+	if (node->values) {
+		const struct index_value *v;
+		unsigned int value_count;
+		uint32_t u;
+
+		value_count = 0;
+		for (v = node->values; v != NULL; v = v->next)
+			value_count++;
+		u = htonl(value_count);
+		fwrite(&u, sizeof(u), 1, out);
+
+		for (v = node->values; v != NULL; v = v->next) {
+			u = htonl(v->priority);
+			fwrite(&u, sizeof(u), 1, out);
+			fputs(v->value, out);
+			fputc('\0', out);
+		}
+		offset |= INDEX_NODE_VALUES;
+	}
+
+	return offset;
+}
+
+static void index_write(const struct index_node *node, FILE *out)
+{
+	long initial_offset, final_offset;
+	uint32_t u;
+
+	u = htonl(INDEX_MAGIC);
+	fwrite(&u, sizeof(u), 1, out);
+	u = htonl(INDEX_VERSION);
+	fwrite(&u, sizeof(u), 1, out);
+
+	/* Second word is reserved for the offset of the root node */
+	initial_offset = ftell(out);
+	u = 0;
+	fwrite(&u, sizeof(uint32_t), 1, out);
+
+	/* Dump trie */
+	u = htonl(index_write__node(node, out));
+
+	/* Update first word */
+	final_offset = ftell(out);
+	fseek(out, initial_offset, SEEK_SET);
+	fwrite(&u, sizeof(uint32_t), 1, out);
+	fseek(out, final_offset, SEEK_SET);
+}
+
+/* END: code from module-init-tools/index.c just modified to compile here.
+ */
+
+
 /* hash like libkmod-hash.c *******************************************/
 struct hash_entry {
 	const char *key;
@@ -1509,13 +1912,13 @@ static int depmod_load_module_dependencies(struct depmod *depmod, struct mod *mo
 	kmod_list_foreach(l, list) {
 		const char *name = kmod_module_dependency_symbol_get_symbol(l);
 		uint64_t crc = kmod_module_dependency_symbol_get_crc(l);
-		int bind = kmod_module_dependency_symbol_get_bind(l);
+		int bindtype = kmod_module_dependency_symbol_get_bind(l);
 		struct symbol *sym = depmod_symbol_find(depmod, name);
-		uint8_t is_weak = bind == KMOD_SYMBOL_WEAK;
+		uint8_t is_weak = bindtype == KMOD_SYMBOL_WEAK;
 
 		if (sym == NULL) {
 			DBG("%s needs (%c) unknown symbol %s\n",
-			    mod->path, bind, name);
+			    mod->path, bindtype, name);
 			if (cfg->print_unknown && !is_weak)
 				WRN("%s needs unknown symbol %s\n",
 				    mod->path, name);
