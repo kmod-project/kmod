@@ -37,25 +37,50 @@
 struct kmod_file {
 #ifdef ENABLE_ZLIB
 	gzFile gzf;
-#else
-	int fd;
 #endif
+	int fd;
 	off_t size;
 	void *memory;
 };
 
 #ifdef ENABLE_ZLIB
 #define READ_STEP (4 * 1024 * 1024)
-static int zlip_file_open(struct kmod_file *file, const char *filename)
+
+static bool check_zlib(struct kmod_file *file)
+{
+	uint8_t magic[2] = {0, 0}, zlibmagic[2] = {0x1f, 0x8b};
+	size_t done = 0, todo = 2;
+	while (todo > 0) {
+		ssize_t r = read(file->fd, magic + done, todo);
+		if (r > 0){
+			todo -= r;
+			done += r;
+		} else if (r == 0)
+			goto error;
+		else if (errno == EAGAIN || errno == EINTR)
+			continue;
+		else
+			goto error;
+	}
+	lseek(file->fd, 0, SEEK_SET);
+	return memcmp(magic, zlibmagic, 2) == 0;
+error:
+	lseek(file->fd, 0, SEEK_SET);
+	return false;
+}
+
+static int zlib_file_open(struct kmod_file *file)
 {
 	int err = 0;
 	off_t did = 0, total = 0;
 	unsigned char *p = NULL;
 
 	errno = 0;
-	file->gzf = gzopen(filename, "rbe");
-	if (file->gzf == NULL)
+	file->gzf = gzdopen(file->fd, "rb");
+	if (file->gzf == NULL) {
+		close(file->fd);
 		return -errno;
+	}
 
 	for (;;) {
 		int r;
@@ -88,15 +113,12 @@ error:
 	gzclose(file->gzf);
 	return err;
 }
-#else
-static int reg_file_open(struct kmod_file *file, const char *filename)
+#endif
+
+static int reg_file_open(struct kmod_file *file)
 {
 	struct stat st;
 	int err = 0;
-
-	file->fd = open(filename, O_RDONLY|O_CLOEXEC);
-	if (file->fd < 0)
-		return -errno;
 
 	if (fstat(file->fd, &st) < 0) {
 		err = -errno;
@@ -115,7 +137,6 @@ error:
 	close(file->fd);
 	return err;
 }
-#endif
 
 struct kmod_file *kmod_file_open(const char *filename)
 {
@@ -125,12 +146,20 @@ struct kmod_file *kmod_file_open(const char *filename)
 	if (file == NULL)
 		return NULL;
 
-#ifdef ENABLE_ZLIB
-	err = zlip_file_open(file, filename);
-#else
-	err = reg_file_open(file, filename);
-#endif
+	file->fd = open(filename, O_RDONLY|O_CLOEXEC);
+	if (file->fd < 0) {
+		err = -errno;
+		goto error;
+	}
 
+#ifdef ENABLE_ZLIB
+	if (check_zlib(file))
+		err = zlib_file_open(file);
+	else
+#endif
+		err = reg_file_open(file);
+
+error:
 	if (err < 0) {
 		free(file);
 		errno = -err;
@@ -153,11 +182,15 @@ off_t kmod_file_get_size(const struct kmod_file *file)
 void kmod_file_unref(struct kmod_file *file)
 {
 #ifdef ENABLE_ZLIB
-	free(file->memory);
-	gzclose(file->gzf);
-#else
-	munmap(file->memory, file->size);
-	close(file->fd);
+	if (file->gzf != NULL) {
+		free(file->memory);
+		gzclose(file->gzf);
+	} else {
+#endif
+		munmap(file->memory, file->size);
+		close(file->fd);
+#ifdef ENABLE_ZLIB
+	}
 #endif
 	free(file);
 }
