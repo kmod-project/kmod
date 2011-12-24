@@ -8,4 +8,4 @@ Description: Library to deal with kernel modules
 Version: @VERSION@
 Libs: -L${libdir} -lkmod
 Libs.private: @liblzma_LIBS@ @zlib_LIBS@
-Cflags: -I${includedir} @liblzma_CFLAGS@ @zlib_CFLAGS@
+Cflags: -I${includedir}
