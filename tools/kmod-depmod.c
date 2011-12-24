@@ -2795,10 +2795,135 @@ static int depmod_load_system_map(struct depmod *depmod, const char *filename)
 	return err;
 }
 
+
+static int depfile_up_to_date_dir(DIR *d, time_t mtime, size_t baselen, char *path)
+{
+	struct dirent *de;
+	int err = 1, dfd = dirfd(d);
+
+	while ((de = readdir(d)) != NULL) {
+		const char *name = de->d_name;
+		size_t namelen;
+		struct stat st;
+
+		if (name[0] == '.' && (name[1] == '\0' ||
+				       (name[1] == '.' && name[2] == '\0')))
+			continue;
+		if (streq(name, "build") || streq(name, "source"))
+			continue;
+		namelen = strlen(name);
+		if (baselen + namelen + 2 >= PATH_MAX) {
+			path[baselen] = '\0';
+			ERR("path is too long %s%s %zd\n", path, name);
+			continue;
+		}
+
+		if (fstatat(dfd, name, &st, 0) < 0) {
+			ERR("fstatat(%d, %s): %m\n", dfd, name);
+			continue;
+		}
+
+		if (S_ISDIR(st.st_mode)) {
+			int fd;
+			DIR *subdir;
+			memcpy(path + baselen, name, namelen + 1);
+			if (baselen + namelen + 2 + NAME_MAX >= PATH_MAX) {
+				ERR("directory path is too long %s\n", path);
+				continue;
+			}
+			fd = openat(dfd, name, O_RDONLY);
+			if (fd < 0) {
+				ERR("openat(%d, %s, O_RDONLY): %m\n",
+				    dfd, name);
+				continue;
+			}
+			subdir = fdopendir(fd);
+			if (subdir == NULL) {
+				ERR("fdopendir(%d): %m\n", fd);
+				close(fd);
+				continue;
+			}
+			path[baselen + namelen] = '/';
+			path[baselen + namelen + 1] = '\0';
+			err = depfile_up_to_date_dir(subdir, mtime,
+						     baselen + namelen + 1,
+						     path);
+			closedir(subdir);
+		} else if (S_ISREG(st.st_mode)) {
+			const struct ext {
+				const char *ext;
+				size_t len;
+			} *eitr, exts[] = {
+				{".ko", sizeof(".ko") - 1},
+				{".ko.gz", sizeof(".ko.gz") - 1},
+				{NULL, 0},
+			};
+			uint8_t matches = 0;
+			for (eitr = exts; eitr->ext != NULL; eitr++) {
+				if (namelen <= eitr->len)
+					continue;
+				if (streq(name + namelen - eitr->len, eitr->ext)) {
+					matches = 1;
+					break;
+				}
+			}
+			if (!matches)
+				continue;
+			memcpy(path + baselen, name, namelen + 1);
+			err = st.st_mtime <= mtime;
+			if (err == 0) {
+				DBG("%s %"PRIu64" is newer than %"PRIu64"\n",
+				    path, (uint64_t)st.st_mtime,
+				    (uint64_t)mtime);
+			}
+		} else {
+			ERR("unsupported file type %s: %o\n",
+			    path, st.st_mode & S_IFMT);
+			continue;
+		}
+
+		if (err == 0)
+			break; /* outdated! */
+		else if (err < 0) {
+			path[baselen + namelen] = '\0';
+			ERR("failed %s: %s\n", path, strerror(-err));
+			err = 1; /* ignore errors */
+		}
+	}
+
+	return err;
+}
+
+/* uptodate: 1, outdated: 0, errors < 0 */
 static int depfile_up_to_date(const char *dirname)
 {
-	ERR("TODO depfile_up_to_date()\n");
-	return 0;
+	char path[PATH_MAX];
+	DIR *d = opendir(dirname);
+	struct stat st;
+	size_t baselen;
+	int err;
+	if (d == NULL) {
+		err = -errno;
+		ERR("Couldn't open directory %s: %m\n", dirname);
+		return err;
+	}
+
+	if (fstatat(dirfd(d), "modules.dep", &st, 0) != 0) {
+		err = -errno;
+		ERR("Couldn't fstatat(%s, modules.dep): %m\n", dirname);
+		closedir(d);
+		return err;
+	}
+
+	baselen = strlen(dirname);
+	memcpy(path, dirname, baselen);
+	path[baselen] = '/';
+	baselen++;
+	path[baselen] = '\0';
+
+	err = depfile_up_to_date_dir(d, st.st_mtime, baselen, path);
+	closedir(d);
+	return err;
 }
 
 static int is_version_number(const char *version)
@@ -2930,8 +3055,12 @@ int main(int argc, char *argv[])
 	if (maybe_all) {
 		if (out == stdout)
 			goto done;
-		if (depfile_up_to_date(cfg.dirname))
+		/* ignore up-to-date errors (< 0) */
+		if (depfile_up_to_date(cfg.dirname) == 1) {
+			DBG("%s/modules.dep is up to date!\n", cfg.dirname);
 			goto done;
+		}
+		DBG("%s/modules.dep is outdated, do -a\n", cfg.dirname);
 		all = 1;
 	}
 
