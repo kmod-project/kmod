@@ -21,11 +21,8 @@ Features:
      module's removal
 
 * provide depmod:
-   - add missing libkmod-elf.c functions:
-     - fetch_tables()
-     - deref_sym() (used by fetch_tables)
-   - add index writing functions to kmod-depmod.c
    - 1:1 compatible kmod-depmod.c
+   - add missing -F and -E
 
 * review API, maybe unify all of these setters:
    - kmod_module_version_get_symbol()
@@ -58,13 +55,6 @@ Features:
 Known Bugs:
 ===========
 
-
-Notes for future development:
-=============================
-
-* Kill support for /etc/modprobe.conf
-
-* Kill support for map files
 
 Things to be added removed in kernel (check what is really needed):
 ===================================================================
