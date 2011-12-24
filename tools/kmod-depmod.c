@@ -2688,6 +2688,112 @@ static int depmod_output(struct depmod *depmod, FILE *out)
 	return err;
 }
 
+static void depmod_add_fake_syms(struct depmod *depmod)
+{
+	/* __this_module is magic inserted by kernel loader. */
+	depmod_symbol_add(depmod, "__this_module", 0, NULL);
+	/* On S390, this is faked up too */
+	depmod_symbol_add(depmod, "_GLOBAL_OFFSET_TABLE_", 0, NULL);
+}
+
+static int depmod_load_symvers(struct depmod *depmod, const char *filename)
+{
+	char line[10240];
+	FILE *fp;
+	unsigned int linenum = 0;
+	int err;
+
+	fp = fopen(filename, "r");
+	err = -errno;
+	DBG("load symvers: %s: %s\n", filename, strerror(-err));
+	if (fp == NULL)
+		return err;
+
+	/* eg. "0xb352177e\tfind_first_bit\tvmlinux\tEXPORT_SYMBOL" */
+	while (fgets(line, sizeof(line), fp) != NULL) {
+		const char *ver, *sym, *where;
+		char *verend;
+		uint64_t crc;
+
+		linenum++;
+
+		ver = strtok(line, " \t");
+		sym = strtok(NULL, " \t");
+		where = strtok(NULL, " \t");
+		if (!ver || !sym || !where)
+			continue;
+
+		if (!streq(where, "vmlinux"))
+			continue;
+
+		crc = strtoull(ver, &verend, 16);
+		if (verend[0] != '\0') {
+			ERR("%s:%u Invalid symbol version %s: %m\n",
+			    filename, linenum, ver);
+			continue;
+		}
+
+		depmod_symbol_add(depmod, sym, crc, NULL);
+	}
+	depmod_add_fake_syms(depmod);
+
+	DBG("loaded symvers: %s: %s\n", filename, strerror(-err));
+
+	fclose(fp);
+	return err;
+}
+
+static int depmod_load_system_map(struct depmod *depmod, const char *filename)
+{
+	const char ksymstr[] = "__ksymtab_";
+	const size_t ksymstr_len = sizeof(ksymstr) - 1;
+	char line[10240];
+	FILE *fp;
+	unsigned int linenum = 0;
+	int err;
+
+	fp = fopen(filename, "r");
+	err = -errno;
+	DBG("load System.map: %s: %s\n", filename, strerror(-err));
+	if (fp == NULL)
+		return err;
+
+	/* eg. c0294200 R __ksymtab_devfs_alloc_devnum */
+	while (fgets(line, sizeof(line), fp) != NULL) {
+		char *p, *end;
+
+		linenum++;
+
+		p = strchr(line, ' ');
+		if (p == NULL)
+			goto invalid_syntax;
+		p++;
+		p = strchr(p, ' ');
+		if (p == NULL)
+			goto invalid_syntax;
+		p++;
+
+		/* Covers gpl-only and normal symbols. */
+		if (strncmp(p, ksymstr, ksymstr_len) != 0)
+			continue;
+
+		end = strchr(p, '\n');
+		if (end != NULL)
+			*end = '\0';
+
+		depmod_symbol_add(depmod, p + ksymstr_len, 0, NULL);
+		continue;
+
+	invalid_syntax:
+		ERR("%s:%u: invalid line: %s\n", filename, linenum, line);
+	}
+	depmod_add_fake_syms(depmod);
+
+	DBG("loaded System.map: %s: %s\n", filename, strerror(-err));
+
+	fclose(fp);
+	return err;
+}
 
 static int depfile_up_to_date(const char *dirname)
 {
@@ -2842,6 +2948,25 @@ int main(int argc, char *argv[])
 		goto depmod_init_failed;
 	}
 	ctx = NULL; /* owned by depmod */
+
+	if (module_symvers != NULL) {
+		err = depmod_load_symvers(&depmod, module_symvers);
+		if (err < 0) {
+			CRIT("Could not load %s: %s\n", module_symvers,
+			     strerror(-err));
+			goto cmdline_failed;
+		}
+	} else if (system_map != NULL) {
+		err = depmod_load_system_map(&depmod, system_map);
+		if (err < 0) {
+			CRIT("Could not load %s: %s\n", module_symvers,
+			     strerror(-err));
+			goto cmdline_failed;
+		}
+	} else if (cfg.print_unknown) {
+		WRN("-e needs -E or -F\n");
+		cfg.print_unknown = 0;
+	}
 
 	if (all) {
 		err = cfg_load(&cfg, config_paths);
