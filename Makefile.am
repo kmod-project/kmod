@@ -27,6 +27,8 @@ SED_PROCESS = \
 	-e 's,@exec_prefix\@,$(exec_prefix),g' \
 	-e 's,@libdir\@,$(libdir),g' \
 	-e 's,@includedir\@,$(includedir),g' \
+	-e 's,@liblzma_CFLAGS\@,${liblzma_CFLAGS},g' \
+	-e 's,@liblzma_LIBS\@,${liblzma_LIBS},g' \
 	-e 's,@zlib_CFLAGS\@,${zlib_CFLAGS},g' \
 	-e 's,@zlib_LIBS\@,${zlib_LIBS},g' \
 	< $< > $@ || rm $@
@@ -63,7 +65,7 @@ libkmod_libkmod_la_LDFLAGS = $(AM_LDFLAGS) \
 	-version-info $(LIBKMOD_CURRENT):$(LIBKMOD_REVISION):$(LIBKMOD_AGE) \
 	-Wl,--version-script=$(top_srcdir)/libkmod/libkmod.sym
 libkmod_libkmod_la_DEPENDENCIES = ${top_srcdir}/libkmod/libkmod.sym
-libkmod_libkmod_la_LIBADD = ${zlib_LIBS}
+libkmod_libkmod_la_LIBADD = ${liblzma_LIBS} ${zlib_LIBS}
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libkmod/libkmod.pc

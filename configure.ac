@@ -51,6 +51,16 @@ AS_IF([test "x$enable_logging" = "xyes"], [
 	AC_DEFINE(ENABLE_LOGGING, [1], [System logging.])
 ])
 
+AC_ARG_WITH([xz],
+	AS_HELP_STRING([--with-xz], [handle Xz-compressed modules @<:@default=disabled@:>@]),
+	[], [with_xz=no])
+AS_IF([test "x$with_xz" != "xno"], [
+	PKG_CHECK_MODULES([liblzma], [liblzma >= 4.99])
+	AC_DEFINE([ENABLE_XZ], [1], [Enable Xz for modules.])
+], [
+	AC_MSG_NOTICE([Xz support not requested])
+])
+
 AC_ARG_WITH([zlib],
 	AS_HELP_STRING([--with-zlib], [handle gzipped modules @<:@default=disabled@:>@]),
 	[], [with_zlib=no])
@@ -139,6 +149,6 @@ AC_MSG_RESULT([
 
 	tools:			${enable_tools}
 	logging:		${enable_logging}
-	zlib:			${with_zlib}
+	compression:		xz=${with_xz}  zlib=${with_zlib}
 	debug:			${enable_debug}
 ])
