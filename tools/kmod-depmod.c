@@ -30,6 +30,7 @@
 #include <regex.h>
 #include <assert.h>
 #include <unistd.h>
+#include <ctype.h>
 #include "libkmod.h"
 
 #define streq(a, b) (strcmp(a, b) == 0)
@@ -2341,6 +2342,47 @@ static int output_symbols(struct depmod *depmod, FILE *out)
 	return 0;
 }
 
+static int output_builtin_bin(struct depmod *depmod, FILE *out)
+{
+	FILE *in;
+	struct index_node *idx;
+	char infile[PATH_MAX], line[PATH_MAX], modname[NAME_MAX];
+
+	if (out == stdout)
+		return 0;
+
+	snprintf(infile, sizeof(infile), "%s/modules.builtin",
+		 depmod->cfg->dirname);
+	in = fopen(infile, "r");
+	if (in == NULL) {
+		int err = -errno;
+		ERR("Could not open %s: %m\n", infile);
+		return err;
+	}
+
+	idx = index_create();
+	if (idx == NULL) {
+		fclose(in);
+		return -ENOMEM;
+	}
+
+	while (fgets(line, sizeof(line), in) != NULL) {
+		if (!isalpha(line[0])) {
+			ERR("Invalid modules.builtin line: %s\n", line);
+			continue;
+		}
+
+		path_to_modname(line, modname, NULL);
+		index_insert(idx, modname, "", 0);
+	}
+
+	index_write(idx, out);
+	index_destroy(idx);
+	fclose(in);
+
+	return 0;
+}
+
 static int output_devname(struct depmod *depmod, FILE *out)
 {
 	size_t i;
@@ -2407,7 +2449,7 @@ static int depmod_output(struct depmod *depmod, FILE *out)
 		{"modules.softdep", output_softdeps},
 		{"modules.symbols", output_symbols},
 		//{"modules.symbols.bin", output_symbols_bin},
-		//{"modules.builtin.bin", output_builtin_bin},
+		{"modules.builtin.bin", output_builtin_bin},
 		{"modules.devname", output_devname},
 		{NULL, NULL}
 	};
