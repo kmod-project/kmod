@@ -10,3 +10,4 @@ test-get-dependencies
 test-mod-double-ref
 test-blacklist
 test-elf
+test-probe
