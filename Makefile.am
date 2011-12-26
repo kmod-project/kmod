@@ -121,6 +121,4 @@ test_test_path_from_name_LDADD = libkmod/libkmod.la
 test_test_get_dependencies_LDADD = libkmod/libkmod.la
 test_test_mod_double_ref_LDADD = libkmod/libkmod.la
 test_test_blacklist_LDADD = libkmod/libkmod.la
-
-test_test_elf_SOURCES = test/test-elf.c
 test_test_elf_LDADD = libkmod/libkmod.la
