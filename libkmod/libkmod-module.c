@@ -180,7 +180,7 @@ int kmod_module_parse_depline(struct kmod_module *mod, char *line)
 
 		DBG(ctx, "add dep: %s\n", path);
 
-		list = kmod_list_append(list, depmod);
+		list = kmod_list_prepend(list, depmod);
 		n++;
 	}
 
