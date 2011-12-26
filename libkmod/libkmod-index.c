@@ -348,8 +348,10 @@ struct index_file *index_file_open(const char *filename)
 	}
 
 	version = read_long(file);
-	if (version >> 16 != INDEX_VERSION_MAJOR)
+	if (version >> 16 != INDEX_VERSION_MAJOR) {
+		fclose(file);
 		return NULL;
+	}
 
 	new = NOFAIL(malloc(sizeof(struct index_file)));
 	new->file = file;
