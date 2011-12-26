@@ -39,6 +39,20 @@
 #define DEFAULT_VERBOSE LOG_WARNING
 static int verbose = DEFAULT_VERBOSE;
 
+static const struct kmod_ext {
+	const char *ext;
+	size_t len;
+} kmod_exts[] = {
+	{".ko", sizeof(".ko") - 1},
+#ifdef ENABLE_ZLIB
+	{".ko.gz", sizeof(".ko.gz") - 1},
+#endif
+#ifdef ENABLE_XZ
+	{".ko.xz", sizeof(".ko.xz") - 1},
+#endif
+	{NULL, 0},
+};
+
 static const char CFG_BUILTIN_KEY[] = "built-in";
 static const char *default_cfg_paths[] = {
 	"/run/depmod.d",
@@ -1661,19 +1675,12 @@ static int depmod_modules_search_file(struct depmod *depmod, size_t baselen, siz
 	struct kmod_module *kmod;
 	struct mod *mod;
 	const char *relpath, *modname;
-	const struct ext {
-		const char *ext;
-		size_t len;
-	} *eitr, exts[] = {
-		{".ko", sizeof(".ko") - 1},
-		{".ko.gz", sizeof(".ko.gz") - 1},
-		{NULL, 0},
-	};
+	const struct kmod_ext *eitr;
 	size_t modnamelen;
 	uint8_t matches = 0;
 	int err = 0;
 
-	for (eitr = exts; eitr->ext != NULL; eitr++) {
+	for (eitr = kmod_exts; eitr->ext != NULL; eitr++) {
 		if (namelen <= eitr->len)
 			continue;
 		if (streq(path + baselen + namelen - eitr->len, eitr->ext)) {
@@ -2850,16 +2857,9 @@ static int depfile_up_to_date_dir(DIR *d, time_t mtime, size_t baselen, char *pa
 						     path);
 			closedir(subdir);
 		} else if (S_ISREG(st.st_mode)) {
-			const struct ext {
-				const char *ext;
-				size_t len;
-			} *eitr, exts[] = {
-				{".ko", sizeof(".ko") - 1},
-				{".ko.gz", sizeof(".ko.gz") - 1},
-				{NULL, 0},
-			};
+			const struct kmod_ext *eitr;
 			uint8_t matches = 0;
-			for (eitr = exts; eitr->ext != NULL; eitr++) {
+			for (eitr = kmod_exts; eitr->ext != NULL; eitr++) {
 				if (namelen <= eitr->len)
 					continue;
 				if (streq(name + namelen - eitr->len, eitr->ext)) {
