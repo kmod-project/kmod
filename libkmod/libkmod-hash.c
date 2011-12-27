@@ -285,3 +285,43 @@ unsigned int hash_get_count(const struct hash *hash)
 {
 	return hash->count;
 }
+
+void hash_iter_init(const struct hash *hash, struct hash_iter *iter)
+{
+	iter->hash = hash;
+	iter->bucket = 0;
+	iter->entry = -1;
+}
+
+bool hash_iter_next(struct hash_iter *iter, const char **key,
+							const void **value)
+{
+	const struct hash_bucket *b = iter->hash->buckets + iter->bucket;
+	const struct hash_entry *e;
+
+	iter->entry++;
+
+	if (iter->entry >= b->used) {
+		iter->entry = 0;
+
+		for (iter->bucket++; iter->bucket < iter->hash->n_buckets;
+							iter->bucket++) {
+			b = iter->hash->buckets + iter->bucket;
+
+			if (b->used > 0)
+				break;
+		}
+
+		if (iter->bucket >= iter->hash->n_buckets)
+			return false;
+	}
+
+	e = b->entries + iter->entry;
+
+	if (value != NULL)
+		*value = e->value;
+	if (key != NULL)
+		*key = e->key;
+
+	return true;
+}
