@@ -2344,6 +2344,7 @@ static int output_deps_bin(struct depmod *depmod, FILE *out)
 		if (duplicate && depmod->cfg->warn_dups)
 			WRN("duplicate module deps:\n%s\n", line);
 		free(line);
+		free(deps);
 	}
 
 	index_write(idx, out);
