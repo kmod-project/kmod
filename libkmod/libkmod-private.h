@@ -123,7 +123,6 @@ const char * const *kmod_softdep_get_post(const struct kmod_list *l, unsigned in
 
 /* libkmod-module.c */
 int kmod_module_new_from_alias(struct kmod_ctx *ctx, const char *alias, const char *name, struct kmod_module **mod);
-char *modname_normalize(const char *modname, char buf[NAME_MAX], size_t *len)  __attribute__((nonnull(1, 2)));
 int kmod_module_parse_depline(struct kmod_module *mod, char *line) __attribute__((nonnull(1, 2)));
 void kmod_module_set_install_commands(struct kmod_module *mod, const char *cmd) __attribute__((nonnull(1)));
 void kmod_module_set_remove_commands(struct kmod_module *mod, const char *cmd) __attribute__((nonnull(1)));
@@ -157,19 +156,6 @@ int kmod_elf_strip_section(struct kmod_elf *elf, const char *section) __must_che
 int kmod_elf_strip_vermagic(struct kmod_elf *elf) __must_check __attribute__((nonnull(1)));
 
 /* util functions */
-char *getline_wrapped(FILE *fp, unsigned int *linenum) __attribute__((nonnull(1)));
-char *underscores(struct kmod_ctx *ctx, char *s) __attribute__((nonnull(1, 2)));
-#define streq(a, b) (strcmp((a), (b)) == 0)
-bool startswith(const char *s, const char *prefix) __attribute__((nonnull(1, 2)));
-void *memdup(const void *p, size_t n) __attribute__((nonnull(1)));
-
-ssize_t read_str_safe(int fd, char *buf, size_t buflen) __must_check __attribute__((nonnull(2)));
-int read_str_long(int fd, long *value, int base) __must_check __attribute__((nonnull(2)));
-int read_str_ulong(int fd, unsigned long *value, int base) __must_check __attribute__((nonnull(2)));
-char *strchr_replace(char *s, int c, char r);
-bool path_is_absolute(const char *p) __must_check __attribute__((nonnull(1)));
-char *path_make_absolute_cwd(const char *p) __must_check __attribute__((nonnull(1)));
-int alias_normalize(const char *alias, char buf[NAME_MAX], size_t *len) __must_check __attribute__((nonnull(1,2)));
-
+#include "libkmod-util.h"
 
 #endif

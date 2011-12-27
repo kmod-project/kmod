@@ -64,40 +64,6 @@ struct kmod_module {
 	} init;
 };
 
-inline char *modname_normalize(const char *modname, char buf[NAME_MAX],
-								size_t *len)
-{
-	size_t s;
-
-	for (s = 0; s < NAME_MAX - 1; s++) {
-		const char c = modname[s];
-		if (c == '-')
-			buf[s] = '_';
-		else if (c == '\0' || c == '.')
-			break;
-		else
-			buf[s] = c;
-	}
-
-	buf[s] = '\0';
-
-	if (len)
-		*len = s;
-
-	return buf;
-}
-
-static char *path_to_modname(const char *path, char buf[NAME_MAX], size_t *len)
-{
-	char *modname;
-
-	modname = basename(path);
-	if (modname == NULL || modname[0] == '\0')
-		return NULL;
-
-	return modname_normalize(modname, buf, len);
-}
-
 static inline const char *path_join(const char *path, size_t prefixlen,
 							char buf[PATH_MAX])
 {
