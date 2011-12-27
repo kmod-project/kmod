@@ -142,19 +142,16 @@ fail:
 static int handle_kmod_compat_commands(int argc, char *argv[])
 {
 	const char *cmd;
-	int err = -ENOENT;
 	size_t i;
 
 	cmd = basename(argv[0]);
 
 	for (i = 0; i < ARRAY_SIZE(kmod_compat_cmds); i++) {
-		if (strcmp(kmod_compat_cmds[i]->name, cmd) != 0)
-			continue;
-
-		err = kmod_compat_cmds[i]->cmd(argc, argv);
+		if (strcmp(kmod_compat_cmds[i]->name, cmd) == 0)
+			return kmod_compat_cmds[i]->cmd(argc, argv);
 	}
 
-	return err;
+	return -ENOENT;
 }
 
 int main(int argc, char *argv[])
