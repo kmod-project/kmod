@@ -184,7 +184,7 @@ static inline void _log(int prio, const char *fmt, ...)
 
 /* binary index write *************************************************/
 #include <arpa/inet.h>
-#define NOFAIL(x) x
+#include "macro.h"
 /* BEGIN: code from module-init-tools/index.c just modified to compile here.
  *
  * Original copyright:
@@ -2667,7 +2667,7 @@ static int is_version_number(const char *version)
 	return (sscanf(version, "%u.%u", &d1, &d2) == 2);
 }
 
-int main(int argc, char *argv[])
+static int do_depmod(int argc, char *argv[])
 {
 	FILE *out = NULL;
 	int i, err = 0, all = 0, maybe_all = 0, n_config_paths = 0;
@@ -2893,3 +2893,20 @@ cmdline_failed:
 	free(config_paths);
 	return EXIT_FAILURE;
 }
+
+#ifndef KMOD_BUNDLE_TOOL
+int main(int argc, char *argv[])
+{
+	return do_depmod(argc, argv);
+}
+
+#else
+#include "kmod.h"
+
+const struct kmod_cmd kmod_cmd_compat_depmod = {
+	.name = "depmod",
+	.cmd = do_depmod,
+	.help = "compat depmod command",
+};
+
+#endif

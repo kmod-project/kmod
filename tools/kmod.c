@@ -45,6 +45,7 @@ static const struct kmod_cmd *kmod_compat_cmds[] = {
 	&kmod_cmd_compat_insmod,
 	&kmod_cmd_compat_modinfo,
 	&kmod_cmd_compat_modprobe,
+	&kmod_cmd_compat_depmod,
 };
 
 static int kmod_help(int argc, char *argv[])

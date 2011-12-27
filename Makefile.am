@@ -109,9 +109,12 @@ tools_kmod_depmod_LDFLAGS = $(AM_LDFLAGS)
 
 tools_kmod_SOURCES = tools/kmod.c tools/kmod.h tools/kmod-lsmod.c \
 		     tools/kmod-rmmod.c tools/kmod-insmod.c \
-		     tools/kmod-modinfo.c tools/kmod-modprobe.c
+		     tools/kmod-modinfo.c tools/kmod-modprobe.c \
+		     tools/kmod-depmod.c
 tools_kmod_CPPFLAGS = $(AM_CPPFLAGS) -DKMOD_BUNDLE_TOOL=1
-tools_kmod_LDADD = libkmod/libkmod.la
+tools_kmod_CFLAGS = $(AM_CFLAGS)
+tools_kmod_LDADD = libkmod/libkmod-util.la \
+		   libkmod/libkmod.la
 endif
 
 TESTS = test/test-init test/test-loaded
