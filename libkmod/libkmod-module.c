@@ -351,8 +351,8 @@ KMOD_EXPORT int kmod_module_new_from_path(struct kmod_ctx *ctx,
 		else if (streq(m->path, abspath))
 			free(abspath);
 		else {
-			ERR(ctx, "kmod_module '%s' already exists with different path\n",
-									name);
+			ERR(ctx, "kmod_module '%s' already exists with different path: new-path='%s' old-path='%s'\n",
+									name, abspath, m->path);
 			free(abspath);
 			return -EEXIST;
 		}
