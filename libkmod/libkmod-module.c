@@ -541,6 +541,25 @@ KMOD_EXPORT int kmod_module_unref_list(struct kmod_list *list)
 	return 0;
 }
 
+static const struct kmod_list *module_get_dependencies_noref(const struct kmod_module *mod)
+{
+	if (!mod->init.dep) {
+		/* lazy init */
+		char *line = kmod_search_moddep(mod->ctx, mod->name);
+
+		if (line == NULL)
+			return NULL;
+
+		kmod_module_parse_depline((struct kmod_module *)mod, line);
+		free(line);
+
+		if (!mod->init.dep)
+			return NULL;
+	}
+
+	return mod->dep;
+}
+
 /**
  * kmod_module_get_dependencies:
  * @mod: kmod module
@@ -560,19 +579,7 @@ KMOD_EXPORT struct kmod_list *kmod_module_get_dependencies(const struct kmod_mod
 	if (mod == NULL)
 		return NULL;
 
-	if (!mod->init.dep) {
-		/* lazy init */
-		char *line = kmod_search_moddep(mod->ctx, mod->name);
-
-		if (line == NULL)
-			return NULL;
-
-		kmod_module_parse_depline((struct kmod_module *)mod, line);
-		free(line);
-
-		if (!mod->init.dep)
-			return NULL;
-	}
+	module_get_dependencies_noref(mod);
 
 	kmod_list_foreach(l, mod->dep) {
 		l_new = kmod_list_append(list_new, kmod_module_ref(l->data));
