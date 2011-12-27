@@ -241,26 +241,17 @@ struct kmod_list *kmod_list_remove_data(struct kmod_list *list,
 struct kmod_list *kmod_list_remove_n_latest(struct kmod_list *list,
 							unsigned int n)
 {
-	struct kmod_list *l;
+	struct kmod_list *l = list;
 	unsigned int i;
 
-	/*
-	 * Get last element, remove all appended elments and if list became
-	 * empty, set return pointer to NULL
-	 */
-	l = kmod_list_prev(list, list);
-	if (l == NULL)
-		l = list;
-
-	for (i = 0; i < n; i++)
+	for (i = 0; i < n; i++) {
+		l = kmod_list_last(l);
 		l = kmod_list_remove(l);
+	}
 
-	/* If list became empty, save it*/
-	if (l == NULL)
-		list = NULL;
-
-	return list;
+	return l;
 }
+
 /**
  * kmod_list_prev:
  * @list: the head of the list
