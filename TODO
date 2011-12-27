@@ -11,18 +11,19 @@ Features:
 * create test-mock library to be LD_PRELOAD'ed before running the binaries
   so we're able to create unit tests
 
-* Add functions to dump configuration
+* Add functions to dump configuration. Create a list with the config items
+  (blacklist, aliases, etc) or just dump to a fd?
 
-* Add functions list all modules known by modules.dep
+* Add functions to list all modules known by modules.dep
 
 * provide 1:1 compatibility with module-init-tools's modprobe
    - dump configuration
    - 'modprobe -r' should remove modules which usecount became 0 because of
      module's removal
 
-* provide depmod:
-   - 1:1 compatible kmod-depmod.c
-   - add missing -F and -E
+* Add kmod_validate(). It checks if all config files and indexes are still
+  valid. We need to save the mtime of each config dir when starting up and when
+  this function is called we stat the dir and compare the mtimes.
 
 * review API, maybe unify all of these setters:
    - kmod_module_version_get_symbol()
@@ -56,7 +57,7 @@ Known Bugs:
 ===========
 
 
-Things to be added removed in kernel (check what is really needed):
+Things to be added/removed in kernel (check what is really needed):
 ===================================================================
 
 * list of currently loaded modules
