@@ -177,6 +177,45 @@ int hash_add(struct hash *hash, const char *key, const void *value)
 	return 0;
 }
 
+/* similar to hash_add(), but fails if key already exists */
+int hash_add_unique(struct hash *hash, const char *key, const void *value)
+{
+	unsigned int keylen = strlen(key);
+	unsigned int hashval = hash_superfast(key, keylen);
+	unsigned int pos = hashval % hash->n_buckets;
+	struct hash_bucket *bucket = hash->buckets + pos;
+	struct hash_entry *entry, *entry_end;
+
+	if (bucket->used + 1 >= bucket->total) {
+		unsigned new_total = bucket->total + hash->step;
+		size_t size = new_total * sizeof(struct hash_entry);
+		struct hash_entry *tmp = realloc(bucket->entries, size);
+		if (tmp == NULL)
+			return -errno;
+		bucket->entries = tmp;
+		bucket->total = new_total;
+	}
+
+	entry = bucket->entries;
+	entry_end = entry + bucket->used;
+	for (; entry < entry_end; entry++) {
+		int c = strcmp(key, entry->key);
+		if (c == 0)
+			return -EEXIST;
+		else if (c < 0) {
+			memmove(entry + 1, entry,
+				(entry_end - entry) * sizeof(struct hash_entry));
+			break;
+		}
+	}
+
+	entry->key = key;
+	entry->value = value;
+	bucket->used++;
+	hash->count++;
+	return 0;
+}
+
 static int hash_entry_cmp(const void *pa, const void *pb)
 {
 	const struct hash_entry *a = pa;
@@ -240,4 +279,9 @@ int hash_del(struct hash *hash, const char *key)
 	}
 
 	return 0;
+}
+
+unsigned int hash_get_count(const struct hash *hash)
+{
+	return hash->count;
 }
