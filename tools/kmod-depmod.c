@@ -32,6 +32,7 @@
 #include <unistd.h>
 #include <ctype.h>
 #include "libkmod.h"
+#include "libkmod-hash.h"
 
 #define streq(a, b) (strcmp(a, b) == 0)
 #define strstartswith(a, b) (strncmp(a, b, strlen(b)) == 0)
@@ -582,269 +583,6 @@ static void index_write(const struct index_node *node, FILE *out)
 
 /* END: code from module-init-tools/index.c just modified to compile here.
  */
-
-
-/* hash like libkmod-hash.c *******************************************/
-struct hash_entry {
-	const char *key;
-	const void *value;
-};
-
-struct hash_bucket {
-	struct hash_entry *entries;
-	unsigned int used;
-	unsigned int total;
-};
-
-struct hash {
-	unsigned int count;
-	unsigned int step;
-	unsigned int n_buckets;
-	void (*free_value)(void *value);
-	struct hash_bucket buckets[];
-};
-
-static struct hash *hash_new(unsigned int n_buckets,
-				void (*free_value)(void *value))
-{
-	struct hash *hash = calloc(1, sizeof(struct hash) +
-				n_buckets * sizeof(struct hash_bucket));
-	if (hash == NULL)
-		return NULL;
-	hash->n_buckets = n_buckets;
-	hash->free_value = free_value;
-	hash->step = n_buckets / 32;
-	if (hash->step == 0)
-		hash->step = 4;
-	else if (hash->step > 64)
-		hash->step = 64;
-	return hash;
-}
-
-static void hash_free(struct hash *hash)
-{
-	struct hash_bucket *bucket, *bucket_end;
-	bucket = hash->buckets;
-	bucket_end = bucket + hash->n_buckets;
-	for (; bucket < bucket_end; bucket++) {
-		if (hash->free_value) {
-			struct hash_entry *entry, *entry_end;
-			entry = bucket->entries;
-			entry_end = entry + bucket->used;
-			for (; entry < entry_end; entry++)
-				hash->free_value((void *)entry->value);
-		}
-		free(bucket->entries);
-	}
-	free(hash);
-}
-
-static inline unsigned int hash_superfast(const char *key, unsigned int len)
-{
-	/* Paul Hsieh (http://www.azillionmonkeys.com/qed/hash.html)
-	 * used by WebCore (http://webkit.org/blog/8/hashtables-part-2/)
-	 * EFL's eina and possible others.
-	 */
-	unsigned int tmp, hash = len, rem = len & 3;
-	const unsigned short *itr = (const unsigned short *)key;
-
-	len /= 4;
-
-	/* Main loop */
-	for (; len > 0; len--) {
-		hash += itr[0];
-		tmp = (itr[1] << 11) ^ hash;
-		hash = (hash << 16) ^ tmp;
-		itr += 2;
-		hash += hash >> 11;
-	}
-
-	/* Handle end cases */
-	switch (rem) {
-	case 3:
-		hash += *itr;
-		hash ^= hash << 16;
-		hash ^= key[2] << 18;
-		hash += hash >> 11;
-		break;
-
-	case 2:
-		hash += *itr;
-		hash ^= hash << 11;
-		hash += hash >> 17;
-		break;
-
-	case 1:
-		hash += *(const char *)itr;
-		hash ^= hash << 10;
-		hash += hash >> 1;
-	}
-
-	/* Force "avalanching" of final 127 bits */
-	hash ^= hash << 3;
-	hash += hash >> 5;
-	hash ^= hash << 4;
-	hash += hash >> 17;
-	hash ^= hash << 25;
-	hash += hash >> 6;
-
-	return hash;
-}
-
-/*
- * add or replace key in hash map.
- *
- * none of key or value are copied, just references are remembered as is,
- * make sure they are live while pair exists in hash!
- */
-static int hash_add(struct hash *hash, const char *key, const void *value)
-{
-	unsigned int keylen = strlen(key);
-	unsigned int hashval = hash_superfast(key, keylen);
-	unsigned int pos = hashval % hash->n_buckets;
-	struct hash_bucket *bucket = hash->buckets + pos;
-	struct hash_entry *entry, *entry_end;
-
-	if (bucket->used + 1 >= bucket->total) {
-		unsigned new_total = bucket->total + hash->step;
-		size_t size = new_total * sizeof(struct hash_entry);
-		struct hash_entry *tmp = realloc(bucket->entries, size);
-		if (tmp == NULL)
-			return -errno;
-		bucket->entries = tmp;
-		bucket->total = new_total;
-	}
-
-	entry = bucket->entries;
-	entry_end = entry + bucket->used;
-	for (; entry < entry_end; entry++) {
-		int c = strcmp(key, entry->key);
-		if (c == 0) {
-			hash->free_value((void *)entry->value);
-			entry->value = value;
-			return 0;
-		} else if (c < 0) {
-			memmove(entry + 1, entry,
-				(entry_end - entry) * sizeof(struct hash_entry));
-			break;
-		}
-	}
-
-	entry->key = key;
-	entry->value = value;
-	bucket->used++;
-	hash->count++;
-	return 0;
-}
-
-/* similar to hash_add(), but fails if key already exists */
-static int hash_add_unique(struct hash *hash, const char *key, const void *value)
-{
-	unsigned int keylen = strlen(key);
-	unsigned int hashval = hash_superfast(key, keylen);
-	unsigned int pos = hashval % hash->n_buckets;
-	struct hash_bucket *bucket = hash->buckets + pos;
-	struct hash_entry *entry, *entry_end;
-
-	if (bucket->used + 1 >= bucket->total) {
-		unsigned new_total = bucket->total + hash->step;
-		size_t size = new_total * sizeof(struct hash_entry);
-		struct hash_entry *tmp = realloc(bucket->entries, size);
-		if (tmp == NULL)
-			return -errno;
-		bucket->entries = tmp;
-		bucket->total = new_total;
-	}
-
-	entry = bucket->entries;
-	entry_end = entry + bucket->used;
-	for (; entry < entry_end; entry++) {
-		int c = strcmp(key, entry->key);
-		if (c == 0)
-			return -EEXIST;
-		else if (c < 0) {
-			memmove(entry + 1, entry,
-				(entry_end - entry) * sizeof(struct hash_entry));
-			break;
-		}
-	}
-
-	entry->key = key;
-	entry->value = value;
-	bucket->used++;
-	hash->count++;
-	return 0;
-}
-
-static int hash_entry_cmp(const void *pa, const void *pb)
-{
-	const struct hash_entry *a = pa;
-	const struct hash_entry *b = pb;
-	return strcmp(a->key, b->key);
-}
-
-static void *hash_find(const struct hash *hash, const char *key)
-{
-	unsigned int keylen = strlen(key);
-	unsigned int hashval = hash_superfast(key, keylen);
-	unsigned int pos = hashval % hash->n_buckets;
-	const struct hash_bucket *bucket = hash->buckets + pos;
-	const struct hash_entry se = {
-		.key = key,
-		.value = NULL
-	};
-	const struct hash_entry *entry = bsearch(
-		&se, bucket->entries, bucket->used,
-		sizeof(struct hash_entry), hash_entry_cmp);
-	if (entry == NULL)
-		return NULL;
-	return (void *)entry->value;
-}
-
-static int hash_del(struct hash *hash, const char *key)
-{
-	unsigned int keylen = strlen(key);
-	unsigned int hashval = hash_superfast(key, keylen);
-	unsigned int pos = hashval % hash->n_buckets;
-	unsigned int steps_used, steps_total;
-	struct hash_bucket *bucket = hash->buckets + pos;
-	struct hash_entry *entry, *entry_end;
-	const struct hash_entry se = {
-		.key = key,
-		.value = NULL
-	};
-
-	entry = bsearch(&se, bucket->entries, bucket->used,
-		sizeof(struct hash_entry), hash_entry_cmp);
-	if (entry == NULL)
-		return -ENOENT;
-
-	entry_end = bucket->entries + bucket->used;
-	memmove(entry, entry + 1,
-		(entry_end - entry) * sizeof(struct hash_entry));
-
-	bucket->used--;
-	hash->count--;
-
-	steps_used = bucket->used / hash->step;
-	steps_total = bucket->total / hash->step;
-	if (steps_used + 1 < steps_total) {
-		size_t size = (steps_used + 1) *
-			hash->step * sizeof(struct hash_entry);
-		struct hash_entry *tmp = realloc(bucket->entries, size);
-		if (tmp) {
-			bucket->entries = tmp;
-			bucket->total = (steps_used + 1) * hash->step;
-		}
-	}
-
-	return 0;
-}
-
-static unsigned int hash_get_count(const struct hash *hash)
-{
-	return hash->count;
-}
 
 /* basic pointer array growing in steps  ******************************/
 struct array {
@@ -2461,21 +2199,19 @@ static int output_softdeps(struct depmod *depmod, FILE *out)
 
 static int output_symbols(struct depmod *depmod, FILE *out)
 {
-	size_t i;
+	struct hash_iter iter;
+	const struct symbol *sym;
 
 	fputs("# Aliases for symbols, used by symbol_request().\n", out);
 
-	for (i = 0; i < depmod->symbols->n_buckets; i++) {
-		const struct hash_bucket *b = depmod->symbols->buckets + i;
-		unsigned j;
-		for (j = 0; j < b->used; j++) {
-			const struct hash_entry *e = b->entries + j;
-			const struct symbol *sym = e->value;
-			if (sym->owner == NULL)
-				continue;
-			fprintf(out, "alias symbol:%s %s\n",
-				sym->name, sym->owner->modname);
-		}
+	hash_iter_init(depmod->symbols, &iter);
+
+	while (hash_iter_next(&iter, NULL, (const void **) &sym)) {
+		if (sym->owner == NULL)
+			continue;
+
+		fprintf(out, "alias symbol:%s %s\n",
+					sym->name, sym->owner->modname);
 	}
 
 	return 0;
@@ -2485,7 +2221,9 @@ static int output_symbols_bin(struct depmod *depmod, FILE *out)
 {
 	struct index_node *idx;
 	char alias[1024];
-	size_t i, baselen = sizeof("symbol:") - 1;
+	size_t baselen = sizeof("symbol:") - 1;
+	struct hash_iter iter;
+	const struct symbol *sym;
 
 	if (out == stdout)
 		return 0;
@@ -2495,30 +2233,26 @@ static int output_symbols_bin(struct depmod *depmod, FILE *out)
 		return -ENOMEM;
 
 	memcpy(alias, "symbol:", baselen);
+	hash_iter_init(depmod->symbols, &iter);
 
-	for (i = 0; i < depmod->symbols->n_buckets; i++) {
-		const struct hash_bucket *b = depmod->symbols->buckets + i;
-		unsigned j;
-		for (j = 0; j < b->used; j++) {
-			const struct hash_entry *e = b->entries + j;
-			const struct symbol *sym = e->value;
-			int duplicate;
+	while (hash_iter_next(&iter, NULL, (const void **) &sym)) {
+		int duplicate;
 
-			if (sym->owner == NULL)
-				continue;
+		if (sym->owner == NULL)
+			continue;
 
-			strcpy(alias + baselen, sym->name);
-			duplicate = index_insert(idx, alias,
-						 sym->owner->modname,
-						 sym->owner->idx);
-			if (duplicate && depmod->cfg->warn_dups)
-				WRN("duplicate module syms:\n%s %s\n",
-				    alias, sym->owner->modname);
-		}
+		strcpy(alias + baselen, sym->name);
+		duplicate = index_insert(idx, alias, sym->owner->modname,
+							sym->owner->idx);
+
+		if (duplicate && depmod->cfg->warn_dups)
+			WRN("duplicate module syms:\n%s %s\n",
+						alias, sym->owner->modname);
 	}
 
 	index_write(idx, out);
 	index_destroy(idx);
+
 	return 0;
 }
 

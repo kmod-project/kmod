@@ -99,7 +99,12 @@ tools_kmod_rmmod_LDADD = libkmod/libkmod.la
 tools_kmod_lsmod_LDADD = libkmod/libkmod.la
 tools_kmod_modprobe_LDADD = libkmod/libkmod.la
 tools_kmod_modinfo_LDADD = libkmod/libkmod.la
-tools_kmod_depmod_LDADD = libkmod/libkmod.la
+
+tools_kmod_depmod_LDADD = libkmod/libkmod-util.la \
+			  libkmod/libkmod.la
+tools_kmod_depmod_CFLAGS = $(AM_CFLAGS)
+tools_kmod_depmod_CPPFLAGS = $(AM_CPPFLAGS)
+tools_kmod_depmod_LDFLAGS = $(AM_LDFLAGS)
 
 tools_kmod_SOURCES = tools/kmod.c tools/kmod.h tools/kmod-lsmod.c \
 		     tools/kmod-rmmod.c tools/kmod-insmod.c \
