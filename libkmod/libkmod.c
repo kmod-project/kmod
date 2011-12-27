@@ -80,7 +80,7 @@ struct kmod_ctx {
 	const void *userdata;
 	char *dirname;
 	struct kmod_config *config;
-	struct kmod_hash *modules_by_name;
+	struct hash *modules_by_name;
 	struct index_mm *indexes[_KMOD_INDEX_LAST];
 };
 
@@ -229,7 +229,7 @@ KMOD_EXPORT struct kmod_ctx *kmod_new(const char *dirname,
 		goto fail;
 	}
 
-	ctx->modules_by_name = kmod_hash_new(KMOD_HASH_SIZE, NULL);
+	ctx->modules_by_name = hash_new(KMOD_HASH_SIZE, NULL);
 	if (ctx->modules_by_name == NULL) {
 		ERR(ctx, "could not create by-name hash\n");
 		goto fail;
@@ -281,7 +281,7 @@ KMOD_EXPORT struct kmod_ctx *kmod_unref(struct kmod_ctx *ctx)
 	INFO(ctx, "context %p released\n", ctx);
 
 	kmod_unload_resources(ctx);
-	kmod_hash_free(ctx->modules_by_name);
+	hash_free(ctx->modules_by_name);
 	free(ctx->dirname);
 	if (ctx->config)
 		kmod_config_free(ctx->config);
@@ -346,7 +346,7 @@ struct kmod_module *kmod_pool_get_module(struct kmod_ctx *ctx,
 {
 	struct kmod_module *mod;
 
-	mod = kmod_hash_find(ctx->modules_by_name, key);
+	mod = hash_find(ctx->modules_by_name, key);
 
 	DBG(ctx, "get module name='%s' found=%p\n", key, mod);
 
@@ -358,7 +358,7 @@ void kmod_pool_add_module(struct kmod_ctx *ctx, struct kmod_module *mod,
 {
 	DBG(ctx, "add %p key='%s'\n", mod, key);
 
-	kmod_hash_add(ctx->modules_by_name, key, mod);
+	hash_add(ctx->modules_by_name, key, mod);
 }
 
 void kmod_pool_del_module(struct kmod_ctx *ctx, struct kmod_module *mod,
@@ -366,7 +366,7 @@ void kmod_pool_del_module(struct kmod_ctx *ctx, struct kmod_module *mod,
 {
 	DBG(ctx, "del %p key='%s'\n", mod, key);
 
-	kmod_hash_del(ctx->modules_by_name, key);
+	hash_del(ctx->modules_by_name, key);
 }
 
 static int kmod_lookup_alias_from_alias_bin(struct kmod_ctx *ctx,

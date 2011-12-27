@@ -25,30 +25,30 @@
 #include <string.h>
 #include <errno.h>
 
-struct kmod_hash_entry {
+struct hash_entry {
 	const char *key;
 	const void *value;
 };
 
-struct kmod_hash_bucket {
-	struct kmod_hash_entry *entries;
+struct hash_bucket {
+	struct hash_entry *entries;
 	unsigned int used;
 	unsigned int total;
 };
 
-struct kmod_hash {
+struct hash {
 	unsigned int count;
 	unsigned int step;
 	unsigned int n_buckets;
 	void (*free_value)(void *value);
-	struct kmod_hash_bucket buckets[];
+	struct hash_bucket buckets[];
 };
 
-struct kmod_hash *kmod_hash_new(unsigned int n_buckets,
+struct hash *hash_new(unsigned int n_buckets,
 					void (*free_value)(void *value))
 {
-	struct kmod_hash *hash = calloc(1, sizeof(struct kmod_hash) +
-				n_buckets * sizeof(struct kmod_hash_bucket));
+	struct hash *hash = calloc(1, sizeof(struct hash) +
+				n_buckets * sizeof(struct hash_bucket));
 	if (hash == NULL)
 		return NULL;
 	hash->n_buckets = n_buckets;
@@ -61,14 +61,14 @@ struct kmod_hash *kmod_hash_new(unsigned int n_buckets,
 	return hash;
 }
 
-void kmod_hash_free(struct kmod_hash *hash)
+void hash_free(struct hash *hash)
 {
-	struct kmod_hash_bucket *bucket, *bucket_end;
+	struct hash_bucket *bucket, *bucket_end;
 	bucket = hash->buckets;
 	bucket_end = bucket + hash->n_buckets;
 	for (; bucket < bucket_end; bucket++) {
 		if (hash->free_value) {
-			struct kmod_hash_entry *entry, *entry_end;
+			struct hash_entry *entry, *entry_end;
 			entry = bucket->entries;
 			entry_end = entry + bucket->used;
 			for (; entry < entry_end; entry++)
@@ -137,18 +137,18 @@ static inline unsigned int hash_superfast(const char *key, unsigned int len)
  * none of key or value are copied, just references are remembered as is,
  * make sure they are live while pair exists in hash!
  */
-int kmod_hash_add(struct kmod_hash *hash, const char *key, const void *value)
+int hash_add(struct hash *hash, const char *key, const void *value)
 {
 	unsigned int keylen = strlen(key);
 	unsigned int hashval = hash_superfast(key, keylen);
 	unsigned int pos = hashval % hash->n_buckets;
-	struct kmod_hash_bucket *bucket = hash->buckets + pos;
-	struct kmod_hash_entry *entry, *entry_end;
+	struct hash_bucket *bucket = hash->buckets + pos;
+	struct hash_entry *entry, *entry_end;
 
 	if (bucket->used + 1 >= bucket->total) {
 		unsigned new_total = bucket->total + hash->step;
-		size_t size = new_total * sizeof(struct kmod_hash_entry);
-		struct kmod_hash_entry *tmp = realloc(bucket->entries, size);
+		size_t size = new_total * sizeof(struct hash_entry);
+		struct hash_entry *tmp = realloc(bucket->entries, size);
 		if (tmp == NULL)
 			return -errno;
 		bucket->entries = tmp;
@@ -165,7 +165,7 @@ int kmod_hash_add(struct kmod_hash *hash, const char *key, const void *value)
 			return 0;
 		} else if (c < 0) {
 			memmove(entry + 1, entry,
-				(entry_end - entry) * sizeof(struct kmod_hash_entry));
+				(entry_end - entry) * sizeof(struct hash_entry));
 			break;
 		}
 	}
@@ -177,52 +177,52 @@ int kmod_hash_add(struct kmod_hash *hash, const char *key, const void *value)
 	return 0;
 }
 
-static int kmod_hash_entry_cmp(const void *pa, const void *pb)
+static int hash_entry_cmp(const void *pa, const void *pb)
 {
-	const struct kmod_hash_entry *a = pa;
-	const struct kmod_hash_entry *b = pb;
+	const struct hash_entry *a = pa;
+	const struct hash_entry *b = pb;
 	return strcmp(a->key, b->key);
 }
 
-void *kmod_hash_find(const struct kmod_hash *hash, const char *key)
+void *hash_find(const struct hash *hash, const char *key)
 {
 	unsigned int keylen = strlen(key);
 	unsigned int hashval = hash_superfast(key, keylen);
 	unsigned int pos = hashval % hash->n_buckets;
-	const struct kmod_hash_bucket *bucket = hash->buckets + pos;
-	const struct kmod_hash_entry se = {
+	const struct hash_bucket *bucket = hash->buckets + pos;
+	const struct hash_entry se = {
 		.key = key,
 		.value = NULL
 	};
-	const struct kmod_hash_entry *entry = bsearch(
+	const struct hash_entry *entry = bsearch(
 		&se, bucket->entries, bucket->used,
-		sizeof(struct kmod_hash_entry), kmod_hash_entry_cmp);
+		sizeof(struct hash_entry), hash_entry_cmp);
 	if (entry == NULL)
 		return NULL;
 	return (void *)entry->value;
 }
 
-int kmod_hash_del(struct kmod_hash *hash, const char *key)
+int hash_del(struct hash *hash, const char *key)
 {
 	unsigned int keylen = strlen(key);
 	unsigned int hashval = hash_superfast(key, keylen);
 	unsigned int pos = hashval % hash->n_buckets;
 	unsigned int steps_used, steps_total;
-	struct kmod_hash_bucket *bucket = hash->buckets + pos;
-	struct kmod_hash_entry *entry, *entry_end;
-	const struct kmod_hash_entry se = {
+	struct hash_bucket *bucket = hash->buckets + pos;
+	struct hash_entry *entry, *entry_end;
+	const struct hash_entry se = {
 		.key = key,
 		.value = NULL
 	};
 
 	entry = bsearch(&se, bucket->entries, bucket->used,
-		sizeof(struct kmod_hash_entry), kmod_hash_entry_cmp);
+		sizeof(struct hash_entry), hash_entry_cmp);
 	if (entry == NULL)
 		return -ENOENT;
 
 	entry_end = bucket->entries + bucket->used;
 	memmove(entry, entry + 1,
-		(entry_end - entry) * sizeof(struct kmod_hash_entry));
+		(entry_end - entry) * sizeof(struct hash_entry));
 
 	bucket->used--;
 	hash->count--;
@@ -231,8 +231,8 @@ int kmod_hash_del(struct kmod_hash *hash, const char *key)
 	steps_total = bucket->total / hash->step;
 	if (steps_used + 1 < steps_total) {
 		size_t size = (steps_used + 1) *
-			hash->step * sizeof(struct kmod_hash_entry);
-		struct kmod_hash_entry *tmp = realloc(bucket->entries, size);
+			hash->step * sizeof(struct hash_entry);
+		struct hash_entry *tmp = realloc(bucket->entries, size);
 		if (tmp) {
 			bucket->entries = tmp;
 			bucket->total = (steps_used + 1) * hash->step;
