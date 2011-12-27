@@ -86,6 +86,15 @@ enum kmod_insert {
 	KMOD_INSERT_FORCE_MODVERSION = 0x2,
 };
 
+/* Flags to kmod_module_probe_insert_module() */
+enum kmod_probe {
+	KMOD_PROBE_FORCE_VERMAGIC = 0x1,
+	KMOD_PROBE_FORCE_MODVERSION = 0x2,
+	KMOD_PROBE_STOP_ON_BLACKLIST = 0x4,
+	KMOD_PROBE_STOP_ON_FAILURE = 0x8,
+	KMOD_PROBE_STOP_ON_COMMAND = 0x16,
+};
+
 /*
  * kmod_module
  *
@@ -110,6 +119,10 @@ int kmod_module_get_filtered_blacklist(const struct kmod_ctx *ctx, const struct 
 
 int kmod_module_remove_module(struct kmod_module *mod, unsigned int flags);
 int kmod_module_insert_module(struct kmod_module *mod, unsigned int flags, const char *options);
+int kmod_module_probe_insert_module(struct kmod_module *mod,
+			unsigned int flags, const char *options,
+			int (*run_install)(struct kmod_module *m, const char *cmdline, void *data),
+			const void *data);
 
 const char *kmod_module_get_name(const struct kmod_module *mod);
 const char *kmod_module_get_path(const struct kmod_module *mod);

@@ -777,6 +777,325 @@ elf_failed:
 	return err;
 }
 
+static bool module_is_blacklisted(struct kmod_module *mod)
+{
+	struct kmod_ctx *ctx = mod->ctx;
+	const struct kmod_list *bl = kmod_get_blacklists(ctx);
+	const struct kmod_list *l;
+
+	kmod_list_foreach(l, bl) {
+		const char *modname = kmod_blacklist_get_modname(l);
+
+		if (streq(modname, mod->name))
+			return true;
+	}
+
+	return false;
+}
+
+#define RECURSION_CHECK_STEP 10
+#define RET_CHECK_NOLOOP_OR_FAIL(_ret, _flags, _label)  \
+	do { \
+		if (_ret < 0) { \
+			if (_ret == -ELOOP || _ret == -ENOMEM \
+					|| (_flags & KMOD_PROBE_STOP_ON_FAILURE)) \
+			goto _label; \
+		} \
+	} while (0)
+
+struct probe_insert_cb {
+	int (*run_install)(struct kmod_module *m, const char *cmd, void *data);
+	void *data;
+};
+
+int module_probe_insert_module(struct kmod_module *mod,
+				unsigned int flags, const char *extra_options,
+				struct probe_insert_cb *cb,
+				struct kmod_list *rec, unsigned int reccount);
+
+static int command_do(struct kmod_module *mod, const char *type,
+							const char *cmd)
+{
+	const char *modname = kmod_module_get_name(mod);
+	int err;
+
+	DBG(mod->ctx, "%s %s\n", type, cmd);
+
+	setenv("MODPROBE_MODULE", modname, 1);
+	err = system(cmd);
+	unsetenv("MODPROBE_MODULE");
+
+	if (err == -1 || WEXITSTATUS(err)) {
+		ERR(mod->ctx, "Error running %s command for %s\n",
+								type, modname);
+		if (err != -1)
+			err = -WEXITSTATUS(err);
+	}
+
+	return err;
+}
+
+static int module_do_install_commands(struct kmod_module *mod,
+					const char *options,
+					struct probe_insert_cb *cb)
+{
+	const char *command = kmod_module_get_install_commands(mod);
+	char *p, *cmd;
+	int err;
+	size_t cmdlen, options_len, varlen;
+
+	assert(command);
+
+	if (options == NULL)
+		options = "";
+
+	options_len = strlen(options);
+	cmdlen = strlen(command);
+	varlen = sizeof("$CMDLINE_OPTS") - 1;
+
+	cmd = memdup(command, cmdlen + 1);
+	if (cmd == NULL)
+		return -ENOMEM;
+
+	while ((p = strstr(cmd, "$CMDLINE_OPTS")) != NULL) {
+		size_t prefixlen = p - cmd;
+		size_t suffixlen = cmdlen - prefixlen - varlen;
+		size_t slen = cmdlen - varlen + options_len;
+		char *suffix = p + varlen;
+		char *s = malloc(slen + 1);
+		if (s == NULL) {
+			free(cmd);
+			return -ENOMEM;
+		}
+		memcpy(s, cmd, p - cmd);
+		memcpy(s + prefixlen, options, options_len);
+		memcpy(s + prefixlen + options_len, suffix, suffixlen);
+		s[slen] = '\0';
+
+		free(cmd);
+		cmd = s;
+		cmdlen = slen;
+	}
+
+	if (cb->run_install != NULL)
+		err = cb->run_install(mod, cmd, cb->data);
+	else
+		err = command_do(mod, "install", cmd);
+
+	free(cmd);
+
+	return err;
+}
+
+static bool module_dep_has_loop(const struct kmod_list *deps,
+					struct kmod_list *rec,
+					unsigned int reccount)
+{
+	struct kmod_list *l;
+	struct kmod_module *mod;
+
+	if (reccount < RECURSION_CHECK_STEP || deps == NULL)
+		return false;
+
+	mod = deps->data;
+	reccount = 0;
+	kmod_list_foreach(l, rec) {
+		struct kmod_list *loop;
+
+		if (l->data != mod)
+			continue;
+
+		ERR(mod->ctx, "Dependency loop detected while inserting '%s'. Operation aborted\n",
+								mod->name);
+
+		for (loop = l; loop != NULL;
+				loop = kmod_list_next(rec, loop)) {
+			struct kmod_module *m = loop->data;
+			ERR(mod->ctx, "%s\n", m->name);
+		}
+
+		return true;
+	}
+
+	return false;
+}
+
+static int module_do_insmod_dep(const struct kmod_list *deps,
+				unsigned int flags, struct probe_insert_cb *cb,
+				struct kmod_list *rec, unsigned int reccount)
+{
+	const struct kmod_list *d;
+	int err = 0;
+
+	if (module_dep_has_loop(deps, rec, reccount))
+		return -ELOOP;
+
+	kmod_list_foreach(d, deps) {
+		struct kmod_module *dm = d->data;
+		struct kmod_list *tmp;
+
+		tmp = kmod_list_append(rec, dm);
+		if (tmp == NULL)
+			return -ENOMEM;
+		rec = tmp;
+
+		err = module_probe_insert_module(dm, flags, NULL, cb,
+							rec, reccount + 1);
+
+		rec = kmod_list_remove_n_latest(rec, 1);
+		RET_CHECK_NOLOOP_OR_FAIL(err, flags, finish);
+	}
+
+finish:
+	return err;
+}
+
+static char *module_options_concat(const char *opt, const char *xopt)
+{
+	// TODO: we might need to check if xopt overrides options on opt
+	size_t optlen = opt == NULL ? 0 : strlen(opt);
+	size_t xoptlen = xopt == NULL ? 0 : strlen(xopt);
+	char *r;
+
+	if (optlen == 0 && xoptlen == 0)
+		return NULL;
+
+	r = malloc(optlen + xoptlen + 2);
+
+	if (opt != NULL) {
+		memcpy(r, opt, optlen);
+		r[optlen] = ' ';
+		optlen++;
+	}
+
+	if (xopt != NULL)
+		memcpy(r + optlen, xopt, xoptlen);
+
+	r[optlen + xoptlen] = '\0';
+
+	return r;
+}
+
+/*
+ * Do the probe_insert work recursively. We traverse the dependencies in
+ * depth-first order, checking the following conditions:
+ *
+ * - Is blacklisted?
+ * - Is install command?
+ * - Is already loaded?
+ *
+ * Then we insert the modules (calling module_do_insmod_dep(), which will
+ * re-enter this function) needed to load @mod in the following order:
+ *
+ * 1) pre-softdep
+ * 2) dependency
+ * 3) @mod
+ * 4) post-softdep
+ */
+int module_probe_insert_module(struct kmod_module *mod,
+			unsigned int flags, const char *extra_options,
+			struct probe_insert_cb *cb,
+			struct kmod_list *rec, unsigned int reccount)
+{
+	int err;
+	const char *install_cmds;
+	const struct kmod_list *dep;
+	struct kmod_list *pre = NULL, *post = NULL;
+	char *options;
+
+	if ((flags & KMOD_PROBE_STOP_ON_BLACKLIST)
+					&& module_is_blacklisted(mod)) {
+		DBG(mod->ctx, "Stopping on '%s': blacklisted\n", mod->name);
+		return -EINVAL;
+	}
+
+	install_cmds = kmod_module_get_install_commands(mod);
+	if (install_cmds != NULL) {
+		if (flags & KMOD_PROBE_STOP_ON_COMMAND) {
+			DBG(mod->ctx, "Stopping on '%s': install command\n",
+								mod->name);
+			return -EINVAL;
+		}
+	} else {
+		int state = kmod_module_get_initstate(mod);
+
+		if (state == KMOD_MODULE_LIVE ||
+					state == KMOD_MODULE_COMING ||
+					state == KMOD_MODULE_BUILTIN)
+			return 0;
+	}
+
+	err = kmod_module_get_softdeps(mod, &pre, &post);
+	if (err < 0)
+		return err;
+
+	err = module_do_insmod_dep(pre, flags, cb, rec, reccount);
+	RET_CHECK_NOLOOP_OR_FAIL(err, flags, finish);
+
+	dep = module_get_dependencies_noref(mod);
+	err = module_do_insmod_dep(dep, flags, cb, rec, reccount);
+	RET_CHECK_NOLOOP_OR_FAIL(err, flags, finish);
+
+	options = module_options_concat(kmod_module_get_options(mod),
+							extra_options);
+
+	if (install_cmds != NULL)
+		err = module_do_install_commands(mod, options, cb);
+	else
+		err = kmod_module_insert_module(mod, flags, options);
+
+	free(options);
+
+	if (err < 0 && (flags & KMOD_PROBE_STOP_ON_FAILURE))
+		return err;
+
+	err = module_do_insmod_dep(post, flags, cb, rec, reccount);
+
+finish:
+	kmod_module_unref_list(pre);
+	kmod_module_unref_list(post);
+
+	return err;
+}
+
+/**
+ * kmod_module_probe_insert_module:
+ * @mod: kmod module
+ * @flags: flags are not passed to Linux Kernel, but instead they dictate the
+ * behavior of this function.
+ * @extra_options: module's options to pass to Linux Kernel.
+ * @run_install: function to run when @mod is backed by a install command.
+ * @data: data to give back to @run_install callback
+ *
+ * Insert a module in Linux kernel resolving dependencies, soft dependencies
+ * install commands and applying blacklist.
+ *
+ * If @run_install is NULL, and the flag KMOD_PROBE_STOP_ON_COMMANDS is not
+ * given, this function will fork and exec by calling system(3). If you need
+ * control over the execution of an install command, give a callback function
+ * in @run_install.
+ *
+ * Returns: 0 on success or < 0 on failure.
+ */
+KMOD_EXPORT int kmod_module_probe_insert_module(struct kmod_module *mod,
+			unsigned int flags, const char *extra_options,
+			int (*run_install)(struct kmod_module *m,
+						const char *cmd, void *data),
+			const void *data)
+{
+	struct probe_insert_cb cb;
+
+	cb.run_install = run_install;
+	cb.data = (void *) data;
+
+	return  module_probe_insert_module(mod, flags, extra_options, &cb,
+								NULL, 0);
+}
+
+#undef RECURSION_CHECK_STEP
+#undef RET_CHECK_NOLOOP_OR_FAIL
+
+
 /**
  * kmod_module_get_options:
  * @mod: kmod module
@@ -1148,6 +1467,9 @@ KMOD_EXPORT int kmod_module_get_initstate(const struct kmod_module *mod)
 	fd = open(path, O_RDONLY|O_CLOEXEC);
 	if (fd < 0) {
 		err = -errno;
+
+		DBG(mod->ctx, "could not open '%s': %s\n",
+			path, strerror(-err));
 
 		if (pathlen > (int)sizeof("/initstate") - 1) {
 			struct stat st;
