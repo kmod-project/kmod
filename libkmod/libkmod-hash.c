@@ -19,7 +19,7 @@
  */
 
 #include "libkmod.h"
-#include "libkmod-private.h"
+#include "libkmod-hash.h"
 
 #include <stdlib.h>
 #include <string.h>

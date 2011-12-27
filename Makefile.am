@@ -40,6 +40,10 @@ LIBKMOD_CURRENT=2
 LIBKMOD_REVISION=0
 LIBKMOD_AGE=1
 
+noinst_LTLIBRARIES = libkmod/libkmod-util.la
+libkmod_libkmod_util_la_SOURCES = libkmod/libkmod-hash.c \
+				  libkmod/libkmod-hash.h
+
 include_HEADERS = libkmod/libkmod.h
 lib_LTLIBRARIES = libkmod/libkmod.la
 
@@ -49,7 +53,6 @@ libkmod_libkmod_la_SOURCES =\
 	libkmod/macro.h \
 	libkmod/libkmod.c \
 	libkmod/libkmod-list.c \
-	libkmod/libkmod-hash.c \
 	libkmod/libkmod-config.c \
 	libkmod/libkmod-util.c \
 	libkmod/libkmod-index.c \
@@ -64,8 +67,10 @@ EXTRA_DIST += libkmod/COPYING libkmod/README
 libkmod_libkmod_la_LDFLAGS = $(AM_LDFLAGS) \
 	-version-info $(LIBKMOD_CURRENT):$(LIBKMOD_REVISION):$(LIBKMOD_AGE) \
 	-Wl,--version-script=$(top_srcdir)/libkmod/libkmod.sym
-libkmod_libkmod_la_DEPENDENCIES = ${top_srcdir}/libkmod/libkmod.sym
-libkmod_libkmod_la_LIBADD = ${liblzma_LIBS} ${zlib_LIBS}
+libkmod_libkmod_la_DEPENDENCIES = libkmod/libkmod-util.la \
+				  ${top_srcdir}/libkmod/libkmod.sym
+libkmod_libkmod_la_LIBADD = libkmod/libkmod-util.la \
+			    ${liblzma_LIBS} ${zlib_LIBS}
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libkmod/libkmod.pc
