@@ -191,24 +191,6 @@ char *path_to_modname(const char *path, char buf[NAME_MAX], size_t *len)
 	return modname_normalize(modname, buf, len);
 }
 
-bool startswith(const char *s, const char *prefix) {
-        size_t sl, pl;
-
-        assert(s);
-        assert(prefix);
-
-        sl = strlen(s);
-        pl = strlen(prefix);
-
-        if (pl == 0)
-                return true;
-
-        if (sl < pl)
-                return false;
-
-        return memcmp(s, prefix, pl) == 0;
-}
-
 inline void *memdup(const void *p, size_t n)
 {
 	void *r = malloc(n);

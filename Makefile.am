@@ -44,7 +44,9 @@ noinst_LTLIBRARIES = libkmod/libkmod-util.la
 libkmod_libkmod_util_la_SOURCES = libkmod/libkmod-hash.c \
 				  libkmod/libkmod-hash.h \
 				  libkmod/libkmod-array.c \
-				  libkmod/libkmod-array.h
+				  libkmod/libkmod-array.h \
+				  libkmod/libkmod-util.c \
+				  libkmod/libkmod-util.h
 
 include_HEADERS = libkmod/libkmod.h
 lib_LTLIBRARIES = libkmod/libkmod.la
@@ -56,8 +58,6 @@ libkmod_libkmod_la_SOURCES =\
 	libkmod/libkmod.c \
 	libkmod/libkmod-list.c \
 	libkmod/libkmod-config.c \
-	libkmod/libkmod-util.c \
-	libkmod/libkmod-util.h \
 	libkmod/libkmod-index.c \
 	libkmod/libkmod-index.h \
 	libkmod/libkmod-module.c \

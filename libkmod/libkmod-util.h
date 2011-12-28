@@ -1,10 +1,17 @@
 #ifndef _LIBKMOD_UTIL_H_
 #define _LIBKMOD_UTIL_H_
 
+#include "macro.h"
+
+#include <limits.h>
+#include <stdio.h>
+#include <sys/types.h>
+
+
 char *getline_wrapped(FILE *fp, unsigned int *linenum) __attribute__((nonnull(1)));
 char *underscores(struct kmod_ctx *ctx, char *s) __attribute__((nonnull(1, 2)));
 #define streq(a, b) (strcmp((a), (b)) == 0)
-bool startswith(const char *s, const char *prefix) __attribute__((nonnull(1, 2)));
+#define strstartswith(a, b) (strncmp(a, b, strlen(b)) == 0)
 void *memdup(const void *p, size_t n) __attribute__((nonnull(1)));
 
 ssize_t read_str_safe(int fd, char *buf, size_t buflen) __must_check __attribute__((nonnull(2)));

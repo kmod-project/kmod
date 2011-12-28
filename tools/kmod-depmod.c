@@ -16,6 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+#include "libkmod.h"
+#include "libkmod-array.h"
+#include "libkmod-hash.h"
+#include "libkmod-util.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -31,12 +35,6 @@
 #include <assert.h>
 #include <unistd.h>
 #include <ctype.h>
-#include "libkmod.h"
-#include "libkmod-hash.h"
-#include "libkmod-array.h"
-
-#define streq(a, b) (strcmp(a, b) == 0)
-#define strstartswith(a, b) (strncmp(a, b, strlen(b)) == 0)
 
 #define DEFAULT_VERBOSE LOG_WARNING
 static int verbose = DEFAULT_VERBOSE;
@@ -585,8 +583,8 @@ static void index_write(const struct index_node *node, FILE *out)
 /* END: code from module-init-tools/index.c just modified to compile here.
  */
 
-/* utils (similar to libkmod-utils.c) *********************************/
-static const char *underscores(const char *input, char *output, size_t outputlen)
+/* utils (variants of libkmod-utils.c) *********************************/
+static const char *underscores2(const char *input, char *output, size_t outputlen)
 {
 	size_t i;
 
@@ -618,40 +616,6 @@ static const char *underscores(const char *input, char *output, size_t outputlen
 	output[i] = '\0';
 
 	return output;
-}
-
-static inline char *modname_normalize(const char *modname, char buf[NAME_MAX],
-						size_t *len)
-{
-	size_t s;
-
-	for (s = 0; s < NAME_MAX - 1; s++) {
-		const char c = modname[s];
-		if (c == '-')
-			buf[s] = '_';
-		else if (c == '\0' || c == '.')
-			break;
-		else
-			buf[s] = c;
-	}
-
-	buf[s] = '\0';
-
-	if (len)
-		*len = s;
-
-	return buf;
-}
-
-static char *path_to_modname(const char *path, char buf[NAME_MAX], size_t *len)
-{
-	char *modname;
-
-	modname = basename(path);
-	if (modname == NULL || modname[0] == '\0')
-		return NULL;
-
-	return modname_normalize(modname, buf, len);
 }
 
 /* configuration parsing **********************************************/
@@ -772,53 +736,6 @@ static int cfg_kernel_matches(const struct cfg *cfg, const char *pattern)
 	regfree(&re);
 
 	return status == 0;
-}
-
-/* same as libkmod-util.c */
-static char *getline_wrapped(FILE *fp, unsigned int *linenum)
-{
-	int size = 256;
-	int i = 0;
-	char *buf = malloc(size);
-
-	for(;;) {
-		int ch = getc_unlocked(fp);
-
-		switch(ch) {
-		case EOF:
-			if (i == 0) {
-				free(buf);
-				return NULL;
-			}
-			/* else fall through */
-
-		case '\n':
-			if (linenum)
-				(*linenum)++;
-			if (i == size)
-				buf = realloc(buf, size + 1);
-			buf[i] = '\0';
-			return buf;
-
-		case '\\':
-			ch = getc_unlocked(fp);
-
-			if (ch == '\n') {
-				if (linenum)
-					(*linenum)++;
-				continue;
-			}
-			/* else fall through */
-
-		default:
-			buf[i++] = ch;
-
-			if (i == size) {
-				size *= 2;
-				buf = realloc(buf, size);
-			}
-		}
-	}
 }
 
 static int cfg_file_parse(struct cfg *cfg, const char *filename)
@@ -2077,7 +1994,7 @@ static int output_aliases_bin(struct depmod *depmod, FILE *out)
 			if (!streq(key, "alias"))
 				continue;
 
-			alias = underscores(value, buf, sizeof(buf));
+			alias = underscores2(value, buf, sizeof(buf));
 			if (alias == NULL)
 				continue;
 

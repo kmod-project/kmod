@@ -424,7 +424,7 @@ fail:
 int kmod_lookup_alias_from_symbols_file(struct kmod_ctx *ctx, const char *name,
 						struct kmod_list **list)
 {
-	if (!startswith(name, "symbol:"))
+	if (!strstartswith(name, "symbol:"))
 		return 0;
 
 	return kmod_lookup_alias_from_alias_bin(ctx, KMOD_INDEX_SYMBOL, name,
