@@ -33,6 +33,7 @@
 #include <ctype.h>
 #include "libkmod.h"
 #include "libkmod-hash.h"
+#include "libkmod-array.h"
 
 #define streq(a, b) (strcmp(a, b) == 0)
 #define strstartswith(a, b) (strncmp(a, b, strlen(b)) == 0)
@@ -583,77 +584,6 @@ static void index_write(const struct index_node *node, FILE *out)
 
 /* END: code from module-init-tools/index.c just modified to compile here.
  */
-
-/* basic pointer array growing in steps  ******************************/
-struct array {
-	void **array;
-	size_t count;
-	size_t total;
-	size_t step;
-};
-
-static void array_init(struct array *array, size_t step)
-{
-	assert(step > 0);
-	array->array = NULL;
-	array->count = 0;
-	array->total = 0;
-	array->step = step;
-}
-
-static int array_append(struct array *array, const void *element)
-{
-	size_t idx;
-
-	if (array->count + 1 >= array->total) {
-		size_t new_total = array->total + array->step;
-		void *tmp = realloc(array->array, sizeof(void *) * new_total);
-		assert(array->step > 0);
-		if (tmp == NULL)
-			return -ENOMEM;
-		array->array = tmp;
-		array->total = new_total;
-	}
-	idx = array->count;
-	array->array[idx] = (void *)element;
-	array->count++;
-	return idx;
-}
-
-static int array_append_unique(struct array *array, const void *element)
-{
-	void **itr = array->array;
-	void **itr_end = itr + array->count;
-	for (; itr < itr_end; itr++)
-		if (*itr == element)
-			return -EEXIST;
-	return array_append(array, element);
-}
-
-static void array_pop(struct array *array) {
-	array->count--;
-	if (array->count + array->step < array->total) {
-		size_t new_total = array->total - array->step;
-		void *tmp = realloc(array->array, sizeof(void *) * new_total);
-		assert(array->step > 0);
-		if (tmp == NULL)
-			return;
-		array->array = tmp;
-		array->total = new_total;
-	}
-}
-
-static void array_free_array(struct array *array) {
-	free(array->array);
-	array->count = 0;
-	array->total = 0;
-}
-
-
-static void array_sort(struct array *array, int (*cmp)(const void *a, const void *b))
-{
-	qsort(array->array, array->count, sizeof(void *), cmp);
-}
 
 /* utils (similar to libkmod-utils.c) *********************************/
 static const char *underscores(const char *input, char *output, size_t outputlen)

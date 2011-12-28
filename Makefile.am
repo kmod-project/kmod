@@ -42,7 +42,9 @@ LIBKMOD_AGE=1
 
 noinst_LTLIBRARIES = libkmod/libkmod-util.la
 libkmod_libkmod_util_la_SOURCES = libkmod/libkmod-hash.c \
-				  libkmod/libkmod-hash.h
+				  libkmod/libkmod-hash.h \
+				  libkmod/libkmod-array.c \
+				  libkmod/libkmod-array.h
 
 include_HEADERS = libkmod/libkmod.h
 lib_LTLIBRARIES = libkmod/libkmod.la
