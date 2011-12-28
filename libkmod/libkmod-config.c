@@ -535,7 +535,7 @@ static int kmod_config_parse(struct kmod_config *config, int fd,
 			kmod_config_add_options(config,
 						underscores(ctx, modname),
 						strtok_r(NULL, "\0", &saveptr));
-		} else if streq(cmd, "install") {
+		} else if (streq(cmd, "install")) {
 			char *modname = strtok_r(NULL, "\t ", &saveptr);
 
 			if (modname == NULL)
@@ -545,7 +545,7 @@ static int kmod_config_parse(struct kmod_config *config, int fd,
 					underscores(ctx, modname),
 					strtok_r(NULL, "\0", &saveptr),
 					cmd, &config->install_commands);
-		} else if streq(cmd, "remove") {
+		} else if (streq(cmd, "remove")) {
 			char *modname = strtok_r(NULL, "\t ", &saveptr);
 
 			if (modname == NULL)
@@ -555,7 +555,7 @@ static int kmod_config_parse(struct kmod_config *config, int fd,
 					underscores(ctx, modname),
 					strtok_r(NULL, "\0", &saveptr),
 					cmd, &config->remove_commands);
-		} else if streq(cmd, "softdep") {
+		} else if (streq(cmd, "softdep")) {
 			char *modname = strtok_r(NULL, "\t ", &saveptr);
 
 			if (modname == NULL)
