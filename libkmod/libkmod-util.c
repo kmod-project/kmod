@@ -47,6 +47,9 @@ char *getline_wrapped(FILE *fp, unsigned int *linenum)
 	int i = 0;
 	char *buf = malloc(size);
 
+	if (buf == NULL)
+		return NULL;
+
 	for(;;) {
 		int ch = getc_unlocked(fp);
 
