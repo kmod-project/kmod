@@ -677,7 +677,8 @@ extern long init_module(const void *mem, unsigned long len, const char *args);
  * Insert a module in Linux kernel. It opens the file pointed by @mod,
  * mmap'ing it and passing to kernel.
  *
- * Returns: 0 on success or < 0 on failure.
+ * Returns: 0 on success or < 0 on failure. If module is already loaded it
+ * returns -EEXIST.
  */
 KMOD_EXPORT int kmod_module_insert_module(struct kmod_module *mod,
 							unsigned int flags,
@@ -732,8 +733,10 @@ KMOD_EXPORT int kmod_module_insert_module(struct kmod_module *mod,
 	}
 
 	err = init_module(mem, size, args);
-	if (err < 0)
-		ERR(mod->ctx, "Failed to insert module '%s'\n", path);
+	if (err < 0) {
+		err = -errno;
+		INFO(mod->ctx, "Failed to insert module '%s': %m\n", path);
+	}
 
 	if (elf != NULL)
 		kmod_elf_unref(elf);
