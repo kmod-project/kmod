@@ -1015,8 +1015,14 @@ int module_probe_insert_module(struct kmod_module *mod,
 
 	free(options);
 
-	if (err < 0 && (flags & KMOD_PROBE_STOP_ON_FAILURE))
-		return err;
+	/*
+	 * Ignore "already loaded" error. We need to check here because of
+	 * race conditions. We checked first if module was already loaded but
+	 * it may have been loaded between the check and the moment we try to
+	 * insert it.
+	 */
+	if (err < 0 && err != -EEXIST && (flags & KMOD_PROBE_STOP_ON_FAILURE))
+		goto finish;
 
 	err = module_do_insmod_dep(post, flags, cb, rec, reccount);
 
