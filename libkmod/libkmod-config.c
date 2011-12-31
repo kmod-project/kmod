@@ -620,12 +620,8 @@ static bool conf_files_filter_out(struct kmod_ctx *ctx, DIR *d,
 		return true;
 
 	if (len < 6 || (!streq(&fn[len - 5], ".conf")
-				&& !streq(&fn[len - 6], ".alias"))) {
-		INFO(ctx, "All config files need .conf: %s/%s, "
-				"it will be ignored in a future release\n",
-				path, fn);
+				&& !streq(&fn[len - 6], ".alias")))
 		return true;
-	}
 
 	fstatat(dirfd(d), fn, &st, 0);
 
