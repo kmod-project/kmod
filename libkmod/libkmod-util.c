@@ -319,3 +319,11 @@ char *path_make_absolute_cwd(const char *p)
 
 	return r;
 }
+
+#define USEC_PER_SEC  1000000ULL
+#define NSEC_PER_USEC 1000ULL
+unsigned long long ts_usec(const struct timespec *ts)
+{
+	return (unsigned long long) ts->tv_sec * USEC_PER_SEC +
+	       (unsigned long long) ts->tv_nsec / NSEC_PER_USEC;
+}
