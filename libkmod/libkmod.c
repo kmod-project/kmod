@@ -82,6 +82,7 @@ struct kmod_ctx {
 	struct kmod_config *config;
 	struct hash *modules_by_name;
 	struct index_mm *indexes[_KMOD_INDEX_LAST];
+	unsigned long long indexes_stamp[_KMOD_INDEX_LAST];
 };
 
 void kmod_log(const struct kmod_ctx *ctx,
@@ -383,7 +384,7 @@ static int kmod_lookup_alias_from_alias_bin(struct kmod_ctx *ctx,
 			index_files[index_number], name);
 		realnames = index_mm_searchwild(ctx->indexes[index_number],
 									name);
-	} else{
+	} else {
 		char fn[PATH_MAX];
 
 		snprintf(fn, sizeof(fn), "%s/%s.bin", ctx->dirname,
@@ -642,7 +643,8 @@ KMOD_EXPORT int kmod_load_resources(struct kmod_ctx *ctx)
 
 		snprintf(path, sizeof(path), "%s/%s.bin", ctx->dirname,
 							index_files[i]);
-		ctx->indexes[i] = index_mm_open(ctx, path, true);
+		ctx->indexes[i] = index_mm_open(ctx, path, true,
+						&ctx->indexes_stamp[i]);
 		if (ctx->indexes[i] == NULL)
 			goto fail;
 	}
@@ -680,6 +682,7 @@ KMOD_EXPORT void kmod_unload_resources(struct kmod_ctx *ctx)
 		if (ctx->indexes[i] != NULL) {
 			index_mm_close(ctx->indexes[i]);
 			ctx->indexes[i] = NULL;
+			ctx->indexes_stamp[i] = 0;
 		}
 	}
 }

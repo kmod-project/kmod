@@ -716,7 +716,7 @@ static void index_mm_free_node(struct index_mm_node *node)
 }
 
 struct index_mm *index_mm_open(struct kmod_ctx *ctx, const char *filename,
-								bool populate)
+				bool populate, unsigned long long *stamp)
 {
 	int fd;
 	int flags;
@@ -774,6 +774,8 @@ struct index_mm *index_mm_open(struct kmod_ctx *ctx, const char *filename,
 	idx->size = st.st_size;
 	idx->ctx = ctx;
 	close(fd);
+
+	*stamp = ts_usec(&st.st_mtim);
 
 	return idx;
 
