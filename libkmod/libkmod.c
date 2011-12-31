@@ -632,7 +632,7 @@ KMOD_EXPORT int kmod_load_resources(struct kmod_ctx *ctx)
 	if (ctx == NULL)
 		return -ENOENT;
 
-	for (i = 0; i < ARRAY_SIZE(index_files); i++) {
+	for (i = 0; i < _KMOD_INDEX_LAST; i++) {
 		char path[PATH_MAX];
 
 		if (ctx->indexes[i] != NULL) {
@@ -676,7 +676,7 @@ KMOD_EXPORT void kmod_unload_resources(struct kmod_ctx *ctx)
 	if (ctx == NULL)
 		return;
 
-	for (i = 0; i < ARRAY_SIZE(index_files); i++) {
+	for (i = 0; i < _KMOD_INDEX_LAST; i++) {
 		if (ctx->indexes[i] != NULL) {
 			index_mm_close(ctx->indexes[i]);
 			ctx->indexes[i] = NULL;
