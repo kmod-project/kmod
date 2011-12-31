@@ -129,6 +129,7 @@ noinst_PROGRAMS = test/test-insmod test/test-rmmod test/test-rmmod2 \
 		  test/test-lookup test/test-path-from-name \
 		  test/test-get-dependencies test/test-mod-double-ref \
 		  test/test-blacklist test/test-elf test/test-probe \
+		  test/test-invalidate-config
 		  $(check_PROGRAMS)
 
 test_test_rmmod_LDADD = libkmod/libkmod.la
@@ -141,3 +142,4 @@ test_test_mod_double_ref_LDADD = libkmod/libkmod.la
 test_test_blacklist_LDADD = libkmod/libkmod.la
 test_test_elf_LDADD = libkmod/libkmod.la
 test_test_probe_LDADD = libkmod/libkmod.la
+test_test_invalidate_config_LDADD = libkmod/libkmod.la
