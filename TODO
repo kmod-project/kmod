@@ -19,6 +19,8 @@ Features:
 * provide 1:1 compatibility with module-init-tools's modprobe
    - dump configuration
 
+* Add manpages: copy them from module-init-tools and make the necessary changes
+
 * review API, maybe unify all of these setters:
    - kmod_module_version_get_symbol()
    - kmod_module_version_get_crc()
