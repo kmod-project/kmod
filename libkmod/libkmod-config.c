@@ -607,6 +607,10 @@ void kmod_config_free(struct kmod_config *config)
 	while (config->softdeps)
 		kmod_config_free_softdep(config, config->softdeps);
 
+	for (; config->paths != NULL;
+				config->paths = kmod_list_remove(config->paths))
+		free(config->paths->data);
+
 	free(config);
 }
 
@@ -699,7 +703,8 @@ static int conf_files_insert_sorted(struct kmod_ctx *ctx,
  * Insert configuration files in @list, ignoring duplicates
  */
 static int conf_files_list(struct kmod_ctx *ctx, struct kmod_list **list,
-							const char *path)
+						const char *path,
+						unsigned long long *path_stamp)
 {
 	DIR *d;
 	int err;
@@ -710,6 +715,8 @@ static int conf_files_list(struct kmod_ctx *ctx, struct kmod_list **list,
 		DBG(ctx, "could not stat '%s': %m\n", path);
 		return err;
 	}
+
+	*path_stamp = ts_usec(&st.st_mtim);
 
 	if (S_ISREG(st.st_mode)) {
 		conf_files_insert_sorted(ctx, list, path, NULL);
@@ -757,19 +764,38 @@ int kmod_config_new(struct kmod_ctx *ctx, struct kmod_config **p_config,
 {
 	struct kmod_config *config;
 	struct kmod_list *list = NULL;
+	struct kmod_list *path_list = NULL;
 	size_t i;
-
-	*p_config = config = calloc(1, sizeof(struct kmod_config));
-	if (config == NULL)
-		return -ENOMEM;
-
-	config->ctx = ctx;
 
 	for (i = 0; config_paths[i] != NULL; i++) {
 		const char *path = config_paths[i];
+		unsigned long long path_stamp = 0;
+		size_t pathlen;
+		struct kmod_list *tmp;
+		struct kmod_config_path *cf;
 
-		conf_files_list(ctx, &list, path);
+		if (conf_files_list(ctx, &list, path, &path_stamp) < 0)
+			continue;
+
+		pathlen = strlen(path) + 1;
+		cf = malloc(sizeof(*cf) + pathlen);
+		if (cf == NULL)
+			goto oom;
+
+		cf->stamp = path_stamp;
+		memcpy(cf->path, path, pathlen);
+
+		tmp = kmod_list_append(path_list, cf);
+		if (tmp == NULL)
+			goto oom;
+		path_list = tmp;
 	}
+
+	*p_config = config = calloc(1, sizeof(struct kmod_config));
+	if (config == NULL)
+		goto oom;
+
+	config->paths = path_list;
 
 	for (; list != NULL; list = kmod_list_remove(list)) {
 		char fn[PATH_MAX];
@@ -794,4 +820,13 @@ int kmod_config_new(struct kmod_ctx *ctx, struct kmod_config **p_config,
 	kmod_config_parse_kcmdline(config);
 
 	return 0;
+
+oom:
+	for (; list != NULL; list = kmod_list_remove(list))
+		free(list->data);
+
+	for (; path_list != NULL; path_list = kmod_list_remove(path_list))
+		free(path_list->data);
+
+	return -ENOMEM;
 }
