@@ -536,7 +536,7 @@ KMOD_EXPORT int kmod_module_get_filtered_blacklist(const struct kmod_ctx *ctx,
 		kmod_list_foreach(lb, blacklist) {
 			const char *name = lb->data;
 
-			if (streq(name, kmod_module_get_name(mod))) {
+			if (streq(name, mod->name)) {
 				filtered = true;
 				break;
 			}
