@@ -18,8 +18,6 @@ Features:
 
 * provide 1:1 compatibility with module-init-tools's modprobe
    - dump configuration
-   - 'modprobe -r' should remove modules which usecount became 0 because of
-     module's removal
 
 * Add kmod_validate(). It checks if all config files and indexes are still
   valid. We need to save the mtime of each config dir when starting up and when

@@ -418,7 +418,7 @@ static int rmmod_do_dependencies(struct kmod_module *parent)
 static int rmmod_do(struct kmod_module *mod)
 {
 	const char *modname = kmod_module_get_name(mod);
-	struct kmod_list *pre = NULL, *post = NULL;
+	struct kmod_list *pre = NULL, *post = NULL, *deps, *itr;
 	int err;
 
 	if (!ignore_commands) {
@@ -506,6 +506,17 @@ done:
 			    modname, strerror(-err));
 			goto error;
 		}
+	}
+
+	deps = kmod_module_get_dependencies(mod);
+	if (deps) {
+		kmod_list_foreach(itr, deps) {
+			struct kmod_module *dep = kmod_module_get_module(itr);
+			if (kmod_module_get_refcnt(dep) == 0) {
+				rmmod_do(dep);
+			}
+		}
+		kmod_module_unref_list(deps);
 	}
 
 error:
