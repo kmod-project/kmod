@@ -47,7 +47,7 @@ static int strip_modversion = 0;
 static int strip_vermagic = 0;
 static int remove_dependencies = 0;
 
-static const char cmdopts_s[] = "arRibft:lDcnC:d:S:sqvVh";
+static const char cmdopts_s[] = "arRibft:DcnC:d:S:sqvVh";
 static const struct option cmdopts[] = {
 	{"all", no_argument, 0, 'a'},
 	{"remove", no_argument, 0, 'r'},
@@ -62,7 +62,6 @@ static const struct option cmdopts[] = {
 	{"force-vermagic", no_argument, 0, 1},
 
 	{"type", required_argument, 0, 't'},
-	{"list", no_argument, 0, 'l'},
 	{"show-depends", no_argument, 0, 'D'},
 	{"showconfig", no_argument, 0, 'c'},
 	{"show-config", no_argument, 0, 'c'},
@@ -114,7 +113,6 @@ static void help(const char *progname)
 		"\n"
 		"Query Options:\n"
 		"\t-t, --type=DIR              Limit type used by --list\n"
-		"\t-l, --list                  List known modules\n"
 		"\t-D, --show-depends          Only print module dependencies and exit\n"
 		"\t-c, --showconfig            Print out known configuration and exit\n"
 		"\t-c, --show-config           Same as --showconfig\n"
@@ -206,19 +204,6 @@ static inline void _log(int prio, const char *fmt, ...)
 #define DBG(...) _log(LOG_DEBUG, __VA_ARGS__)
 #define LOG(...) _log(log_priority, __VA_ARGS__)
 #define SHOW(...) _show(__VA_ARGS__)
-
-static int show_list(struct kmod_ctx *ctx, const char *list_type, const char *pattern)
-{
-	ERR("TODO - list is missing in kmod.\n");
-	/*
-	  needs:
-	    struct kmod_list *kmod_get_dependencies(struct kmod_ctx *ctx);
-	    kmod_dependency_get_name()
-	    kmod_dependency_get_dependencies()
-	    kmod_dependency_unref_list()
-	*/
-	return -ENOENT;
-}
 
 static int show_config(struct kmod_ctx *ctx)
 {
@@ -1103,7 +1088,6 @@ static int do_modprobe(int argc, char **orig_argv)
 	int do_remove = 0;
 	int do_show_config = 0;
 	int do_show_modversions = 0;
-	int do_show_list = 0;
 	int err;
 
 	argv = prepend_options_from_env(&argc, orig_argv);
@@ -1152,9 +1136,6 @@ static int do_modprobe(int argc, char **orig_argv)
 			break;
 		case 't':
 			list_type = optarg;
-			break;
-		case 'l':
-			do_show_list = 1;
 			break;
 		case 'D':
 			ignore_loaded = 1;
@@ -1229,14 +1210,14 @@ static int do_modprobe(int argc, char **orig_argv)
 	args = argv + optind;
 	nargs = argc - optind;
 
-	if (!do_show_config && !do_show_list) {
+	if (!do_show_config) {
 		if (nargs == 0) {
 			fputs("Error: missing parameters. See -h.\n", stderr);
 			goto cmdline_failed;
 		}
 	}
 
-	if (!do_show_list && list_type != NULL) {
+	if (list_type != NULL) {
 		fputs("Error: -t (--type) only supported with -l (--list).\n",
 		      stderr);
 		goto cmdline_failed;
@@ -1272,9 +1253,7 @@ static int do_modprobe(int argc, char **orig_argv)
 		kmod_set_log_fn(ctx, log_syslog, NULL);
 	}
 
-	if (do_show_list)
-		err = show_list(ctx, list_type, nargs > 0 ? args[0] : NULL);
-	else if (do_show_config)
+	if (do_show_config)
 		err = show_config(ctx);
 	else if (do_show_modversions)
 		err = show_modversions(ctx, args[0]);
