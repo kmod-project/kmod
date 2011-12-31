@@ -19,10 +19,6 @@ Features:
 * provide 1:1 compatibility with module-init-tools's modprobe
    - dump configuration
 
-* Add kmod_validate(). It checks if all config files and indexes are still
-  valid. We need to save the mtime of each config dir when starting up and when
-  this function is called we stat the dir and compare the mtimes.
-
 * review API, maybe unify all of these setters:
    - kmod_module_version_get_symbol()
    - kmod_module_version_get_crc()

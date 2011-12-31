@@ -29,6 +29,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <sys/utsname.h>
+#include <sys/stat.h>
 
 #include "libkmod.h"
 #include "libkmod-private.h"
@@ -609,6 +610,62 @@ int kmod_lookup_alias_from_commands(struct kmod_ctx *ctx, const char *name,
 	}
 
 	return nmatch;
+}
+
+static bool is_cache_invalid(const char *path, unsigned long long stamp)
+{
+	struct stat st;
+
+	if (stat(path, &st) < 0)
+		return true;
+
+	if (stamp != ts_usec(&st.st_mtim))
+		return true;
+
+	return false;
+}
+
+/**
+ * kmod_validate_resources:
+ * @ctx: kmod library context
+ *
+ * Check if indexes and configuration files changed on disk and the current
+ * context is not valid anymore.
+ *
+ * Returns KMOD_RESOURCES_OK if resources are still valid,
+ * KMOD_RESOURCES_MUST_RELOAD if it's sufficient to call
+ * kmod_unload_resources() and kmod_load_resources() or
+ * KMOD_RESOURCES_MUST_RECREATE if @ctx must be re-created.
+ */
+KMOD_EXPORT int kmod_validate_resources(struct kmod_ctx *ctx)
+{
+	struct kmod_list *l;
+	size_t i;
+
+	if (ctx == NULL || ctx->config == NULL)
+		return KMOD_RESOURCES_MUST_RECREATE;
+
+	kmod_list_foreach(l, ctx->config->paths) {
+		struct kmod_config_path *cf = l->data;
+
+		if (is_cache_invalid(cf->path, cf->stamp))
+			return KMOD_RESOURCES_MUST_RECREATE;
+	}
+
+	for (i = 0; i < _KMOD_INDEX_LAST; i++) {
+		char path[PATH_MAX];
+
+		if (ctx->indexes[i] == NULL)
+			continue;
+
+		snprintf(path, sizeof(path), "%s/%s.bin", ctx->dirname,
+							index_files[i]);
+
+		if (is_cache_invalid(path, ctx->indexes_stamp[i]))
+			return KMOD_RESOURCES_MUST_RELOAD;
+	}
+
+	return KMOD_RESOURCES_OK;
 }
 
 /**

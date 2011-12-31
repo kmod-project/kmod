@@ -52,6 +52,14 @@ void kmod_set_userdata(struct kmod_ctx *ctx, const void *userdata);
 int kmod_load_resources(struct kmod_ctx *ctx);
 void kmod_unload_resources(struct kmod_ctx *ctx);
 
+enum kmod_resources {
+	KMOD_RESOURCES_OK = 0,
+	KMOD_RESOURCES_MUST_RELOAD = 1,
+	KMOD_RESOURCES_MUST_RECREATE = 2,
+};
+
+int kmod_validate_resources(struct kmod_ctx *ctx);
+
 /*
  * kmod_list
  *

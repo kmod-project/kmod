@@ -66,6 +66,8 @@ global:
 
 LIBKMOD_3 {
 global:
+	kmod_validate_resources;
+
 	kmod_module_get_symbols;
 	kmod_module_symbol_get_symbol;
 	kmod_module_symbol_get_crc;
