@@ -555,9 +555,7 @@ static int rmmod_alias(struct kmod_ctx *ctx, const char *alias)
 
 static int rmmod(struct kmod_ctx *ctx, const char *name)
 {
-	struct stat st;
-
-	if (stat(name, &st) == 0)
+	if (access(name, F_OK) == 0)
 		return rmmod_path(ctx, name);
 	else
 		return rmmod_alias(ctx, name);
