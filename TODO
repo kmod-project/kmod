@@ -63,3 +63,24 @@ Things to be added/removed in kernel (check what is really needed):
 * module's size should be available under /sys
 
 * kill /proc/modules ?
+
+Things that are different from module-init-tools on purpose (!TODO)
+===================================================================
+
+modprobe
+--------
+
+* 'modprobe -l' was marked as deprecated and does not exist anymore
+
+* 'modprobe -t' is gone, together with 'modprobe -l'
+
+* there's and additional '--remove-dependencies' flags to kmod-modprobe so we
+  can remove modules depending on that one
+
+* kmod-modprobe doesn't parse configuration files whose name don't end on
+  '.alias'  or '.conf'. modprobe used to warn about these files.
+
+depmod
+------
+
+* there's no 'depmod -m' option: legacy modules.*map files are gone
