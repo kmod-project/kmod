@@ -509,12 +509,14 @@ done:
 	}
 
 	deps = kmod_module_get_dependencies(mod);
-	if (deps) {
+	if (deps != NULL) {
 		kmod_list_foreach(itr, deps) {
 			struct kmod_module *dep = kmod_module_get_module(itr);
-			if (kmod_module_get_refcnt(dep) == 0) {
+
+			if (kmod_module_get_refcnt(dep) == 0)
 				rmmod_do(dep);
-			}
+
+			kmod_module_unref(dep);
 		}
 		kmod_module_unref_list(deps);
 	}
