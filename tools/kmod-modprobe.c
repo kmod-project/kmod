@@ -46,6 +46,7 @@ static int force = 0;
 static int strip_modversion = 0;
 static int strip_vermagic = 0;
 static int remove_dependencies = 0;
+static int quiet_inuse = 0;
 
 static const char cmdopts_s[] = "arRibft:DcnC:d:S:sqvVh";
 static const struct option cmdopts[] = {
@@ -418,7 +419,7 @@ static int rmmod_do_dependencies(struct kmod_module *parent)
 static int rmmod_do(struct kmod_module *mod)
 {
 	const char *modname = kmod_module_get_name(mod);
-	struct kmod_list *pre = NULL, *post = NULL, *deps, *itr;
+	struct kmod_list *pre = NULL, *post = NULL, *deps;
 	int err;
 
 	if (!ignore_commands) {
@@ -472,10 +473,13 @@ static int rmmod_do(struct kmod_module *mod)
 
 	if (!ignore_loaded) {
 		int usage = kmod_module_get_refcnt(mod);
+
 		if (usage > 0) {
-			LOG("Module %s is in use.\n", modname);
+			if (!quiet_inuse)
+				LOG("Module %s is in use.\n", modname);
+
 			err = -EBUSY;
-			goto error;
+			goto done_deps;
 		}
 	}
 
@@ -508,8 +512,15 @@ done:
 		}
 	}
 
+done_deps:
 	deps = kmod_module_get_dependencies(mod);
 	if (deps != NULL) {
+		struct kmod_list *itr;
+
+		first_time = 0;
+		ignore_commands = 0;
+		quiet_inuse = 1;
+
 		kmod_list_foreach(itr, deps) {
 			struct kmod_module *dep = kmod_module_get_module(itr);
 
