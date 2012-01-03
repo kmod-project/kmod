@@ -205,17 +205,18 @@ inline void *memdup(const void *p, size_t n)
 }
 
 ssize_t read_str_safe(int fd, char *buf, size_t buflen) {
-	size_t todo = buflen;
-	size_t done;
+	size_t todo = buflen - 1;
+	size_t done = 0;
 
 	do {
-		ssize_t r = read(fd, buf, todo);
+		ssize_t r = read(fd, buf + done, todo);
 
 		if (r == 0)
 			break;
-		else if (r > 0)
+		else if (r > 0) {
 			todo -= r;
-		else {
+			done += r;
+		} else {
 			if (errno == EAGAIN || errno == EWOULDBLOCK ||
 				errno == EINTR)
 				continue;
@@ -224,17 +225,7 @@ ssize_t read_str_safe(int fd, char *buf, size_t buflen) {
 		}
 	} while (todo > 0);
 
-	done = buflen - todo;
-
-	if (done == 0)
-		buf[0] = '\0';
-	else {
-		if (done < buflen)
-			buf[done] = '\0';
-		else if (buf[done - 1] != '\0')
-			return -ENOSPC;
-	}
-
+	buf[done] = '\0';
 	return done;
 }
 
