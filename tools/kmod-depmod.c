@@ -852,7 +852,7 @@ static int cfg_files_insert_sorted(struct cfg_file ***p_files, size_t *p_n_files
 	else {
 		name = basename(dir);
 		namelen = strlen(name);
-		dirlen -= namelen - 1;
+		dirlen -= namelen + 1;
 	}
 
 	n_files = *p_n_files;
