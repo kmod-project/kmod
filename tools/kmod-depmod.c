@@ -664,7 +664,7 @@ static int cfg_search_add(struct cfg *cfg, const char *path, uint8_t builtin)
 	if (builtin)
 		s->len = 0;
 	else {
-		s->len = len;
+		s->len = len - 1;
 		memcpy(s->path, path, len);
 	}
 
@@ -687,19 +687,14 @@ static int cfg_override_add(struct cfg *cfg, const char *modname, const char *su
 	size_t subdirlen = strlen(subdir);
 	size_t i;
 
-	o = malloc(sizeof(struct cfg_override) + cfg->dirnamelen + 1 +
-		   subdirlen + 1 + modnamelen + 1);
+	o = malloc(sizeof(struct cfg_override) + subdirlen + 1
+		   + modnamelen + 1);
 	if (o == NULL) {
 		ERR("override add: out of memory\n");
 		return -ENOMEM;
 	}
-	memcpy(o->path, cfg->dirname, cfg->dirnamelen);
-	i = cfg->dirnamelen;
-	o->path[i] = '/';
-	i++;
-
-	memcpy(o->path + i, subdir, subdirlen);
-	i += subdirlen;
+	memcpy(o->path, subdir, subdirlen);
+	i = subdirlen;
 	o->path[i] = '/';
 	i++;
 
@@ -1139,7 +1134,7 @@ static int depmod_module_add(struct depmod *depmod, struct kmod_module *kmod)
 	array_init(&mod->deps, 4);
 
 	mod->path = kmod_module_get_path(kmod);
-	mod->baselen = strrchr(mod->path, '/') - mod->path + 1;
+	mod->baselen = strrchr(mod->path, '/') - mod->path;
 	if (strncmp(mod->path, cfg->dirname, cfg->dirnamelen) == 0 &&
 			mod->path[cfg->dirnamelen] == '/')
 		mod->relpath = mod->path + cfg->dirnamelen + 1;
@@ -1221,6 +1216,14 @@ static int depmod_module_is_higher_priority(const struct depmod *depmod, const s
 	size_t oldlen = mod->baselen + mod->modnamelen;
 	const char *oldpath = mod->path;
 	int i, bprio = -1, oldprio = -1, newprio = -1;
+
+	assert(strncmp(newpath, cfg->dirname, cfg->dirnamelen) == 0);
+	assert(strncmp(oldpath, cfg->dirname, cfg->dirnamelen) == 0);
+
+	newpath += cfg->dirnamelen + 1;
+	newlen -= cfg->dirnamelen + 1;
+	oldpath += cfg->dirnamelen + 1;
+	oldlen -= cfg->dirnamelen + 1;
 
 	DBG("comparing priorities of %s and %s\n",
 	    oldpath, newpath);
