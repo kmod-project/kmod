@@ -1049,6 +1049,7 @@ int kmod_elf_get_dependency_symbols(const struct kmod_elf *elf, struct kmod_modv
 	if (count == 0) {
 		free(visited_versions);
 		free(symcrcs);
+		*array = NULL;
 		return 0;
 	}
 
