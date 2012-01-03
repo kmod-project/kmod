@@ -748,7 +748,7 @@ static int cfg_file_parse(struct cfg *cfg, const char *filename)
 	fp = fopen(filename, "r");
 	if (fp == NULL) {
 		err = -errno;
-		ERR("file parse %s: %m", filename);
+		ERR("file parse %s: %m\n", filename);
 		return err;
 	}
 
@@ -2696,7 +2696,7 @@ static int do_depmod(int argc, char *argv[])
 			struct kmod_module *mod;
 
 			if (path[0] != '/') {
-				CRIT("%s: not absolute path.", path);
+				CRIT("%s: not absolute path.\n", path);
 				goto cmdline_modules_failed;
 			}
 
