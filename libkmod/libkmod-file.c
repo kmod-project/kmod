@@ -38,6 +38,12 @@
 #include <zlib.h>
 #endif
 
+struct kmod_file;
+struct file_ops {
+	int (*load)(struct kmod_file *file);
+	void (*unload)(struct kmod_file *file);
+};
+
 struct kmod_file {
 #ifdef ENABLE_XZ
 	bool xz_used;
@@ -48,21 +54,10 @@ struct kmod_file {
 	int fd;
 	off_t size;
 	void *memory;
+	const struct file_ops *ops;
 };
 
 #ifdef ENABLE_XZ
-static bool xz_detect(struct kmod_file *file)
-{
-	ssize_t ret;
-	char buf[6];
-
-	ret = read(file->fd, buf, sizeof(buf));
-	if (ret < 0 || lseek(file->fd, 0, SEEK_SET))
-		return -errno;
-	return ret == sizeof(buf) &&
-	       memcmp(buf, "\xFD""7zXZ\x00", sizeof(buf)) == 0;
-}
-
 static void xz_uncompress_belch(lzma_ret ret)
 {
 	switch (ret) {
@@ -133,16 +128,16 @@ static int xz_uncompress(lzma_stream *strm, struct kmod_file *file)
 			goto out;
 		}
 	}
+	file->xz_used = true;
 	file->memory = p;
 	file->size = total;
 	return 0;
  out:
 	free(p);
-	close(file->fd);
 	return ret;
 }
 
-static int xz_file_open(struct kmod_file *file)
+static int load_xz(struct kmod_file *file)
 {
 	lzma_stream strm = LZMA_STREAM_INIT;
 	lzma_ret lzret;
@@ -151,46 +146,29 @@ static int xz_file_open(struct kmod_file *file)
 	lzret = lzma_stream_decoder(&strm, UINT64_MAX, LZMA_CONCATENATED);
 	if (lzret == LZMA_MEM_ERROR) {
 		fprintf(stderr, "xz: %s\n", strerror(ENOMEM));
-		close(file->fd);
 		return -ENOMEM;
 	} else if (lzret != LZMA_OK) {
 		fprintf(stderr, "xz: Internal error (bug)\n");
-		close(file->fd);
 		return -EINVAL;
 	}
 	ret = xz_uncompress(&strm, file);
 	lzma_end(&strm);
 	return ret;
 }
+
+static void unload_xz(struct kmod_file *file)
+{
+	if (!file->xz_used)
+		return;
+	free(file->memory);
+}
+
+static const char magic_xz[] = {0xfd, '7', 'z', 'X', 'Z', 0};
 #endif
 
 #ifdef ENABLE_ZLIB
 #define READ_STEP (4 * 1024 * 1024)
-
-static bool check_zlib(struct kmod_file *file)
-{
-	uint8_t magic[2] = {0, 0}, zlibmagic[2] = {0x1f, 0x8b};
-	size_t done = 0, todo = 2;
-	while (todo > 0) {
-		ssize_t r = read(file->fd, magic + done, todo);
-		if (r > 0){
-			todo -= r;
-			done += r;
-		} else if (r == 0)
-			goto error;
-		else if (errno == EAGAIN || errno == EINTR)
-			continue;
-		else
-			goto error;
-	}
-	lseek(file->fd, 0, SEEK_SET);
-	return memcmp(magic, zlibmagic, 2) == 0;
-error:
-	lseek(file->fd, 0, SEEK_SET);
-	return false;
-}
-
-static int zlib_file_open(struct kmod_file *file)
+static int load_zlib(struct kmod_file *file)
 {
 	int err = 0;
 	off_t did = 0, total = 0;
@@ -199,9 +177,9 @@ static int zlib_file_open(struct kmod_file *file)
 	errno = 0;
 	file->gzf = gzdopen(file->fd, "rb");
 	if (file->gzf == NULL) {
-		close(file->fd);
 		return -errno;
 	}
+	file->fd = -1; /* now owned by gzf due gzdopen() */
 
 	for (;;) {
 		int r;
@@ -234,34 +212,60 @@ error:
 	gzclose(file->gzf);
 	return err;
 }
+
+static void unload_zlib(struct kmod_file *file)
+{
+	if (file->gzf == NULL)
+		return;
+	free(file->memory);
+	gzclose(file->gzf); /* closes file->fd */
+}
+
+static const char magic_zlib[] = {0x1f, 0x8b};
 #endif
 
-static int reg_file_open(struct kmod_file *file)
+static const struct comp_type {
+	size_t magic_size;
+	const char *magic_bytes;
+	const struct file_ops ops;
+} comp_types[] = {
+#ifdef ENABLE_XZ
+	{sizeof(magic_xz), magic_xz, {load_xz, unload_xz}},
+#endif
+#ifdef ENABLE_ZLIB
+	{sizeof(magic_zlib), magic_zlib, {load_zlib, unload_zlib}},
+#endif
+	{0, NULL, {NULL, NULL}}
+};
+
+static int load_reg(struct kmod_file *file)
 {
 	struct stat st;
-	int err = 0;
 
-	if (fstat(file->fd, &st) < 0) {
-		err = -errno;
-		goto error;
-	}
+	if (fstat(file->fd, &st) < 0)
+		return -errno;
 
 	file->size = st.st_size;
 	file->memory = mmap(0, file->size, PROT_READ, MAP_PRIVATE, file->fd, 0);
-	if (file->memory == MAP_FAILED) {
-		err = -errno;
-		goto error;
-	}
-
+	if (file->memory == MAP_FAILED)
+		return -errno;
 	return 0;
-error:
-	close(file->fd);
-	return err;
 }
+
+static void unload_reg(struct kmod_file *file)
+{
+	munmap(file->memory, file->size);
+}
+
+struct file_ops reg_ops = {
+	load_reg, unload_reg
+};
 
 struct kmod_file *kmod_file_open(const char *filename)
 {
 	struct kmod_file *file = calloc(1, sizeof(struct kmod_file));
+	const struct comp_type *itr;
+	size_t magic_size_max = 0;
 	int err;
 
 	if (file == NULL)
@@ -273,20 +277,45 @@ struct kmod_file *kmod_file_open(const char *filename)
 		goto error;
 	}
 
-#ifdef ENABLE_XZ
-	if (xz_detect(file))
-		err = xz_file_open(file);
-	else
-#endif
-#ifdef ENABLE_ZLIB
-	if (check_zlib(file))
-		err = zlib_file_open(file);
-	else
-#endif
-		err = reg_file_open(file);
+	for (itr = comp_types; itr->ops.load != NULL; itr++) {
+		if (magic_size_max < itr->magic_size)
+			magic_size_max = itr->magic_size;
+	}
 
+	if (magic_size_max > 0) {
+		char *buf = alloca(magic_size_max + 1);
+		ssize_t sz;
+
+		if (buf == NULL) {
+			err = -errno;
+			goto error;
+		}
+		sz = read_str_safe(file->fd, buf, magic_size_max + 1);
+		lseek(file->fd, 0, SEEK_SET);
+		if (sz != (ssize_t)magic_size_max) {
+			if (sz < 0)
+				err = sz;
+			else
+				err = -EINVAL;
+			goto error;
+		}
+
+		for (itr = comp_types; itr->ops.load != NULL; itr++) {
+			if (memcmp(buf, itr->magic_bytes, itr->magic_size) == 0)
+				break;
+		}
+		if (itr->ops.load != NULL)
+			file->ops = &itr->ops;
+	}
+
+	if (file->ops == NULL)
+		file->ops = &reg_ops;
+
+	err = file->ops->load(file);
 error:
 	if (err < 0) {
+		if (file->fd >= 0)
+			close(file->fd);
 		free(file);
 		errno = -err;
 		return NULL;
@@ -307,22 +336,8 @@ off_t kmod_file_get_size(const struct kmod_file *file)
 
 void kmod_file_unref(struct kmod_file *file)
 {
-#ifdef ENABLE_XZ
-	if (file->xz_used) {
-		free(file->memory);
+	file->ops->unload(file);
+	if (file->fd >= 0)
 		close(file->fd);
-	} else
-#endif
-#ifdef ENABLE_ZLIB
-	if (file->gzf != NULL) {
-		free(file->memory);
-		gzclose(file->gzf);
-	} else {
-#endif
-		munmap(file->memory, file->size);
-		close(file->fd);
-#ifdef ENABLE_ZLIB
-	}
-#endif
 	free(file);
 }
