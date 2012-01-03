@@ -100,6 +100,7 @@ static void help(const char *progname)
 		"\t-e, --errsyms        Report not supplied symbols\n"
 		"\t-n, --show           Write the dependency file on stdout only\n"
 		"\t-P, --symbol-prefix  Architecture symbol prefix\n"
+		"\t-C, --config=PATH    Read configuration from PATH\n"
 		"\t-v, --verbose        Enable verbose mode\n"
 		"\t-w, --warn           Warn on duplicates\n"
 		"\t-V, --version        show version\n"
