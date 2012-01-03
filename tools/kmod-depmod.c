@@ -1173,34 +1173,19 @@ static int depmod_module_add(struct depmod *depmod, struct kmod_module *kmod)
 	return 0;
 }
 
-static int depmod_module_replace(struct depmod *depmod, struct mod *mod, struct kmod_module *kmod)
+static int depmod_module_del(struct depmod *depmod, struct mod *mod)
 {
-	const struct cfg *cfg = depmod->cfg;
-	const char *path, *relpath;
-	int err;
-
-	path = kmod_module_get_path(kmod);
-	if (strncmp(path, cfg->dirname, cfg->dirnamelen) == 0 &&
-			path[cfg->dirnamelen] == '/')
-		relpath = path + cfg->dirnamelen + 1;
-	else
-		relpath = NULL;
-
-	if (relpath != NULL) {
-		err = hash_add_unique(depmod->modules_by_relpath, relpath, mod);
-		if (err < 0) {
-			ERR("hash_add_unique %s: %s\n",
-			    relpath, strerror(-err));
-			return err;
-		}
-	}
+	DBG("del %p kmod=%p, path=%s\n", mod, mod->kmod, mod->path);
 
 	if (mod->relpath != NULL)
 		hash_del(depmod->modules_by_relpath, mod->relpath);
-	kmod_module_unref(mod->kmod);
-	mod->relpath = relpath;
-	mod->path = path;
-	mod->kmod = kmod;
+
+	hash_del(depmod->modules_by_name, mod->modname);
+
+	assert(depmod->modules.array[mod->idx] == mod);
+	array_remove_at(&depmod->modules, mod->idx);
+
+	mod_free(mod);
 	return 0;
 }
 
@@ -1263,7 +1248,8 @@ static int depmod_modules_search_file(struct depmod *depmod, size_t baselen, siz
 {
 	struct kmod_module *kmod;
 	struct mod *mod;
-	const char *relpath, *modname;
+	const char *relpath;
+	char modname[NAME_MAX];
 	const struct kmod_ext *eitr;
 	size_t modnamelen;
 	uint8_t matches = 0;
@@ -1280,45 +1266,47 @@ static int depmod_modules_search_file(struct depmod *depmod, size_t baselen, siz
 	if (!matches)
 		return 0;
 
+	if (path_to_modname(path, modname, &modnamelen) == NULL) {
+		ERR("Could not get modname from path %s\n", path);
+		return -EINVAL;
+	}
+
 	relpath = path + depmod->cfg->dirnamelen + 1;
-	DBG("try %s\n", relpath);
+	DBG("try %s (%s)\n", relpath, modname);
 
-	err = kmod_module_new_from_path(depmod->ctx, path, &kmod);
-	if (err < 0) {
-		ERR("Could not create module %s: %s\n",
-		    path, strerror(-err));
-		return err;
-	}
-
-	modname = kmod_module_get_name(kmod);
 	mod = hash_find(depmod->modules_by_name, modname);
-	if (mod == NULL) {
-		err = depmod_module_add(depmod, kmod);
-		if (err < 0) {
-			ERR("Could not add module %s: %s\n",
-			    path, strerror(-err));
-			kmod_module_unref(kmod);
-			return err;
-		}
-		return 0;
-	}
+	if (mod == NULL)
+		goto add;
 
-	modnamelen = strlen(modname);
 	if (depmod_module_is_higher_priority(depmod, mod, baselen,
 						namelen, modnamelen, path)) {
 		DBG("Ignored lower priority: %s, higher: %s\n",
 		    path, mod->path);
-		kmod_module_unref(kmod);
 		return 0;
 	}
 
-	err = depmod_module_replace(depmod, mod, kmod);
+	DBG("Replace lower priority %s with new module %s\n",
+	    mod->relpath, relpath);
+	err = depmod_module_del(depmod, mod);
 	if (err < 0) {
-		ERR("Could not replace existing module %s\n", path);
-		kmod_module_unref(kmod);
+		ERR("Could not del module %s: %s\n", mod->path, strerror(-err));
 		return err;
 	}
 
+add:
+	err = kmod_module_new_from_path(depmod->ctx, path, &kmod);
+	if (err < 0) {
+		ERR("Could not create module %s: %s\n", path, strerror(-err));
+		return err;
+	}
+
+	err = depmod_module_add(depmod, kmod);
+	if (err < 0) {
+		ERR("Could not add module %s: %s\n",
+		    path, strerror(-err));
+		kmod_module_unref(kmod);
+		return err;
+	}
 	return 0;
 }
 
