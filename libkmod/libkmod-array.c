@@ -90,3 +90,26 @@ void array_sort(struct array *array, int (*cmp)(const void *a, const void *b))
 {
 	qsort(array->array, array->count, sizeof(void *), cmp);
 }
+
+int array_remove_at(struct array *array, unsigned int pos)
+{
+	if (array->count <= pos)
+		return -ENOENT;
+
+	array->count--;
+	if (pos < array->count)
+		memmove(array->array + pos, array->array + pos + 1,
+			sizeof(void *) * (array->count - pos));
+
+	if (array->count + array->step < array->total) {
+		size_t new_total = array->total - array->step;
+		void *tmp = realloc(array->array, sizeof(void *) * new_total);
+		assert(array->step > 0);
+		if (tmp == NULL)
+			return 0;
+		array->array = tmp;
+		array->total = new_total;
+	}
+
+	return 0;
+}
