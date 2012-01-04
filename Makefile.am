@@ -92,10 +92,13 @@ install-exec-hook:
 uninstall-hook:
 	rm -f $(DESTDIR)$(rootlibdir)/libkmod.so*
 
+noinst_PROGRAMS =
+
 if BUILD_TOOLS
-bin_PROGRAMS = tools/kmod-insmod tools/kmod-rmmod tools/kmod-lsmod \
-	tools/kmod-modprobe tools/kmod-modinfo tools/kmod \
-	tools/kmod-depmod
+bin_PROGRAMS = tools/kmod
+
+noinst_PROGRAMS += tools/kmod-insmod tools/kmod-rmmod tools/kmod-lsmod \
+		   tools/kmod-modprobe tools/kmod-modinfo tools/kmod-depmod
 
 tools_kmod_insmod_LDADD = libkmod/libkmod.la
 tools_kmod_rmmod_LDADD = libkmod/libkmod.la
@@ -119,18 +122,16 @@ tools_kmod_LDADD = libkmod/libkmod-util.la \
 		   libkmod/libkmod.la
 endif
 
-TESTS = test/test-init test/test-loaded
-
 check_PROGRAMS = test/test-init test/test-loaded
 test_test_init_LDADD = libkmod/libkmod.la
 test_test_loaded_LDADD = libkmod/libkmod.la
 
-noinst_PROGRAMS = test/test-insmod test/test-rmmod test/test-rmmod2 \
-		  test/test-lookup test/test-path-from-name \
-		  test/test-get-dependencies test/test-mod-double-ref \
-		  test/test-blacklist test/test-elf test/test-probe \
-		  test/test-invalidate-config
-		  $(check_PROGRAMS)
+noinst_PROGRAMS += test/test-insmod test/test-rmmod test/test-rmmod2 \
+		   test/test-lookup test/test-path-from-name \
+		   test/test-get-dependencies test/test-mod-double-ref \
+		   test/test-blacklist test/test-elf test/test-probe \
+		   test/test-invalidate-config \
+		   $(check_PROGRAMS)
 
 test_test_rmmod_LDADD = libkmod/libkmod.la
 test_test_rmmod2_LDADD = libkmod/libkmod.la
