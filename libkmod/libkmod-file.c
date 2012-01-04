@@ -257,7 +257,7 @@ static void unload_reg(struct kmod_file *file)
 	munmap(file->memory, file->size);
 }
 
-struct file_ops reg_ops = {
+static const struct file_ops reg_ops = {
 	load_reg, unload_reg
 };
 
