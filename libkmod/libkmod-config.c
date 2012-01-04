@@ -796,6 +796,7 @@ int kmod_config_new(struct kmod_ctx *ctx, struct kmod_config **p_config,
 		goto oom;
 
 	config->paths = path_list;
+	config->ctx = ctx;
 
 	for (; list != NULL; list = kmod_list_remove(list)) {
 		char fn[PATH_MAX];
