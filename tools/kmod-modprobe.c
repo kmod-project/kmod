@@ -232,7 +232,7 @@ static int show_modversions(struct kmod_ctx *ctx, const char *filename)
 
 	err = kmod_module_get_versions(mod, &list);
 	if (err < 0) {
-		LOG("Could not get modversions of %s: %s\n",
+		LOG("could not get modversions of %s: %s\n",
 			filename, strerror(-err));
 		kmod_module_unref(mod);
 		return err;
@@ -865,7 +865,7 @@ static int insmod_alias(struct kmod_ctx *ctx, const char *alias, const char *ext
 		DBG("using blacklist: input %p, output=%p\n", list, filtered);
 		kmod_module_unref_list(list);
 		if (err < 0) {
-			LOG("Could not filter alias list!\n");
+			LOG("could not filter alias list!\n");
 			return err;
 		}
 		list = filtered;

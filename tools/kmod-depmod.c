@@ -1267,7 +1267,7 @@ static int depmod_modules_search_file(struct depmod *depmod, size_t baselen, siz
 		return 0;
 
 	if (path_to_modname(path, modname, &modnamelen) == NULL) {
-		ERR("Could not get modname from path %s\n", path);
+		ERR("could not get modname from path %s\n", path);
 		return -EINVAL;
 	}
 
@@ -1289,20 +1289,20 @@ static int depmod_modules_search_file(struct depmod *depmod, size_t baselen, siz
 	    mod->relpath, relpath);
 	err = depmod_module_del(depmod, mod);
 	if (err < 0) {
-		ERR("Could not del module %s: %s\n", mod->path, strerror(-err));
+		ERR("could not del module %s: %s\n", mod->path, strerror(-err));
 		return err;
 	}
 
 add:
 	err = kmod_module_new_from_path(depmod->ctx, path, &kmod);
 	if (err < 0) {
-		ERR("Could not create module %s: %s\n", path, strerror(-err));
+		ERR("could not create module %s: %s\n", path, strerror(-err));
 		return err;
 	}
 
 	err = depmod_module_add(depmod, kmod);
 	if (err < 0) {
-		ERR("Could not add module %s: %s\n",
+		ERR("could not add module %s: %s\n",
 		    path, strerror(-err));
 		kmod_module_unref(kmod);
 		return err;
@@ -1401,7 +1401,7 @@ static int depmod_modules_search(struct depmod *depmod)
 	int err;
 	if (d == NULL) {
 		err = -errno;
-		ERR("Couldn't open directory %s: %m\n", depmod->cfg->dirname);
+		ERR("could not open directory %s: %m\n", depmod->cfg->dirname);
 		return err;
 	}
 
@@ -1824,7 +1824,7 @@ static int output_deps(struct depmod *depmod, FILE *out)
 
 		deps = mod_get_all_sorted_dependencies(mod, &n_deps);
 		if (deps == NULL) {
-			ERR("Could not get all sorted dependencies of %s\n", p);
+			ERR("could not get all sorted dependencies of %s\n", p);
 			goto end;
 		}
 
@@ -1872,7 +1872,7 @@ static int output_deps_bin(struct depmod *depmod, FILE *out)
 
 		deps = mod_get_all_sorted_dependencies(mod, &n_deps);
 		if (deps == NULL && n_deps > 0) {
-			ERR("Could not get all sorted dependencies of %s\n", p);
+			ERR("could not get all sorted dependencies of %s\n", p);
 			continue;
 		}
 
@@ -2109,7 +2109,7 @@ static int output_builtin_bin(struct depmod *depmod, FILE *out)
 	in = fopen(infile, "r");
 	if (in == NULL) {
 		int err = -errno;
-		ERR("Could not open %s: %m\n", infile);
+		ERR("could not open %s: %m\n", infile);
 		return err;
 	}
 
@@ -2215,7 +2215,7 @@ static int depmod_output(struct depmod *depmod, FILE *out)
 		dfd = open(dname, O_RDONLY);
 		if (dfd < 0) {
 			err = -errno;
-			CRIT("Could not open directory %s: %m\n", dname);
+			CRIT("could not open directory %s: %m\n", dname);
 			return err;
 		}
 	}
@@ -2478,13 +2478,13 @@ static int depfile_up_to_date(const char *dirname)
 	int err;
 	if (d == NULL) {
 		err = -errno;
-		ERR("Couldn't open directory %s: %m\n", dirname);
+		ERR("could not open directory %s: %m\n", dirname);
 		return err;
 	}
 
 	if (fstatat(dirfd(d), "modules.dep", &st, 0) != 0) {
 		err = -errno;
-		ERR("Couldn't fstatat(%s, modules.dep): %m\n", dirname);
+		ERR("could not fstatat(%s, modules.dep): %m\n", dirname);
 		closedir(d);
 		return err;
 	}
@@ -2655,14 +2655,14 @@ static int do_depmod(int argc, char *argv[])
 	if (module_symvers != NULL) {
 		err = depmod_load_symvers(&depmod, module_symvers);
 		if (err < 0) {
-			CRIT("Could not load %s: %s\n", module_symvers,
+			CRIT("could not load %s: %s\n", module_symvers,
 			     strerror(-err));
 			goto cmdline_failed;
 		}
 	} else if (system_map != NULL) {
 		err = depmod_load_system_map(&depmod, system_map);
 		if (err < 0) {
-			CRIT("Could not load %s: %s\n", module_symvers,
+			CRIT("could not load %s: %s\n", module_symvers,
 			     strerror(-err));
 			goto cmdline_failed;
 		}
@@ -2674,12 +2674,12 @@ static int do_depmod(int argc, char *argv[])
 	if (all) {
 		err = cfg_load(&cfg, config_paths);
 		if (err < 0) {
-			CRIT("Could not load configuration files\n");
+			CRIT("could not load configuration files\n");
 			goto cmdline_modules_failed;
 		}
 		err = depmod_modules_search(&depmod);
 		if (err < 0) {
-			CRIT("Could search modules: %s\n", strerror(-err));
+			CRIT("could not search modules: %s\n", strerror(-err));
 			goto cmdline_modules_failed;
 		}
 	} else {
@@ -2694,14 +2694,14 @@ static int do_depmod(int argc, char *argv[])
 
 			err = kmod_module_new_from_path(depmod.ctx, path, &mod);
 			if (err < 0) {
-				CRIT("Could not create module %s: %s\n",
+				CRIT("could not create module %s: %s\n",
 				     path, strerror(-err));
 				goto cmdline_modules_failed;
 			}
 
 			err = depmod_module_add(&depmod, mod);
 			if (err < 0) {
-				CRIT("Could not add module %s: %s\n",
+				CRIT("could not add module %s: %s\n",
 				     path, strerror(-err));
 				kmod_module_unref(mod);
 				goto cmdline_modules_failed;

@@ -181,7 +181,7 @@ static int modinfo_do(struct kmod_module *mod)
 
 	err = kmod_module_get_info(mod, &list);
 	if (err < 0) {
-		LOG("Could not get modinfo from '%s': %s\n",
+		LOG("could not get modinfo from '%s': %s\n",
 			kmod_module_get_name(mod), strerror(-err));
 		return err;
 	}
