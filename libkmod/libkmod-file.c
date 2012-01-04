@@ -59,26 +59,26 @@ struct kmod_file {
 };
 
 #ifdef ENABLE_XZ
-static void xz_uncompress_belch(lzma_ret ret)
+static void xz_uncompress_belch(struct kmod_file *file, lzma_ret ret)
 {
 	switch (ret) {
 	case LZMA_MEM_ERROR:
-		fprintf(stderr, "xz: %s\n", strerror(ENOMEM));
+		ERR(file->ctx, "xz: %s\n", strerror(ENOMEM));
 		break;
 	case LZMA_FORMAT_ERROR:
-		fprintf(stderr, "xz: File format not recognized\n");
+		ERR(file->ctx, "xz: File format not recognized\n");
 		break;
 	case LZMA_OPTIONS_ERROR:
-		fprintf(stderr, "xz: Unsupported compression options\n");
+		ERR(file->ctx, "xz: Unsupported compression options\n");
 		break;
 	case LZMA_DATA_ERROR:
-		fprintf(stderr, "xz: File is corrupt\n");
+		ERR(file->ctx, "xz: File is corrupt\n");
 		break;
 	case LZMA_BUF_ERROR:
-		fprintf(stderr, "xz: Unexpected end of input\n");
+		ERR(file->ctx, "xz: Unexpected end of input\n");
 		break;
 	default:
-		fprintf(stderr, "xz: Internal error (bug)\n");
+		ERR(file->ctx, "xz: Internal error (bug)\n");
 		break;
 	}
 }
@@ -124,7 +124,7 @@ static int xz_uncompress(lzma_stream *strm, struct kmod_file *file)
 		if (ret == LZMA_STREAM_END)
 			break;
 		if (ret != LZMA_OK) {
-			xz_uncompress_belch(ret);
+			xz_uncompress_belch(file, ret);
 			ret = -EINVAL;
 			goto out;
 		}
@@ -146,10 +146,10 @@ static int load_xz(struct kmod_file *file)
 
 	lzret = lzma_stream_decoder(&strm, UINT64_MAX, LZMA_CONCATENATED);
 	if (lzret == LZMA_MEM_ERROR) {
-		fprintf(stderr, "xz: %s\n", strerror(ENOMEM));
+		ERR(file->ctx, "xz: %s\n", strerror(ENOMEM));
 		return -ENOMEM;
 	} else if (lzret != LZMA_OK) {
-		fprintf(stderr, "xz: Internal error (bug)\n");
+		ERR(file->ctx, "xz: Internal error (bug)\n");
 		return -EINVAL;
 	}
 	ret = xz_uncompress(&strm, file);
