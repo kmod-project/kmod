@@ -1438,7 +1438,7 @@ static void depmod_modules_sort(struct depmod *depmod)
 		 depmod->cfg->dirname);
 	fp = fopen(order_file, "r");
 	if (fp == NULL) {
-		ERR("could not open %s: %m\n", order_file);
+		WRN("could not open %s: %m\n", order_file);
 		return;
 	}
 
@@ -2109,7 +2109,7 @@ static int output_builtin_bin(struct depmod *depmod, FILE *out)
 	in = fopen(infile, "r");
 	if (in == NULL) {
 		int err = -errno;
-		ERR("could not open %s: %m\n", infile);
+		WRN("could not open %s: %m\n", infile);
 		return err;
 	}
 
