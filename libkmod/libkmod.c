@@ -296,6 +296,7 @@ KMOD_EXPORT struct kmod_ctx *kmod_unref(struct kmod_ctx *ctx)
  * kmod_set_log_fn:
  * @ctx: kmod library context
  * @log_fn: function to be called for logging messages
+ * @data: data to pass to log function
  *
  * The built-in logging writes to stderr. It can be
  * overridden by a custom function, to plug log messages
