@@ -718,7 +718,7 @@ KMOD_EXPORT int kmod_module_remove_module(struct kmod_module *mod,
 
 	err = delete_module(mod->name, flags);
 	if (err != 0) {
-		ERR(mod->ctx, "Could not remove '%s': %s\n", mod->name,
+		ERR(mod->ctx, "could not remove '%s': %s\n", mod->name,
 							strerror(-err));
 		return err;
 	}
@@ -758,7 +758,7 @@ KMOD_EXPORT int kmod_module_insert_module(struct kmod_module *mod,
 
 	path = kmod_module_get_path(mod);
 	if (path == NULL) {
-		ERR(mod->ctx, "Could not find module by name='%s'\n", mod->name);
+		ERR(mod->ctx, "could not find module by name='%s'\n", mod->name);
 		return -ENOSYS;
 	}
 
