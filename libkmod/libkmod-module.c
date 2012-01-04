@@ -762,7 +762,7 @@ KMOD_EXPORT int kmod_module_insert_module(struct kmod_module *mod,
 		return -ENOSYS;
 	}
 
-	file = kmod_file_open(path);
+	file = kmod_file_open(mod->ctx, path);
 	if (file == NULL) {
 		err = -errno;
 		return err;
@@ -1938,7 +1938,7 @@ KMOD_EXPORT int kmod_module_get_info(const struct kmod_module *mod, struct kmod_
 	if (path == NULL)
 		return -ENOENT;
 
-	file = kmod_file_open(path);
+	file = kmod_file_open(mod->ctx, path);
 	if (file == NULL)
 		return -errno;
 
@@ -2116,7 +2116,7 @@ KMOD_EXPORT int kmod_module_get_versions(const struct kmod_module *mod, struct k
 	if (path == NULL)
 		return -ENOENT;
 
-	file = kmod_file_open(path);
+	file = kmod_file_open(mod->ctx, path);
 	if (file == NULL)
 		return -errno;
 
@@ -2281,7 +2281,7 @@ KMOD_EXPORT int kmod_module_get_symbols(const struct kmod_module *mod, struct km
 	if (path == NULL)
 		return -ENOENT;
 
-	file = kmod_file_open(path);
+	file = kmod_file_open(mod->ctx, path);
 	if (file == NULL)
 		return -errno;
 
@@ -2449,7 +2449,7 @@ KMOD_EXPORT int kmod_module_get_dependency_symbols(const struct kmod_module *mod
 	if (path == NULL)
 		return -ENOENT;
 
-	file = kmod_file_open(path);
+	file = kmod_file_open(mod->ctx, path);
 	if (file == NULL)
 		return -errno;
 
