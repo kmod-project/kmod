@@ -64,6 +64,10 @@ struct hash *hash_new(unsigned int n_buckets,
 void hash_free(struct hash *hash)
 {
 	struct hash_bucket *bucket, *bucket_end;
+
+	if (hash == NULL)
+		return;
+
 	bucket = hash->buckets;
 	bucket_end = bucket + hash->n_buckets;
 	for (; bucket < bucket_end; bucket++) {
