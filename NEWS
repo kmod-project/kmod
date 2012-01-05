@@ -1,3 +1,31 @@
+kmod 3
+======
+
+- New APIs in libkmod to:
+	- Get symbols from module, parsing the ELF section
+	- Get dependency symbols
+	- Check if resources are still valid or if libkmod must be reloaded
+	- Insert module like modprobe, checking (soft-)dependencies, commands,
+	  blacklist. It can run commands by itself and to call a callback
+	  function.
+
+- Support to load modules compressed with xz
+
+- Tools are now bundled together in a single tool called kmod. It can be
+  called using symlinks with the same names as tools from module-init-tools.
+  E.g: /usr/bin/lsmod -> /usr/bin/kmod. With this we are aiming to complete a
+  1:1 replacement of module-init-tools.
+
+- The only missing tool, depmod, was added to kmod together with the necessary
+  APIs in libkmod.
+
+- If a program using libkmod runs for a long time, as for example udev, it must
+  check if it doesn't have to re-load libkmod. A new helper function was added
+  in libkmod to check if context is still valid and udev is already using it.
+
+- An 'unaligned access' bug was fixed. So those architecture that does not
+  handle unaligned access can use kmod, too.
+
 kmod 2
 ======
 
