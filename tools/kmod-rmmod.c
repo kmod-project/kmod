@@ -128,7 +128,7 @@ static int do_rmmod(int argc, char *argv[])
 			flags &= ~KMOD_REMOVE_NOWAIT;
 			break;
 		case 'h':
-			help(argv[0]);
+			help(basename(argv[0]));
 			return EXIT_SUCCESS;
 		case 'V':
 			puts(PACKAGE " version " VERSION);

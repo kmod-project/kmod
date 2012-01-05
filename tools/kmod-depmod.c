@@ -2591,7 +2591,7 @@ static int do_depmod(int argc, char *argv[])
 			}
 			break;
 		case 'h':
-			help(argv[0]);
+			help(basename(argv[0]));
 			free(config_paths);
 			return EXIT_SUCCESS;
 		case 'V':

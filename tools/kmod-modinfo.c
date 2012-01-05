@@ -370,7 +370,7 @@ static int do_modinfo(int argc, char *argv[])
 			root = optarg;
 			break;
 		case 'h':
-			help(argv[0]);
+			help(basename(argv[0]));
 			return EXIT_SUCCESS;
 		case 'V':
 			puts(PACKAGE " version " VERSION);

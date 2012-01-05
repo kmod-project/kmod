@@ -81,7 +81,7 @@ static int do_insmod(int argc, char *argv[])
 			/* ignored, for compatibility only */
 			break;
 		case 'h':
-			help(argv[0]);
+			help(basename(argv[0]));
 			return EXIT_SUCCESS;
 		case 'V':
 			puts(PACKAGE " version " VERSION);
