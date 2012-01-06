@@ -279,6 +279,12 @@ static int modinfo_alias_do(struct kmod_ctx *ctx, const char *alias)
 		LOG("Module alias %s not found.\n", alias);
 		return err;
 	}
+
+	if (list == NULL) {
+		LOG("Module %s not found.\n", alias);
+		return -ENOENT;
+	}
+
 	kmod_list_foreach(l, list) {
 		struct kmod_module *mod = kmod_module_get_module(l);
 		int r = modinfo_do(mod);
