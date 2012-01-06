@@ -2039,14 +2039,13 @@ static int output_softdeps(struct depmod *depmod, FILE *out)
 static int output_symbols(struct depmod *depmod, FILE *out)
 {
 	struct hash_iter iter;
-	const void *v;
+	const struct symbol *sym;
 
 	fputs("# Aliases for symbols, used by symbol_request().\n", out);
 
 	hash_iter_init(depmod->symbols, &iter);
 
-	while (hash_iter_next(&iter, NULL, &v)) {
-		const struct symbol *sym = v;
+	while (hash_iter_next(&iter, NULL, (const void **) &sym)) {
 		if (sym->owner == NULL)
 			continue;
 
@@ -2063,7 +2062,7 @@ static int output_symbols_bin(struct depmod *depmod, FILE *out)
 	char alias[1024];
 	size_t baselen = sizeof("symbol:") - 1;
 	struct hash_iter iter;
-	const void *v;
+	const struct symbol *sym;
 
 	if (out == stdout)
 		return 0;
@@ -2075,9 +2074,8 @@ static int output_symbols_bin(struct depmod *depmod, FILE *out)
 	memcpy(alias, "symbol:", baselen);
 	hash_iter_init(depmod->symbols, &iter);
 
-	while (hash_iter_next(&iter, NULL, &v)) {
+	while (hash_iter_next(&iter, NULL, (const void **) &sym)) {
 		int duplicate;
-		const struct symbol *sym = v;
 
 		if (sym->owner == NULL)
 			continue;
