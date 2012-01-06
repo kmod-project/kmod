@@ -444,6 +444,12 @@ static int kmod_config_parse_kcmdline(struct kmod_config *config)
 	char *p, *modname,  *param = NULL, *value = NULL;
 
 	fd = open("/proc/cmdline", O_RDONLY|O_CLOEXEC);
+	if (fd < 0) {
+		err = -errno;
+		DBG(config->ctx, "could not open '/proc/cmdline' for reading: %m\n");
+		return err;
+	}
+
 	err = read_str_safe(fd, buf, sizeof(buf));
 	close(fd);
 	if (err < 0) {
