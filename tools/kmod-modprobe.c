@@ -856,7 +856,7 @@ static int insmod_alias(struct kmod_ctx *ctx, const char *alias, const char *ext
 
 	if (list == NULL) {
 		LOG("Module %s not found.\n", alias);
-		return err;
+		return -ENOENT;
 	}
 
 	if (use_blacklist) {
