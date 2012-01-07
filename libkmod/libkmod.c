@@ -102,7 +102,42 @@ static void log_filep(void *data,
 			const char *fn, const char *format, va_list args)
 {
 	FILE *fp = data;
+#ifdef ENABLE_DEBUG
+	char buf[16];
+	const char *priname;
+	switch (priority) {
+	case LOG_EMERG:
+		priname = "EMERGENCY";
+		break;
+	case LOG_ALERT:
+		priname = "ALERT";
+		break;
+	case LOG_CRIT:
+		priname = "CRITICAL";
+		break;
+	case LOG_ERR:
+		priname = "ERROR";
+		break;
+	case LOG_WARNING:
+		priname = "WARNING";
+		break;
+	case LOG_NOTICE:
+		priname = "NOTICE";
+		break;
+	case LOG_INFO:
+		priname = "INFO";
+		break;
+	case LOG_DEBUG:
+		priname = "DEBUG";
+		break;
+	default:
+		snprintf(buf, sizeof(buf), "L:%d", priority);
+		priname = buf;
+	}
+	fprintf(fp, "libkmod: %s %s:%d %s: ", priname, file, line, fn);
+#else
 	fprintf(fp, "libkmod: %s: ", fn);
+#endif
 	vfprintf(fp, format, args);
 }
 
