@@ -441,7 +441,8 @@ static int kmod_lookup_alias_from_alias_bin(struct kmod_ctx *ctx,
 
 		err = kmod_module_new_from_alias(ctx, name, realname->value, &mod);
 		if (err < 0) {
-			ERR(ctx, "%s\n", strerror(-err));
+			ERR(ctx, "Could not create module for alias=%s realname=%s: %s\n",
+			    name, realname->value, strerror(-err));
 			goto fail;
 		}
 
@@ -524,7 +525,8 @@ int kmod_lookup_alias_from_moddep_file(struct kmod_ctx *ctx, const char *name,
 
 		n = kmod_module_new_from_name(ctx, name, &mod);
 		if (n < 0) {
-			ERR(ctx, "%s\n", strerror(-n));
+			ERR(ctx, "Could not create module from name %s: %s\n",
+			    name, strerror(-n));
 			goto finish;
 		}
 
@@ -555,7 +557,8 @@ int kmod_lookup_alias_from_config(struct kmod_ctx *ctx, const char *name,
 			err = kmod_module_new_from_alias(ctx, aliasname,
 								modname, &mod);
 			if (err < 0) {
-				ERR(ctx, "%s\n", strerror(-err));
+				ERR(ctx, "Could not create module for alias=%s modname=%s: %s\n",
+				    name, modname, strerror(-err));
 				goto fail;
 			}
 
@@ -587,7 +590,8 @@ int kmod_lookup_alias_from_commands(struct kmod_ctx *ctx, const char *name,
 
 			err = kmod_module_new_from_name(ctx, modname, &mod);
 			if (err < 0) {
-				ERR(ctx, "%s\n", strerror(-err));
+				ERR(ctx, "Could not create module from name %s: %s\n",
+				    modname, strerror(-err));
 				return err;
 			}
 
@@ -622,7 +626,8 @@ int kmod_lookup_alias_from_commands(struct kmod_ctx *ctx, const char *name,
 
 			err = kmod_module_new_from_name(ctx, modname, &mod);
 			if (err < 0) {
-				ERR(ctx, "%s\n", strerror(-err));
+				ERR(ctx, "Could not create module from name %s: %s\n",
+				    modname, strerror(-err));
 				return err;
 			}
 

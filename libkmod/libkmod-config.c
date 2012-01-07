@@ -808,7 +808,7 @@ static int conf_files_list(struct kmod_ctx *ctx, struct kmod_list **list,
 
 	d = opendir(path);
 	if (d == NULL) {
-		ERR(ctx, "%m\n");
+		ERR(ctx, "opendir(%s): %m\n", path);
 		return -EINVAL;
 	}
 

@@ -788,12 +788,12 @@ struct index_mm *index_mm_open(struct kmod_ctx *ctx, const char *filename,
 
 	idx = malloc(sizeof(*idx));
 	if (idx == NULL) {
-		ERR(ctx, "%m\n");
+		ERR(ctx, "malloc: %m\n");
 		return NULL;
 	}
 
 	if ((fd = open(filename, O_RDONLY|O_CLOEXEC)) < 0) {
-		ERR(ctx, "%m\n");
+		ERR(ctx, "open(%s, O_RDONLY|O_CLOEXEC): %m\n", filename);
 		goto fail_open;
 	}
 
@@ -804,7 +804,8 @@ struct index_mm *index_mm_open(struct kmod_ctx *ctx, const char *filename,
 
 	if ((idx->mm = mmap(0, st.st_size, PROT_READ, flags, fd, 0))
 							== MAP_FAILED) {
-		ERR(ctx, "%m\n");
+		ERR(ctx, "mmap(0, %zd, PROT_READ, %d, %d, 0): %m\n",
+		    (size_t)st.st_size, flags, fd);
 		goto fail;
 	}
 
