@@ -666,9 +666,11 @@ static int insmod_do_deps_list(struct kmod_module *parent, struct kmod_list *dep
 				flags |= KMOD_INSERT_FORCE_VERMAGIC;
 
 			r = kmod_module_insert_module(dm, flags, opts);
+			if (r == -EEXIST && !first_time)
+				r = 0;
 			if (r < 0) {
 				WRN("could not insert '%s': %s\n",
-				    dmname, strerror(-r));
+						dmname, strerror(-r));
 				goto dep_error;
 			}
 		}
