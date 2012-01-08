@@ -185,7 +185,7 @@ KMOD_EXPORT int kmod_module_new_from_name(struct kmod_ctx *ctx,
 {
 	struct kmod_module *m;
 	size_t namelen;
-	char name_norm[NAME_MAX];
+	char name_norm[PATH_MAX];
 	char *namesep;
 
 	if (ctx == NULL || name == NULL || mod == NULL)
@@ -237,11 +237,11 @@ int kmod_module_new_from_alias(struct kmod_ctx *ctx, const char *alias,
 				const char *name, struct kmod_module **mod)
 {
 	int err;
-	char key[NAME_MAX];
+	char key[PATH_MAX];
 	size_t namelen = strlen(name);
 	size_t aliaslen = strlen(alias);
 
-	if (namelen + aliaslen + 2 > NAME_MAX)
+	if (namelen + aliaslen + 2 > PATH_MAX)
 		return -ENAMETOOLONG;
 
 	memcpy(key, name, namelen);
@@ -283,7 +283,7 @@ KMOD_EXPORT int kmod_module_new_from_path(struct kmod_ctx *ctx,
 	struct kmod_module *m;
 	int err;
 	struct stat st;
-	char name[NAME_MAX];
+	char name[PATH_MAX];
 	char *abspath;
 	size_t namelen;
 
@@ -434,7 +434,7 @@ KMOD_EXPORT int kmod_module_new_from_lookup(struct kmod_ctx *ctx,
 						struct kmod_list **list)
 {
 	int err;
-	char alias[NAME_MAX];
+	char alias[PATH_MAX];
 
 	if (ctx == NULL || given_alias == NULL)
 		return -ENOENT;

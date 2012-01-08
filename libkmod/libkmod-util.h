@@ -20,9 +20,9 @@ int read_str_ulong(int fd, unsigned long *value, int base) __must_check __attrib
 char *strchr_replace(char *s, int c, char r);
 bool path_is_absolute(const char *p) __must_check __attribute__((nonnull(1)));
 char *path_make_absolute_cwd(const char *p) __must_check __attribute__((nonnull(1)));
-int alias_normalize(const char *alias, char buf[NAME_MAX], size_t *len) __must_check __attribute__((nonnull(1,2)));
-char *modname_normalize(const char *modname, char buf[NAME_MAX], size_t *len) __attribute__((nonnull(1, 2)));
-char *path_to_modname(const char *path, char buf[NAME_MAX], size_t *len) __attribute__((nonnull(2)));
+int alias_normalize(const char *alias, char buf[PATH_MAX], size_t *len) __must_check __attribute__((nonnull(1,2)));
+char *modname_normalize(const char *modname, char buf[PATH_MAX], size_t *len) __attribute__((nonnull(1, 2)));
+char *path_to_modname(const char *path, char buf[PATH_MAX], size_t *len) __attribute__((nonnull(2)));
 unsigned long long ts_usec(const struct timespec *ts);
 
 #endif

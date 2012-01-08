@@ -1249,7 +1249,7 @@ static int depmod_modules_search_file(struct depmod *depmod, size_t baselen, siz
 	struct kmod_module *kmod;
 	struct mod *mod;
 	const char *relpath;
-	char modname[NAME_MAX];
+	char modname[PATH_MAX];
 	const struct kmod_ext *eitr;
 	size_t modnamelen;
 	uint8_t matches = 0;
@@ -2101,7 +2101,7 @@ static int output_builtin_bin(struct depmod *depmod, FILE *out)
 {
 	FILE *in;
 	struct index_node *idx;
-	char infile[PATH_MAX], line[PATH_MAX], modname[NAME_MAX];
+	char infile[PATH_MAX], line[PATH_MAX], modname[PATH_MAX];
 
 	if (out == stdout)
 		return 0;

@@ -121,11 +121,11 @@ char *underscores(struct kmod_ctx *ctx, char *s)
 	return s;
 }
 
-inline int alias_normalize(const char *alias, char buf[NAME_MAX], size_t *len)
+inline int alias_normalize(const char *alias, char buf[PATH_MAX], size_t *len)
 {
 	size_t s;
 
-	for (s = 0; s < NAME_MAX - 1; s++) {
+	for (s = 0; s < PATH_MAX - 1; s++) {
 		const char c = alias[s];
 		switch (c) {
 		case '-':
@@ -160,12 +160,12 @@ finish:
 	return 0;
 }
 
-inline char *modname_normalize(const char *modname, char buf[NAME_MAX],
+inline char *modname_normalize(const char *modname, char buf[PATH_MAX],
 								size_t *len)
 {
 	size_t s;
 
-	for (s = 0; s < NAME_MAX - 1; s++) {
+	for (s = 0; s < PATH_MAX - 1; s++) {
 		const char c = modname[s];
 		if (c == '-')
 			buf[s] = '_';
@@ -183,7 +183,7 @@ inline char *modname_normalize(const char *modname, char buf[NAME_MAX],
 	return buf;
 }
 
-char *path_to_modname(const char *path, char buf[NAME_MAX], size_t *len)
+char *path_to_modname(const char *path, char buf[PATH_MAX], size_t *len)
 {
 	char *modname;
 
