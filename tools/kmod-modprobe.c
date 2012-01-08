@@ -36,6 +36,7 @@ static int use_syslog = 0;
 
 #define DEFAULT_VERBOSE LOG_WARNING
 static int verbose = DEFAULT_VERBOSE;
+static int do_show = 0;
 static int dry_run = 0;
 static int ignore_loaded = 0;
 static int lookup_only = 0;
@@ -141,7 +142,7 @@ static inline void _show(const char *fmt, ...)
 {
 	va_list args;
 
-	if (verbose <= DEFAULT_VERBOSE)
+	if (!do_show && verbose <= DEFAULT_VERBOSE)
 		return;
 
 	va_start(args, fmt);
@@ -1162,7 +1163,7 @@ static int do_modprobe(int argc, char **orig_argv)
 		case 'D':
 			ignore_loaded = 1;
 			dry_run = 1;
-			verbose++;
+			do_show = 1;
 			break;
 		case 'c':
 			do_show_config = 1;
