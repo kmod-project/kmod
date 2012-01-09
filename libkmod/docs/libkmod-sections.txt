@@ -29,7 +29,6 @@ kmod_list_prev
 <SECTION>
 <FILE>libkmod-module</FILE>
 kmod_module
-kmod_module_new_from_loaded
 kmod_module_new_from_lookup
 kmod_module_new_from_name
 kmod_module_new_from_path
@@ -51,12 +50,6 @@ kmod_module_get_remove_commands
 kmod_module_get_name
 kmod_module_get_options
 kmod_module_get_path
-
-kmod_module_get_initstate
-kmod_module_initstate_str
-kmod_module_get_size
-kmod_module_get_refcnt
-kmod_module_get_holders
 
 kmod_module_get_dependency_symbols
 kmod_module_dependency_symbol_get_bind
@@ -83,4 +76,14 @@ kmod_module_get_info
 kmod_module_info_free_list
 kmod_module_info_get_key
 kmod_module_info_get_value
+</SECTION>
+
+<SECTION>
+<FILE>libkmod-loaded</FILE>
+kmod_module_new_from_loaded
+kmod_module_get_initstate
+kmod_module_initstate_str
+kmod_module_get_size
+kmod_module_get_refcnt
+kmod_module_get_holders
 </SECTION>

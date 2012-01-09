@@ -40,6 +40,11 @@
 #include "libkmod-private.h"
 
 /**
+ * SECTION:libkmod-module
+ * @short_description: operate on kernel modules
+ */
+
+/**
  * kmod_module:
  *
  * Opaque object representing a module.

@@ -23,6 +23,11 @@
 #include "libkmod.h"
 #include "libkmod-private.h"
 
+/**
+ * SECTION:libkmod-list
+ * @short_description: general purpose list
+ */
+
 static inline struct list_node *list_node_init(struct list_node *node)
 {
 	node->next = node;
