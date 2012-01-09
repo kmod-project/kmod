@@ -137,7 +137,7 @@ GTK_DOC_CHECK([1.14],[--flavour no-tmpl-flat])
 AC_OUTPUT
 AC_MSG_RESULT([
 	$PACKAGE $VERSION
-	========
+	======
 
 	prefix:			${prefix}
 	rootprefix:		${rootprefix}

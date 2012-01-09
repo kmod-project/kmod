@@ -3,17 +3,18 @@
 gtkdocize --docdir libkmod/docs
 autoreconf --install --symlink
 
-MYCFLAGS="-g -O2 -Werror"
-
 libdir() {
 	echo $(cd $1/$(gcc -print-multi-os-directory); pwd)
 }
 
 args="--prefix=/usr \
 --sysconfdir=/etc \
---libdir=$(libdir /usr/lib) \
---enable-debug"
+--libdir=$(libdir /usr/lib)"
 
-if [ -z "$NOCONFIGURE" ]; then
-	exec ./configure $args CFLAGS="${MYCFLAGS} ${CFLAGS}" "$@"
-fi
+echo
+echo "----------------------------------------------------------------"
+echo "Initialized build system. For a common configuration please run:"
+echo "----------------------------------------------------------------"
+echo
+echo "# ./configure $args"
+echo
