@@ -10,3 +10,32 @@ These tools are designed on top of libkmod, a library that is shipped with
 kmod. See libkmod/README for more details on this library and how to use it.
 The aim is to be compatible with tools, configurations and indexes from
 module-init-tools project.
+
+Compilation and installation
+============================
+
+In order to compiler the source code you need following software packages:
+	- GCC compiler
+	- GNU C library
+
+Optional dependencies:
+	- ZLIB library
+	- LZMA library
+
+Typical configuration:
+	./configure CFLAGS="-g -O2" --prefix=/usr \
+			--sysconfdir=/etc --libdir=/usr/lib
+
+Configure automatically searches for all required components and packages.
+
+To compile and install run:
+	make && make install
+
+Information
+===========
+
+Mailing list:
+	linux-modules@vger.kernel.org
+
+Repository:
+	git://git.profusion.mobi/
