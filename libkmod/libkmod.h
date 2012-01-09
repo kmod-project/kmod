@@ -36,7 +36,7 @@ extern "C" {
  * environment, user variables, allows custom logging
  */
 struct kmod_ctx;
-struct kmod_ctx *kmod_new(const char *dirname, const char * const *config_dirs);
+struct kmod_ctx *kmod_new(const char *dirname, const char * const *config_paths);
 struct kmod_ctx *kmod_ref(struct kmod_ctx *ctx);
 struct kmod_ctx *kmod_unref(struct kmod_ctx *ctx);
 void kmod_set_log_fn(struct kmod_ctx *ctx,
@@ -66,11 +66,11 @@ int kmod_validate_resources(struct kmod_ctx *ctx);
  * access to kmod generated lists
  */
 struct kmod_list;
-struct kmod_list *kmod_list_next(const struct kmod_list *first_entry,
-						const struct kmod_list *list_entry);
-struct kmod_list *kmod_list_prev(const struct kmod_list *first_entry,
-						const struct kmod_list *list_entry);
-struct kmod_list *kmod_list_last(const struct kmod_list *first_entry);
+struct kmod_list *kmod_list_next(const struct kmod_list *list,
+						const struct kmod_list *curr);
+struct kmod_list *kmod_list_prev(const struct kmod_list *list,
+						const struct kmod_list *curr);
+struct kmod_list *kmod_list_last(const struct kmod_list *list);
 
 #define kmod_list_foreach(list_entry, first_entry) \
 	for (list_entry = first_entry; \
@@ -113,7 +113,7 @@ int kmod_module_new_from_name(struct kmod_ctx *ctx, const char *name,
 						struct kmod_module **mod);
 int kmod_module_new_from_path(struct kmod_ctx *ctx, const char *path,
 						struct kmod_module **mod);
-int kmod_module_new_from_lookup(struct kmod_ctx *ctx, const char *alias,
+int kmod_module_new_from_lookup(struct kmod_ctx *ctx, const char *given_alias,
 						struct kmod_list **list);
 int kmod_module_new_from_loaded(struct kmod_ctx *ctx, struct kmod_list **list);
 
@@ -128,7 +128,7 @@ int kmod_module_get_filtered_blacklist(const struct kmod_ctx *ctx, const struct 
 int kmod_module_remove_module(struct kmod_module *mod, unsigned int flags);
 int kmod_module_insert_module(struct kmod_module *mod, unsigned int flags, const char *options);
 int kmod_module_probe_insert_module(struct kmod_module *mod,
-			unsigned int flags, const char *options,
+			unsigned int flags, const char *extra_options,
 			int (*run_install)(struct kmod_module *m, const char *cmdline, void *data),
 			const void *data);
 
@@ -143,7 +143,7 @@ enum kmod_module_initstate {
 	/* Padding to make sure enum is not mapped to char */
 	_KMOD_MODULE_PAD = (1 << 31),
 };
-const char *kmod_module_initstate_str(enum kmod_module_initstate initstate);
+const char *kmod_module_initstate_str(enum kmod_module_initstate state);
 int kmod_module_get_initstate(const struct kmod_module *mod);
 int kmod_module_get_refcnt(const struct kmod_module *mod);
 struct kmod_list *kmod_module_get_holders(const struct kmod_module *mod);
