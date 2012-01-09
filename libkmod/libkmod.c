@@ -182,13 +182,6 @@ static char *get_kernel_release(const char *dirname)
 
 /**
  * kmod_new:
- *
- * Create kmod library context. This reads the kmod configuration
- * and fills in the default values.
- *
- * The initial refcount is 1, and needs to be decremented to
- * release the resources of the kmod library context.
- *
  * @dirname: what to consider as linux module's directory, if NULL
  *           defaults to $rootprefix/lib/modules/`uname -r`.
  * @config_paths: ordered array of paths (directories or files) where
@@ -197,6 +190,12 @@ static char *get_kernel_release(const char *dirname)
  *                NULL defaults to /run/modprobe.d, /etc/modprobe.d and
  *                $rootprefix/lib/modprobe.d. Give an empty vector if configuration should
  *                not be read. This array must be null terminated.
+ *
+ * Create kmod library context. This reads the kmod configuration
+ * and fills in the default values.
+ *
+ * The initial refcount is 1, and needs to be decremented to
+ * release the resources of the kmod library context.
  *
  * Returns: a new kmod library context
  */
