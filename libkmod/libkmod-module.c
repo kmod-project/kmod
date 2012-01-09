@@ -663,7 +663,7 @@ KMOD_EXPORT const char *kmod_module_get_name(const struct kmod_module *mod)
  *
  * Get the path of this kmod module. If this kmod module was not created by
  * path, it can search the modules.dep index in order to find out the module
- * under context's dirname (see kmod_get_dirname()).
+ * under context's dirname.
  *
  * Returns: the path of this kmod module or NULL if such information is not
  * available.
@@ -1909,7 +1909,7 @@ static void kmod_module_info_free(struct kmod_module_info *info)
  * @list: where to return list of module information. Use
  *        kmod_module_info_get_key() and
  *        kmod_module_info_get_value(). Release this list with
- *        kmod_module_info_unref_list()
+ *        kmod_module_info_free_list()
  *
  * Get a list of entries in ELF section ".modinfo", these contain
  * alias, license, depends, vermagic and other keys with respective
@@ -2087,9 +2087,9 @@ static void kmod_module_version_free(struct kmod_module_version *version)
  * kmod_module_get_versions:
  * @mod: kmod module
  * @list: where to return list of module versions. Use
- *        kmod_module_versions_get_symbol() and
- *        kmod_module_versions_get_crc(). Release this list with
- *        kmod_module_versions_unref_list()
+ *        kmod_module_version_get_symbol() and
+ *        kmod_module_version_get_crc(). Release this list with
+ *        kmod_module_versions_free_list()
  *
  * Get a list of entries in ELF section "__versions".
  *
@@ -2252,9 +2252,9 @@ static void kmod_module_symbol_free(struct kmod_module_symbol *symbol)
  * kmod_module_get_symbols:
  * @mod: kmod module
  * @list: where to return list of module symbols. Use
- *        kmod_module_symbols_get_symbol() and
- *        kmod_module_symbols_get_crc(). Release this list with
- *        kmod_module_symbols_unref_list()
+ *        kmod_module_symbol_get_symbol() and
+ *        kmod_module_symbol_get_crc(). Release this list with
+ *        kmod_module_symbols_free_list()
  *
  * Get a list of entries in ELF section ".symtab" or "__ksymtab_strings".
  *
@@ -2336,7 +2336,7 @@ elf_open_error:
 }
 
 /**
- * kmod_module_symbols_get_symbol:
+ * kmod_module_symbol_get_symbol:
  * @entry: a list entry representing a kmod module symbols
  *
  * Get the symbol of a kmod module symbols.
