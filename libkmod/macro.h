@@ -49,7 +49,7 @@
 	 ((char *)(member_ptr) - offsetof(containing_type, member))	\
 	 - check_types_match(*(member_ptr), ((containing_type *)0)->member))
 
-/**
+/*
  * BUILD_ASSERT_OR_ZERO - assert a build-time dependency, as an expression.
  * @cond: the compile-time condition which must be true.
  *

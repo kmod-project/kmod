@@ -633,7 +633,7 @@ static bool is_cache_invalid(const char *path, unsigned long long stamp)
  * Check if indexes and configuration files changed on disk and the current
  * context is not valid anymore.
  *
- * Returns KMOD_RESOURCES_OK if resources are still valid,
+ * Returns: KMOD_RESOURCES_OK if resources are still valid,
  * KMOD_RESOURCES_MUST_RELOAD if it's sufficient to call
  * kmod_unload_resources() and kmod_load_resources() or
  * KMOD_RESOURCES_MUST_RECREATE if @ctx must be re-created.
