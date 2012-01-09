@@ -7,7 +7,7 @@ DOC_MODULE_VERSION = 3
 
 DOC_MAIN_SGML_FILE = $(DOC_MODULE)-docs.xml
 
-DOC_SOURCE_DIR = ../
+DOC_SOURCE_DIR = $(top_srcdir)/libkmod
 
 SCAN_OPTIONS = --ignore-decorators="__must_check|KMOD_EXPORT"
 
