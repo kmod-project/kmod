@@ -16,5 +16,14 @@ echo "----------------------------------------------------------------"
 echo "Initialized build system. For a common configuration please run:"
 echo "----------------------------------------------------------------"
 echo
-echo "# ./configure $args"
+echo "# ./configure CFLAGS='-g -O2' \\"
+echo "		$args"
+echo
+
+echo "If you are debugging or hacking on kmod, consider configuring"
+echo "like below:"
+echo
+echo "# ./configure CFLAGS='-g -O2 -Werror' \\"
+echo "		$args \\"
+echo "		--enable-debug"
 echo
