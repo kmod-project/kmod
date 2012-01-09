@@ -1,3 +1,5 @@
+SUBDIRS = . libkmod/docs
+
 EXTRA_DIST =
 CLEANFILES =
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
@@ -144,3 +146,5 @@ test_test_blacklist_LDADD = libkmod/libkmod.la
 test_test_elf_LDADD = libkmod/libkmod.la
 test_test_probe_LDADD = libkmod/libkmod.la
 test_test_invalidate_config_LDADD = libkmod/libkmod.la
+
+DISTCHECK_CONFIGURE_FLAGS=--enable-gtk-doc

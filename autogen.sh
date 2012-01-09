@@ -1,5 +1,6 @@
 #!/bin/sh -e
 
+gtkdocize --docdir libkmod/docs
 autoreconf --install --symlink
 
 MYCFLAGS="-g -O2 -Werror"

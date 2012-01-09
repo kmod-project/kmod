@@ -1,0 +1,12 @@
+*.bak
+*.stamp
+*.sgml
+libkmod.*
+libkmod-*.xml
+!libkmod-docs.xml
+libkmod-*.txt
+!libkmod-sections.txt
+version.xml
+xml
+html
+gtk-doc.make

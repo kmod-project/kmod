@@ -128,7 +128,11 @@ CC_CHECK_CFLAGS_APPEND([ \
 AC_CONFIG_HEADERS(config.h)
 AC_CONFIG_FILES([
 	Makefile
+	libkmod/docs/Makefile
+	libkmod/docs/version.xml
 ])
+
+GTK_DOC_CHECK([1.14],[--flavour no-tmpl-flat])
 
 AC_OUTPUT
 AC_MSG_RESULT([
@@ -151,4 +155,5 @@ AC_MSG_RESULT([
 	logging:		${enable_logging}
 	compression:		xz=${with_xz}  zlib=${with_zlib}
 	debug:			${enable_debug}
+	doc:			${enable_gtk_doc}
 ])
