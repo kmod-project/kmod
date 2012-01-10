@@ -21,8 +21,6 @@ Features:
    - deal with dependency loop
    - break dependency loop when all it needs is to check if the module is
      already loaded
-   - check if user has permission to load module and print an error instead of
-     returning 0
 
 * Add manpages: copy them from module-init-tools and make the necessary changes
 

@@ -807,12 +807,21 @@ static int insmod_do(struct kmod_module *mod, const char *extra_opts)
 			flags |= KMOD_INSERT_FORCE_VERMAGIC;
 
 		err = kmod_module_insert_module(mod, flags, opts);
-		if (err == -EEXIST) {
+		switch (err) {
+		case -EEXIST:
+			/* we checked for EEXIST with an earlier call to retrieve the initstate,
+			 * but to avoid a race condition, we don't make any assumptions and
+			 * handle the error again here */
 			if (!first_time)
 				err = 0;
 			else
 				ERR("Module %s already in kernel.\n",
 					kmod_module_get_name(mod));
+			goto error;
+		case -EPERM:
+			ERR("could not insert '%s': %s\n", kmod_module_get_name(mod),
+					strerror(-err));
+			goto error;
 		}
 	}
 
