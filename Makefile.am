@@ -66,9 +66,6 @@ libkmod_libkmod_la_SOURCES =\
 	libkmod/libkmod-file.c \
 	libkmod/libkmod-elf.c
 
-noinst_LTLIBRARIES += libkmod/libkmod-private.la
-libkmod_libkmod_private_la_SOURCES = $(libkmod_libkmod_la_SOURCES)
-
 EXTRA_DIST += libkmod/libkmod.sym
 EXTRA_DIST += libkmod/COPYING libkmod/README
 
@@ -79,6 +76,13 @@ libkmod_libkmod_la_DEPENDENCIES = libkmod/libkmod-util.la \
 				  ${top_srcdir}/libkmod/libkmod.sym
 libkmod_libkmod_la_LIBADD = libkmod/libkmod-util.la \
 			    ${liblzma_LIBS} ${zlib_LIBS}
+
+noinst_LTLIBRARIES += libkmod/libkmod-private.la
+libkmod_libkmod_private_la_SOURCES = $(libkmod_libkmod_la_SOURCES)
+libkmod_libkmod_private_la_LDFLAGS = $(AM_LDFLAGS) \
+	-Wl,--version-script=$(top_srcdir)/libkmod/libkmod.sym
+libkmod_libkmod_private_la_DEPENDENCIES  = $(libkmod_libkmod_la_DEPENDENCIES)
+libkmod_libkmod_private_la_LIBADD = $(libkmod_libkmod_la_LIBADD)
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libkmod/libkmod.pc
