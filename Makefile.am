@@ -114,16 +114,17 @@ ${noinst_SCRIPTS}: tools/kmod
 		$(LN_S) $(notdir $<) $@)
 endif
 
-check_PROGRAMS = test/test-init test/test-loaded
+check_PROGRAMS = test/test-init test/test-loaded \
+		 test/test-insmod test/test-rmmod test/test-rmmod2 \
+		 test/test-lookup test/test-path-from-name \
+		 test/test-get-dependencies test/test-mod-double-ref \
+		 test/test-blacklist test/test-elf test/test-probe \
+		 test/test-invalidate-config
+
+TESTS = test/test-init test/test-loaded
+
 test_test_init_LDADD = libkmod/libkmod.la
 test_test_loaded_LDADD = libkmod/libkmod.la
-
-noinst_PROGRAMS = test/test-insmod test/test-rmmod test/test-rmmod2 \
-		  test/test-lookup test/test-path-from-name \
-		  test/test-get-dependencies test/test-mod-double-ref \
-		  test/test-blacklist test/test-elf test/test-probe \
-		  test/test-invalidate-config \
-		  $(check_PROGRAMS)
 
 test_test_rmmod_LDADD = libkmod/libkmod.la
 test_test_rmmod2_LDADD = libkmod/libkmod.la
