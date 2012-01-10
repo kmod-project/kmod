@@ -66,6 +66,9 @@ libkmod_libkmod_la_SOURCES =\
 	libkmod/libkmod-file.c \
 	libkmod/libkmod-elf.c
 
+noinst_LTLIBRARIES += libkmod/libkmod-private.la
+libkmod_libkmod_private_la_SOURCES = $(libkmod_libkmod_la_SOURCES)
+
 EXTRA_DIST += libkmod/libkmod.sym
 EXTRA_DIST += libkmod/COPYING libkmod/README
 
@@ -109,7 +112,14 @@ tools_kmod_CFLAGS = $(AM_CFLAGS)
 tools_kmod_LDADD = libkmod/libkmod-util.la \
 		   libkmod/libkmod.la
 
-${noinst_SCRIPTS}: tools/kmod
+noinst_PROGRAMS = tools/kmod-nolib
+tools_kmod_nolib_SOURCES = $(tools_kmod_SOURCES)
+tools_kmod_nolib_CPPFLAGS = $(tools_kmod_CPPFLAGS)
+tools_kmod_nolib_CFLAGS = $(tools_kmod_CFLAGS)
+tools_kmod_nolib_LDADD = libkmod/libkmod-util.la \
+			 libkmod/libkmod-private.la
+
+${noinst_SCRIPTS}: tools/kmod-nolib
 	$(AM_V_GEN) ($(RM) $@; \
 		$(LN_S) $(notdir $<) $@)
 endif
@@ -123,19 +133,19 @@ check_PROGRAMS = test/test-init test/test-loaded \
 
 TESTS = test/test-init test/test-loaded
 
-test_test_init_LDADD = libkmod/libkmod.la
-test_test_loaded_LDADD = libkmod/libkmod.la
+test_test_init_LDADD = libkmod/libkmod-private.la
+test_test_loaded_LDADD = libkmod/libkmod-private.la
 
-test_test_rmmod_LDADD = libkmod/libkmod.la
-test_test_rmmod2_LDADD = libkmod/libkmod.la
-test_test_insmod_LDADD = libkmod/libkmod.la
-test_test_lookup_LDADD = libkmod/libkmod.la
-test_test_path_from_name_LDADD = libkmod/libkmod.la
-test_test_get_dependencies_LDADD = libkmod/libkmod.la
-test_test_mod_double_ref_LDADD = libkmod/libkmod.la
-test_test_blacklist_LDADD = libkmod/libkmod.la
-test_test_elf_LDADD = libkmod/libkmod.la
-test_test_probe_LDADD = libkmod/libkmod.la
-test_test_invalidate_config_LDADD = libkmod/libkmod.la
+test_test_rmmod_LDADD = libkmod/libkmod-private.la
+test_test_rmmod2_LDADD = libkmod/libkmod-private.la
+test_test_insmod_LDADD = libkmod/libkmod-private.la
+test_test_lookup_LDADD = libkmod/libkmod-private.la
+test_test_path_from_name_LDADD = libkmod/libkmod-private.la
+test_test_get_dependencies_LDADD = libkmod/libkmod-private.la
+test_test_mod_double_ref_LDADD = libkmod/libkmod-private.la
+test_test_blacklist_LDADD = libkmod/libkmod-private.la
+test_test_elf_LDADD = libkmod/libkmod-private.la
+test_test_probe_LDADD = libkmod/libkmod-private.la
+test_test_invalidate_config_LDADD = libkmod/libkmod-private.la
 
 DISTCHECK_CONFIGURE_FLAGS=--enable-gtk-doc

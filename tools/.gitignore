@@ -6,3 +6,4 @@ modprobe
 modinfo
 depmod
 kmod
+kmod-nolib
