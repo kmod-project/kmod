@@ -534,42 +534,46 @@ static int kmod_config_parse(struct kmod_config *config, int fd,
 						underscores(ctx, modname));
 		} else if (streq(cmd, "options")) {
 			char *modname = strtok_r(NULL, "\t ", &saveptr);
+			char *options = strtok_r(NULL, "\0", &saveptr);
 
-			if (modname == NULL)
+			if (modname == NULL || options == NULL)
 				goto syntax_error;
 
 			kmod_config_add_options(config,
 						underscores(ctx, modname),
-						strtok_r(NULL, "\0", &saveptr));
+						options);
 		} else if (streq(cmd, "install")) {
 			char *modname = strtok_r(NULL, "\t ", &saveptr);
+			char *installcmd = strtok_r(NULL, "\0", &saveptr);
 
-			if (modname == NULL)
+			if (modname == NULL || installcmd == NULL)
 				goto syntax_error;
 
 			kmod_config_add_command(config,
 					underscores(ctx, modname),
-					strtok_r(NULL, "\0", &saveptr),
+					installcmd,
 					cmd, &config->install_commands);
 		} else if (streq(cmd, "remove")) {
 			char *modname = strtok_r(NULL, "\t ", &saveptr);
+			char *removecmd = strtok_r(NULL, "\0", &saveptr);
 
-			if (modname == NULL)
+			if (modname == NULL || removecmd == NULL)
 				goto syntax_error;
 
 			kmod_config_add_command(config,
 					underscores(ctx, modname),
-					strtok_r(NULL, "\0", &saveptr),
+					removecmd,
 					cmd, &config->remove_commands);
 		} else if (streq(cmd, "softdep")) {
 			char *modname = strtok_r(NULL, "\t ", &saveptr);
+			char *softdeps = strtok_r(NULL, "\0", &saveptr);
 
-			if (modname == NULL)
+			if (modname == NULL || softdeps == NULL)
 				goto syntax_error;
 
 			kmod_config_add_softdep(config,
 					underscores(ctx, modname),
-					strtok_r(NULL, "\0", &saveptr));
+					softdeps);
 		} else if (streq(cmd, "include")
 				|| streq(cmd, "config")) {
 			INFO(ctx, "%s: command %s not implemented yet\n",
