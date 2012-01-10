@@ -1,6 +1,6 @@
 #!/bin/sh -e
 
-gtkdocize --docdir libkmod/docs
+gtkdocize --docdir libkmod/docs || touch libkmod/docs/gtk-doc.make
 autoreconf --install --symlink
 
 libdir() {

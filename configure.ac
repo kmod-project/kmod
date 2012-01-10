@@ -132,7 +132,10 @@ AC_CONFIG_FILES([
 	libkmod/docs/version.xml
 ])
 
+m4_ifdef([GTK_DOC_CHECK], [
 GTK_DOC_CHECK([1.14],[--flavour no-tmpl-flat])
+], [
+AM_CONDITIONAL([ENABLE_GTK_DOC], false)])
 
 AC_OUTPUT
 AC_MSG_RESULT([
