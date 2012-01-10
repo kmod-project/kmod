@@ -1,8 +1,8 @@
 .dirstamp
-kmod-insmod
-kmod-rmmod
-kmod-lsmod
-kmod-modprobe
-kmod-modinfo
-kmod-depmod
+insmod
+rmmod
+lsmod
+modprobe
+modinfo
+depmod
 kmod
