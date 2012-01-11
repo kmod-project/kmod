@@ -211,13 +211,13 @@ static int show_config(struct kmod_ctx *ctx)
 {
 	ERR("TODO - config is missing in kmod.\n");
 	/*
-	  needs:
-	    struct kmod_list *kmod_get_config(struct kmod_ctx *ctx);
-	    kmod_config_get_type() {alias,options,blacklist,install,remove,softdeps}
-	    kmod_config_get_key()
-	    kmod_config_get_value()
-	    kmod_config_unref_list()
-	*/
+	 * needs:
+	 * struct kmod_list *kmod_get_config(struct kmod_ctx *ctx);
+	 * kmod_config_get_type() {alias,options,blacklist,install,remove,softdeps}
+	 * kmod_config_get_key()
+	 * kmod_config_get_value()
+	 * kmod_config_unref_list()
+	 */
 	return -ENOENT;
 }
 
@@ -249,7 +249,8 @@ static int show_modversions(struct kmod_ctx *ctx, const char *filename)
 	return 0;
 }
 
-static int command_do(struct kmod_module *module, const char *type, const char *command, const char *cmdline_opts)
+static int command_do(struct kmod_module *module, const char *type,
+				const char *command, const char *cmdline_opts)
 {
 	const char *modname = kmod_module_get_name(module);
 	char *p, *cmd = NULL;
@@ -306,7 +307,9 @@ end:
 static int rmmod_do_dependencies(struct kmod_module *parent);
 static int rmmod_do_soft_dependencies(struct kmod_module *mod, struct kmod_list *deps);
 
-static int rmmod_do_deps_list(struct kmod_module *parent, struct kmod_list *deps, unsigned stop_on_errors)
+static int rmmod_do_deps_list(struct kmod_module *parent,
+						struct kmod_list *deps,
+						unsigned stop_on_errors)
 {
 	struct kmod_list *d;
 	int err = 0;
@@ -320,21 +323,21 @@ static int rmmod_do_deps_list(struct kmod_module *parent, struct kmod_list *deps
 		r = rmmod_do_dependencies(dm);
 		if (r < 0) {
 			WRN("could not remove dependencies of '%s': %s\n",
-			    dmname, strerror(-r));
+							dmname, strerror(-r));
 			goto dep_error;
 		}
 
 		r = kmod_module_get_softdeps(dm, &pre, &post);
 		if (r < 0) {
 			WRN("could not get softdeps of '%s': %s\n",
-			    dmname, strerror(-r));
+							dmname, strerror(-r));
 			goto dep_done;
 		}
 
 		r = rmmod_do_soft_dependencies(dm, post);
 		if (r < 0) {
 			WRN("could not remove post soft softdeps of '%s': %s\n",
-			    dmname, strerror(-r));
+							dmname, strerror(-r));
 			goto dep_error;
 		}
 
@@ -350,7 +353,7 @@ static int rmmod_do_deps_list(struct kmod_module *parent, struct kmod_list *deps
 			r = command_do(dm, "remove", cmd, NULL);
 			if (r < 0) {
 				WRN("failed to execute remove command of '%s': "
-				    "%s\n", dmname, strerror(-r));
+						"%s\n", dmname, strerror(-r));
 				goto dep_error;
 			} else
 				goto dep_done;
@@ -359,7 +362,7 @@ static int rmmod_do_deps_list(struct kmod_module *parent, struct kmod_list *deps
 		r = kmod_module_get_refcnt(dm);
 		if (r < 0) {
 			WRN("could not get module '%s' refcnt: %s\n",
-			    dmname, strerror(-r));
+							dmname, strerror(-r));
 			goto dep_error;
 		} else if (r > 0 && !ignore_loaded) {
 			LOG("Module %s is in use.\n", dmname);
@@ -373,7 +376,7 @@ static int rmmod_do_deps_list(struct kmod_module *parent, struct kmod_list *deps
 			r = kmod_module_remove_module(dm, 0);
 			if (r < 0) {
 				WRN("could not remove '%s': %s\n",
-				    dmname, strerror(-r));
+							dmname, strerror(-r));
 				goto dep_error;
 			}
 		}
@@ -382,7 +385,7 @@ static int rmmod_do_deps_list(struct kmod_module *parent, struct kmod_list *deps
 		r = rmmod_do_soft_dependencies(dm, pre);
 		if (r < 0) {
 			WRN("could not remove pre softdeps of '%s': %s\n",
-			    dmname, strerror(-r));
+							dmname, strerror(-r));
 			goto dep_error;
 		}
 		kmod_module_unref_list(pre);
@@ -404,7 +407,8 @@ static int rmmod_do_deps_list(struct kmod_module *parent, struct kmod_list *deps
 	return err;
 }
 
-static int rmmod_do_soft_dependencies(struct kmod_module *mod, struct kmod_list *deps)
+static int rmmod_do_soft_dependencies(struct kmod_module *mod,
+							struct kmod_list *deps)
 {
 	return rmmod_do_deps_list(mod, deps, 0);
 }
@@ -429,14 +433,14 @@ static int rmmod_do(struct kmod_module *mod)
 		err = kmod_module_get_softdeps(mod, &pre, &post);
 		if (err < 0) {
 			WRN("could not get softdeps of '%s': %s\n",
-			    modname, strerror(-err));
+						modname, strerror(-err));
 			return err;
 		}
 
 		err = rmmod_do_soft_dependencies(mod, post);
 		if (err < 0) {
 			WRN("could not remove post softdeps of '%s': %s\n",
-			    modname, strerror(-err));
+						modname, strerror(-err));
 			goto error;
 		}
 
@@ -508,7 +512,7 @@ done:
 		err = rmmod_do_soft_dependencies(mod, pre);
 		if (err < 0) {
 			WRN("could not remove pre softdeps of '%s': %s\n",
-			    modname, strerror(-err));
+						modname, strerror(-err));
 			goto error;
 		}
 	}
@@ -600,9 +604,12 @@ static int rmmod_all(struct kmod_ctx *ctx, char **args, int nargs)
 }
 
 static int insmod_do_dependencies(struct kmod_module *parent);
-static int insmod_do_soft_dependencies(struct kmod_module *mod, struct kmod_list *deps);
+static int insmod_do_soft_dependencies(struct kmod_module *mod,
+						struct kmod_list *deps);
 
-static int insmod_do_deps_list(struct kmod_module *parent, struct kmod_list *deps, unsigned stop_on_errors)
+static int insmod_do_deps_list(struct kmod_module *parent,
+						struct kmod_list *deps,
+						unsigned stop_on_errors)
 {
 	struct kmod_list *d;
 	int err = 0;
@@ -616,21 +623,21 @@ static int insmod_do_deps_list(struct kmod_module *parent, struct kmod_list *dep
 		r = insmod_do_dependencies(dm);
 		if (r < 0) {
 			WRN("could not insert dependencies of '%s': %s\n",
-			    dmname, strerror(-r));
+							dmname, strerror(-r));
 			goto dep_error;
 		}
 
 		r = kmod_module_get_softdeps(dm, &pre, &post);
 		if (r < 0) {
 			WRN("could not get softdeps of '%s': %s\n",
-			    dmname, strerror(-r));
+							dmname, strerror(-r));
 			goto dep_done;
 		}
 
 		r = insmod_do_soft_dependencies(dm, pre);
 		if (r < 0) {
 			WRN("could not insert pre softdeps of '%s': %s\n",
-			    dmname, strerror(-r));
+							dmname, strerror(-r));
 			goto dep_error;
 		}
 
@@ -647,7 +654,7 @@ static int insmod_do_deps_list(struct kmod_module *parent, struct kmod_list *dep
 			r = command_do(dm, "install", cmd, NULL);
 			if (r < 0) {
 				WRN("failed to execute install command of '%s':"
-				    " %s\n", dmname, strerror(-r));
+						" %s\n", dmname, strerror(-r));
 				goto dep_error;
 			} else
 				goto dep_done;
@@ -655,7 +662,7 @@ static int insmod_do_deps_list(struct kmod_module *parent, struct kmod_list *dep
 
 		opts = kmod_module_get_options(dm);
 		SHOW("insmod %s %s\n",
-			kmod_module_get_path(dm), opts ? opts : "");
+				kmod_module_get_path(dm), opts ? opts : "");
 
 		if (!dry_run) {
 			int flags = 0;
@@ -679,7 +686,7 @@ static int insmod_do_deps_list(struct kmod_module *parent, struct kmod_list *dep
 		r = insmod_do_soft_dependencies(dm, post);
 		if (r < 0) {
 			WRN("could not insert post softdeps of '%s': %s\n",
-			    dmname, strerror(-r));
+							dmname, strerror(-r));
 			goto dep_error;
 		}
 
@@ -702,7 +709,8 @@ static int insmod_do_deps_list(struct kmod_module *parent, struct kmod_list *dep
 	return err;
 }
 
-static int insmod_do_soft_dependencies(struct kmod_module *mod, struct kmod_list *deps)
+static int insmod_do_soft_dependencies(struct kmod_module *mod,
+							struct kmod_list *deps)
 {
 	return insmod_do_deps_list(mod, deps, 0);
 }
@@ -729,14 +737,14 @@ static int insmod_do(struct kmod_module *mod, const char *extra_opts)
 		err = kmod_module_get_softdeps(mod, &pre, &post);
 		if (err < 0) {
 			WRN("could not get softdeps of '%s': %s\n",
-			    modname, strerror(-err));
+						modname, strerror(-err));
 			return err;
 		}
 
 		err = insmod_do_soft_dependencies(mod, pre);
 		if (err < 0) {
 			WRN("could not insert pre softdeps of '%s': %s\n",
-			    modname, strerror(-err));
+						modname, strerror(-err));
 			goto error;
 		}
 
@@ -753,7 +761,7 @@ static int insmod_do(struct kmod_module *mod, const char *extra_opts)
 		if (state == KMOD_MODULE_BUILTIN) {
 			if (first_time) {
 				LOG("Module %s already in kernel (builtin).\n",
-				    modname);
+								modname);
 				return -EEXIST;
 			}
 			return 0;
@@ -809,9 +817,12 @@ static int insmod_do(struct kmod_module *mod, const char *extra_opts)
 		err = kmod_module_insert_module(mod, flags, opts);
 		switch (err) {
 		case -EEXIST:
-			/* we checked for EEXIST with an earlier call to retrieve the initstate,
-			 * but to avoid a race condition, we don't make any assumptions and
-			 * handle the error again here */
+			/*
+			 * We checked for EEXIST with an earlier call to
+			 * retrieve the initstate, but to avoid a race
+			 * condition, we don't make any assumptions and handle
+			 * the error again here
+			 */
 			if (!first_time)
 				err = 0;
 			else
@@ -830,7 +841,7 @@ done:
 		err = insmod_do_soft_dependencies(mod, post);
 		if (err < 0) {
 			WRN("could not insert post softdeps of '%s': %s\n",
-			    modname, strerror(-err));
+						modname, strerror(-err));
 			goto error;
 		}
 	}
@@ -842,7 +853,8 @@ error:
 	return err;
 }
 
-static int insmod_path(struct kmod_ctx *ctx, const char *path, const char *extra_options)
+static int insmod_path(struct kmod_ctx *ctx, const char *path,
+						const char *extra_options)
 {
 	struct kmod_module *mod;
 	int err;
@@ -857,7 +869,8 @@ static int insmod_path(struct kmod_ctx *ctx, const char *path, const char *extra
 	return err;
 }
 
-static int insmod_alias(struct kmod_ctx *ctx, const char *alias, const char *extra_options)
+static int insmod_alias(struct kmod_ctx *ctx, const char *alias,
+						const char *extra_options)
 {
 	struct kmod_list *l, *list = NULL;
 	int err;
@@ -898,7 +911,8 @@ static int insmod_alias(struct kmod_ctx *ctx, const char *alias, const char *ext
 	return err;
 }
 
-static int insmod(struct kmod_ctx *ctx, const char *name, const char *extra_options)
+static int insmod(struct kmod_ctx *ctx, const char *name,
+						const char *extra_options)
 {
 	struct stat st;
 	if (stat(name, &st) == 0)
@@ -1066,8 +1080,7 @@ static char **prepend_options_from_env(int *p_argc, char **orig_argv)
 }
 
 static void log_syslog(void *data, int priority, const char *file, int line,
-				const char *fn, const char *format,
-				va_list args)
+			const char *fn, const char *format, va_list args)
 {
 	char *str, buf[32];
 	const char *prioname;
@@ -1234,9 +1247,8 @@ static int do_modprobe(int argc, char **orig_argv)
 		case '?':
 			goto cmdline_failed;
 		default:
-			fprintf(stderr,
-				"Error: unexpected getopt_long() value '%c'.\n",
-				c);
+			fprintf(stderr, "Error: unexpected getopt_long() value '%c'.\n",
+									c);
 			goto cmdline_failed;
 		}
 	}
@@ -1253,7 +1265,7 @@ static int do_modprobe(int argc, char **orig_argv)
 
 	if (list_type != NULL) {
 		fputs("Error: -t (--type) only supported with -l (--list).\n",
-		      stderr);
+								stderr);
 		goto cmdline_failed;
 	}
 
@@ -1269,8 +1281,9 @@ static int do_modprobe(int argc, char **orig_argv)
 			}
 			kversion = u.release;
 		}
-		snprintf(dirname_buf, sizeof(dirname_buf), "%s" ROOTPREFIX "/lib/modules/%s",
-			 root, kversion);
+		snprintf(dirname_buf, sizeof(dirname_buf),
+				"%s" ROOTPREFIX "/lib/modules/%s", root,
+				kversion);
 		dirname = dirname_buf;
 	}
 
@@ -1311,6 +1324,7 @@ static int do_modprobe(int argc, char **orig_argv)
 
 	if (argv != orig_argv)
 		free(argv);
+
 	free(config_paths);
 	return err >= 0 ? EXIT_SUCCESS : EXIT_FAILURE;
 
