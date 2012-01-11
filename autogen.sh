@@ -11,19 +11,19 @@ args="--prefix=/usr \
 --sysconfdir=/etc \
 --libdir=$(libdir /usr/lib)"
 
-echo
-echo "----------------------------------------------------------------"
-echo "Initialized build system. For a common configuration please run:"
-echo "----------------------------------------------------------------"
-echo
-echo "# ./configure CFLAGS='-g -O2' \\"
-echo "		$args"
-echo
+hackargs="--enable-debug --with-xz --with-zlib"
 
-echo "If you are debugging or hacking on kmod, consider configuring"
-echo "like below:"
-echo
-echo "# ./configure CFLAGS='-g -O2 -Werror' \\"
-echo "		$args \\"
-echo "		--enable-debug"
-echo
+cat <<EOC
+
+----------------------------------------------------------------
+Initialized build system. For a common configuration please run:
+----------------------------------------------------------------
+
+./configure CFLAGS='-g -O2' $args
+
+If you are debugging or hacking on kmod, consider configuring
+like below:
+
+./configure CFLAGS="-g -O2 -Werror" $args $hackargs
+
+EOC
