@@ -83,6 +83,9 @@ modprobe
 * kmod-modprobe doesn't parse configuration files whose name don't end on
   '.alias'  or '.conf'. modprobe used to warn about these files.
 
+* kmod-modprobe doesn't parse 'config' and 'include' commands in configuration
+  files.
+
 depmod
 ------
 

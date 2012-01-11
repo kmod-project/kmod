@@ -576,7 +576,7 @@ static int kmod_config_parse(struct kmod_config *config, int fd,
 					softdeps);
 		} else if (streq(cmd, "include")
 				|| streq(cmd, "config")) {
-			INFO(ctx, "%s: command %s not implemented yet\n",
+			ERR(ctx, "%s: command %s is deprecated and not parsed anymore\n",
 								filename, cmd);
 		} else {
 syntax_error:
