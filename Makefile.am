@@ -133,7 +133,7 @@ check_PROGRAMS = test/test-init test/test-loaded \
 		 test/test-lookup test/test-path-from-name \
 		 test/test-get-dependencies test/test-mod-double-ref \
 		 test/test-blacklist test/test-elf test/test-probe \
-		 test/test-invalidate-config
+		 test/test-invalidate-config test/test-state
 
 TESTS = test/test-init test/test-loaded
 
@@ -151,5 +151,6 @@ test_test_blacklist_LDADD = libkmod/libkmod-private.la
 test_test_elf_LDADD = libkmod/libkmod-private.la
 test_test_probe_LDADD = libkmod/libkmod-private.la
 test_test_invalidate_config_LDADD = libkmod/libkmod-private.la
+test_test_state_LDADD = libkmod/libkmod-private.la
 
 DISTCHECK_CONFIGURE_FLAGS=--enable-gtk-doc

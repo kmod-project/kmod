@@ -12,3 +12,4 @@ test-blacklist
 test-elf
 test-probe
 test-invalidate-config
+test-state
