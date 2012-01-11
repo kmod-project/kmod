@@ -100,6 +100,42 @@ static void log_syslog(void *data, int priority, const char *file, int line,
 	(void)data;
 }
 
+static int check_module_inuse(struct kmod_module *mod) {
+	struct kmod_list *holders;
+
+	if (kmod_module_get_initstate(mod) == -ENOENT) {
+		fprintf(stderr, "Error: Module %s is not currently loaded\n",
+				kmod_module_get_name(mod));
+		return -ENOENT;
+	}
+
+	holders = kmod_module_get_holders(mod);
+	if (holders != NULL) {
+		struct kmod_list *itr;
+
+		fprintf(stderr, "Error: Module %s is in use by:",
+				kmod_module_get_name(mod));
+
+		kmod_list_foreach(itr, holders) {
+			struct kmod_module *hm = kmod_module_get_module(itr);
+			fprintf(stderr, " %s", kmod_module_get_name(hm));
+			kmod_module_unref(hm);
+		}
+		fputc('\n', stderr);
+
+		kmod_module_unref_list(holders);
+		return -EBUSY;
+	}
+
+	if (kmod_module_get_refcnt(mod) != 0) {
+		fprintf(stderr, "Error: Module %s is in use\n",
+				kmod_module_get_name(mod));
+		return -EBUSY;
+	}
+
+	return 0;
+}
+
 static int do_rmmod(int argc, char *argv[])
 {
 	struct kmod_ctx *ctx;
@@ -107,7 +143,7 @@ static int do_rmmod(int argc, char *argv[])
 	int flags = KMOD_REMOVE_NOWAIT;
 	int use_syslog = 0;
 	int verbose = 0;
-	int i, err = 0;
+	int i, err, r = 0;
 
 	for (;;) {
 		int c, idx = 0;
@@ -175,15 +211,21 @@ static int do_rmmod(int argc, char *argv[])
 			break;
 		}
 
+		if (!(flags & KMOD_REMOVE_FORCE) && (flags & KMOD_REMOVE_NOWAIT))
+			if (check_module_inuse(mod) < 0) {
+				r++;
+				goto next;
+			}
+
 		err = kmod_module_remove_module(mod, flags);
 		if (err < 0) {
 			fprintf(stderr,
 				"Error: could not remove module %s: %s\n",
 				arg, strerror(-err));
+			r++;
 		}
+next:
 		kmod_module_unref(mod);
-		if (err < 0)
-			break;
 	}
 
 	kmod_unref(ctx);
@@ -191,7 +233,7 @@ static int do_rmmod(int argc, char *argv[])
 	if (use_syslog)
 		closelog();
 
-	return err >= 0 ? EXIT_SUCCESS : EXIT_FAILURE;
+	return r == 0 ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
 #ifndef KMOD_BUNDLE_TOOL
