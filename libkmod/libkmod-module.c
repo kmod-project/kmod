@@ -723,12 +723,11 @@ KMOD_EXPORT int kmod_module_remove_module(struct kmod_module *mod,
 
 	err = delete_module(mod->name, flags);
 	if (err != 0) {
-		ERR(mod->ctx, "could not remove '%s': %s\n", mod->name,
-							strerror(-err));
-		return err;
+		err = -errno;
+		ERR(mod->ctx, "could not remove '%s': %m\n", mod->name);
 	}
 
-	return 0;
+	return err;
 }
 
 extern long init_module(const void *mem, unsigned long len, const char *args);
