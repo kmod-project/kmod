@@ -620,6 +620,14 @@ static int insmod_do_deps_list(struct kmod_module *parent,
 		const char *cmd, *opts, *dmname = kmod_module_get_name(dm);
 		int r;
 
+		if (!ignore_loaded) {
+			int state = kmod_module_get_initstate(dm);
+			if (state == KMOD_MODULE_LIVE ||
+					state == KMOD_MODULE_COMING ||
+					state == KMOD_MODULE_BUILTIN)
+				continue;
+		}
+
 		r = insmod_do_dependencies(dm);
 		if (r < 0) {
 			WRN("could not insert dependencies of '%s': %s\n",
@@ -639,14 +647,6 @@ static int insmod_do_deps_list(struct kmod_module *parent,
 			WRN("could not insert pre softdeps of '%s': %s\n",
 							dmname, strerror(-r));
 			goto dep_error;
-		}
-
-		if (!ignore_loaded) {
-			int state = kmod_module_get_initstate(dm);
-			if (state == KMOD_MODULE_LIVE ||
-					state == KMOD_MODULE_COMING ||
-					state == KMOD_MODULE_BUILTIN)
-				goto dep_done;
 		}
 
 		cmd = kmod_module_get_install_commands(dm);
