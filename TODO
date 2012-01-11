@@ -19,8 +19,16 @@ Features:
 * provide 1:1 compatibility with module-init-tools's modprobe
    - dump configuration
    - deal with dependency loop
-   - break dependency loop when all it needs is to check if the module is
-     already loaded
+   - fix dependency listing in --show-depends
+	$ modprobe -S 3.2.0-2-ARCH --show-depends ahci
+	insmod /lib/modules/3.2.0-2-ARCH/kernel/drivers/scsi/scsi_mod.ko.gz
+	insmod /lib/modules/3.2.0-2-ARCH/kernel/drivers/scsi/scsi_mod.ko.gz
+	insmod /lib/modules/3.2.0-2-ARCH/kernel/drivers/ata/libata.ko.gz
+	insmod /lib/modules/3.2.0-2-ARCH/kernel/drivers/scsi/scsi_mod.ko.gz
+	insmod /lib/modules/3.2.0-2-ARCH/kernel/drivers/scsi/scsi_mod.ko.gz
+	insmod /lib/modules/3.2.0-2-ARCH/kernel/drivers/ata/libata.ko.gz
+	insmod /lib/modules/3.2.0-2-ARCH/kernel/drivers/ata/libahci.ko.gz
+	insmod /lib/modules/3.2.0-2-ARCH/kernel/drivers/ata/ahci.ko.gz
 
 * Add manpages: copy them from module-init-tools and make the necessary changes
 
@@ -83,6 +91,10 @@ modprobe
 
 * kmod-modprobe doesn't parse 'config' and 'include' commands in configuration
   files.
+
+* we don't use <module-dir>/modules.builtin{,.bin} indexes. Instead we rely on
+  module appearing on /sys/modules/* without a initstate file to determine if
+  it is builtin.
 
 depmod
 ------
