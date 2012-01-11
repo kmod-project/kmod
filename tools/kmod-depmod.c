@@ -1141,16 +1141,9 @@ static int depmod_module_add(struct depmod *depmod, struct kmod_module *kmod)
 	else
 		mod->relpath = NULL;
 
-	err = array_append(&depmod->modules, mod);
-	if (err < 0) {
-		free(mod);
-		return err;
-	}
-
 	err = hash_add_unique(depmod->modules_by_name, mod->modname, mod);
 	if (err < 0) {
 		ERR("hash_add_unique %s: %s\n", mod->modname, strerror(-err));
-		array_pop(&depmod->modules);
 		free(mod);
 		return err;
 	}
@@ -1162,7 +1155,6 @@ static int depmod_module_add(struct depmod *depmod, struct kmod_module *kmod)
 			ERR("hash_add_unique %s: %s\n",
 			    mod->relpath, strerror(-err));
 			hash_del(depmod->modules_by_name, mod->modname);
-			array_pop(&depmod->modules);
 			free(mod);
 			return err;
 		}
@@ -1181,9 +1173,6 @@ static int depmod_module_del(struct depmod *depmod, struct mod *mod)
 		hash_del(depmod->modules_by_relpath, mod->relpath);
 
 	hash_del(depmod->modules_by_name, mod->modname);
-
-	assert(depmod->modules.array[mod->idx] == mod);
-	array_remove_at(&depmod->modules, mod->idx);
 
 	mod_free(mod);
 	return 0;
@@ -1426,6 +1415,22 @@ static int mod_cmp(const void *pa, const void *pb) {
 	else if (b->dep_loop)
 		return -1;
 	return a->sort_idx - b->sort_idx;
+}
+
+static int depmod_modules_build_array(struct depmod *depmod)
+{
+	struct hash_iter module_iter;
+	const void *mod;
+	int err;
+
+	hash_iter_init(depmod->modules_by_name, &module_iter);
+	while (hash_iter_next(&module_iter, NULL, &mod)) {
+		err = array_append(&depmod->modules, mod);
+		if (err < 0)
+			return err;
+	}
+
+	return 0;
 }
 
 static void depmod_modules_sort(struct depmod *depmod)
@@ -2709,6 +2714,13 @@ static int do_depmod(int argc, char *argv[])
 				goto cmdline_modules_failed;
 			}
 		}
+	}
+
+	err = depmod_modules_build_array(&depmod);
+	if (err < 0) {
+		CRIT("could not build module array: %s\n",
+		     strerror(-err));
+		goto cmdline_modules_failed;
 	}
 
 	depmod_modules_sort(&depmod);
