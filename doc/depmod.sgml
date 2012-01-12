@@ -141,9 +141,8 @@
         </term>
         <listitem>
           <para>
-            This option overrides the default configuration file at
-            <filename>/etc/depmod.conf</filename> (or the 
-            <filename>/etc/depmod.d/</filename> directory if that is not found).
+            This option overrides the default configuration directory at
+            <filename>/etc/depmod.d/</filename>.
           </para>
         </listitem>
       </varlistentry>
@@ -272,9 +271,6 @@
   <refsect1>
     <title>SEE ALSO</title>
     <para>
-      <citerefentry>
-	<refentrytitle>depmod.conf</refentrytitle><manvolnum>5</manvolnum>
-      </citerefentry>,
       <citerefentry>
 	<refentrytitle>depmod.d</refentrytitle><manvolnum>5</manvolnum>
       </citerefentry>,
