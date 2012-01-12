@@ -1,0 +1,4 @@
+#!/bin/sh
+
+. ./bootstrap && \
+	exec ./configure CFLAGS="-g -O2 -Werror" $args $hackargs $*
