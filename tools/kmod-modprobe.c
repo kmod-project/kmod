@@ -19,6 +19,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <getopt.h>
 #include <errno.h>
 #include <string.h>
@@ -603,137 +604,91 @@ static int rmmod_all(struct kmod_ctx *ctx, char **args, int nargs)
 	return err;
 }
 
-static int insmod_do_dependencies(struct kmod_module *parent);
-static int insmod_do_soft_dependencies(struct kmod_module *mod,
-						struct kmod_list *deps);
-
-static int insmod_do_deps_list(struct kmod_module *parent,
-						struct kmod_list *deps,
-						unsigned stop_on_errors)
+static int concat_options(const char *conf_opts, const char *extra_opts,
+								char **opts)
 {
-	struct kmod_list *d;
-	int err = 0;
+	if (conf_opts == NULL && extra_opts == NULL)
+		*opts = NULL;
+	else if (conf_opts == NULL)
+		*opts = strdup(extra_opts);
+	else if (extra_opts == NULL)
+		*opts = strdup(conf_opts);
+	else if (asprintf(opts, "%s %s", conf_opts, extra_opts) < 0)
+		return -ENOMEM;
 
-	kmod_list_foreach(d, deps) {
-		struct kmod_module *dm = kmod_module_get_module(d);
-		struct kmod_list *pre = NULL, *post = NULL;
-		const char *cmd, *opts, *dmname = kmod_module_get_name(dm);
-		int r;
+	return 0;
+}
 
-		if (!ignore_loaded) {
-			int state = kmod_module_get_initstate(dm);
-			if (state == KMOD_MODULE_LIVE ||
-					state == KMOD_MODULE_COMING ||
-					state == KMOD_MODULE_BUILTIN)
-				continue;
-		}
+static int insmod_do_insert_module(struct kmod_module *mod, const char *opts)
+{
+	int flags = 0, err;
 
-		r = insmod_do_dependencies(dm);
-		if (r < 0) {
-			WRN("could not insert dependencies of '%s': %s\n",
-							dmname, strerror(-r));
-			goto dep_error;
-		}
+	SHOW("insmod %s %s\n", kmod_module_get_path(mod), opts ? opts : "");
 
-		r = kmod_module_get_softdeps(dm, &pre, &post);
-		if (r < 0) {
-			WRN("could not get softdeps of '%s': %s\n",
-							dmname, strerror(-r));
-			goto dep_done;
-		}
+	if (dry_run)
+		return 0;
 
-		r = insmod_do_soft_dependencies(dm, pre);
-		if (r < 0) {
-			WRN("could not insert pre softdeps of '%s': %s\n",
-							dmname, strerror(-r));
-			goto dep_error;
-		}
+	if (strip_modversion || force)
+		flags |= KMOD_INSERT_FORCE_MODVERSION;
+	if (strip_vermagic || force)
+		flags |= KMOD_INSERT_FORCE_VERMAGIC;
 
-		cmd = kmod_module_get_install_commands(dm);
-		if (cmd) {
-			r = command_do(dm, "install", cmd, NULL);
-			if (r < 0) {
-				WRN("failed to execute install command of '%s':"
-						" %s\n", dmname, strerror(-r));
-				goto dep_error;
-			} else
-				goto dep_done;
-		}
-
-		opts = kmod_module_get_options(dm);
-		SHOW("insmod %s %s\n",
-				kmod_module_get_path(dm), opts ? opts : "");
-
-		if (!dry_run) {
-			int flags = 0;
-
-			if (strip_modversion || force)
-				flags |= KMOD_INSERT_FORCE_MODVERSION;
-			if (strip_vermagic || force)
-				flags |= KMOD_INSERT_FORCE_VERMAGIC;
-
-			r = kmod_module_insert_module(dm, flags, opts);
-			if (r == -EEXIST && !first_time)
-				r = 0;
-			if (r < 0) {
-				WRN("could not insert '%s': %s\n",
-						dmname, strerror(-r));
-				goto dep_error;
-			}
-		}
-
-	dep_done:
-		r = insmod_do_soft_dependencies(dm, post);
-		if (r < 0) {
-			WRN("could not insert post softdeps of '%s': %s\n",
-							dmname, strerror(-r));
-			goto dep_error;
-		}
-
-		kmod_module_unref_list(pre);
-		kmod_module_unref_list(post);
-		kmod_module_unref(dm);
-		continue;
-
-	dep_error:
-		err = r;
-		kmod_module_unref_list(pre);
-		kmod_module_unref_list(post);
-		kmod_module_unref(dm);
-		if (stop_on_errors)
-			break;
+	err = kmod_module_insert_module(mod, flags, opts);
+	switch (err) {
+	case -EEXIST:
+		/*
+		 * We checked for EEXIST with an earlier call to
+		 * retrieve the initstate, but to avoid a race
+		 * condition, we don't make any assumptions and handle
+		 * the error again here
+		 */
+		if (!first_time)
+			err = 0;
 		else
-			continue;
+			ERR("Module %s already in kernel.\n",
+					kmod_module_get_name(mod));
+		break;
+	case -EPERM:
+		ERR("could not insert '%s': %s\n", kmod_module_get_name(mod),
+				strerror(-err));
+		break;
 	}
 
 	return err;
+
 }
 
-static int insmod_do_soft_dependencies(struct kmod_module *mod,
-							struct kmod_list *deps)
+static int insmod_do_module(struct kmod_module *mod, const char *extra_opts,
+							bool do_dependencies);
+
+static int insmod_do_deps_list(struct kmod_list *list,
+						bool stop_on_errors)
 {
-	return insmod_do_deps_list(mod, deps, 0);
+	struct kmod_list *l;
+
+	kmod_list_foreach(l, list) {
+		struct kmod_module *m = kmod_module_get_module(l);
+		int r = insmod_do_module(m, NULL, false);
+		kmod_module_unref(m);
+
+		if (r < 0 && stop_on_errors)
+			return r;
+	}
+
+	return 0;
 }
 
-static int insmod_do_dependencies(struct kmod_module *parent)
-{
-	struct kmod_list *deps = kmod_module_get_dependencies(parent);
-	int err = insmod_do_deps_list(parent, deps, 1);
-	kmod_module_unref_list(deps);
-	return err;
-}
-
-static int insmod_do(struct kmod_module *mod, const char *extra_opts)
+static int insmod_do_module(struct kmod_module *mod, const char *extra_opts,
+							bool do_dependencies)
 {
 	const char *modname = kmod_module_get_name(mod);
 	const char *conf_opts = kmod_module_get_options(mod);
 	struct kmod_list *pre = NULL, *post = NULL;
+	const char *cmd = NULL;
 	char *opts = NULL;
 	int err;
 
 	if (!ignore_commands) {
-		const char *cmd;
-
 		err = kmod_module_get_softdeps(mod, &pre, &post);
 		if (err < 0) {
 			WRN("could not get softdeps of '%s': %s\n",
@@ -741,115 +696,67 @@ static int insmod_do(struct kmod_module *mod, const char *extra_opts)
 			return err;
 		}
 
-		err = insmod_do_soft_dependencies(mod, pre);
-		if (err < 0) {
-			WRN("could not insert pre softdeps of '%s': %s\n",
-						modname, strerror(-err));
-			goto error;
-		}
-
 		cmd = kmod_module_get_install_commands(mod);
-		if (cmd != NULL) {
-			err = command_do(mod, "install", cmd, extra_opts);
-			goto done;
-		}
 	}
 
-	if (!ignore_loaded) {
+	if (cmd == NULL && !ignore_loaded) {
 		int state = kmod_module_get_initstate(mod);
 
 		if (state == KMOD_MODULE_BUILTIN) {
 			if (first_time) {
+				err = -EEXIST;
 				LOG("Module %s already in kernel (builtin).\n",
 								modname);
-				return -EEXIST;
-			}
-			return 0;
+			} else
+				err = 0;
+
+			goto error;
 		} else if (state == KMOD_MODULE_LIVE) {
 			if (first_time) {
+				err = -EEXIST;
 				LOG("Module %s already in kernel.\n", modname);
-				return -EEXIST;
-			}
-			return 0;
-		}
-	}
 
-	/*
-	 * At this point it's not possible to be a install/remove command
-	 * anymore. So if we can't get module's path, it's because it was
-	 * really intended to be a module and it doesn't exist
-	 */
-	if (kmod_module_get_path(mod) == NULL) {
-		LOG("Module %s not found.\n", modname);
-		return -ENOENT;
-	}
-
-	err = insmod_do_dependencies(mod);
-	if (err < 0)
-		return err;
-
-	if (conf_opts || extra_opts) {
-		if (conf_opts == NULL)
-			opts = strdup(extra_opts);
-		else if (extra_opts == NULL)
-			opts = strdup(conf_opts);
-		else if (asprintf(&opts, "%s %s", conf_opts, extra_opts) < 0)
-			opts = NULL;
-
-		if (opts == NULL) {
-			err = -ENOMEM;
-			goto error;
-		}
-	}
-
-	SHOW("insmod %s %s\n", kmod_module_get_path(mod), opts ? opts : "");
-
-	if (dry_run)
-		err = 0;
-	else {
-		int flags = 0;
-
-		if (strip_modversion || force)
-			flags |= KMOD_INSERT_FORCE_MODVERSION;
-		if (strip_vermagic || force)
-			flags |= KMOD_INSERT_FORCE_VERMAGIC;
-
-		err = kmod_module_insert_module(mod, flags, opts);
-		switch (err) {
-		case -EEXIST:
-			/*
-			 * We checked for EEXIST with an earlier call to
-			 * retrieve the initstate, but to avoid a race
-			 * condition, we don't make any assumptions and handle
-			 * the error again here
-			 */
-			if (!first_time)
+			} else
 				err = 0;
-			else
-				ERR("Module %s already in kernel.\n",
-					kmod_module_get_name(mod));
-			goto error;
-		case -EPERM:
-			ERR("could not insert '%s': %s\n", kmod_module_get_name(mod),
-					strerror(-err));
+
 			goto error;
 		}
 	}
 
-done:
-	if (!ignore_commands) {
-		err = insmod_do_soft_dependencies(mod, post);
-		if (err < 0) {
-			WRN("could not insert post softdeps of '%s': %s\n",
-						modname, strerror(-err));
-			goto error;
-		}
+	if (cmd == NULL && kmod_module_get_path(mod) == NULL) {
+		err = -ENOENT;
+		LOG("Module %s not found.\n", modname);
+		goto error;
 	}
+
+	insmod_do_deps_list(pre, false);
+
+	if (do_dependencies) {
+		struct kmod_list *deps = kmod_module_get_dependencies(mod);
+
+		err = insmod_do_deps_list(deps, true);
+		if (err < 0)
+			goto error;
+	}
+
+	if ((err = concat_options(conf_opts, extra_opts, &opts)) < 0)
+		goto error;
+
+	if (cmd == NULL)
+		err = insmod_do_insert_module(mod, opts);
+	else
+		err = command_do(mod, "install", cmd, NULL);
+
+	if (err < 0)
+		goto error;
+
+	insmod_do_deps_list(post, false);
 
 error:
 	kmod_module_unref_list(pre);
 	kmod_module_unref_list(post);
 	free(opts);
+
 	return err;
 }
 
@@ -864,7 +771,7 @@ static int insmod_path(struct kmod_ctx *ctx, const char *path,
 		LOG("Module %s not found.\n", path);
 		return err;
 	}
-	err = insmod_do(mod, extra_options);
+	err = insmod_do_module(mod, extra_options, true);
 	kmod_module_unref(mod);
 	return err;
 }
@@ -927,7 +834,7 @@ static int insmod_alias(struct kmod_ctx *ctx, const char *alias,
 		if (lookup_only)
 			printf("%s\n", kmod_module_get_name(mod));
 		else
-			err = insmod_do(mod, extra_options);
+			err = insmod_do_module(mod, extra_options, true);
 		kmod_module_unref(mod);
 		if (err < 0)
 			break;
