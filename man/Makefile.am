@@ -1,4 +1,4 @@
-MAN5 = depmod.d.5
+MAN5 = depmod.d.5 modprobe.d.5
 MAN8 =
 
 dist_man_MANS = $(MAN5) $(MAN8)
