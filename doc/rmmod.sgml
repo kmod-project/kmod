@@ -1,0 +1,159 @@
+<!doctype refentry PUBLIC "-//OASIS//DTD DocBook V4.1//EN" [
+  <!ENTITY debian  "<productname>Debian GNU/Linux</productname>">
+  <!ENTITY docbook "<productname>DocBook</productname>">
+  <!ENTITY sgml    "<abbrev>SGML</abbrev>">
+]>
+
+<!-- Stolen from manual page for docbook-to-man, DocBook source file
+     (C) 1999 W. Borgert debacle@debian.org
+
+     $Id: docbook-to-man.sgml,v 1.8 2002/04/27 15:28:02 debacle Exp $ -->
+
+<refentry>
+  <refentryinfo>
+    <address>
+      <email>jcm@jonmasters.org</email>
+    </address>
+    <author>
+      <firstname>Jon</firstname>
+      <surname>Masters</surname>
+    </author>
+    <date>2010-03-01</date>
+  </refentryinfo>
+  <refmeta>
+    <refentrytitle>rmmod</refentrytitle>
+    <manvolnum>8</manvolnum>
+  </refmeta>
+  <refnamediv>
+    <refname>rmmod</refname> <refpurpose>simple program to remove a module from the Linux Kernel</refpurpose>
+  </refnamediv>
+  <refsynopsisdiv>
+    <cmdsynopsis>
+      <command>rmmod</command>
+      <arg><option>-f</option></arg>
+      <arg><option>-w</option></arg>
+      <arg><option>-s</option></arg>
+      <arg><option>-v</option></arg>
+      <arg><replaceable>modulename</replaceable></arg>
+    </cmdsynopsis>
+  </refsynopsisdiv>
+  <refsect1>
+    <title>DESCRIPTION</title>
+
+    <para><command>rmmod</command> is a trivial program to remove a
+      module (when module unloading support is provided) from the kernel.
+      Most users will want to use
+      <citerefentry>
+	<refentrytitle>modprobe</refentrytitle><manvolnum>8</manvolnum>
+      </citerefentry> with the <option>-r</option> option instead.
+    </para>
+  </refsect1>
+  <refsect1>
+    <title>OPTIONS</title>
+    <variablelist>
+      <varlistentry>
+        <term><option>-v</option> <option>--verbose</option>
+        </term>
+        <listitem>
+          <para>
+	    Print messages about what the program is doing.
+	    Usually <command>rmmod</command> prints messages
+	    only if something goes wrong.
+	  </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-f</option> <option>--force</option>
+        </term>
+        <listitem>
+          <para>
+	    This option can be extremely dangerous: it has no effect unless
+	    CONFIG_MODULE_FORCE_UNLOAD was set when the kernel was
+	    compiled.  With this option, you can remove modules which are
+	    being used, or which are not designed to be removed, or have
+	    been marked as unsafe (see <citerefentry>
+	<refentrytitle>lsmod</refentrytitle><manvolnum>8</manvolnum>
+      </citerefentry>).
+	  </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-w</option> <option>--wait</option>
+        </term>
+        <listitem>
+          <para>
+	    Normally, <command>rmmod</command> will refuse to
+	    unload modules which are in use.  With this option,
+	    <command>rmmod</command> will isolate the module, and
+	    wait until the module is no longer used.  Nothing new
+	    will be able to use the module, but it's up to you to
+	    make sure the current users eventually finish with it.
+	    See <citerefentry>
+	<refentrytitle>lsmod</refentrytitle><manvolnum>8</manvolnum>
+      </citerefentry>) for information on usage counts.
+	  </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-s</option> <option>--syslog</option>
+        </term>
+        <listitem>
+          <para>
+	    Send errors to syslog instead of standard error.
+	  </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-V</option> <option>--version</option>
+        </term>
+        <listitem>
+          <para>
+	    Show version of program and exit.
+	  </para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+  </refsect1>
+  <refsect1>
+    <title>COPYRIGHT</title>
+    <para>
+      This manual page originally Copyright 2002, Rusty Russell, IBM
+      Corporation. Maintained by Jon Masters and others.
+    </para>
+  </refsect1>
+  <refsect1>
+    <title>SEE ALSO</title>
+
+    <para>
+      <citerefentry>
+	<refentrytitle>modprobe</refentrytitle><manvolnum>8</manvolnum>
+      </citerefentry>,
+      <citerefentry>
+	<refentrytitle>insmod</refentrytitle><manvolnum>8</manvolnum>
+      </citerefentry>,
+      <citerefentry>
+	<refentrytitle>lsmod</refentrytitle><manvolnum>8</manvolnum>
+      </citerefentry>
+      <citerefentry>
+	<refentrytitle>modinfo</refentrytitle><manvolnum>8</manvolnum>
+      </citerefentry>
+    </para>
+  </refsect1>
+</refentry>
+
+<!-- Keep this comment at the end of the file
+Local variables:
+mode: sgml
+sgml-omittag:t
+sgml-shorttag:t
+sgml-minimize-attributes:nil
+sgml-always-quote-attributes:t
+sgml-indent-step:2
+sgml-indent-data:t
+sgml-parent-document:nil
+sgml-default-dtd-file:nil
+sgml-exposed-tags:nil
+sgml-local-catalogs:nil
+sgml-local-ecat-files:nil
+End:
+-->

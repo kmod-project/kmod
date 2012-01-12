@@ -1,0 +1,169 @@
+<!doctype refentry PUBLIC "-//OASIS//DTD DocBook V4.1//EN" [
+  <!ENTITY debian  "<productname>Debian GNU/Linux</productname>">
+  <!ENTITY docbook "<productname>DocBook</productname>">
+  <!ENTITY sgml    "<abbrev>SGML</abbrev>">
+]>
+
+<!-- Stolen from manual page for docbook-to-man, DocBook source file
+     (C) 1999 W. Borgert debacle@debian.org
+
+     $Id: docbook-to-man.sgml,v 1.8 2002/04/27 15:28:02 debacle Exp $ -->
+
+<refentry>
+  <refentryinfo>
+    <address>
+      <email>jcm@jonmasters.org</email>
+    </address>
+    <author>
+      <firstname>Jon</firstname>
+      <surname>Masters</surname>
+    </author>
+    <date>2010-03-01</date>
+  </refentryinfo>
+  <refmeta>
+    <refentrytitle>modinfo</refentrytitle>
+    <manvolnum>8</manvolnum>
+  </refmeta>
+  <refnamediv>
+    <refname>modinfo</refname> <refpurpose>program to show information about a Linux Kernel module</refpurpose>
+  </refnamediv>
+  <refsynopsisdiv>
+    <cmdsynopsis>
+      <command>modinfo</command>
+      <arg><option>-0</option></arg>
+      <arg><option>-F <replaceable>field</replaceable></option></arg>
+      <arg><option>-k <replaceable>kernel</replaceable></option></arg>
+      <arg rep='repeat'>modulename|filename</arg>
+    </cmdsynopsis>
+    <cmdsynopsis>
+      <command>modinfo -V</command>
+    </cmdsynopsis>
+    <cmdsynopsis>
+      <command>modinfo -h</command>
+    </cmdsynopsis>
+  </refsynopsisdiv>
+  <refsect1>
+    <title>DESCRIPTION</title>
+
+    <para><command>modinfo</command> extracts information from the Linux
+      Kernel modules given on the command line.  If the module name is
+      not a filename, then the
+      <filename>/lib/modules/</filename><replaceable>version</replaceable>
+      directory is searched, as is also done by
+      <citerefentry><refentrytitle>modprobe</refentrytitle><manvolnum>8</manvolnum></citerefentry> when loading kernel modules.
+    </para>
+
+    <para><command>modinfo</command> by default lists each attribute
+      of the module in form <replaceable>fieldname</replaceable> :
+      <replaceable>value</replaceable>, for easy reading.  The
+      filename is listed the same way (although it's not really an
+      attribute).
+    </para>
+
+    <para>This version of <command>modinfo</command> can understand
+    modules of any Linux Kernel architecture.</para>
+  </refsect1>
+  <refsect1>
+    <title>OPTIONS</title>
+    <variablelist>
+      <varlistentry>
+        <term><option>-V</option> <option>--version</option>
+        </term>
+        <listitem>
+          <para>
+	    Print the modinfo version.
+	  </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-F</option> <option>--field</option>
+        </term>
+        <listitem>
+          <para>
+	    Only print this field value, one per line.  This is most
+	    useful for scripts.  Field names are case-insenitive.
+	    Common fields (which may not be in every module) include
+	    <literal>author</literal>, <literal>description</literal>,
+	    <literal>license</literal>, <literal>parm</literal>,
+	    <literal>depends</literal>, and <literal>alias</literal>.
+	    There are often multiple <literal>parm</literal>,
+	    <literal>alias</literal> and <literal>depends</literal>
+	    fields.  The special field <literal>filename</literal>
+	    lists the filename of the module.
+	  </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-k <replaceable>kernel</replaceable></option>
+        </term>
+        <listitem>
+          <para>
+            Provide information about a kernel other than the running one. This
+            is particularly useful for distributions needing to extract
+            information from a newly installed (but not yet running) set of
+            kernel modules. For example, you wish to find which firmware files
+            are needed by various modules in a new kernel for which you must
+            make an initrd/initramfs image prior to booting.
+          </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-0</option> <option>--null</option>
+        </term>
+        <listitem>
+          <para>
+	    Use the ASCII zero character to separate field values,
+	    instead of a new line.  This is useful for scripts, since
+	    a new line can theoretically appear inside a field.
+	  </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-a</option> <option>-d</option> <option>-l</option> <option>-p</option> <option>-n</option>
+        </term>
+        <listitem>
+          <para>
+	    These are shortcuts for <literal>author</literal>,
+	    <literal>description</literal>,
+	    <literal>license</literal>.  <literal>parm</literal> and
+	    <literal>filename</literal> respectively, to ease the
+	    transition from the old modutils
+	    <command>modinfo</command>.
+	  </para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+  </refsect1>
+  <refsect1>
+    <title>COPYRIGHT</title>
+    <para>
+      This manual page originally Copyright 2003, Rusty Russell, IBM
+      Corporation. Maintained by Jon Masters and others.
+    </para>
+  </refsect1>
+  <refsect1>
+    <title>SEE ALSO</title>
+
+    <para><citerefentry>
+	<refentrytitle>modprobe</refentrytitle><manvolnum>8</manvolnum>
+      </citerefentry>
+</para>
+  </refsect1>
+</refentry>
+
+<!-- Keep this comment at the end of the file
+Local variables:
+mode: sgml
+sgml-omittag:t
+sgml-shorttag:t
+sgml-minimize-attributes:nil
+sgml-always-quote-attributes:t
+sgml-indent-step:2
+sgml-indent-data:t
+sgml-parent-document:nil
+sgml-default-dtd-file:nil
+sgml-exposed-tags:nil
+sgml-local-catalogs:nil
+sgml-local-ecat-files:nil
+End:
+-->
