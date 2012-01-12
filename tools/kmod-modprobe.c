@@ -1,5 +1,5 @@
 /*
- * kmod-modprob - manage linux kernel modules using libkmod.
+ * kmod-modprobe - manage linux kernel modules using libkmod.
  *
  * Copyright (C) 2011-2012  ProFUSION embedded systems
  *
@@ -31,6 +31,7 @@
 #include <limits.h>
 
 #include "libkmod.h"
+#include "libkmod-array.h"
 
 static int log_priority = LOG_CRIT;
 static int use_syslog = 0;
@@ -487,6 +488,8 @@ static int rmmod_all(struct kmod_ctx *ctx, char **args, int nargs)
 	return err;
 }
 
+#define INSMOD_RECURSION_STEP 15
+
 static int concat_options(const char *conf_opts, const char *extra_opts,
 								char **opts)
 {
@@ -541,18 +544,64 @@ static int insmod_do_insert_module(struct kmod_module *mod, const char *opts)
 
 }
 
+static bool insmod_recursion_has_loop(struct kmod_module *mod,
+						struct array *recursion)
+{
+	unsigned int i;
+
+	/*
+	 * Don't check every time to not impact normal use cases. If the
+	 * recursion hits INSMOD_RECURSION_STEP, then search loop in
+	 * @recursion.
+	 */
+	if ((recursion->count + 1) % INSMOD_RECURSION_STEP != 0)
+		return false;
+
+	for (i = 0; i < recursion->count; i++) {
+		if (recursion->array[i] != mod)
+			continue;
+
+		ERR("Dependency loop detected while inserting '%s'. Operation aborted.\n",
+						kmod_module_get_name(mod));
+
+		for (; i < recursion->count; i++)
+			ERR("\t%s\n", kmod_module_get_name(recursion->array[i]));
+
+		return true;
+	}
+
+	return false;
+}
+
 static int insmod_do_module(struct kmod_module *mod, const char *extra_opts,
-							bool do_dependencies);
+				bool do_dependencies, struct array *recursion);
 
 static int insmod_do_deps_list(struct kmod_list *list,
-						bool stop_on_errors)
+				bool stop_on_errors, struct array *recursion)
 {
 	struct kmod_list *l;
+	struct kmod_module *m;
+	int r;
+
+	if (list == NULL)
+		return 0;
+
+	m = kmod_module_get_module(list);
+	r = insmod_recursion_has_loop(m, recursion);
+	kmod_module_unref(m);
+
+	if (r)
+		return -ELOOP;
 
 	kmod_list_foreach(l, list) {
-		struct kmod_module *m = kmod_module_get_module(l);
-		int r = insmod_do_module(m, NULL, false);
+		m = kmod_module_get_module(l);
+		array_append(recursion, m);
+		r = insmod_do_module(m, NULL, false, recursion);
 		kmod_module_unref(m);
+		array_pop(recursion);
+
+		if (r == -ELOOP)
+			return r;
 
 		if (r < 0 && stop_on_errors)
 			return r;
@@ -562,7 +611,7 @@ static int insmod_do_deps_list(struct kmod_list *list,
 }
 
 static int insmod_do_module(struct kmod_module *mod, const char *extra_opts,
-							bool do_dependencies)
+				bool do_dependencies, struct array *recursion)
 {
 	const char *modname = kmod_module_get_name(mod);
 	const char *conf_opts = kmod_module_get_options(mod);
@@ -612,12 +661,14 @@ static int insmod_do_module(struct kmod_module *mod, const char *extra_opts,
 		goto error;
 	}
 
-	insmod_do_deps_list(pre, false);
+	err = insmod_do_deps_list(pre, false, recursion);
+	if (err == -ELOOP)
+		goto error;
 
 	if (do_dependencies) {
 		struct kmod_list *deps = kmod_module_get_dependencies(mod);
 
-		err = insmod_do_deps_list(deps, true);
+		err = insmod_do_deps_list(deps, true, recursion);
 		if (err < 0)
 			goto error;
 	}
@@ -633,7 +684,7 @@ static int insmod_do_module(struct kmod_module *mod, const char *extra_opts,
 	if (err < 0)
 		goto error;
 
-	insmod_do_deps_list(post, false);
+	err = insmod_do_deps_list(post, false, recursion);
 
 error:
 	kmod_module_unref_list(pre);
@@ -647,6 +698,7 @@ static int insmod_path(struct kmod_ctx *ctx, const char *path,
 						const char *extra_options)
 {
 	struct kmod_module *mod;
+	struct array recursion;
 	int err;
 
 	err = kmod_module_new_from_path(ctx, path, &mod);
@@ -654,8 +706,12 @@ static int insmod_path(struct kmod_ctx *ctx, const char *path,
 		LOG("Module %s not found.\n", path);
 		return err;
 	}
-	err = insmod_do_module(mod, extra_options, true);
+
+	array_init(&recursion, INSMOD_RECURSION_STEP);
+	err = insmod_do_module(mod, extra_options, true, &recursion);
 	kmod_module_unref(mod);
+	array_free_array(&recursion);
+
 	return err;
 }
 
@@ -714,10 +770,17 @@ static int insmod_alias(struct kmod_ctx *ctx, const char *alias,
 
 	kmod_list_foreach(l, list) {
 		struct kmod_module *mod = kmod_module_get_module(l);
+
 		if (lookup_only)
 			printf("%s\n", kmod_module_get_name(mod));
-		else
-			err = insmod_do_module(mod, extra_options, true);
+		else {
+			struct array recursion;
+
+			array_init(&recursion, INSMOD_RECURSION_STEP);
+			err = insmod_do_module(mod, extra_options, true,
+								&recursion);
+			array_free_array(&recursion);
+		}
 		kmod_module_unref(mod);
 		if (err < 0)
 			break;

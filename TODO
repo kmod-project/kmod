@@ -18,7 +18,6 @@ Features:
 
 * provide 1:1 compatibility with module-init-tools's modprobe
    - dump configuration
-   - deal with dependency loop
 
 * Add manpages: copy them from module-init-tools and make the necessary changes
 
