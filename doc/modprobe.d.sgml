@@ -21,11 +21,11 @@
     <date>2010-03-09</date>
   </refentryinfo>
   <refmeta>
-    <refentrytitle>modprobe.conf</refentrytitle>
+    <refentrytitle>modprobe.d</refentrytitle>
     <manvolnum>5</manvolnum>
   </refmeta>
   <refnamediv>
-    <refname>modprobe.d</refname><refname>modprobe.conf</refname> <refpurpose>Configuration directory/file for modprobe</refpurpose>
+    <refname>modprobe.d</refname><refname>modprobe.d</refname> <refpurpose>Configuration directory for modprobe</refpurpose>
   </refnamediv>
   <refsect1>
     <title>DESCRIPTION</title>
@@ -36,9 +36,7 @@
       those modules.  All files underneath the 
       <filename>/etc/modprobe.d</filename> directory which end with the
       <filename>.conf</filename> extension specify those options as
-      required. (the <filename>/etc/modprobe.conf</filename> file can
-      also be used if it exists, but that will be removed in a future 
-      version).  They can also be used to create convenient aliases: 
+      required.  They can also be used to create convenient aliases: 
       alternate names for a module, or they can override the normal 
       <command>modprobe</command> behavior altogether for those with 
       special requirements (such as inserting more than one module).
@@ -49,12 +47,11 @@
       module commands as underscore conversion happens automatically.
     </para>
     <para>
-      The format of and files under <filename>modprobe.d</filename> and
-      <filename>/etc/modprobe.conf</filename> is simple: one
-      command per line, with blank lines and lines starting with '#'
-      ignored (useful for adding comments).  A '\' at the end of a line
-      causes it to continue on the next line, which makes the file a
-      bit neater.
+      The format of and files under <filename>modprobe.d</filename> is 
+      simple: one command per line, with blank lines and lines starting 
+      with '#' ignored (useful for adding comments).  A '\' at the end 
+      of a line causes it to continue on the next line, which makes the 
+      file a bit neater.
     </para>
   </refsect1>
   <refsect1>
@@ -210,11 +207,11 @@
   <refsect1>
     <title>COMPATIBILITY</title>
     <para>
-      A future version of module-init-tools will come with a strong warning
-      to avoid use of the <command>install</command> as explained above. This
-      will happen once support for soft dependencies in the kernel is complete.
-      That support will complement the existing softdep support within this
-      utility by providing such dependencies directly within the modules.
+      A future version of kmod will come with a strong warning to avoid use of 
+      the <command>install</command> as explained above.  This will happen once 
+      support for soft dependencies in the kernel is complete.  That support 
+      will complement the existing softdep support within this utility by 
+      providing such dependencies directly within the modules.
     </para>
   </refsect1>
   <refsect1>
