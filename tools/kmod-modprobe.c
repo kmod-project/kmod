@@ -305,132 +305,56 @@ end:
 	return ret;
 }
 
-static int rmmod_do_dependencies(struct kmod_module *parent);
-static int rmmod_do_soft_dependencies(struct kmod_module *mod, struct kmod_list *deps);
-
-static int rmmod_do_deps_list(struct kmod_module *parent,
-						struct kmod_list *deps,
-						unsigned stop_on_errors)
+static int rmmod_do_remove_module(struct kmod_module *mod)
 {
-	struct kmod_list *d;
-	int err = 0;
+	const char *modname = kmod_module_get_name(mod);
+	int flags = 0, err;
 
-	kmod_list_foreach_reverse(d, deps) {
-		struct kmod_module *dm = kmod_module_get_module(d);
-		struct kmod_list *pre = NULL, *post = NULL;
-		const char *cmd, *dmname = kmod_module_get_name(dm);
-		int r;
+	SHOW("rmmod %s\n", kmod_module_get_name(mod));
 
-		r = rmmod_do_dependencies(dm);
-		if (r < 0) {
-			WRN("could not remove dependencies of '%s': %s\n",
-							dmname, strerror(-r));
-			goto dep_error;
-		}
+	if (dry_run)
+		return 0;
 
-		r = kmod_module_get_softdeps(dm, &pre, &post);
-		if (r < 0) {
-			WRN("could not get softdeps of '%s': %s\n",
-							dmname, strerror(-r));
-			goto dep_done;
-		}
+	if (force)
+		flags |= KMOD_REMOVE_FORCE;
 
-		r = rmmod_do_soft_dependencies(dm, post);
-		if (r < 0) {
-			WRN("could not remove post soft softdeps of '%s': %s\n",
-							dmname, strerror(-r));
-			goto dep_error;
-		}
-
-		if (!ignore_loaded) {
-			int state = kmod_module_get_initstate(dm);
-			if (state != KMOD_MODULE_LIVE &&
-					state != KMOD_MODULE_COMING)
-				goto dep_done;
-		}
-
-		cmd = kmod_module_get_remove_commands(dm);
-		if (cmd) {
-			r = command_do(dm, "remove", cmd, NULL);
-			if (r < 0) {
-				WRN("failed to execute remove command of '%s': "
-						"%s\n", dmname, strerror(-r));
-				goto dep_error;
-			} else
-				goto dep_done;
-		}
-
-		r = kmod_module_get_refcnt(dm);
-		if (r < 0) {
-			WRN("could not get module '%s' refcnt: %s\n",
-							dmname, strerror(-r));
-			goto dep_error;
-		} else if (r > 0 && !ignore_loaded) {
-			LOG("Module %s is in use.\n", dmname);
-			r = -EBUSY;
-			goto dep_error;
-		}
-
-		SHOW("rmmod %s\n", dmname);
-
-		if (!dry_run) {
-			r = kmod_module_remove_module(dm, 0);
-			if (r < 0) {
-				WRN("could not remove '%s': %s\n",
-							dmname, strerror(-r));
-				goto dep_error;
-			}
-		}
-
-	dep_done:
-		r = rmmod_do_soft_dependencies(dm, pre);
-		if (r < 0) {
-			WRN("could not remove pre softdeps of '%s': %s\n",
-							dmname, strerror(-r));
-			goto dep_error;
-		}
-		kmod_module_unref_list(pre);
-		kmod_module_unref_list(post);
-		kmod_module_unref(dm);
-		continue;
-
-	dep_error:
-		err = r;
-		kmod_module_unref_list(pre);
-		kmod_module_unref_list(post);
-		kmod_module_unref(dm);
-		if (stop_on_errors)
-			break;
+	err = kmod_module_remove_module(mod, flags);
+	if (err == -EEXIST) {
+		if (!first_time)
+			err = 0;
 		else
-			continue;
+			LOG("Module %s is not in kernel.\n", modname);
 	}
 
 	return err;
 }
 
-static int rmmod_do_soft_dependencies(struct kmod_module *mod,
-							struct kmod_list *deps)
+static int rmmod_do_module(struct kmod_module *mod, bool do_dependencies);
+
+static int rmmod_do_deps_list(struct kmod_list *list, bool stop_on_errors)
 {
-	return rmmod_do_deps_list(mod, deps, 0);
+	struct kmod_list *l;
+
+	kmod_list_foreach_reverse(l, list) {
+		struct kmod_module *m = kmod_module_get_module(l);
+		int r = rmmod_do_module(m, false);
+		kmod_module_unref(m);
+
+		if (r < 0 && stop_on_errors)
+			return r;
+	}
+
+	return 0;
 }
 
-static int rmmod_do_dependencies(struct kmod_module *parent)
-{
-	struct kmod_list *deps = kmod_module_get_holders(parent);
-	int err = rmmod_do_deps_list(parent, deps, 1);
-	kmod_module_unref_list(deps);
-	return err;
-}
-
-static int rmmod_do(struct kmod_module *mod)
+static int rmmod_do_module(struct kmod_module *mod, bool do_dependencies)
 {
 	const char *modname = kmod_module_get_name(mod);
-	struct kmod_list *pre = NULL, *post = NULL, *deps;
+	struct kmod_list *pre = NULL, *post = NULL;
+	const char *cmd = NULL;
 	int err;
 
 	if (!ignore_commands) {
-		const char *cmd;
-
 		err = kmod_module_get_softdeps(mod, &pre, &post);
 		if (err < 0) {
 			WRN("could not get softdeps of '%s': %s\n",
@@ -438,21 +362,10 @@ static int rmmod_do(struct kmod_module *mod)
 			return err;
 		}
 
-		err = rmmod_do_soft_dependencies(mod, post);
-		if (err < 0) {
-			WRN("could not remove post softdeps of '%s': %s\n",
-						modname, strerror(-err));
-			goto error;
-		}
-
 		cmd = kmod_module_get_remove_commands(mod);
-		if (cmd != NULL) {
-			err = command_do(mod, "remove", cmd, NULL);
-			goto done;
-		}
 	}
 
-	if (!ignore_loaded) {
+	if (cmd == NULL && !ignore_loaded) {
 		int state = kmod_module_get_initstate(mod);
 
 		if (state < 0) {
@@ -470,11 +383,14 @@ static int rmmod_do(struct kmod_module *mod)
 		}
 	}
 
-	/* not in original modprobe -r, but helpful */
-	if (remove_dependencies) {
-		err = rmmod_do_dependencies(mod);
+	rmmod_do_deps_list(post, false);
+
+	if (do_dependencies && remove_dependencies) {
+		struct kmod_list *deps = kmod_module_get_dependencies(mod);
+
+		err = rmmod_do_deps_list(deps, true);
 		if (err < 0)
-			return err;
+			goto error;
 	}
 
 	if (!ignore_loaded) {
@@ -485,62 +401,24 @@ static int rmmod_do(struct kmod_module *mod)
 				LOG("Module %s is in use.\n", modname);
 
 			err = -EBUSY;
-			goto done_deps;
-		}
-	}
-
-	SHOW("rmmod %s\n", modname);
-
-	if (dry_run)
-		err = 0;
-	else {
-		int flags = 0;
-
-		if (force)
-			flags |= KMOD_REMOVE_FORCE;
-
-		err = kmod_module_remove_module(mod, flags);
-		if (err == -EEXIST) {
-			if (!first_time)
-				err = 0;
-			else
-				LOG("Module %s is not in kernel.\n", modname);
-		}
-	}
-
-done:
-	if (!ignore_commands) {
-		err = rmmod_do_soft_dependencies(mod, pre);
-		if (err < 0) {
-			WRN("could not remove pre softdeps of '%s': %s\n",
-						modname, strerror(-err));
 			goto error;
 		}
 	}
 
-done_deps:
-	deps = kmod_module_get_dependencies(mod);
-	if (deps != NULL) {
-		struct kmod_list *itr;
+	if (cmd == NULL)
+		err = rmmod_do_remove_module(mod);
+	else
+		err = command_do(mod, "remove", cmd, NULL);
 
-		first_time = 0;
-		ignore_commands = 0;
-		quiet_inuse = 1;
+	if (err < 0)
+		goto error;
 
-		kmod_list_foreach(itr, deps) {
-			struct kmod_module *dep = kmod_module_get_module(itr);
-
-			if (kmod_module_get_refcnt(dep) == 0)
-				rmmod_do(dep);
-
-			kmod_module_unref(dep);
-		}
-		kmod_module_unref_list(deps);
-	}
+	rmmod_do_deps_list(pre, false);
 
 error:
 	kmod_module_unref_list(pre);
 	kmod_module_unref_list(post);
+
 	return err;
 }
 
@@ -554,7 +432,7 @@ static int rmmod_path(struct kmod_ctx *ctx, const char *path)
 		LOG("Module %s not found.\n", path);
 		return err;
 	}
-	err = rmmod_do(mod);
+	err = rmmod_do_module(mod, true);
 	kmod_module_unref(mod);
 	return err;
 }
@@ -573,7 +451,7 @@ static int rmmod_alias(struct kmod_ctx *ctx, const char *alias)
 
 	kmod_list_foreach(l, list) {
 		struct kmod_module *mod = kmod_module_get_module(l);
-		err = rmmod_do(mod);
+		err = rmmod_do_module(mod, true);
 		kmod_module_unref(mod);
 		if (err < 0)
 			break;
