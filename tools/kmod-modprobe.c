@@ -370,16 +370,21 @@ static int rmmod_do_module(struct kmod_module *mod, bool do_dependencies)
 
 		if (state < 0) {
 			LOG ("Module %s not found.\n", modname);
-			return -ENOENT;
+			err = -ENOENT;
+			goto error;
 		} else if (state == KMOD_MODULE_BUILTIN) {
 			LOG("Module %s is builtin.\n", modname);
-			return -ENOENT;
+			err = -ENOENT;
+			goto error;
 		} else if (state != KMOD_MODULE_LIVE) {
 			if (first_time) {
 				LOG("Module %s is not in kernel.\n", modname);
-				return -ENOENT;
-			} else
-				return 0;
+				err = -ENOENT;
+				goto error;
+			} else {
+				err = 0;
+				goto error;
+			}
 		}
 	}
 
