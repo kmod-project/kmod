@@ -96,6 +96,20 @@ modprobe
   module appearing on /sys/modules/* without a initstate file to determine if
   it is builtin.
 
+* modprobe from m-i-t does not honour softdeps for install commands. E.g.:
+  config:
+
+        install bli "echo bli"
+	install bla "echo bla"
+	softdep bla pre: bli
+
+  With m-i-t, the output of 'modprobe --show-depends bla' will be:
+        install "echo bla"
+
+  While with kmod:
+        install "echo bli"
+        install "echo bla"
+
 depmod
 ------
 
