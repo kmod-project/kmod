@@ -21,11 +21,11 @@
     <date>2010-03-01</date>
   </refentryinfo>
   <refmeta>
-    <refentrytitle>depmod.conf</refentrytitle>
+    <refentrytitle>depmod.d</refentrytitle>
     <manvolnum>5</manvolnum>
   </refmeta>
   <refnamediv>
-    <refname>depmod.conf</refname><refname>depmod.d</refname> <refpurpose>Configuration file/directory for depmod</refpurpose>
+    <refname>depmod.d</refname><refname>depmod.d</refname> <refpurpose>Configuration directory for depmod</refpurpose>
   </refnamediv>
   <refsect1>
     <title>DESCRIPTION</title>
@@ -38,10 +38,10 @@
       order to override the module version supplied by the kernel.
     </para>
     <para>
-      The format of <filename>depmod.conf</filename> and files under <filename>depmod.d</filename> is simple: one
+      The format of files under <filename>depmod.d</filename> is simple: one
       command per line, with blank lines and lines starting with '#'
       ignored (useful for adding comments).  A '\' at the end of a line
-      causes it to continue on the next line, which makes the file a
+      causes it to continue on the next line, which makes the files a
       bit neater.
     </para>
   </refsect1>
