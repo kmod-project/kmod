@@ -1,4 +1,4 @@
-SUBDIRS = . libkmod/docs
+SUBDIRS = . libkmod/docs man
 
 EXTRA_DIST =
 CLEANFILES =

@@ -27,6 +27,7 @@ AC_C_BIGENDIAN
 
 AC_PROG_SED
 AC_PROG_MKDIR_P
+AC_PATH_PROG([XSLTPROC], [xsltproc])
 PKG_PROG_PKG_CONFIG
 
 AC_ARG_WITH([rootprefix],
@@ -128,6 +129,7 @@ CC_CHECK_CFLAGS_APPEND([ \
 AC_CONFIG_HEADERS(config.h)
 AC_CONFIG_FILES([
 	Makefile
+	man/Makefile
 	libkmod/docs/Makefile
 	libkmod/docs/version.xml
 ])
