@@ -1,5 +1,5 @@
 MAN5 = depmod.d.5 modprobe.d.5 modules.dep.5
-MAN8 =
+MAN8 = depmod.8
 
 dist_man_MANS = $(MAN5) $(MAN8) $(MAN_STUB)
 
