@@ -34,7 +34,6 @@
       <arg><option>-e</option></arg>
       <arg><option>-E <replaceable>Module.symvers</replaceable></option></arg>
       <arg><option>-F <replaceable>System.map</replaceable></option></arg>
-      <arg><option>-m</option></arg>
       <arg><option>-n</option></arg>
       <arg><option>-v</option></arg>
       <arg><option>-A</option></arg>
@@ -86,11 +85,6 @@
       If a <replaceable>version</replaceable> is provided, then that
       kernel version's module directory is used rather than the
       current kernel version (as returned by <command>uname -r</command>).
-    </para>
-    <para>
-      <command>depmod</command> will also generate various legacy map
-      files in the output directory for use by the older hotplug
-      infrastructure. These map files are largely deprecated.
     </para>
   </refsect1>
   <refsect1>
@@ -193,17 +187,6 @@
         <listitem>
           <para>
             Print the help message and exit.
-          </para>
-        </listitem>
-      </varlistentry>
-      <varlistentry>
-        <term><option>-m</option>
-        </term>
-        <listitem>
-          <para>
-            This overrides any possible configuration file setting of
-            <option>make_map_files</option> and forces the generation
-            of legacy map files, such as <filename>modules.pcimap</filename>.
           </para>
         </listitem>
       </varlistentry>
