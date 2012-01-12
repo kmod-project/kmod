@@ -34,8 +34,3 @@ include $(top_srcdir)/libkmod/docs/gtk-doc.make
 else
 EXTRA_DIST = libkmod-docs.xml libkmod-sections.txt
 endif
-
-DISTCLEANFILES = $(DOC_MODULE)-docs.xml \
-			$(DOC_MODULE).types $(DOC_MODULE)-*.txt *.sgml *.bak
-
-MAINTAINERCLEANFILES = Makefile.in gtk-doc.make
