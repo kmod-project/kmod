@@ -50,12 +50,6 @@
     </cmdsynopsis>
     <cmdsynopsis>
       <command>modprobe</command>
-      <arg>-l</arg>
-      <arg>-t <replaceable>dirname</replaceable></arg>
-      <arg><option><replaceable>wildcard</replaceable></option></arg>
-    </cmdsynopsis>
-    <cmdsynopsis>
-      <command>modprobe</command>
       <arg>-c</arg>
     </cmdsynopsis>
     <cmdsynopsis>
@@ -139,9 +133,8 @@
         <term><option>-C</option> <option>--config</option>
         </term>
         <listitem>
-          <para>This option overrides the default configuration directory/file
-		(<filename>/etc/modprobe.d</filename> or 
-		<filename>/etc/modprobe.conf</filename>).
+          <para>This option overrides the default configuration directory
+		(<filename>/etc/modprobe.d</filename>).
 	  </para>
           <para>
 	    This option is passed through <command>install</command>
@@ -272,25 +265,9 @@
 		<option>--ignore-install</option> or
 		<option>--ignore-remove</option>.
 		See <citerefentry>
-<refentrytitle>modprobe.conf</refentrytitle><manvolnum>5</manvolnum>
+<refentrytitle>modprobe.d</refentrytitle><manvolnum>5</manvolnum>
 </citerefentry>.
 	  </para>
-        </listitem>
-      </varlistentry>
-      <varlistentry>
-        <term><option>-l</option> <option>--list</option>
-        </term>
-        <listitem>
-          <para>List all modules matching the given wildcard (or "*"
-		if no wildcard is given).  This option is provided for
-		backwards compatibility and may go away in future: see
-	    <citerefentry>
-	      <refentrytitle>find</refentrytitle><manvolnum>1</manvolnum>
-	    </citerefentry> and
-	    <citerefentry>
-	      <refentrytitle>basename</refentrytitle><manvolnum>1</manvolnum>
-	    </citerefentry> for a more flexible alternative.
-	 </para>
         </listitem>
       </varlistentry>
       <varlistentry>
@@ -399,25 +376,6 @@
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>-t</option> <option>--type</option>
-        </term>
-        <listitem>
-          <para>Restrict <option>-l</option> to modules
-		in directories matching the
-		<replaceable>dirname</replaceable> given.  This option
-		is provided for backwards compatibility and may go
-		away in future: see
-	    <citerefentry>
-	      <refentrytitle>find</refentrytitle><manvolnum>1</manvolnum>
-	    </citerefentry>
-	    and
-	    <citerefentry>
-	      <refentrytitle>basename</refentrytitle><manvolnum>1</manvolnum>
-	    </citerefentry> for a more flexible alternative.
-	 </para>
-        </listitem>
-      </varlistentry>
-      <varlistentry>
         <term><option>-V</option> <option>--version</option>
         </term>
         <listitem>
@@ -460,9 +418,6 @@
   <refsect1>
     <title>SEE ALSO</title>
     <para>
-      <citerefentry>
-	<refentrytitle>modprobe.conf</refentrytitle><manvolnum>5</manvolnum>
-      </citerefentry>,
       <citerefentry>
 	<refentrytitle>modprobe.d</refentrytitle><manvolnum>5</manvolnum>
       </citerefentry>,
