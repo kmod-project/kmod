@@ -94,6 +94,7 @@ const struct kmod_list *kmod_get_options(const struct kmod_ctx *ctx) __must_chec
 const struct kmod_list *kmod_get_install_commands(const struct kmod_ctx *ctx) __must_check __attribute__((nonnull(1)));
 const struct kmod_list *kmod_get_remove_commands(const struct kmod_ctx *ctx) __must_check __attribute__((nonnull(1)));
 const struct kmod_list *kmod_get_softdeps(const struct kmod_ctx *ctx) __must_check __attribute__((nonnull(1)));
+const struct kmod_list *kmod_get_aliases(const struct kmod_ctx *ctx) __must_check __attribute__((nonnull(1)));
 
 
 /* libkmod-config.c */

@@ -768,3 +768,8 @@ const struct kmod_list *kmod_get_softdeps(const struct kmod_ctx *ctx)
 {
 	return ctx->config->softdeps;
 }
+
+const struct kmod_list *kmod_get_aliases(const struct kmod_ctx *ctx)
+{
+	return ctx->config->aliases;
+}
