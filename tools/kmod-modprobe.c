@@ -32,6 +32,7 @@
 
 #include "libkmod.h"
 #include "libkmod-array.h"
+#include "macro.h"
 
 static int log_priority = LOG_CRIT;
 static int use_syslog = 0;
@@ -211,16 +212,42 @@ static inline void _log(int prio, const char *fmt, ...)
 
 static int show_config(struct kmod_ctx *ctx)
 {
-	ERR("TODO - config is missing in kmod.\n");
-	/*
-	 * needs:
-	 * struct kmod_list *kmod_get_config(struct kmod_ctx *ctx);
-	 * kmod_config_get_type() {alias,options,blacklist,install,remove,softdeps}
-	 * kmod_config_get_key()
-	 * kmod_config_get_value()
-	 * kmod_config_unref_list()
-	 */
-	return -ENOENT;
+	struct config_iterators {
+		const char *name;
+		struct kmod_config_iter *(*get_iter)(const struct kmod_ctx *ctx);
+	} ci[] = {
+		{ "blacklist", kmod_config_get_blacklists },
+		{ "install", kmod_config_get_install_commands },
+		{ "remove", kmod_config_get_remove_commands },
+		{ "alias", kmod_config_get_aliases },
+		{ "option", kmod_config_get_options },
+		{ "softdep", kmod_config_get_softdeps },
+	};
+	size_t i;
+
+	for (i = 0;  i < ARRAY_SIZE(ci); i++) {
+		struct kmod_config_iter *iter = ci[i].get_iter(ctx);
+
+		if (iter == NULL)
+			continue;
+
+		while (kmod_config_iter_next(iter)) {
+			const char *val;
+
+			printf("%s %s", ci[i].name,
+					kmod_config_iter_get_key(iter));
+			val = kmod_config_iter_get_value(iter);
+			if (val != NULL) {
+				putchar(' ');
+				puts(val);
+			} else
+				putchar('\n');
+		}
+
+		kmod_config_iter_free_iter(iter);
+	}
+
+	return 0;
 }
 
 static int show_modversions(struct kmod_ctx *ctx, const char *filename)

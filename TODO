@@ -17,7 +17,9 @@ Features:
 * Add functions to list all modules known by modules.dep
 
 * provide 1:1 compatibility with module-init-tools's modprobe
-   - dump configuration
+   - dump modules.alias and modules.symbols
+
+* Add docs to kmod_config_* functions
 
 * Add manpages: copy them from module-init-tools and make the necessary changes
 
@@ -102,6 +104,12 @@ modprobe
   While with kmod:
         install "echo bli"
         install "echo bla"
+
+* kmod doesn't dump the configuration as is in the config files. Instead it
+  dumps the configuration as it was parsed. Therefore, comments and file names
+  are not dumped, but on the good side we know what the exact configuration
+  kmod is using. We did this because if we only want to know the entire content
+  of configuration files, it's enough to use find(1) in modprobe.d directories
 
 depmod
 ------
