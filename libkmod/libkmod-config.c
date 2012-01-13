@@ -408,6 +408,75 @@ static int kmod_config_add_softdep(struct kmod_config *config,
 	return 0;
 }
 
+static char *softdep_to_char(struct kmod_softdep *dep) {
+	const size_t sz_preprefix = sizeof("pre: ") - 1;
+	const size_t sz_postprefix = sizeof("post: ") - 1;
+	size_t sz = 1; /* at least '\0' */
+	size_t sz_pre, sz_post;
+	const char *start, *end;
+	char *s, *itr;
+
+	/*
+	 * Rely on the fact that dep->pre[] and dep->post[] are strv's that
+	 * point to a contiguous buffer
+	 */
+	if (dep->n_pre > 0) {
+		start = dep->pre[0];
+		end = dep->pre[dep->n_pre - 1]
+					+ strlen(dep->pre[dep->n_pre - 1]);
+		sz_pre = end - start;
+		sz += sz_pre + sz_preprefix;
+	} else
+		sz_pre = 0;
+
+	if (dep->n_post > 0) {
+		start = dep->post[0];
+		end = dep->post[dep->n_post - 1]
+					+ strlen(dep->post[dep->n_post - 1]);
+		sz_post = end - start;
+		sz += sz_post + sz_postprefix;
+	} else
+		sz_post = 0;
+
+	itr = s = malloc(sz);
+	if (s == NULL)
+		return NULL;
+
+	if (sz_pre) {
+		char *p;
+
+		memcpy(itr, "pre: ", sz_preprefix);
+		itr += sz_preprefix;
+
+		/* include last '\0' */
+		memcpy(itr, dep->pre[0], sz_pre + 1);
+		for (p = itr; p < itr + sz_pre; p++) {
+			if (*p == '\0')
+				*p = ' ';
+		}
+		itr = p;
+	}
+
+	if (sz_post) {
+		char *p;
+
+		memcpy(itr, "post: ", sz_postprefix);
+		itr += sz_postprefix;
+
+		/* include last '\0' */
+		memcpy(itr, dep->post[0], sz_post + 1);
+		for (p = itr; p < itr + sz_post; p++) {
+			if (*p == '\0')
+				*p = ' ';
+		}
+		itr = p;
+	}
+
+	*itr = '\0';
+
+	return s;
+}
+
 static void kmod_config_free_softdep(struct kmod_config *config,
 							struct kmod_list *l)
 {
@@ -857,11 +926,19 @@ enum config_type {
 
 struct kmod_config_iter {
 	enum config_type type;
+	bool intermediate;
 	const struct kmod_list *list;
 	const struct kmod_list *curr;
+	void *data;
 	const char *(*get_key)(const struct kmod_list *l);
 	const char *(*get_value)(const struct kmod_list *l);
 };
+
+static const char *softdep_get_plain_softdep(const struct kmod_list *l)
+{
+	char *s = softdep_to_char(l->data);
+	return s;
+}
 
 static struct kmod_config_iter *kmod_config_iter_new(const struct kmod_ctx* ctx,
 							enum config_type type)
@@ -901,6 +978,8 @@ static struct kmod_config_iter *kmod_config_iter_new(const struct kmod_ctx* ctx,
 	case CONFIG_TYPE_SOFTDEP:
 		iter->list = kmod_get_softdeps(ctx);
 		iter->get_key = kmod_softdep_get_name;
+		iter->get_value = softdep_get_plain_softdep;
+		iter->intermediate = true;
 		break;
 	}
 
@@ -965,13 +1044,23 @@ KMOD_EXPORT const char *kmod_config_iter_get_key(const struct kmod_config_iter *
 
 KMOD_EXPORT const char *kmod_config_iter_get_value(const struct kmod_config_iter *iter)
 {
+	const char *s;
+
 	if (iter == NULL || iter->curr == NULL)
 		return NULL;
 
 	if (iter->get_value == NULL)
 		return NULL;
 
-	return iter->get_value(iter->curr);
+	if (iter->intermediate) {
+		struct kmod_config_iter *i = (struct kmod_config_iter *)iter;
+
+		free(i->data);
+		s = i->data = (void *) iter->get_value(iter->curr);
+	} else
+		s = iter->get_value(iter->curr);
+
+	return s;
 }
 
 KMOD_EXPORT bool kmod_config_iter_next(struct kmod_config_iter *iter)
@@ -991,5 +1080,6 @@ KMOD_EXPORT bool kmod_config_iter_next(struct kmod_config_iter *iter)
 
 KMOD_EXPORT void kmod_config_iter_free_iter(struct kmod_config_iter *iter)
 {
+	free(iter->data);
 	free(iter);
 }
