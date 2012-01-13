@@ -841,3 +841,155 @@ oom:
 
 	return -ENOMEM;
 }
+
+/**********************************************************************
+ * struct kmod_config_iter functions
+ **********************************************************************/
+
+enum config_type {
+	CONFIG_TYPE_BLACKLIST = 0,
+	CONFIG_TYPE_INSTALL,
+	CONFIG_TYPE_REMOVE,
+	CONFIG_TYPE_ALIAS,
+	CONFIG_TYPE_OPTION,
+	CONFIG_TYPE_SOFTDEP,
+};
+
+struct kmod_config_iter {
+	enum config_type type;
+	const struct kmod_list *list;
+	const struct kmod_list *curr;
+	const char *(*get_key)(const struct kmod_list *l);
+	const char *(*get_value)(const struct kmod_list *l);
+};
+
+static struct kmod_config_iter *kmod_config_iter_new(const struct kmod_ctx* ctx,
+							enum config_type type)
+{
+	struct kmod_config_iter *iter = calloc(1, sizeof(*iter));
+
+	if (iter == NULL)
+		return NULL;
+
+	iter->type = type;
+
+	switch (type) {
+	case CONFIG_TYPE_BLACKLIST:
+		iter->list = kmod_get_blacklists(ctx);
+		iter->get_key = kmod_blacklist_get_modname;
+		break;
+	case CONFIG_TYPE_INSTALL:
+		iter->list = kmod_get_install_commands(ctx);
+		iter->get_key = kmod_command_get_modname;
+		iter->get_value = kmod_command_get_command;
+		break;
+	case CONFIG_TYPE_REMOVE:
+		iter->list = kmod_get_remove_commands(ctx);
+		iter->get_key = kmod_command_get_modname;
+		iter->get_value = kmod_command_get_command;
+		break;
+	case CONFIG_TYPE_ALIAS:
+		iter->list = kmod_get_aliases(ctx);
+		iter->get_key = kmod_alias_get_name;
+		iter->get_value = kmod_alias_get_modname;
+		break;
+	case CONFIG_TYPE_OPTION:
+		iter->list = kmod_get_options(ctx);
+		iter->get_key = kmod_option_get_modname;
+		iter->get_value = kmod_option_get_options;
+		break;
+	case CONFIG_TYPE_SOFTDEP:
+		iter->list = kmod_get_softdeps(ctx);
+		iter->get_key = kmod_softdep_get_name;
+		break;
+	}
+
+	return iter;
+}
+
+KMOD_EXPORT struct kmod_config_iter *kmod_config_get_blacklists(const struct kmod_ctx *ctx)
+{
+	if (ctx == NULL)
+		return NULL;;
+
+	return kmod_config_iter_new(ctx, CONFIG_TYPE_BLACKLIST);
+}
+
+KMOD_EXPORT struct kmod_config_iter *kmod_config_get_install_commands(const struct kmod_ctx *ctx)
+{
+	if (ctx == NULL)
+		return NULL;;
+
+	return kmod_config_iter_new(ctx, CONFIG_TYPE_INSTALL);
+}
+
+KMOD_EXPORT struct kmod_config_iter *kmod_config_get_remove_commands(const struct kmod_ctx *ctx)
+{
+	if (ctx == NULL)
+		return NULL;;
+
+	return kmod_config_iter_new(ctx, CONFIG_TYPE_REMOVE);
+}
+
+KMOD_EXPORT struct kmod_config_iter *kmod_config_get_aliases(const struct kmod_ctx *ctx)
+{
+	if (ctx == NULL)
+		return NULL;;
+
+	return kmod_config_iter_new(ctx, CONFIG_TYPE_ALIAS);
+}
+
+KMOD_EXPORT struct kmod_config_iter *kmod_config_get_options(const struct kmod_ctx *ctx)
+{
+	if (ctx == NULL)
+		return NULL;;
+
+	return kmod_config_iter_new(ctx, CONFIG_TYPE_OPTION);
+}
+
+KMOD_EXPORT struct kmod_config_iter *kmod_config_get_softdeps(const struct kmod_ctx *ctx)
+{
+	if (ctx == NULL)
+		return NULL;;
+
+	return kmod_config_iter_new(ctx, CONFIG_TYPE_SOFTDEP);
+}
+
+KMOD_EXPORT const char *kmod_config_iter_get_key(const struct kmod_config_iter *iter)
+{
+	if (iter == NULL || iter->curr == NULL)
+		return NULL;
+
+	return iter->get_key(iter->curr);
+}
+
+KMOD_EXPORT const char *kmod_config_iter_get_value(const struct kmod_config_iter *iter)
+{
+	if (iter == NULL || iter->curr == NULL)
+		return NULL;
+
+	if (iter->get_value == NULL)
+		return NULL;
+
+	return iter->get_value(iter->curr);
+}
+
+KMOD_EXPORT bool kmod_config_iter_next(struct kmod_config_iter *iter)
+{
+	if (iter == NULL)
+		return false;
+
+	if (iter->curr == NULL) {
+		iter->curr = iter->list;
+		return iter->curr != NULL;
+	}
+
+	iter->curr = kmod_list_next(iter->list, iter->curr);
+
+	return iter->curr != NULL;
+}
+
+KMOD_EXPORT void kmod_config_iter_free_iter(struct kmod_config_iter *iter)
+{
+	free(iter);
+}

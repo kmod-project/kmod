@@ -23,6 +23,7 @@
 
 #include <fcntl.h>
 #include <stdarg.h>
+#include <stdbool.h>
 #include <inttypes.h>
 
 #ifdef __cplusplus
@@ -81,6 +82,24 @@ struct kmod_list *kmod_list_last(const struct kmod_list *list);
 	for (list_entry = kmod_list_last(first_entry); \
 		list_entry != NULL; \
 		list_entry = kmod_list_prev(first_entry, list_entry))
+
+/*
+ * kmod_config_iter
+ *
+ * access to configuration lists - it allows to get each configuration's
+ * key/value stored by kmod
+ */
+struct kmod_config_iter;
+struct kmod_config_iter *kmod_config_get_blacklists(const struct kmod_ctx *ctx);
+struct kmod_config_iter *kmod_config_get_install_commands(const struct kmod_ctx *ctx);
+struct kmod_config_iter *kmod_config_get_remove_commands(const struct kmod_ctx *ctx);
+struct kmod_config_iter *kmod_config_get_aliases(const struct kmod_ctx *ctx);
+struct kmod_config_iter *kmod_config_get_options(const struct kmod_ctx *ctx);
+struct kmod_config_iter *kmod_config_get_softdeps(const struct kmod_ctx *ctx);
+const char *kmod_config_iter_get_key(const struct kmod_config_iter *iter);
+const char *kmod_config_iter_get_value(const struct kmod_config_iter *iter);
+bool kmod_config_iter_next(struct kmod_config_iter *iter);
+void kmod_config_iter_free_iter(struct kmod_config_iter *iter);
 
 /* Removal flags */
 enum kmod_remove {

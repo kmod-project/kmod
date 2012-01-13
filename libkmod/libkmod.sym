@@ -81,3 +81,17 @@ global:
 
 	kmod_module_probe_insert_module;
 } LIBKMOD_2;
+
+LIBKMOD_4 {
+global:
+	kmod_config_get_blacklists;
+	kmod_config_get_install_commands;
+	kmod_config_get_remove_commands;
+	kmod_config_get_aliases;
+	kmod_config_get_options;
+	kmod_config_get_softdeps;
+	kmod_config_iter_get_key;
+	kmod_config_iter_get_value;
+	kmod_config_iter_next;
+	kmod_config_iter_free_iter;
+} LIBKMOD_3;
