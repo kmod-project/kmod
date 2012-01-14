@@ -2519,7 +2519,7 @@ static int is_version_number(const char *version)
 static int do_depmod(int argc, char *argv[])
 {
 	FILE *out = NULL;
-	int i, err = 0, all = 0, maybe_all = 0, n_config_paths = 0;
+	int err = 0, all = 0, maybe_all = 0, n_config_paths = 0;
 	const char **config_paths = NULL;
 	const char *root = "";
 	const char *system_map = NULL;
@@ -2693,6 +2693,8 @@ static int do_depmod(int argc, char *argv[])
 			goto cmdline_modules_failed;
 		}
 	} else {
+		int i;
+
 		for (i = optind; i < argc; i++) {
 			const char *path = argv[i];
 			struct kmod_module *mod;
