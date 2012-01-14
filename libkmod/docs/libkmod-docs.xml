@@ -14,6 +14,7 @@
     <title>libkmod</title>
     <xi:include href="xml/libkmod.xml"/>
     <xi:include href="xml/libkmod-list.xml"/>
+    <xi:include href="xml/libkmod-config.xml"/>
     <xi:include href="xml/libkmod-module.xml"/>
     <xi:include href="xml/libkmod-loaded.xml"/>
 

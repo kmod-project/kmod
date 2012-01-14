@@ -27,6 +27,21 @@ kmod_list_prev
 </SECTION>
 
 <SECTION>
+<FILE>libkmod-config</FILE>
+kmod_config_iter
+kmod_config_get_blacklists
+kmod_config_get_install_commands
+kmod_config_get_remove_commands
+kmod_config_get_aliases
+kmod_config_get_options
+kmod_config_get_softdeps
+kmod_config_iter_get_key
+kmod_config_iter_get_value
+kmod_config_iter_next
+kmod_config_iter_free_iter
+</SECTION>
+
+<SECTION>
 <FILE>libkmod-module</FILE>
 kmod_module
 kmod_module_new_from_lookup

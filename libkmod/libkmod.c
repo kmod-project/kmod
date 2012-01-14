@@ -183,13 +183,16 @@ static char *get_kernel_release(const char *dirname)
 /**
  * kmod_new:
  * @dirname: what to consider as linux module's directory, if NULL
- *           defaults to $rootprefix/lib/modules/`uname -r`.
+ *           defaults to $rootprefix/lib/modules/`uname -r`. If it's relative,
+ *           it's treated as relative to current the current working
+ *           directory. Otherwise, give an absolute dirname.
  * @config_paths: ordered array of paths (directories or files) where
  *                to load from user-defined configuration parameters such as
  *                alias, blacklists, commands (install, remove). If
  *                NULL defaults to /run/modprobe.d, /etc/modprobe.d and
- *                $rootprefix/lib/modprobe.d. Give an empty vector if configuration should
- *                not be read. This array must be null terminated.
+ *                $rootprefix/lib/modprobe.d. Give an empty vector if
+ *                configuration should not be read. This array must be null
+ *                terminated.
  *
  * Create kmod library context. This reads the kmod configuration
  * and fills in the default values.
