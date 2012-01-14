@@ -1128,7 +1128,6 @@ static int depmod_module_add(struct depmod *depmod, struct kmod_module *kmod)
 	mod->kmod = kmod;
 	mod->sort_idx = depmod->modules.count + 1;
 	mod->dep_sort_idx = INT32_MAX;
-	mod->idx = depmod->modules.count;
 	memcpy(mod->modname, modname, modnamelen);
 	mod->modnamelen = modnamelen;
 
@@ -1421,11 +1420,13 @@ static int mod_cmp(const void *pa, const void *pb) {
 static int depmod_modules_build_array(struct depmod *depmod)
 {
 	struct hash_iter module_iter;
-	const void *mod;
+	const void *v;
 	int err;
 
 	hash_iter_init(depmod->modules_by_name, &module_iter);
-	while (hash_iter_next(&module_iter, NULL, &mod)) {
+	while (hash_iter_next(&module_iter, NULL, &v)) {
+		struct mod *mod = (struct mod *) v;
+		mod->idx = depmod->modules.count;
 		err = array_append(&depmod->modules, mod);
 		if (err < 0)
 			return err;
