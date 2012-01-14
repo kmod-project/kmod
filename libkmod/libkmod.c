@@ -169,7 +169,7 @@ static char *get_kernel_release(const char *dirname)
 	char *p;
 
 	if (dirname != NULL)
-		return strdup(dirname);
+		return path_make_absolute_cwd(dirname);
 
 	if (uname(&u) < 0)
 		return NULL;
