@@ -1056,7 +1056,8 @@ static void symbol_free(struct symbol *sym)
 	free(sym);
 }
 
-static int depmod_init(struct depmod *depmod, struct cfg *cfg, struct kmod_ctx *ctx)
+static int depmod_init(struct depmod *depmod, struct cfg *cfg,
+							struct kmod_ctx *ctx)
 {
 	int err = 0;
 
@@ -1486,7 +1487,8 @@ corrupted:
 	fclose(fp);
 }
 
-static int depmod_symbol_add(struct depmod *depmod, const char *name, uint64_t crc, const struct mod *owner)
+static int depmod_symbol_add(struct depmod *depmod, const char *name,
+					uint64_t crc, const struct mod *owner)
 {
 	size_t namelen;
 	int err;
@@ -1516,7 +1518,8 @@ static int depmod_symbol_add(struct depmod *depmod, const char *name, uint64_t c
 	return 0;
 }
 
-static struct symbol *depmod_symbol_find(const struct depmod *depmod, const char *name)
+static struct symbol *depmod_symbol_find(const struct depmod *depmod,
+							const char *name)
 {
 	if (name[0] == '.') /* PPC64 needs this: .foo == foo */
 		name++;
