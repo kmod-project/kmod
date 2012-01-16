@@ -38,9 +38,9 @@ SED_PROCESS = \
 %.pc: %.pc.in Makefile
 	$(SED_PROCESS)
 
-LIBKMOD_CURRENT=3
+LIBKMOD_CURRENT=4
 LIBKMOD_REVISION=0
-LIBKMOD_AGE=2
+LIBKMOD_AGE=3
 
 noinst_LTLIBRARIES = libkmod/libkmod-util.la
 libkmod_libkmod_util_la_SOURCES = libkmod/libkmod-hash.c \
