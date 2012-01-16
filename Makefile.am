@@ -154,3 +154,25 @@ test_test_invalidate_config_LDADD = libkmod/libkmod-private.la
 test_test_state_LDADD = libkmod/libkmod-private.la
 
 DISTCHECK_CONFIGURE_FLAGS=--enable-gtk-doc
+
+
+# ------------------------------------------------------------------------------
+# custom release helpers
+# ------------------------------------------------------------------------------
+
+git-release:
+	head -1 NEWS | grep -q "kmod $(VERSION)"
+	git commit -a -m "kmod $(VERSION)"
+	git tag -m "kmod $(VERSION)" -s v$(VERSION)
+	git gc --prune=0
+
+kmod-$(VERSION).tar.xz:
+	make distcheck
+
+kmod-$(VERSION).tar.sign:
+	xz -d -c kmod-$(VERSION).tar.xz | gpg --armor --detach-sign --output kmod-$(VERSION).tar.sign
+
+tar: kmod-$(VERSION).tar.xz kmod-$(VERSION).tar.sign
+
+tar-sync: kmod-$(VERSION).tar.xz kmod-$(VERSION).tar.sign
+	scp $^ packages.profusion.mobi:/var/www/packages/kmod/
