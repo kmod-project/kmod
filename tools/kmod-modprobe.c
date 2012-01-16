@@ -247,6 +247,9 @@ static int show_config(struct kmod_ctx *ctx)
 		kmod_config_iter_free_iter(iter);
 	}
 
+	kmod_dump_index(ctx, KMOD_INDEX_MODULES_ALIAS, STDOUT_FILENO);
+	kmod_dump_index(ctx, KMOD_INDEX_MODULES_SYMBOL, STDOUT_FILENO);
+
 	return 0;
 }
 
