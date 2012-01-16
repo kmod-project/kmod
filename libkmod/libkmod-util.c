@@ -204,7 +204,8 @@ inline void *memdup(const void *p, size_t n)
 	return memcpy(r, p, n);
 }
 
-ssize_t read_str_safe(int fd, char *buf, size_t buflen) {
+ssize_t read_str_safe(int fd, char *buf, size_t buflen)
+{
 	size_t todo = buflen - 1;
 	size_t done = 0;
 
@@ -218,7 +219,7 @@ ssize_t read_str_safe(int fd, char *buf, size_t buflen) {
 			done += r;
 		} else {
 			if (errno == EAGAIN || errno == EWOULDBLOCK ||
-				errno == EINTR)
+								errno == EINTR)
 				continue;
 			else
 				return -errno;
@@ -229,7 +230,8 @@ ssize_t read_str_safe(int fd, char *buf, size_t buflen) {
 	return done;
 }
 
-int read_str_long(int fd, long *value, int base) {
+int read_str_long(int fd, long *value, int base)
+{
 	char buf[32], *end;
 	long v;
 	int err;
@@ -247,7 +249,8 @@ int read_str_long(int fd, long *value, int base) {
 	return 0;
 }
 
-int read_str_ulong(int fd, unsigned long *value, int base) {
+int read_str_ulong(int fd, unsigned long *value, int base)
+{
 	char buf[32], *end;
 	long v;
 	int err;
