@@ -53,10 +53,13 @@ enum kmod_index {
 	_KMOD_INDEX_LAST,
 };
 
-static const char* index_files[] = {
-	[KMOD_INDEX_DEP] = "modules.dep",
-	[KMOD_INDEX_ALIAS] = "modules.alias",
-	[KMOD_INDEX_SYMBOL] = "modules.symbols",
+static struct _index_files {
+	const char *fn;
+	const char *prefix;
+} index_files[] = {
+	[KMOD_INDEX_DEP] = { .fn = "modules.dep", .prefix = "" },
+	[KMOD_INDEX_ALIAS] = { .fn = "modules.alias", .prefix = "alias " },
+	[KMOD_INDEX_SYMBOL] = { .fn = "modules.symbols", .prefix = "alias "},
 };
 
 static const char *default_config_paths[] = {
@@ -385,14 +388,14 @@ static int kmod_lookup_alias_from_alias_bin(struct kmod_ctx *ctx,
 
 	if (ctx->indexes[index_number] != NULL) {
 		DBG(ctx, "use mmaped index '%s' for name=%s\n",
-			index_files[index_number], name);
+			index_files[index_number].fn, name);
 		realnames = index_mm_searchwild(ctx->indexes[index_number],
 									name);
 	} else {
 		char fn[PATH_MAX];
 
 		snprintf(fn, sizeof(fn), "%s/%s.bin", ctx->dirname,
-						index_files[index_number]);
+					index_files[index_number].fn);
 
 		DBG(ctx, "file=%s name=%s\n", fn, name);
 
@@ -451,12 +454,12 @@ char *kmod_search_moddep(struct kmod_ctx *ctx, const char *name)
 
 	if (ctx->indexes[KMOD_INDEX_DEP]) {
 		DBG(ctx, "use mmaped index '%s' modname=%s\n",
-			index_files[KMOD_INDEX_DEP], name);
+				index_files[KMOD_INDEX_DEP].fn, name);
 		return index_mm_search(ctx->indexes[KMOD_INDEX_DEP], name);
 	}
 
 	snprintf(fn, sizeof(fn), "%s/%s.bin", ctx->dirname,
-						index_files[KMOD_INDEX_DEP]);
+					index_files[KMOD_INDEX_DEP].fn);
 
 	DBG(ctx, "file=%s modname=%s\n", fn, name);
 
@@ -662,7 +665,7 @@ KMOD_EXPORT int kmod_validate_resources(struct kmod_ctx *ctx)
 			continue;
 
 		snprintf(path, sizeof(path), "%s/%s.bin", ctx->dirname,
-							index_files[i]);
+						index_files[i].fn);
 
 		if (is_cache_invalid(path, ctx->indexes_stamp[i]))
 			return KMOD_RESOURCES_MUST_RELOAD;
@@ -697,12 +700,13 @@ KMOD_EXPORT int kmod_load_resources(struct kmod_ctx *ctx)
 		char path[PATH_MAX];
 
 		if (ctx->indexes[i] != NULL) {
-			INFO(ctx, "Index %s already loaded\n", index_files[i]);
+			INFO(ctx, "Index %s already loaded\n",
+							index_files[i].fn);
 			continue;
 		}
 
 		snprintf(path, sizeof(path), "%s/%s.bin", ctx->dirname,
-							index_files[i]);
+							index_files[i].fn);
 		ctx->indexes[i] = index_mm_open(ctx, path, true,
 						&ctx->indexes_stamp[i]);
 		if (ctx->indexes[i] == NULL)
