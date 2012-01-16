@@ -211,6 +211,19 @@ static bool buf_pushchar(struct buffer *buf, char ch)
 	return true;
 }
 
+static unsigned buf_pushchars(struct buffer *buf, const char *str)
+{
+	unsigned i = 0;
+	int ch;
+
+	while ((ch = str[i])) {
+		buf_pushchar(buf, ch);
+		i++;
+	}
+
+	return i;
+}
+
 static unsigned buf_freadchars(struct buffer *buf, FILE *in)
 {
 	unsigned i = 0;
@@ -381,6 +394,48 @@ static struct index_node_f *index_readchild(const struct index_node_f *parent,
 	}
 
 	return NULL;
+}
+
+static void index_dump_node(struct index_node_f *node, struct buffer *buf,
+								int fd)
+{
+	struct index_value *v;
+	int ch, pushed;
+
+	pushed = buf_pushchars(buf, node->prefix);
+
+	for (v = node->values; v != NULL; v = v->next) {
+		write_str_safe(fd, buf->bytes, buf->used);
+		write_str_safe(fd, " ", 1);
+		write_str_safe(fd, v->value, strlen(v->value));
+		write_str_safe(fd, "\n", 1);
+	}
+
+	for (ch = node->first; ch <= node->last; ch++) {
+		struct index_node_f *child = index_readchild(node, ch);
+
+		if (!child)
+			continue;
+
+		buf_pushchar(buf, ch);
+		index_dump_node(child, buf, fd);
+		buf_popchar(buf);
+	}
+
+	buf_popchars(buf, pushed);
+	index_close(node);
+}
+
+void index_dump(struct index_file *in, int fd, const char *prefix)
+{
+	struct index_node_f *root;
+	struct buffer buf;
+
+	buf_init(&buf);
+	buf_pushchars(&buf, prefix);
+	root = index_readroot(in);
+	index_dump_node(root, &buf, fd);
+	buf_release(&buf);
 }
 
 static char *index_search__node(struct index_node_f *node, const char *key, int i)
@@ -808,6 +863,50 @@ static struct index_mm_node *index_mm_readchild(const struct index_mm_node *pare
 	}
 
 	return NULL;
+}
+
+static void index_mm_dump_node(struct index_mm_node *node, struct buffer *buf,
+								int fd)
+{
+	struct index_mm_value *itr, *itr_end;
+	int ch, pushed;
+
+	pushed = buf_pushchars(buf, node->prefix);
+
+	itr = node->values.values;
+	itr_end = itr + node->values.len;
+	for (; itr < itr_end; itr++) {
+		write_str_safe(fd, buf->bytes, buf->used);
+		write_str_safe(fd, " ", 1);
+		write_str_safe(fd, itr->value, itr->len);
+		write_str_safe(fd, "\n", 1);
+	}
+
+	for (ch = node->first; ch <= node->last; ch++) {
+		struct index_mm_node *child = index_mm_readchild(node, ch);
+
+		if (child == NULL)
+			continue;
+
+		buf_pushchar(buf, ch);
+		index_mm_dump_node(child, buf, fd);
+		buf_popchar(buf);
+	}
+
+	buf_popchars(buf, pushed);
+	index_mm_free_node(node);
+}
+
+void index_mm_dump(struct index_mm *idx, int fd, const char *prefix)
+{
+	struct index_mm_node *root;
+	struct buffer buf;
+
+	buf_init(&buf);
+	buf_pushchars(&buf, prefix);
+	root = index_mm_readroot(idx);
+	index_mm_dump_node(root, &buf, fd);
+	buf_release(&buf);
 }
 
 static char *index_mm_search_node(struct index_mm_node *node, const char *key,

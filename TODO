@@ -11,18 +11,6 @@ Features:
 * create test-mock library to be LD_PRELOAD'ed before running the binaries
   so we're able to create unit tests
 
-* Add functions to dump configuration. Create a list with the config items
-  (blacklist, aliases, etc) or just dump to a fd?
-
-* Add functions to list all modules known by modules.dep
-
-* provide 1:1 compatibility with module-init-tools's modprobe
-   - dump modules.alias and modules.symbols
-
-* Add docs to kmod_config_* functions
-
-* Add manpages: copy them from module-init-tools and make the necessary changes
-
 * review API, maybe unify all of these setters:
    - kmod_module_version_get_symbol()
    - kmod_module_version_get_crc()
@@ -63,10 +51,14 @@ Things to be added/removed in kernel (check what is really needed):
 ===================================================================
 
 * list of currently loaded modules
+	- readdir() in /sys/modules: dirs without a 'initstate' file mean the
+	  modules is builtin.
 
 * module's size should be available under /sys
+	- DONE in 3.3: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux.git;a=commit;h=cca3e707301862ca9b9327e6a732463982f8cd1b
 
 * kill /proc/modules ?
+	- Unlikely, given other tools might depend on it
 
 Things that are different from module-init-tools on purpose (!TODO)
 ===================================================================

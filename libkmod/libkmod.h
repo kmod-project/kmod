@@ -69,6 +69,8 @@ enum kmod_index {
 	_KMOD_INDEX_PAD = (1 << 31),
 };
 
+int kmod_dump_index(struct kmod_ctx *ctx, enum kmod_index idx, int fd);
+
 /*
  * kmod_list
  *

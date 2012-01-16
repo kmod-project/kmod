@@ -746,6 +746,39 @@ KMOD_EXPORT void kmod_unload_resources(struct kmod_ctx *ctx)
 	}
 }
 
+KMOD_EXPORT int kmod_dump_index(struct kmod_ctx *ctx, enum kmod_index type,
+									int fd)
+{
+	if (ctx == NULL)
+		return -ENOSYS;
+
+	if (type < 0 || type >= _KMOD_INDEX_MODULES_SIZE)
+		return -ENOENT;
+
+	if (ctx->indexes[type] != NULL) {
+		DBG(ctx, "use mmaped index '%s'\n", index_files[type].fn);
+		index_mm_dump(ctx->indexes[type], fd,
+						index_files[type].prefix);
+	} else {
+		char fn[PATH_MAX];
+		struct index_file *idx;
+
+		snprintf(fn, sizeof(fn), "%s/%s.bin", ctx->dirname,
+						index_files[type].fn);
+
+		DBG(ctx, "file=%s\n", fn);
+
+		idx = index_file_open(fn);
+		if (idx == NULL)
+			return -ENOSYS;
+
+		index_dump(idx, fd, index_files[type].prefix);
+		index_file_close(idx);
+	}
+
+	return 0;
+}
+
 const struct kmod_list *kmod_get_blacklists(const struct kmod_ctx *ctx)
 {
 	return ctx->config->blacklists;

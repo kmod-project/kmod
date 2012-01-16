@@ -94,4 +94,5 @@ global:
 	kmod_config_iter_get_value;
 	kmod_config_iter_next;
 	kmod_config_iter_free_iter;
+	kmod_dump_index;
 } LIBKMOD_3;
