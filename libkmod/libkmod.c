@@ -37,6 +37,7 @@
 
 #define KMOD_HASH_SIZE (256)
 #define KMOD_LRU_MAX (128)
+#define _KMOD_INDEX_MODULES_SIZE KMOD_INDEX_MODULES_SYMBOL + 1
 
 /**
  * SECTION:libkmod
@@ -46,20 +47,13 @@
  * and is passed to all library operations.
  */
 
-enum kmod_index {
-	KMOD_INDEX_DEP = 0,
-	KMOD_INDEX_ALIAS,
-	KMOD_INDEX_SYMBOL,
-	_KMOD_INDEX_LAST,
-};
-
 static struct _index_files {
 	const char *fn;
 	const char *prefix;
 } index_files[] = {
-	[KMOD_INDEX_DEP] = { .fn = "modules.dep", .prefix = "" },
-	[KMOD_INDEX_ALIAS] = { .fn = "modules.alias", .prefix = "alias " },
-	[KMOD_INDEX_SYMBOL] = { .fn = "modules.symbols", .prefix = "alias "},
+	[KMOD_INDEX_MODULES_DEP] = { .fn = "modules.dep", .prefix = "" },
+	[KMOD_INDEX_MODULES_ALIAS] = { .fn = "modules.alias", .prefix = "alias " },
+	[KMOD_INDEX_MODULES_SYMBOL] = { .fn = "modules.symbols", .prefix = "alias "},
 };
 
 static const char *default_config_paths[] = {
@@ -85,8 +79,8 @@ struct kmod_ctx {
 	char *dirname;
 	struct kmod_config *config;
 	struct hash *modules_by_name;
-	struct index_mm *indexes[_KMOD_INDEX_LAST];
-	unsigned long long indexes_stamp[_KMOD_INDEX_LAST];
+	struct index_mm *indexes[_KMOD_INDEX_MODULES_SIZE];
+	unsigned long long indexes_stamp[_KMOD_INDEX_MODULES_SIZE];
 };
 
 void kmod_log(const struct kmod_ctx *ctx,
@@ -435,15 +429,15 @@ int kmod_lookup_alias_from_symbols_file(struct kmod_ctx *ctx, const char *name,
 	if (!strstartswith(name, "symbol:"))
 		return 0;
 
-	return kmod_lookup_alias_from_alias_bin(ctx, KMOD_INDEX_SYMBOL, name,
-									list);
+	return kmod_lookup_alias_from_alias_bin(ctx, KMOD_INDEX_MODULES_SYMBOL,
+								name, list);
 }
 
 int kmod_lookup_alias_from_aliases_file(struct kmod_ctx *ctx, const char *name,
 						struct kmod_list **list)
 {
-	return kmod_lookup_alias_from_alias_bin(ctx, KMOD_INDEX_ALIAS, name,
-									list);
+	return kmod_lookup_alias_from_alias_bin(ctx, KMOD_INDEX_MODULES_ALIAS,
+								name, list);
 }
 
 char *kmod_search_moddep(struct kmod_ctx *ctx, const char *name)
@@ -452,14 +446,15 @@ char *kmod_search_moddep(struct kmod_ctx *ctx, const char *name)
 	char fn[PATH_MAX];
 	char *line;
 
-	if (ctx->indexes[KMOD_INDEX_DEP]) {
+	if (ctx->indexes[KMOD_INDEX_MODULES_DEP]) {
 		DBG(ctx, "use mmaped index '%s' modname=%s\n",
-				index_files[KMOD_INDEX_DEP].fn, name);
-		return index_mm_search(ctx->indexes[KMOD_INDEX_DEP], name);
+				index_files[KMOD_INDEX_MODULES_DEP].fn, name);
+		return index_mm_search(ctx->indexes[KMOD_INDEX_MODULES_DEP],
+									name);
 	}
 
 	snprintf(fn, sizeof(fn), "%s/%s.bin", ctx->dirname,
-					index_files[KMOD_INDEX_DEP].fn);
+					index_files[KMOD_INDEX_MODULES_DEP].fn);
 
 	DBG(ctx, "file=%s modname=%s\n", fn, name);
 
@@ -658,7 +653,7 @@ KMOD_EXPORT int kmod_validate_resources(struct kmod_ctx *ctx)
 			return KMOD_RESOURCES_MUST_RECREATE;
 	}
 
-	for (i = 0; i < _KMOD_INDEX_LAST; i++) {
+	for (i = 0; i < _KMOD_INDEX_MODULES_SIZE; i++) {
 		char path[PATH_MAX];
 
 		if (ctx->indexes[i] == NULL)
@@ -696,7 +691,7 @@ KMOD_EXPORT int kmod_load_resources(struct kmod_ctx *ctx)
 	if (ctx == NULL)
 		return -ENOENT;
 
-	for (i = 0; i < _KMOD_INDEX_LAST; i++) {
+	for (i = 0; i < _KMOD_INDEX_MODULES_SIZE; i++) {
 		char path[PATH_MAX];
 
 		if (ctx->indexes[i] != NULL) {
@@ -742,7 +737,7 @@ KMOD_EXPORT void kmod_unload_resources(struct kmod_ctx *ctx)
 	if (ctx == NULL)
 		return;
 
-	for (i = 0; i < _KMOD_INDEX_LAST; i++) {
+	for (i = 0; i < _KMOD_INDEX_MODULES_SIZE; i++) {
 		if (ctx->indexes[i] != NULL) {
 			index_mm_close(ctx->indexes[i]);
 			ctx->indexes[i] = NULL;
