@@ -746,6 +746,16 @@ KMOD_EXPORT void kmod_unload_resources(struct kmod_ctx *ctx)
 	}
 }
 
+/**
+ * kmod_dump_index:
+ * @ctx: kmod library context
+ * @type: index to dump
+ * @fd: file descriptor to dump index to
+ *
+ * Dump index to file descriptor
+ *
+ * Returns: 0 on success or < 0 otherwise.
+ */
 KMOD_EXPORT int kmod_dump_index(struct kmod_ctx *ctx, enum kmod_index type,
 									int fd)
 {
