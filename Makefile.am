@@ -97,6 +97,14 @@ install-exec-hook:
 		ln -sf $$so_img_rel_target_prefix$(rootlibdir)/$$so_img_name $(DESTDIR)$(libdir)/libkmod.so && \
 		mv $(DESTDIR)$(libdir)/libkmod.so.* $(DESTDIR)$(rootlibdir); \
 	fi
+if BUILD_TOOLS
+	ln -s kmod $(DESTDIR)$(bindir)/insmod
+	ln -s kmod $(DESTDIR)$(bindir)/rmmod
+	ln -s kmod $(DESTDIR)$(bindir)/lsmod
+	ln -s kmod $(DESTDIR)$(bindir)/modprobe
+	ln -s kmod $(DESTDIR)$(bindir)/modinfo
+	ln -s kmod $(DESTDIR)$(bindir)/depmod
+endif
 
 uninstall-hook:
 	rm -f $(DESTDIR)$(rootlibdir)/libkmod.so*
