@@ -92,7 +92,7 @@
         <listitem>
           <para>
             Only print this field value, one per line.  This is most useful for
-            scripts.  Field names are case-insenitive.  Common fields (which
+            scripts.  Field names are case-insensitive.  Common fields (which
             may not be in every module) include <literal>author</literal>,
             <literal>description</literal>, <literal>license</literal>,
             <literal>parm</literal>, <literal>depends</literal>, and

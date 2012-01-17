@@ -159,7 +159,7 @@
             symbols which a module needs which are not supplied by other
             modules or the kernel.  Normally, any symbols not provided by
             modules are assumed to be provided by the kernel (which should be
-            true in a perfect world), but this assumption can break espencially
+            true in a perfect world), but this assumption can break especially
             when additionally updated third party drivers are not correctly
             installed or were built incorrectly.
           </para>

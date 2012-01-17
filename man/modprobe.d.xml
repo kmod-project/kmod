@@ -59,7 +59,7 @@
     </para>
     <para>
       Note that module and alias names (like other module names) can
-      have - or _ in them: both are interchangable throughout all the
+      have - or _ in them: both are interchangeable throughout all the
       module commands as underscore conversion happens automatically.
     </para>
     <para>
