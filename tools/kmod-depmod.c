@@ -322,7 +322,7 @@ struct index_node {
         } values[value_count];
 
    (node_offset & INDEX_NODE_FLAGS) indicates which fields are present.
-   Empty prefixes are ommitted, leaf nodes omit the three child-related fields.
+   Empty prefixes are omitted, leaf nodes omit the three child-related fields.
 
    This could be optimised further by adding a sparse child format
    (indicated using a new flag).
