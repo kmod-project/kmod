@@ -620,7 +620,7 @@ static bool is_cache_invalid(const char *path, unsigned long long stamp)
 	if (stat(path, &st) < 0)
 		return true;
 
-	if (stamp != ts_usec(&st.st_mtim))
+	if (stamp != stat_mstamp(&st))
 		return true;
 
 	return false;

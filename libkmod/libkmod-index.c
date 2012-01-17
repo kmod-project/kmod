@@ -830,7 +830,7 @@ struct index_mm *index_mm_open(struct kmod_ctx *ctx, const char *filename,
 	idx->ctx = ctx;
 	close(fd);
 
-	*stamp = ts_usec(&st.st_mtim);
+	*stamp = stat_mstamp(&st);
 
 	return idx;
 

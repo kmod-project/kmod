@@ -795,7 +795,7 @@ static int conf_files_list(struct kmod_ctx *ctx, struct kmod_list **list,
 		return err;
 	}
 
-	*path_stamp = ts_usec(&st.st_mtim);
+	*path_stamp = stat_mstamp(&st);
 
 	if (S_ISREG(st.st_mode)) {
 		conf_files_insert_sorted(ctx, list, path, NULL);

@@ -341,8 +341,12 @@ char *path_make_absolute_cwd(const char *p)
 
 #define USEC_PER_SEC  1000000ULL
 #define NSEC_PER_USEC 1000ULL
-unsigned long long ts_usec(const struct timespec *ts)
+unsigned long long stat_mstamp(const struct stat *st)
 {
-	return (unsigned long long) ts->tv_sec * USEC_PER_SEC +
-	       (unsigned long long) ts->tv_nsec / NSEC_PER_USEC;
+#ifdef HAVE_STRUCT_STAT_ST_MTIM
+	return (unsigned long long) st->st_mtim.tv_sec * USEC_PER_SEC +
+	       (unsigned long long) st->st_mtim.tv_nsec / NSEC_PER_USEC;
+#else
+	return (unsigned long long) st->st_mtime;
+#endif
 }

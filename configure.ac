@@ -79,6 +79,9 @@ AS_IF([test "x$enable_debug" = "xyes"], [
 	AC_DEFINE(ENABLE_DEBUG, [1], [Debug messages.])
 ])
 
+# dietlibc doesn't have st.st_mtim struct member
+AC_CHECK_MEMBERS([struct stat.st_mtim], [], [], [#include <sys/stat.h>])
+
 CC_CHECK_CFLAGS_APPEND([ \
 			-pipe \
 			-DANOTHER_BRICK_IN_THE \
@@ -124,7 +127,6 @@ CC_CHECK_CFLAGS_APPEND([ \
 			-fdata-sections \
 			-Wl,--as-needed \
 			-Wl,--gc-sections])
-
 
 AC_CONFIG_HEADERS(config.h)
 AC_CONFIG_FILES([
