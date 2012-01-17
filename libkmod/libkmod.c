@@ -752,7 +752,9 @@ KMOD_EXPORT void kmod_unload_resources(struct kmod_ctx *ctx)
  * @type: index to dump
  * @fd: file descriptor to dump index to
  *
- * Dump index to file descriptor
+ * Dump index to file descriptor. Note that this function doesn't use stdio.h
+ * so call fflush() before calling this function to be sure data is written in
+ * order.
  *
  * Returns: 0 on success or < 0 otherwise.
  */
