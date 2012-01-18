@@ -124,12 +124,14 @@ tools_kmod_CFLAGS = $(AM_CFLAGS)
 tools_kmod_LDADD = libkmod/libkmod-util.la \
 		   libkmod/libkmod.la
 
-noinst_PROGRAMS = tools/kmod-nolib
+noinst_PROGRAMS = tools/kmod-nolib scripts/shortest_relpath
 tools_kmod_nolib_SOURCES = $(tools_kmod_SOURCES)
 tools_kmod_nolib_CPPFLAGS = $(tools_kmod_CPPFLAGS)
 tools_kmod_nolib_CFLAGS = $(tools_kmod_CFLAGS)
 tools_kmod_nolib_LDADD = libkmod/libkmod-util.la \
 			 libkmod/libkmod-private.la
+
+scripts_shortest_relpath_SOURCES = scripts/shortest_relpath.c
 
 ${noinst_SCRIPTS}: tools/kmod-nolib
 	$(AM_V_GEN) ($(RM) $@; \

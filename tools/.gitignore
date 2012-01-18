@@ -7,3 +7,4 @@ modinfo
 depmod
 kmod
 kmod-nolib
+shortest-relpath
