@@ -613,6 +613,16 @@ int kmod_lookup_alias_from_commands(struct kmod_ctx *ctx, const char *name,
 	return nmatch;
 }
 
+void kmod_set_modules_visited(struct kmod_ctx *ctx, bool visited)
+{
+	struct hash_iter iter;
+	const void *v;
+
+	hash_iter_init(ctx->modules_by_name, &iter);
+	while (hash_iter_next(&iter, NULL, &v))
+		kmod_module_set_visited((struct kmod_module *)v, visited);
+}
+
 static bool is_cache_invalid(const char *path, unsigned long long stamp)
 {
 	struct stat st;

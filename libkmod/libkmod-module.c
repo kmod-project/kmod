@@ -68,6 +68,7 @@ struct kmod_module {
 		bool install_commands : 1;
 		bool remove_commands : 1;
 	} init;
+	bool visited : 1;
 };
 
 static inline const char *path_join(const char *path, size_t prefixlen,
@@ -161,6 +162,11 @@ fail:
 	kmod_module_unref_list(list);
 	mod->init.dep = false;
 	return err;
+}
+
+void kmod_module_set_visited(struct kmod_module *mod, bool visited)
+{
+	mod->visited = visited;
 }
 
 /**
