@@ -104,6 +104,10 @@ if BUILD_TOOLS
 	ln -s kmod $(DESTDIR)$(bindir)/modprobe
 	ln -s kmod $(DESTDIR)$(bindir)/modinfo
 	ln -s kmod $(DESTDIR)$(bindir)/depmod
+	$(MKDIR_P) $(DESTDIR)$(sbindir) && \
+		relpath=$$(tools/shortest-relpath $(DESTDIR)$(bindir)/kmod $(DESTDIR)$(sbindir)) && \
+		cd $(DESTDIR)$(sbindir) && \
+		ln -sf $$relpath modprobe
 endif
 
 uninstall-hook:
@@ -124,14 +128,14 @@ tools_kmod_CFLAGS = $(AM_CFLAGS)
 tools_kmod_LDADD = libkmod/libkmod-util.la \
 		   libkmod/libkmod.la
 
-noinst_PROGRAMS = tools/kmod-nolib scripts/shortest_relpath
+noinst_PROGRAMS = tools/kmod-nolib tools/shortest-relpath
 tools_kmod_nolib_SOURCES = $(tools_kmod_SOURCES)
 tools_kmod_nolib_CPPFLAGS = $(tools_kmod_CPPFLAGS)
 tools_kmod_nolib_CFLAGS = $(tools_kmod_CFLAGS)
 tools_kmod_nolib_LDADD = libkmod/libkmod-util.la \
 			 libkmod/libkmod-private.la
 
-scripts_shortest_relpath_SOURCES = scripts/shortest_relpath.c
+tools_shortest_relpath_SOURCES = tools/shortest-relpath.c
 
 ${noinst_SCRIPTS}: tools/kmod-nolib
 	$(AM_V_GEN) ($(RM) $@; \
