@@ -98,12 +98,12 @@ install-exec-hook:
 		mv $(DESTDIR)$(libdir)/libkmod.so.* $(DESTDIR)$(rootlibdir); \
 	fi
 if BUILD_TOOLS
-	ln -s kmod $(DESTDIR)$(bindir)/insmod
-	ln -s kmod $(DESTDIR)$(bindir)/rmmod
-	ln -s kmod $(DESTDIR)$(bindir)/lsmod
-	ln -s kmod $(DESTDIR)$(bindir)/modprobe
-	ln -s kmod $(DESTDIR)$(bindir)/modinfo
-	ln -s kmod $(DESTDIR)$(bindir)/depmod
+	ln -sf kmod $(DESTDIR)$(bindir)/insmod
+	ln -sf kmod $(DESTDIR)$(bindir)/rmmod
+	ln -sf kmod $(DESTDIR)$(bindir)/lsmod
+	ln -sf kmod $(DESTDIR)$(bindir)/modprobe
+	ln -sf kmod $(DESTDIR)$(bindir)/modinfo
+	ln -sf kmod $(DESTDIR)$(bindir)/depmod
 	$(MKDIR_P) $(DESTDIR)$(sbindir) && \
 		relpath=$$(tools/shortest-relpath $(DESTDIR)$(bindir)/kmod $(DESTDIR)$(sbindir)) && \
 		cd $(DESTDIR)$(sbindir) && \
