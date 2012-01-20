@@ -43,6 +43,8 @@ Features:
      kmod-archive get path.ko
      kmod-archive exists path.ko
 
+* Stop using system() inside the library and use fork + exec instead
+
 Known Bugs:
 ===========
 
