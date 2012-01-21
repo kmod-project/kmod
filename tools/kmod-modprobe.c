@@ -461,22 +461,7 @@ error:
 	return err;
 }
 
-static int rmmod_path(struct kmod_ctx *ctx, const char *path)
-{
-	struct kmod_module *mod;
-	int err;
-
-	err = kmod_module_new_from_path(ctx, path, &mod);
-	if (err < 0) {
-		LOG("Module %s not found.\n", path);
-		return err;
-	}
-	err = rmmod_do_module(mod, true);
-	kmod_module_unref(mod);
-	return err;
-}
-
-static int rmmod_alias(struct kmod_ctx *ctx, const char *alias)
+static int rmmod(struct kmod_ctx *ctx, const char *alias)
 {
 	struct kmod_list *l, *list = NULL;
 	int err;
@@ -498,14 +483,6 @@ static int rmmod_alias(struct kmod_ctx *ctx, const char *alias)
 
 	kmod_module_unref_list(list);
 	return err;
-}
-
-static int rmmod(struct kmod_ctx *ctx, const char *name)
-{
-	if (access(name, F_OK) == 0)
-		return rmmod_path(ctx, name);
-	else
-		return rmmod_alias(ctx, name);
 }
 
 static int rmmod_all(struct kmod_ctx *ctx, char **args, int nargs)
@@ -727,27 +704,6 @@ error:
 	return err;
 }
 
-static int insmod_path(struct kmod_ctx *ctx, const char *path,
-						const char *extra_options)
-{
-	struct kmod_module *mod;
-	struct array recursion;
-	int err;
-
-	err = kmod_module_new_from_path(ctx, path, &mod);
-	if (err < 0) {
-		LOG("Module %s not found.\n", path);
-		return err;
-	}
-
-	array_init(&recursion, INSMOD_RECURSION_STEP);
-	err = insmod_do_module(mod, extra_options, true, &recursion);
-	kmod_module_unref(mod);
-	array_free_array(&recursion);
-
-	return err;
-}
-
 static int handle_failed_lookup(struct kmod_ctx *ctx, const char *alias)
 {
 	struct kmod_module *mod;
@@ -776,7 +732,7 @@ static int handle_failed_lookup(struct kmod_ctx *ctx, const char *alias)
 	return 0;
 }
 
-static int insmod_alias(struct kmod_ctx *ctx, const char *alias,
+static int insmod(struct kmod_ctx *ctx, const char *alias,
 						const char *extra_options)
 {
 	struct kmod_list *l, *list = NULL;
@@ -821,16 +777,6 @@ static int insmod_alias(struct kmod_ctx *ctx, const char *alias,
 
 	kmod_module_unref_list(list);
 	return err;
-}
-
-static int insmod(struct kmod_ctx *ctx, const char *name,
-						const char *extra_options)
-{
-	struct stat st;
-	if (stat(name, &st) == 0)
-		return insmod_path(ctx, name, extra_options);
-	else
-		return insmod_alias(ctx, name, extra_options);
 }
 
 static int insmod_all(struct kmod_ctx *ctx, char **args, int nargs)
