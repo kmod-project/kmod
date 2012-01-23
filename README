@@ -42,6 +42,9 @@ Make sure to read the CODING-STYLE file.
 Information
 ===========
 
+Signed packages:
+	http://packages.profusion.mobi/kmod/
+
 Mailing list:
 	linux-modules@vger.kernel.org
 
