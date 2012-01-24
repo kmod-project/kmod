@@ -8,7 +8,7 @@ AC_INIT([kmod],
 AC_CONFIG_SRCDIR([libkmod/libkmod.c])
 AC_CONFIG_AUX_DIR([build-aux])
 AM_INIT_AUTOMAKE([check-news foreign 1.11 silent-rules
-	tar-pax no-dist-gzip dist-xz subdir-objects])
+	tar-pax no-dist-gzip dist-xz subdir-objects color-tests])
 AC_PROG_CC_STDC
 AC_USE_SYSTEM_EXTENSIONS
 AC_SYS_LARGEFILE

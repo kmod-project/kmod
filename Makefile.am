@@ -128,30 +128,10 @@ ${noinst_SCRIPTS}: tools/kmod-nolib
 		$(LN_S) $(notdir $<) $@)
 endif
 
-check_PROGRAMS = test/test-init test/test-loaded \
-		 test/test-insmod test/test-rmmod test/test-rmmod2 \
-		 test/test-lookup test/test-path-from-name \
-		 test/test-get-dependencies test/test-mod-double-ref \
-		 test/test-blacklist test/test-elf test/test-probe \
-		 test/test-invalidate-config test/test-state
-
-TESTS = test/test-init test/test-loaded
-
-test_test_init_LDADD = libkmod/libkmod-private.la
-test_test_loaded_LDADD = libkmod/libkmod-private.la
-
-test_test_rmmod_LDADD = libkmod/libkmod-private.la
-test_test_rmmod2_LDADD = libkmod/libkmod-private.la
-test_test_insmod_LDADD = libkmod/libkmod-private.la
-test_test_lookup_LDADD = libkmod/libkmod-private.la
-test_test_path_from_name_LDADD = libkmod/libkmod-private.la
-test_test_get_dependencies_LDADD = libkmod/libkmod-private.la
-test_test_mod_double_ref_LDADD = libkmod/libkmod-private.la
-test_test_blacklist_LDADD = libkmod/libkmod-private.la
-test_test_elf_LDADD = libkmod/libkmod-private.la
-test_test_probe_LDADD = libkmod/libkmod-private.la
-test_test_invalidate_config_LDADD = libkmod/libkmod-private.la
-test_test_state_LDADD = libkmod/libkmod-private.la
+check_LTLIBRARIES = testsuite/libtestsuite.la
+testsuite_libtestsuite_la_SOURCES = testsuite/testsuite.c \
+				    testsuite/testsuite.h
+testsuite_libtestsuite_la_DEPENDENCIES = testsuite/uname.so
 
 DISTCHECK_CONFIGURE_FLAGS=--enable-gtk-doc
 
