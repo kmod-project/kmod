@@ -3,3 +3,4 @@
 *.la
 *.so
 test-testsuite
+test-init
