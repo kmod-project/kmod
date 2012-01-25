@@ -123,11 +123,12 @@ static int test_run_spawned(const struct test *t)
 	return EXIT_FAILURE;
 }
 
-int test_spawn_prog(const char *prog, const char *args[])
+int test_spawn_prog(const char *prog, const char *const args[])
 {
 	execv(prog, (char *const *) args);
 
-	ERR("failed to spawn %s ", prog);
+	ERR("failed to spawn %s\n", prog);
+	ERR("did you forget to build tools?\n");
 	return EXIT_FAILURE;
 }
 
