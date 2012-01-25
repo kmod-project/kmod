@@ -4,3 +4,4 @@
 *.so
 test-testsuite
 test-init
+rootfs/

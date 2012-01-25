@@ -13,6 +13,7 @@ enum test_config {
 	_TC_LAST,
 };
 
+#define S_TC_ROOTFS "TESTSUITE_ROOTFS"
 #define S_TC_UNAME_R "TESTSUITE_UNAME_R"
 
 

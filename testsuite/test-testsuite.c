@@ -38,8 +38,38 @@ static const struct test stestsuite_uname = {
 	.need_spawn = true,
 };
 
+static int testsuite_rootfs_fopen(const struct test *t)
+{
+	FILE *fp;
+	char s[100];
+	int n;
+
+	fp = fopen("/lib/modules/a", "r");
+	if (fp == NULL)
+		return EXIT_FAILURE;;
+
+	n = fscanf(fp, "%s", s);
+	if (n != 1)
+		return EXIT_FAILURE;
+
+	if (strcmp(s, "kmod-test-chroot-works") != 0)
+		return EXIT_FAILURE;
+
+	return EXIT_SUCCESS;
+}
+static const struct test stestsuite_rootfs_fopen = {
+	.name = "testsuite_rootfs_fopen",
+	.description = "test if rootfs works - fopen()",
+	.func = testsuite_rootfs_fopen,
+	.config = {
+		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-rootfs/",
+	},
+	.need_spawn = true,
+};
+
 static const struct test *tests[] = {
 	&stestsuite_uname,
+	&stestsuite_rootfs_fopen,
 	NULL,
 };
 

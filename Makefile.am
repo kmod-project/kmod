@@ -1,5 +1,6 @@
 SUBDIRS = . libkmod/docs man
 
+DISTCLEAN_LOCAL_HOOKS =
 EXTRA_DIST =
 CLEANFILES =
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
@@ -128,6 +129,10 @@ ${noinst_SCRIPTS}: tools/kmod-nolib
 		$(LN_S) $(notdir $<) $@)
 endif
 
+# ------------------------------------------------------------------------------
+# TESTSUITE
+# ------------------------------------------------------------------------------
+
 # libtool will not create a shared library that is not installed. Workaround
 # this by creating it by ourselves
 CREATE_SHARED_OVERRIDE_LIB = \
@@ -137,13 +142,30 @@ CREATE_SHARED_OVERRIDE_LIB = \
 testsuite/uname.so: testsuite/uname.c
 	$(CREATE_SHARED_OVERRIDE_LIB)
 
-EXTRA_DIST += testsuite/uname.c
-CLEANFILES += testsuite/uname.so
+testsuite/path.so: testsuite/path.c
+	$(CREATE_SHARED_OVERRIDE_LIB)
+
+EXTRA_DIST += testsuite/uname.c testsuite/path.c
+CLEANFILES += testsuite/uname.so testsuite/path.so
+
+testsuite/rootfs:
+	$(AM_V_GEN) tar -C testsuite/ \
+		-xJf $(top_srcdir)/testsuite/rootfs.tar.xz
+
+testsuite-distclean:
+	-rm -rf testsuite/rootfs
+
+DISTCLEAN_LOCAL_HOOKS += testsuite-distclean
+EXTRA_DIST += testsuite/rootfs.tar.xz
 
 check_LTLIBRARIES = testsuite/libtestsuite.la
 testsuite_libtestsuite_la_SOURCES = testsuite/testsuite.c \
 				    testsuite/testsuite.h
-testsuite_libtestsuite_la_DEPENDENCIES = testsuite/uname.so
+testsuite_libtestsuite_la_DEPENDENCIES = testsuite/uname.so \
+					 testsuite/path.so \
+					 testsuite/rootfs
+testsuite_test_testsuite_CPPFLAGS = $(AM_CPPFLAGS) \
+				    -DTESTSUITE_ROOTFS=\"$(abs_top_builddir)/testsuite/rootfs/\"
 
 TESTSUITE = testsuite/test-init testsuite/test-testsuite
 check_PROGRAMS = $(TESTSUITE)
@@ -154,6 +176,7 @@ testsuite_test_testsuite_LDADD = testsuite/libtestsuite.la
 
 DISTCHECK_CONFIGURE_FLAGS=--enable-gtk-doc
 
+distclean-local: $(DISTCLEAN_LOCAL_HOOKS)
 
 # ------------------------------------------------------------------------------
 # custom release helpers
