@@ -20,6 +20,10 @@ enum test_config {
 struct test {
 	const char *name;
 	const char *description;
+	struct {
+		const char *stdout;
+		const char *stderr;
+	} output;
 	testfunc func;
 	const char *config[_TC_LAST];
 	bool need_spawn;

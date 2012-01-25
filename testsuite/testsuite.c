@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/epoll.h>
 #include <sys/prctl.h>
 #include <sys/wait.h>
 
@@ -160,12 +161,30 @@ static void test_export_environ(const struct test *t)
 	free(preload);
 }
 
-static inline int test_run_child(const struct test *t)
+static inline int test_run_child(const struct test *t, int fdout[2],
+								int fderr[2])
 {
 	/* kill child if parent dies */
 	prctl(PR_SET_PDEATHSIG, SIGTERM);
 
 	test_export_environ(t);
+
+	/* Close read-fds and redirect std{out,err} to the write-fds */
+	if (t->output.stdout != NULL) {
+		close(fdout[0]);
+		if (dup2(fdout[1], STDOUT_FILENO) < 0) {
+			ERR("could not redirect stdout to pipe: %m");
+			exit(EXIT_FAILURE);
+		}
+	}
+
+	if (t->output.stderr != NULL) {
+		close(fderr[0]);
+		if (dup2(fderr[1], STDERR_FILENO) < 0) {
+			ERR("could not redirect stdout to pipe: %m");
+			exit(EXIT_FAILURE);
+		}
+	}
 
 	if (t->need_spawn)
 		return test_spawn_test(t);
@@ -173,10 +192,168 @@ static inline int test_run_child(const struct test *t)
 		return test_run_spawned(t);
 }
 
-static inline int test_run_parent(const struct test *t)
+static inline bool test_run_parent_check_outputs(const struct test *t,
+							int fdout, int fderr)
+{
+	struct epoll_event ep_outpipe, ep_errpipe;
+	int err, fd_ep, fd_matchout = -1, fd_matcherr = -1;
+
+	if (t->output.stdout == NULL && t->output.stderr == NULL)
+		return true;
+
+	fd_ep = epoll_create1(EPOLL_CLOEXEC);
+	if (fd_ep < 0) {
+		ERR("could not create epoll fd: %m\n");
+		return false;
+	}
+
+	if (t->output.stdout != NULL) {
+		fd_matchout = open(t->output.stdout, O_RDONLY);
+		if (fd_matchout < 0) {
+			err = -errno;
+			ERR("could not open %s for read: %m\n",
+							t->output.stdout);
+			goto out;
+		}
+		memset(&ep_outpipe, 0, sizeof(struct epoll_event));
+		ep_outpipe.events = EPOLLIN;
+		ep_outpipe.data.ptr = &fdout;
+		if (epoll_ctl(fd_ep, EPOLL_CTL_ADD, fdout, &ep_outpipe) < 0) {
+			err = -errno;
+			ERR("could not add fd to epoll: %m\n");
+			goto out;
+		}
+	} else
+		fdout = -1;
+
+	if (t->output.stderr != NULL) {
+		fd_matcherr = open(t->output.stderr, O_RDONLY);
+		if (fd_matcherr < 0) {
+			err = -errno;
+			ERR("could not open %s for read: %m\n",
+					t->output.stderr);
+			goto out;
+
+		}
+		memset(&ep_errpipe, 0, sizeof(struct epoll_event));
+		ep_errpipe.events = EPOLLIN;
+		ep_errpipe.data.ptr = &fderr;
+		if (epoll_ctl(fd_ep, EPOLL_CTL_ADD, fderr, &ep_errpipe) < 0) {
+			err = -errno;
+			ERR("could not add fd to epoll: %m\n");
+			goto out;
+		}
+	} else
+		fderr = -1;
+
+	for (err = 0; fdout >= 0 || fderr >= 0;) {
+		int fdcount, i;
+		struct epoll_event ev[4];
+
+		fdcount = epoll_wait(fd_ep, ev, 4, -1);
+		if (fdcount < 0) {
+			if (errno == EINTR)
+				continue;
+			err = -errno;
+			ERR("could not poll: %m\n");
+			goto out;
+		}
+
+		for (i = 0;  i < fdcount; i++) {
+			int *fd = ev[i].data.ptr;
+
+			if (ev[i].events & EPOLLIN) {
+				ssize_t r, done = 0;
+				char buf[4096];
+				char bufmatch[4096];
+				int fd_match;
+
+				/*
+				 * compare the output from child with the one
+				 * saved as correct
+				 */
+
+				r = read(*fd, buf, sizeof(buf) - 1);
+				if (r <= 0)
+					continue;
+
+				if (*fd == fdout)
+					fd_match = fd_matchout;
+				else
+					fd_match = fd_matcherr;
+
+				for (;;) {
+					int rmatch = read(fd_match,
+						bufmatch + done, r - done);
+					if (rmatch == 0)
+						break;
+
+					if (rmatch < 0) {
+						if (errno == EINTR)
+							continue;
+						err = -errno;
+						ERR("could not read match fd %d\n",
+								fd_match);
+						goto out;
+					}
+
+					done += rmatch;
+				}
+
+				buf[r] = '\0';
+				bufmatch[r] = '\0';
+				if (strcmp(buf, bufmatch) != 0) {
+					ERR("Outputs do not match on %s:\n",
+						fd_match == fd_matchout ? "stdout" : "stderr");
+					ERR("correct:\n%s\n", bufmatch);
+					ERR("wrong:\n%s\n", buf);
+					err = -1;
+					goto out;
+				}
+			} else if (ev[i].events & EPOLLHUP) {
+				if (epoll_ctl(fd_ep, EPOLL_CTL_DEL,
+							*fd, NULL) < 0) {
+					ERR("could not remove fd %d from epoll: %m\n",
+									*fd);
+				}
+				*fd = -1;
+			}
+		}
+
+	}
+out:
+	if (fd_matchout >= 0)
+		close(fd_matchout);
+	if (fd_matcherr >= 0)
+		close(fd_matcherr);
+	if (fd_ep >= 0)
+		close(fd_ep);
+	return err == 0;
+}
+
+static inline int test_run_parent(const struct test *t, int fdout[2],
+								int fderr[2])
 {
 	pid_t pid;
 	int err;
+	bool matchout;
+
+	/* Close write-fds */
+	if (t->output.stdout != NULL)
+		close(fdout[1]);
+	if (t->output.stderr != NULL)
+		close(fderr[1]);
+
+	matchout = test_run_parent_check_outputs(t, fdout[0], fderr[0]);
+
+	/*
+	 * break pipe on the other end: either child already closed or we want
+	 * to stop it
+	 */
+	if (t->output.stdout != NULL)
+		close(fdout[0]);
+	if (t->output.stderr != NULL)
+		close(fderr[0]);
 
 	do {
 		pid = wait(&err);
@@ -186,19 +363,54 @@ static inline int test_run_parent(const struct test *t)
 		}
 	} while (!WIFEXITED(err) && !WIFSIGNALED(err));
 
-	if (err != 0)
-		ERR("error while running %s\n", t->name);
+	if (WIFEXITED(err)) {
+		if (WEXITSTATUS(err) != 0)
+			ERR("'%s' [%u] exited with return code %d\n",
+					t->name, pid, WEXITSTATUS(err));
+		else
+			LOG("'%s' [%u] exited with return code %d\n",
+					t->name, pid, WEXITSTATUS(err));
+	} else if (WIFSIGNALED(err)) {
+		ERR("'%s' [%u] terminated by signal %d (%s)\n", t->name, pid,
+				WTERMSIG(err), strsignal(WTERMSIG(err)));
+	}
 
-	LOG("%s: %s\n", err == 0 ? "PASSED" : "FAILED", t->name);
+	if (err == 0) {
+		if (matchout)
+			LOG("PASSED: %s\n", t->name);
+		else {
+			ERR("FAILED: exit ok but outputs do not match: %s\n",
+								t->name);
+			err = EXIT_FAILURE;
+		}
+	} else
+		ERR("FAILED: %s\n", t->name);
+
 	return err;
 }
 
 int test_run(const struct test *t)
 {
 	pid_t pid;
+	int fdout[2];
+	int fderr[2];
 
 	if (t->need_spawn && oneshot)
 		test_run_spawned(t);
+
+	if (t->output.stdout != NULL) {
+		if (pipe(fdout) != 0) {
+			ERR("could not create out pipe for %s\n", t->name);
+			return EXIT_FAILURE;
+		}
+	}
+
+	if (t->output.stderr != NULL) {
+		if (pipe(fderr) != 0) {
+			ERR("could not create err pipe for %s\n", t->name);
+			return EXIT_FAILURE;
+		}
+	}
 
 	LOG("running %s, in forked context\n", t->name);
 
@@ -210,7 +422,7 @@ int test_run(const struct test *t)
 	}
 
 	if (pid > 0)
-		return test_run_parent(t);
+		return test_run_parent(t, fdout, fderr);
 
-	return test_run_child(t);
+	return test_run_child(t, fdout, fderr);
 }
