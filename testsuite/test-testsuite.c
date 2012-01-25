@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stddef.h>
 #include <string.h>
+#include <dirent.h>
 #include <errno.h>
 #include <unistd.h>
 #include <sys/stat.h>
@@ -131,11 +132,35 @@ static const struct test stestsuite_rootfs_stat_access = {
 	.need_spawn = true,
 };
 
+static int testsuite_rootfs_opendir(const struct test *t)
+{
+	DIR *d;
+
+	d = opendir("/testdir");
+	if (d == NULL) {
+		ERR("opendir failed: %m\n");
+		return EXIT_FAILURE;
+	}
+
+	closedir(d);
+	return EXIT_SUCCESS;
+}
+static const struct test stestsuite_rootfs_opendir = {
+	.name = "testsuite_rootfs_opendir",
+	.description = "test if rootfs works - opendir()",
+	.func = testsuite_rootfs_opendir,
+	.config = {
+		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-rootfs/",
+	},
+	.need_spawn = true,
+};
+
 static const struct test *tests[] = {
 	&stestsuite_uname,
 	&stestsuite_rootfs_fopen,
 	&stestsuite_rootfs_open,
 	&stestsuite_rootfs_stat_access,
+	&stestsuite_rootfs_opendir,
 	NULL,
 };
 

@@ -1,5 +1,6 @@
 #include <assert.h>
 #include <errno.h>
+#include <dirent.h>
 #include <fcntl.h>
 #include <dlfcn.h>
 #include <limits.h>
@@ -192,4 +193,22 @@ TS_EXPORT int access(const char *path, int mode)
 		return -1;
 
 	return _access(p, mode);
+}
+
+TS_EXPORT DIR *opendir(const char *path)
+{
+	const char *p;
+	char buf[PATH_MAX * 2];
+	static int (*_opendir)(const char *path);
+
+	if (!get_rootpath(__func__))
+		return NULL;
+
+	_opendir = get_libc_func("opendir");
+
+	p = trap_path(path, buf);
+	if (p == NULL)
+		return NULL;
+
+	return (void *)(long)(*_opendir)(p);
 }
