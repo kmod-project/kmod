@@ -170,7 +170,7 @@ testsuite_libtestsuite_la_DEPENDENCIES = testsuite/uname.so \
 					 testsuite/rootfs
 testsuite_libtestsuite_la_CPPFLAGS = $(TESTSUITE_CPPFLAGS)
 
-TESTSUITE = testsuite/test-init testsuite/test-testsuite
+TESTSUITE = testsuite/test-init testsuite/test-testsuite testsuite/test-loaded
 check_PROGRAMS = $(TESTSUITE)
 TESTS = $(TESTSUITE)
 
@@ -178,6 +178,9 @@ testsuite_test_init_LDADD = testsuite/libtestsuite.la libkmod/libkmod-private.la
 testsuite_test_init_CPPFLAGS = $(TESTSUITE_CPPFLAGS)
 testsuite_test_testsuite_LDADD = testsuite/libtestsuite.la
 testsuite_test_testsuite_CPPFLAGS = $(TESTSUITE_CPPFLAGS)
+testsuite_test_loaded_LDADD = testsuite/libtestsuite.la libkmod/libkmod-private.la
+testsuite_test_loaded_CPPFLAGS = $(TESTSUITE_CPPFLAGS)
+
 
 DISTCHECK_CONFIGURE_FLAGS=--enable-gtk-doc
 

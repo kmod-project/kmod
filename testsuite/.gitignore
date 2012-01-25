@@ -2,6 +2,7 @@
 *.lo
 *.la
 *.so
-test-testsuite
-test-init
 rootfs/
+test-init
+test-loaded
+test-testsuite
