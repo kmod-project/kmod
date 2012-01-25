@@ -13,6 +13,10 @@
 
 #include "testsuite.h"
 
+static const char *ANSI_HIGHLIGHT_GREEN_ON = "\x1B[1;32m";
+static const char *ANSI_HIGHLIGHT_RED_ON =  "\x1B[1;31m";
+static const char *ANSI_HIGHLIGHT_OFF = "\x1B[0m";
+
 static const char *progname;
 static int oneshot = 0;
 static const char options_short[] = "lhn";
@@ -78,6 +82,12 @@ int test_init(int argc, char *const argv[], const struct test *tests[])
 			ERR("unexpected getopt_long() value %c\n", c);
 			return -1;
 		}
+	}
+
+	if (isatty(STDOUT_FILENO) == 0) {
+		ANSI_HIGHLIGHT_OFF = "";
+		ANSI_HIGHLIGHT_RED_ON = "";
+		ANSI_HIGHLIGHT_GREEN_ON = "";
 	}
 
 	return optind;
@@ -377,14 +387,19 @@ static inline int test_run_parent(const struct test *t, int fdout[2],
 
 	if (err == 0) {
 		if (matchout)
-			LOG("PASSED: %s\n", t->name);
+			LOG("%sPASSED%s: %s\n",
+				ANSI_HIGHLIGHT_GREEN_ON, ANSI_HIGHLIGHT_OFF,
+				t->name);
 		else {
-			ERR("FAILED: exit ok but outputs do not match: %s\n",
-								t->name);
+			ERR("%sFAILED%s: exit ok but outputs do not match: %s\n",
+				ANSI_HIGHLIGHT_RED_ON, ANSI_HIGHLIGHT_OFF,
+				t->name);
 			err = EXIT_FAILURE;
 		}
 	} else
-		ERR("FAILED: %s\n", t->name);
+		ERR("%sFAILED%s: %s\n",
+				ANSI_HIGHLIGHT_RED_ON, ANSI_HIGHLIGHT_OFF,
+				t->name);
 
 	return err;
 }
