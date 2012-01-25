@@ -145,11 +145,12 @@ testsuite_libtestsuite_la_SOURCES = testsuite/testsuite.c \
 				    testsuite/testsuite.h
 testsuite_libtestsuite_la_DEPENDENCIES = testsuite/uname.so
 
-TESTSUITE = testsuite/test-init
+TESTSUITE = testsuite/test-init testsuite/test-testsuite
 check_PROGRAMS = $(TESTSUITE)
 TESTS = $(TESTSUITE)
 
 testsuite_test_init_LDADD = testsuite/libtestsuite.la libkmod/libkmod-private.la
+testsuite_test_testsuite_LDADD = testsuite/libtestsuite.la
 
 DISTCHECK_CONFIGURE_FLAGS=--enable-gtk-doc
 
