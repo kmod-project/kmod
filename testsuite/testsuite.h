@@ -21,18 +21,15 @@ struct test {
 	const char *description;
 	testfunc func;
 	const char *config[_TC_LAST];
+	bool need_spawn;
 };
 
 
 const struct test *test_find(const struct test *tests[], const char *name);
 int test_init(int argc, char *const argv[], const struct test *tests[]);
-int test_spawn_test(const struct test *t);
 int test_spawn_prog(const char *prog, const char *args[]);
 
 int test_run(const struct test *t);
-__attribute__((noreturn)) int test_run_spawned(const struct test *t);
-
-extern int oneshot;
 
 #define TS_EXPORT __attribute__ ((visibility("default")))
 

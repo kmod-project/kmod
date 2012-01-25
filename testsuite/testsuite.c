@@ -13,7 +13,7 @@
 #include "testsuite.h"
 
 static const char *progname;
-int oneshot = 0;
+static int oneshot = 0;
 static const char options_short[] = "lhn";
 static const struct option options[] = {
 	{ "list", no_argument, 0, 'l' },
@@ -86,13 +86,21 @@ const struct test *test_find(const struct test *tests[], const char *name)
 	return NULL;
 }
 
-int test_spawn_test(const struct test *t)
+static int test_spawn_test(const struct test *t)
 {
 	const char *const args[] = { progname, "-n", t->name, NULL };
 
 	execv(progname, (char *const *) args);
 
 	ERR("failed to spawn %s for %s: %m\n", progname, t->name);
+	return EXIT_FAILURE;
+}
+
+static int test_run_spawned(const struct test *t)
+{
+	int err = t->func(t);
+	exit(err);
+
 	return EXIT_FAILURE;
 }
 
@@ -104,16 +112,16 @@ int test_spawn_prog(const char *prog, const char *args[])
 	return EXIT_FAILURE;
 }
 
-int test_run_spawned(const struct test *t)
 {
-	int err = t->func(t);
-	exit(err);
 }
 
 int test_run(const struct test *t)
 {
 	int err;
 	pid_t pid;
+
+	if (t->need_spawn && oneshot)
+		test_run_spawned(t);
 
 	LOG("running %s, in forked context\n", t->name);
 
@@ -142,5 +150,9 @@ int test_run(const struct test *t)
 
         /* kill child if parent dies */
         prctl(PR_SET_PDEATHSIG, SIGTERM);
-	test_run_spawned(t);
+
+	if (t->need_spawn)
+		return test_spawn_test(t);
+	else
+		return test_run_spawned(t);
 }
