@@ -1,10 +1,14 @@
 #include <assert.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <dlfcn.h>
 #include <limits.h>
 #include <stdlib.h>
+#include <stdarg.h>
 #include <string.h>
 #include <stdio.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 #include "testsuite.h"
 
@@ -87,4 +91,31 @@ TS_EXPORT FILE *fopen(const char *path, const char *mode)
 		return NULL;
 
 	return (void *) (long) (*_fopen)(p, mode);
+}
+
+TS_EXPORT int open(const char *path, int flags, ...)
+{
+	const char *p;
+	char buf[PATH_MAX * 2];
+	static int (*_open)(const char *path, int flags, ...);
+
+	if (!get_rootpath(__func__))
+		return -1;
+
+	_open = get_libc_func("open");
+	p = trap_path(path, buf);
+	if (p == NULL)
+		return -1;
+
+	if (flags & O_CREAT) {
+		mode_t mode;
+		va_list ap;
+
+		va_start(ap, flags);
+		mode = va_arg(ap, mode_t);
+		va_end(ap);
+		_open(p, flags, mode);
+	}
+
+	return _open(p, flags);
 }
