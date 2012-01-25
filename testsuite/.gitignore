@@ -6,3 +6,4 @@ rootfs/
 test-init
 test-loaded
 test-testsuite
+test-modinfo

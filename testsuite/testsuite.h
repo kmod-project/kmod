@@ -32,7 +32,7 @@ struct test {
 
 const struct test *test_find(const struct test *tests[], const char *name);
 int test_init(int argc, char *const argv[], const struct test *tests[]);
-int test_spawn_prog(const char *prog, const char *args[]);
+int test_spawn_prog(const char *prog, const char *const args[]);
 
 int test_run(const struct test *t);
 
