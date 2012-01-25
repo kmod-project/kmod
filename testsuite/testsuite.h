@@ -13,6 +13,9 @@ enum test_config {
 	_TC_LAST,
 };
 
+#define S_TC_UNAME_R "TESTSUITE_UNAME_R"
+
+
 struct test {
 	const char *name;
 	const char *description;

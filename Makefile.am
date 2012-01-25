@@ -128,6 +128,18 @@ ${noinst_SCRIPTS}: tools/kmod-nolib
 		$(LN_S) $(notdir $<) $@)
 endif
 
+# libtool will not create a shared library that is not installed. Workaround
+# this by creating it by ourselves
+CREATE_SHARED_OVERRIDE_LIB = \
+		$(AM_V_CCLD)gcc -fPIC $(AM_CPPFLAGS) $(AM_CFLAGS) -shared $^ \
+			-o $@ $(AM_LDFLAGS) -ldl
+
+testsuite/uname.so: testsuite/uname.c
+	$(CREATE_SHARED_OVERRIDE_LIB)
+
+EXTRA_DIST += testsuite/uname.c
+CLEANFILES += testsuite/uname.so
+
 check_LTLIBRARIES = testsuite/libtestsuite.la
 testsuite_libtestsuite_la_SOURCES = testsuite/testsuite.c \
 				    testsuite/testsuite.h
