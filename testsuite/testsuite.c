@@ -21,6 +21,14 @@ static const struct option options[] = {
 	{ NULL, 0, 0, 0 }
 };
 
+struct _env_config {
+	const char *key;
+	const char *ldpreload;
+} env_config[_TC_LAST] = {
+	[TC_UNAME_R] = { S_TC_UNAME_R, "./testsuite/uname.so" },
+	[TC_ROOTFS] = { S_TC_ROOTFS, "./testsuite/path.so" },
+};
+
 static void help(void)
 {
 	const struct option *itr;
@@ -112,7 +120,44 @@ int test_spawn_prog(const char *prog, const char *args[])
 	return EXIT_FAILURE;
 }
 
+static void test_export_environ(const struct test *t)
 {
+	char *preload = NULL;
+	size_t preloadlen = 0;
+	size_t i;
+
+	unsetenv("LD_PRELOAD");
+
+	for (i = 0; i < _TC_LAST; i++) {
+		const char *ldpreload;
+		size_t ldpreloadlen;
+		char *tmp;
+
+		if (t->config[i] == NULL)
+			continue;
+
+		setenv(env_config[i].key, t->config[i], 1);
+
+		ldpreload = env_config[i].ldpreload;
+		ldpreloadlen = strlen(ldpreload);
+		tmp = realloc(preload, preloadlen + 2 + ldpreloadlen);
+		if (tmp == NULL) {
+			ERR("oom: test_export_environ()\n");
+			return;
+		}
+		preload = tmp;
+
+		if (preloadlen > 0)
+			preload[preloadlen++] = ' ';
+		memcpy(preload + preloadlen, ldpreload, ldpreloadlen);
+		preloadlen += ldpreloadlen;
+		preload[preloadlen] = '\0';
+	}
+
+	if (preload != NULL)
+		setenv("LD_PRELOAD", preload, 1);
+
+	free(preload);
 }
 
 int test_run(const struct test *t)
@@ -150,6 +195,8 @@ int test_run(const struct test *t)
 
         /* kill child if parent dies */
         prctl(PR_SET_PDEATHSIG, SIGTERM);
+
+	test_export_environ(t);
 
 	if (t->need_spawn)
 		return test_spawn_test(t);
