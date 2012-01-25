@@ -4,6 +4,8 @@
 #include <string.h>
 #include <errno.h>
 #include <unistd.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <sys/utsname.h>
 #include <libkmod.h>
 
@@ -103,10 +105,37 @@ static const struct test stestsuite_rootfs_open = {
 	.need_spawn = true,
 };
 
+static int testsuite_rootfs_stat_access(const struct test *t)
+{
+	struct stat st;
+
+	if (access("/lib/modules/a", F_OK) < 0) {
+		ERR("access failed: %m\n");
+		return EXIT_FAILURE;
+	}
+
+	if (stat("/lib/modules/a", &st) < 0) {
+		ERR("stat failed: %m\n");
+		return EXIT_FAILURE;
+	}
+
+	return EXIT_SUCCESS;
+}
+static const struct test stestsuite_rootfs_stat_access = {
+	.name = "testsuite_rootfs_stat_access",
+	.description = "test if rootfs works - stat() and access()",
+	.func = testsuite_rootfs_stat_access,
+	.config = {
+		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-rootfs/",
+	},
+	.need_spawn = true,
+};
+
 static const struct test *tests[] = {
 	&stestsuite_uname,
 	&stestsuite_rootfs_fopen,
 	&stestsuite_rootfs_open,
+	&stestsuite_rootfs_stat_access,
 	NULL,
 };
 

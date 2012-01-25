@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <unistd.h>
 
 #include "testsuite.h"
 
@@ -118,4 +119,77 @@ TS_EXPORT int open(const char *path, int flags, ...)
 	}
 
 	return _open(p, flags);
+}
+
+TS_EXPORT int stat(const char *path, struct stat *st)
+{
+	const char *p;
+	char buf[PATH_MAX * 2];
+	static int (*_stat)(const char *path, struct stat *buf);
+
+	if (!get_rootpath(__func__))
+		return -1;
+
+	_stat = get_libc_func("stat");
+
+	p = trap_path(path, buf);
+	if (p == NULL)
+		return -1;
+
+	return _stat(p, st);
+}
+
+TS_EXPORT int stat64(const char *path, struct stat64 *st)
+{
+	const char *p;
+	char buf[PATH_MAX * 2];
+	static int (*_stat64)(const char *path, struct stat64 *buf);
+
+	if (!get_rootpath(__func__))
+		return -1;
+
+	_stat64 = get_libc_func("stat64");
+
+	p = trap_path(path, buf);
+	if (p == NULL)
+		return -1;
+
+	return _stat64(p, st);
+}
+
+TS_EXPORT int __xstat(int ver, const char *path, struct stat *st)
+{
+	const char *p;
+	char buf[PATH_MAX * 2];
+	static int (*_xstat)(int __ver, const char *__filename,
+						struct stat *__stat_buf);
+
+	if (!get_rootpath(__func__))
+		return -1;
+
+	_xstat = get_libc_func("__xstat");
+
+	p = trap_path(path, buf);
+	if (p == NULL)
+		return -1;
+
+	return _xstat(ver, p, st);
+}
+
+TS_EXPORT int access(const char *path, int mode)
+{
+	const char *p;
+	char buf[PATH_MAX * 2];
+	static int (*_access)(const char *path, int mode);
+
+	if (!get_rootpath(__func__))
+		return -1;
+
+	_access = get_libc_func("access");
+
+	p = trap_path(path, buf);
+	if (p == NULL)
+		return -1;
+
+	return _access(p, mode);
 }
