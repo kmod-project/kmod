@@ -158,21 +158,26 @@ testsuite-distclean:
 DISTCLEAN_LOCAL_HOOKS += testsuite-distclean
 EXTRA_DIST += testsuite/rootfs.tar.xz
 
+TESTSUITE_CPPFLAGS = $(AM_CPPFLAGS) \
+		     -DTESTSUITE_ROOTFS=\"$(abs_top_builddir)/testsuite/rootfs/\" \
+		     -DABS_TOP_BUILDDIR=\"$(abs_top_builddir)\"
+
 check_LTLIBRARIES = testsuite/libtestsuite.la
 testsuite_libtestsuite_la_SOURCES = testsuite/testsuite.c \
 				    testsuite/testsuite.h
 testsuite_libtestsuite_la_DEPENDENCIES = testsuite/uname.so \
 					 testsuite/path.so \
 					 testsuite/rootfs
-testsuite_test_testsuite_CPPFLAGS = $(AM_CPPFLAGS) \
-				    -DTESTSUITE_ROOTFS=\"$(abs_top_builddir)/testsuite/rootfs/\"
+testsuite_libtestsuite_la_CPPFLAGS = $(TESTSUITE_CPPFLAGS)
 
 TESTSUITE = testsuite/test-init testsuite/test-testsuite
 check_PROGRAMS = $(TESTSUITE)
 TESTS = $(TESTSUITE)
 
 testsuite_test_init_LDADD = testsuite/libtestsuite.la libkmod/libkmod-private.la
+testsuite_test_init_CPPFLAGS = $(TESTSUITE_CPPFLAGS)
 testsuite_test_testsuite_LDADD = testsuite/libtestsuite.la
+testsuite_test_testsuite_CPPFLAGS = $(TESTSUITE_CPPFLAGS)
 
 DISTCHECK_CONFIGURE_FLAGS=--enable-gtk-doc
 

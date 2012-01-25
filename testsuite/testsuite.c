@@ -25,8 +25,8 @@ struct _env_config {
 	const char *key;
 	const char *ldpreload;
 } env_config[_TC_LAST] = {
-	[TC_UNAME_R] = { S_TC_UNAME_R, "./testsuite/uname.so" },
-	[TC_ROOTFS] = { S_TC_ROOTFS, "./testsuite/path.so" },
+	[TC_UNAME_R] = { S_TC_UNAME_R, ABS_TOP_BUILDDIR "/testsuite/uname.so" },
+	[TC_ROOTFS] = { S_TC_ROOTFS, ABS_TOP_BUILDDIR "/testsuite/path.so" },
 };
 
 static void help(void)
