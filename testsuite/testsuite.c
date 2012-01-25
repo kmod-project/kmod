@@ -160,9 +160,41 @@ static void test_export_environ(const struct test *t)
 	free(preload);
 }
 
+static inline int test_run_child(const struct test *t)
+{
+	/* kill child if parent dies */
+	prctl(PR_SET_PDEATHSIG, SIGTERM);
+
+	test_export_environ(t);
+
+	if (t->need_spawn)
+		return test_spawn_test(t);
+	else
+		return test_run_spawned(t);
+}
+
+static inline int test_run_parent(const struct test *t)
+{
+	pid_t pid;
+	int err;
+
+	do {
+		pid = wait(&err);
+		if (pid == -1) {
+			ERR("error waitpid(): %m\n");
+			return EXIT_FAILURE;
+		}
+	} while (!WIFEXITED(err) && !WIFSIGNALED(err));
+
+	if (err != 0)
+		ERR("error while running %s\n", t->name);
+
+	LOG("%s: %s\n", err == 0 ? "PASSED" : "FAILED", t->name);
+	return err;
+}
+
 int test_run(const struct test *t)
 {
-	int err;
 	pid_t pid;
 
 	if (t->need_spawn && oneshot)
@@ -177,29 +209,8 @@ int test_run(const struct test *t)
 		return EXIT_FAILURE;
 	}
 
-	if (pid > 0) {
-		do {
-			pid = wait(&err);
-			if (pid == -1) {
-				ERR("error waitpid(): %m\n");
-				return EXIT_FAILURE;
-			}
-		} while (!WIFEXITED(err) && !WIFSIGNALED(err));
+	if (pid > 0)
+		return test_run_parent(t);
 
-		if (err != 0)
-			ERR("error while running %s\n", t->name);
-
-		LOG("%s: %s\n", err == 0 ? "PASSED" : "FAILED", t->name);
-		return err;
-	}
-
-        /* kill child if parent dies */
-        prctl(PR_SET_PDEATHSIG, SIGTERM);
-
-	test_export_environ(t);
-
-	if (t->need_spawn)
-		return test_spawn_test(t);
-	else
-		return test_run_spawned(t);
+	return test_run_child(t);
 }
