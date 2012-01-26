@@ -10,11 +10,13 @@ typedef int (*testfunc)(const struct test *t);
 enum test_config {
 	TC_ROOTFS = 0,
 	TC_UNAME_R,
+	TC_INIT_MODULE_RETCODES,
 	_TC_LAST,
 };
 
 #define S_TC_ROOTFS "TESTSUITE_ROOTFS"
 #define S_TC_UNAME_R "TESTSUITE_UNAME_R"
+#define S_TC_INIT_MODULE_RETCODES "TESTSUITE_INIT_MODULE_RETCODES"
 
 
 struct test {

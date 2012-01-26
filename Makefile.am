@@ -145,8 +145,11 @@ testsuite/uname.so: testsuite/uname.c
 testsuite/path.so: testsuite/path.c
 	$(CREATE_SHARED_OVERRIDE_LIB)
 
-EXTRA_DIST += testsuite/uname.c testsuite/path.c
-CLEANFILES += testsuite/uname.so testsuite/path.so
+testsuite/init_module.so: testsuite/init_module.c $(abs_top_builddir)/libkmod/.libs/libkmod-private.a
+	$(CREATE_SHARED_OVERRIDE_LIB)
+
+EXTRA_DIST += testsuite/uname.c testsuite/path.c testsuite/init_module.c
+CLEANFILES += testsuite/uname.so testsuite/path.so testsuite/init_module.so
 
 testsuite/rootfs:
 	$(AM_V_GEN) tar -C testsuite/ \
@@ -167,6 +170,7 @@ testsuite_libtestsuite_la_SOURCES = testsuite/testsuite.c \
 				    testsuite/testsuite.h
 testsuite_libtestsuite_la_DEPENDENCIES = testsuite/uname.so \
 					 testsuite/path.so \
+					 testsuite/init_module.so \
 					 testsuite/rootfs
 testsuite_libtestsuite_la_CPPFLAGS = $(TESTSUITE_CPPFLAGS)
 

@@ -32,6 +32,7 @@ struct _env_config {
 } env_config[_TC_LAST] = {
 	[TC_UNAME_R] = { S_TC_UNAME_R, ABS_TOP_BUILDDIR "/testsuite/uname.so" },
 	[TC_ROOTFS] = { S_TC_ROOTFS, ABS_TOP_BUILDDIR "/testsuite/path.so" },
+	[TC_INIT_MODULE_RETCODES] = { S_TC_INIT_MODULE_RETCODES, ABS_TOP_BUILDDIR "/testsuite/init_module.so" },
 };
 
 static void help(void)

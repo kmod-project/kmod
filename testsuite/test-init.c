@@ -8,7 +8,7 @@
 
 #include "testsuite.h"
 
-static int testsuite_init(const struct test *t)
+static int test_initlib(const struct test *t)
 {
 	struct kmod_ctx *ctx;
 	const char *null_config = NULL;
@@ -21,14 +21,52 @@ static int testsuite_init(const struct test *t)
 
 	exit(EXIT_SUCCESS);
 }
-static const struct test stestsuite_init = {
-	.name = "testsuite_init",
+static const struct test stest_initlib = {
+	.name = "test_initlib",
 	.description = "test if libkmod's init function work",
-	.func = testsuite_init,
+	.func = test_initlib,
+};
+
+static int test_insert(const struct test *t)
+{
+	struct kmod_ctx *ctx;
+	struct kmod_module *mod;
+	const char *null_config = NULL;
+	int err;
+
+	ctx = kmod_new(NULL, &null_config);
+	if (ctx == NULL)
+		exit(EXIT_FAILURE);
+
+	err = kmod_module_new_from_path(ctx, "/ext4-x86_64.ko", &mod);
+	if (err != 0) {
+		ERR("could not create module from path: %m\n");
+		exit(EXIT_FAILURE);
+	}
+
+	err = kmod_module_insert_module(mod, 0, NULL);
+	if (err != 0) {
+		ERR("could not insert module: %m\n");
+		exit(EXIT_FAILURE);
+	}
+	kmod_unref(ctx);
+
+	exit(EXIT_SUCCESS);
+}
+static const struct test stest_insert = {
+	.name = "test_insert",
+	.description = "test if libkmod's insert_module returns ok",
+	.func = test_insert,
+	.config = {
+		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-modinfo/",
+		[TC_INIT_MODULE_RETCODES] = "bla:1:20",
+	},
+	.need_spawn = true,
 };
 
 static const struct test *tests[] = {
-	&stestsuite_init,
+	&stest_initlib,
+	&stest_insert,
 	NULL,
 };
 
