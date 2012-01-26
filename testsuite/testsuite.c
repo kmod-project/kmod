@@ -26,13 +26,15 @@ static const struct option options[] = {
 	{ NULL, 0, 0, 0 }
 };
 
+#define OVERRIDE_LIBDIR ABS_TOP_BUILDDIR "/testsuite/.libs/"
+
 struct _env_config {
 	const char *key;
 	const char *ldpreload;
 } env_config[_TC_LAST] = {
-	[TC_UNAME_R] = { S_TC_UNAME_R, ABS_TOP_BUILDDIR "/testsuite/uname.so" },
-	[TC_ROOTFS] = { S_TC_ROOTFS, ABS_TOP_BUILDDIR "/testsuite/path.so" },
-	[TC_INIT_MODULE_RETCODES] = { S_TC_INIT_MODULE_RETCODES, ABS_TOP_BUILDDIR "/testsuite/init_module.so" },
+	[TC_UNAME_R] = { S_TC_UNAME_R, OVERRIDE_LIBDIR  "uname.so" },
+	[TC_ROOTFS] = { S_TC_ROOTFS, OVERRIDE_LIBDIR "path.so" },
+	[TC_INIT_MODULE_RETCODES] = { S_TC_INIT_MODULE_RETCODES, OVERRIDE_LIBDIR "init_module.so" },
 };
 
 static void help(void)

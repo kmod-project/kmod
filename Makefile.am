@@ -133,27 +133,20 @@ endif
 # TESTSUITE
 # ------------------------------------------------------------------------------
 
-# libtool will not create a shared library that is not installed. Workaround
-# this by creating it by ourselves
-CREATE_SHARED_OVERRIDE_LIB = \
-		$(AM_V_CCLD)gcc -fPIC $(AM_CPPFLAGS) $(AM_CFLAGS) -shared $^ \
-			-o $@ $(AM_LDFLAGS) -ldl
+TESTSUITE_OVERRIDE_LIBS = testsuite/uname.la testsuite/path.la \
+			  testsuite/init_module.la
+TESTSUITE_OVERRIDE_LIBS_LDFLAGS = avoid-version -module -shared -export-dynamic \
+				  -rpath /nowhere -ldl
 
-testsuite/uname.so: testsuite/uname.c
-	$(CREATE_SHARED_OVERRIDE_LIB)
+check_LTLIBRARIES = $(TESTSUITE_OVERRIDE_LIBS)
 
-testsuite/path.so: testsuite/path.c
-	$(CREATE_SHARED_OVERRIDE_LIB)
+testsuite_uname_la_LDFLAGS = $(TESTSUITE_OVERRIDE_LIBS_LDFLAGS)
+testsuite_path_la_LDFLAGS = $(TESTSUITE_OVERRIDE_LIBS_LDFLAGS)
 
-testsuite/init_module.so: testsuite/init_module.c $(abs_top_builddir)/libkmod/.libs/libkmod-private.a
-	$(CREATE_SHARED_OVERRIDE_LIB)
-
-EXTRA_DIST += testsuite/uname.c testsuite/path.c testsuite/init_module.c
-CLEANFILES += testsuite/uname.so testsuite/path.so testsuite/init_module.so
-
-testsuite/rootfs:
-	$(AM_V_GEN) tar -C testsuite/ \
-		-xJf $(top_srcdir)/testsuite/rootfs.tar.xz
+testsuite_init_module_la_LDFLAGS = $(TESTSUITE_OVERRIDE_LIBS_LDFLAGS)
+testsuite_init_module_la_SOURCES = testsuite/init_module.c \
+				   testsuite/stripped_module.h
+testsuite_init_module_la_LIBADD = libkmod/libkmod-private.la
 
 testsuite-distclean:
 	-rm -rf testsuite/rootfs
@@ -165,13 +158,10 @@ TESTSUITE_CPPFLAGS = $(AM_CPPFLAGS) \
 		     -DTESTSUITE_ROOTFS=\"$(abs_top_builddir)/testsuite/rootfs/\" \
 		     -DABS_TOP_BUILDDIR=\"$(abs_top_builddir)\"
 
-check_LTLIBRARIES = testsuite/libtestsuite.la
+check_LTLIBRARIES += testsuite/libtestsuite.la
 testsuite_libtestsuite_la_SOURCES = testsuite/testsuite.c \
 				    testsuite/testsuite.h
-testsuite_libtestsuite_la_DEPENDENCIES = testsuite/uname.so \
-					 testsuite/path.so \
-					 testsuite/init_module.so \
-					 testsuite/rootfs
+testsuite_libtestsuite_la_DEPENDENCIES = testsuite/rootfs
 testsuite_libtestsuite_la_CPPFLAGS = $(TESTSUITE_CPPFLAGS)
 
 TESTSUITE = testsuite/test-init testsuite/test-testsuite testsuite/test-loaded \
