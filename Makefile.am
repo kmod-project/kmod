@@ -133,6 +133,10 @@ endif
 # TESTSUITE
 # ------------------------------------------------------------------------------
 
+testsuite/rootfs:
+	$(AM_V_GEN) tar -C testsuite/ \
+		-xJf $(top_srcdir)/testsuite/rootfs.tar.xz
+
 TESTSUITE_OVERRIDE_LIBS = testsuite/uname.la testsuite/path.la \
 			  testsuite/init_module.la \
 			  testsuite/delete_module.la
