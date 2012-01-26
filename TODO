@@ -8,9 +8,6 @@ Features:
 * index: drop the "open(), seek(), read()" implementation and use another one
   with mmap(). When lookup() is called and the file is not mmaped, mmap it.
 
-* create test-mock library to be LD_PRELOAD'ed before running the binaries
-  so we're able to create unit tests
-
 * review API, maybe unify all of these setters:
    - kmod_module_version_get_symbol()
    - kmod_module_version_get_crc()

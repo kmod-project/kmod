@@ -134,7 +134,8 @@ endif
 # ------------------------------------------------------------------------------
 
 TESTSUITE_OVERRIDE_LIBS = testsuite/uname.la testsuite/path.la \
-			  testsuite/init_module.la
+			  testsuite/init_module.la \
+			  testsuite/delete_module.la
 TESTSUITE_OVERRIDE_LIBS_LDFLAGS = avoid-version -module -shared -export-dynamic \
 				  -rpath /nowhere -ldl
 
@@ -143,6 +144,7 @@ check_LTLIBRARIES = $(TESTSUITE_OVERRIDE_LIBS)
 testsuite_uname_la_LDFLAGS = $(TESTSUITE_OVERRIDE_LIBS_LDFLAGS)
 testsuite_path_la_LDFLAGS = $(TESTSUITE_OVERRIDE_LIBS_LDFLAGS)
 
+testsuite_delete_module_la_LDFLAGS = $(TESTSUITE_OVERRIDE_LIBS_LDFLAGS)
 testsuite_init_module_la_LDFLAGS = $(TESTSUITE_OVERRIDE_LIBS_LDFLAGS)
 testsuite_init_module_la_SOURCES = testsuite/init_module.c \
 				   testsuite/stripped_module.h

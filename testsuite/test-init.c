@@ -64,9 +64,47 @@ static const struct test stest_insert = {
 	.need_spawn = true,
 };
 
+static int test_remove(const struct test *t)
+{
+	struct kmod_ctx *ctx;
+	struct kmod_module *mod;
+	const char *null_config = NULL;
+	int err;
+
+	ctx = kmod_new(NULL, &null_config);
+	if (ctx == NULL)
+		exit(EXIT_FAILURE);
+
+	err = kmod_module_new_from_name(ctx, "ext4", &mod);
+	if (err != 0) {
+		ERR("could not create module from name: %m\n");
+		exit(EXIT_FAILURE);
+	}
+
+	err = kmod_module_remove_module(mod, 0);
+	if (err != 0) {
+		ERR("could not remove module: %m\n");
+		exit(EXIT_FAILURE);
+	}
+	kmod_unref(ctx);
+
+	exit(EXIT_SUCCESS);
+}
+static const struct test stest_remove = {
+	.name = "test_remove",
+	.description = "test if libkmod's remove_module returns ok",
+	.func = test_remove,
+	.config = {
+		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-modinfo/",
+		[TC_DELETE_MODULE_RETCODES] = "bla:1:20",
+	},
+	.need_spawn = true,
+};
+
 static const struct test *tests[] = {
 	&stest_initlib,
 	&stest_insert,
+	&stest_remove,
 	NULL,
 };
 
