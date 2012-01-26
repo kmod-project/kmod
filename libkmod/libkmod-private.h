@@ -164,6 +164,12 @@ int kmod_elf_get_dependency_symbols(const struct kmod_elf *elf, struct kmod_modv
 int kmod_elf_strip_section(struct kmod_elf *elf, const char *section) __must_check __attribute__((nonnull(1,2)));
 int kmod_elf_strip_vermagic(struct kmod_elf *elf) __must_check __attribute__((nonnull(1)));
 
+/*
+ * Debug mock lib need to find section ".gnu.linkonce.this_module" in order to
+ * get modname
+ */
+int kmod_elf_get_section(const struct kmod_elf *elf, const char *section, const void **buf, uint64_t *buf_size) __must_check __attribute__((nonnull(1,2,3,4)));
+
 /* util functions */
 #include "libkmod-util.h"
 

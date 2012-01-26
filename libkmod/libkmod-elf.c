@@ -375,7 +375,7 @@ const void *kmod_elf_get_memory(const struct kmod_elf *elf)
 	return elf->memory;
 }
 
-static int kmod_elf_get_section(const struct kmod_elf *elf, const char *section, const void **buf, uint64_t *buf_size)
+int kmod_elf_get_section(const struct kmod_elf *elf, const char *section, const void **buf, uint64_t *buf_size)
 {
 	uint64_t nameslen;
 	const char *names = elf_get_strings_section(elf, &nameslen);
