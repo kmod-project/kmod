@@ -53,7 +53,7 @@ static int strip_vermagic = 0;
 static int remove_dependencies = 0;
 static int quiet_inuse = 0;
 
-static const char cmdopts_s[] = "arRibft:DcnC:d:S:sqvVh";
+static const char cmdopts_s[] = "arRibfDcnC:d:S:sqvVh";
 static const struct option cmdopts[] = {
 	{"all", no_argument, 0, 'a'},
 	{"remove", no_argument, 0, 'r'},
@@ -67,7 +67,6 @@ static const struct option cmdopts[] = {
 	{"force-modversion", no_argument, 0, 2},
 	{"force-vermagic", no_argument, 0, 1},
 
-	{"type", required_argument, 0, 't'},
 	{"show-depends", no_argument, 0, 'D'},
 	{"showconfig", no_argument, 0, 'c'},
 	{"show-config", no_argument, 0, 'c'},
@@ -97,7 +96,6 @@ static void help(const char *progname)
 		"\t%s [options] -a [-i] [-b] modulename [modulename...]\n"
 		"\t%s [options] -r [-i] modulename\n"
 		"\t%s [options] -r -a [-i] modulename [modulename...]\n"
-		"\t%s [options] -l [-t dirname] [wildcard]\n"
 		"\t%s [options] -c\n"
 		"\t%s [options] --dump-modversions filename\n"
 		"Management Options:\n"
@@ -118,7 +116,6 @@ static void help(const char *progname)
 		"\t    --force-vermagic        Ignore module's version magic\n"
 		"\n"
 		"Query Options:\n"
-		"\t-t, --type=DIR              Limit type used by --list\n"
 		"\t-D, --show-depends          Only print module dependencies and exit\n"
 		"\t-c, --showconfig            Print out known configuration and exit\n"
 		"\t-c, --show-config           Same as --showconfig\n"
@@ -988,7 +985,6 @@ static int do_modprobe(int argc, char **orig_argv)
 	const char *dirname = NULL;
 	const char *root = NULL;
 	const char *kversion = NULL;
-	const char *list_type = NULL;
 	int use_all = 0;
 	int do_remove = 0;
 	int do_show_config = 0;
@@ -1038,9 +1034,6 @@ static int do_modprobe(int argc, char **orig_argv)
 			break;
 		case 1:
 			strip_vermagic = 1;
-			break;
-		case 't':
-			list_type = optarg;
 			break;
 		case 'D':
 			ignore_loaded = 1;
@@ -1119,12 +1112,6 @@ static int do_modprobe(int argc, char **orig_argv)
 			fputs("Error: missing parameters. See -h.\n", stderr);
 			goto cmdline_failed;
 		}
-	}
-
-	if (list_type != NULL) {
-		fputs("Error: -t (--type) only supported with -l (--list).\n",
-								stderr);
-		goto cmdline_failed;
 	}
 
 	if (root != NULL || kversion != NULL) {
