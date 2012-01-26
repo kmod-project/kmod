@@ -135,8 +135,7 @@ static void help(const char *progname)
 		"\t-v, --verbose               enables more messages\n"
 		"\t-V, --version               show version\n"
 		"\t-h, --help                  show this help\n",
-		progname, progname, progname, progname, progname, progname,
-		progname);
+		progname, progname, progname, progname, progname, progname);
 }
 
 static inline void _show(const char *fmt, ...)
