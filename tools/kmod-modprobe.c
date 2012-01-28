@@ -244,6 +244,7 @@ static int show_config(struct kmod_ctx *ctx)
 		kmod_config_iter_free_iter(iter);
 	}
 
+	puts("\n# End of configuration files. Dumping indexes now:\n");
 	fflush(stdout);
 
 	kmod_dump_index(ctx, KMOD_INDEX_MODULES_ALIAS, STDOUT_FILENO);
