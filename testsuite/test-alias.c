@@ -42,7 +42,6 @@ static int alias_1(const struct test *t)
 	for (alias = input; *alias != NULL; alias++) {
 		int ret;
 
-		memset(buf, 0, sizeof(buf));
 		ret = alias_normalize(*alias, buf, &len);
 		printf("input   %s\n", *alias);
 		printf("return  %d\n", ret);
