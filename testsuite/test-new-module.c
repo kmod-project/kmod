@@ -72,8 +72,58 @@ static const struct test sfrom_name = {
 	},
 };
 
+
+static int from_alias(const struct test *t)
+{
+	static const char *modnames[] = {
+		"ext4.*",
+		NULL,
+	};
+	const char **p;
+	struct kmod_ctx *ctx;
+	int err;
+
+	ctx = kmod_new(NULL, NULL);
+	if (ctx == NULL)
+		exit(EXIT_FAILURE);
+
+	for (p = modnames; p != NULL; p++) {
+		struct kmod_list *l, *list = NULL;
+
+		err = kmod_module_new_from_lookup(ctx, *p, &list);
+		if (err < 0)
+			exit(EXIT_SUCCESS);
+
+		kmod_list_foreach(l, list) {
+			struct kmod_module *m;
+			m = kmod_module_get_module(l);
+
+			printf("modname: %s\n", kmod_module_get_name(m));
+			kmod_module_unref(m);
+		}
+		kmod_module_unref_list(list);
+	}
+
+	kmod_unref(ctx);
+
+	return EXIT_SUCCESS;
+}
+static const struct test sfrom_alias = {
+	.name = "sfrom_alias",
+	.description = "check if aliases are parsed correctly",
+	.func = from_alias,
+	.config = {
+		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-new-module/from_alias/",
+	},
+	.need_spawn = true,
+	.output = {
+		.stdout = TESTSUITE_ROOTFS "test-new-module/from_alias/correct.txt",
+	},
+};
+
 static const struct test *tests[] = {
 	&sfrom_name,
+	&sfrom_alias,
 	NULL,
 };
 
