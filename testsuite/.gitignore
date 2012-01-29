@@ -8,3 +8,4 @@ test-loaded
 test-testsuite
 test-modinfo
 test-alias
+test-new-module
