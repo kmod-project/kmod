@@ -68,6 +68,11 @@ struct kmod_module {
 		bool install_commands : 1;
 		bool remove_commands : 1;
 	} init;
+
+	/*
+	 * private field used by kmod_module_get_probe_list() to detect
+	 * dependency loops
+	 */
 	bool visited : 1;
 };
 
@@ -834,26 +839,6 @@ static bool module_is_blacklisted(struct kmod_module *mod)
 	return false;
 }
 
-#define RECURSION_CHECK_STEP 10
-#define RET_CHECK_NOLOOP_OR_FAIL(_ret, _flags, _label)  \
-	do { \
-		if (_ret < 0) { \
-			if (_ret == -ELOOP || _ret == -ENOMEM \
-					|| (_flags & KMOD_PROBE_STOP_ON_FAILURE)) \
-			goto _label; \
-		} \
-	} while (0)
-
-struct probe_insert_cb {
-	int (*run_install)(struct kmod_module *m, const char *cmd, void *data);
-	void *data;
-};
-
-int module_probe_insert_module(struct kmod_module *mod,
-				unsigned int flags, const char *extra_options,
-				struct probe_insert_cb *cb,
-				struct kmod_list *rec, unsigned int reccount);
-
 static int command_do(struct kmod_module *mod, const char *type,
 							const char *cmd)
 {
@@ -875,6 +860,11 @@ static int command_do(struct kmod_module *mod, const char *type,
 
 	return err;
 }
+
+struct probe_insert_cb {
+	int (*run_install)(struct kmod_module *m, const char *cmd, void *data);
+	void *data;
+};
 
 static int module_do_install_commands(struct kmod_module *mod,
 					const char *options,
@@ -928,69 +918,6 @@ static int module_do_install_commands(struct kmod_module *mod,
 	return err;
 }
 
-static bool module_dep_has_loop(const struct kmod_list *deps,
-					struct kmod_list *rec,
-					unsigned int reccount)
-{
-	struct kmod_list *l;
-	struct kmod_module *mod;
-
-	if (reccount < RECURSION_CHECK_STEP || deps == NULL)
-		return false;
-
-	mod = deps->data;
-	reccount = 0;
-	kmod_list_foreach(l, rec) {
-		struct kmod_list *loop;
-
-		if (l->data != mod)
-			continue;
-
-		ERR(mod->ctx, "Dependency loop detected while inserting '%s'. Operation aborted\n",
-								mod->name);
-
-		for (loop = l; loop != NULL;
-				loop = kmod_list_next(rec, loop)) {
-			struct kmod_module *m = loop->data;
-			ERR(mod->ctx, "%s\n", m->name);
-		}
-
-		return true;
-	}
-
-	return false;
-}
-
-static int module_do_insmod_dep(const struct kmod_list *deps,
-				unsigned int flags, struct probe_insert_cb *cb,
-				struct kmod_list *rec, unsigned int reccount)
-{
-	const struct kmod_list *d;
-	int err = 0;
-
-	if (module_dep_has_loop(deps, rec, reccount))
-		return -ELOOP;
-
-	kmod_list_foreach(d, deps) {
-		struct kmod_module *dm = d->data;
-		struct kmod_list *tmp;
-
-		tmp = kmod_list_append(rec, dm);
-		if (tmp == NULL)
-			return -ENOMEM;
-		rec = tmp;
-
-		err = module_probe_insert_module(dm, flags, NULL, cb,
-							rec, reccount + 1);
-
-		rec = kmod_list_remove_n_latest(rec, 1);
-		RET_CHECK_NOLOOP_OR_FAIL(err, flags, finish);
-	}
-
-finish:
-	return err;
-}
-
 static char *module_options_concat(const char *opt, const char *xopt)
 {
 	// TODO: we might need to check if xopt overrides options on opt
@@ -1017,90 +944,108 @@ static char *module_options_concat(const char *opt, const char *xopt)
 	return r;
 }
 
-/*
- * Do the probe_insert work recursively. We traverse the dependencies in
- * depth-first order, checking the following conditions:
- *
- * - Is blacklisted?
- * - Is install command?
- * - Is already loaded?
- *
- * Then we insert the modules (calling module_do_insmod_dep(), which will
- * re-enter this function) needed to load @mod in the following order:
- *
- * 1) pre-softdep
- * 2) dependency
- * 3) @mod
- * 4) post-softdep
- */
-int module_probe_insert_module(struct kmod_module *mod,
-			unsigned int flags, const char *extra_options,
-			struct probe_insert_cb *cb,
-			struct kmod_list *rec, unsigned int reccount)
+static int __kmod_module_get_probe_list(struct kmod_module *mod,
+						struct kmod_list **list);
+
+/* re-entrant */
+static int __kmod_module_fill_softdep(struct kmod_module *mod,
+						struct kmod_list **list)
 {
+	struct kmod_list *pre = NULL, *post = NULL, *l;
 	int err;
-	const char *install_cmds;
-	const struct kmod_list *dep;
-	struct kmod_list *pre = NULL, *post = NULL;
-	char *options;
-
-	if ((flags & KMOD_PROBE_STOP_ON_BLACKLIST)
-					&& module_is_blacklisted(mod)) {
-		DBG(mod->ctx, "Stopping on '%s': blacklisted\n", mod->name);
-		return -EINVAL;
-	}
-
-	install_cmds = kmod_module_get_install_commands(mod);
-	if (install_cmds != NULL) {
-		if (flags & KMOD_PROBE_STOP_ON_COMMAND) {
-			DBG(mod->ctx, "Stopping on '%s': install command\n",
-								mod->name);
-			return -EINVAL;
-		}
-	} else {
-		int state = kmod_module_get_initstate(mod);
-
-		if (state == KMOD_MODULE_LIVE ||
-					state == KMOD_MODULE_COMING ||
-					state == KMOD_MODULE_BUILTIN)
-			return 0;
-	}
 
 	err = kmod_module_get_softdeps(mod, &pre, &post);
-	if (err < 0)
-		return err;
+	if (err < 0) {
+		ERR(mod->ctx, "could not get softdep: %s", strerror(-err));
+		goto fail;
+	}
 
-	err = module_do_insmod_dep(pre, flags, cb, rec, reccount);
-	RET_CHECK_NOLOOP_OR_FAIL(err, flags, finish);
+	kmod_list_foreach(l, pre) {
+		struct kmod_module *m = l->data;
+		err = __kmod_module_get_probe_list(m, list);
+		if (err < 0)
+			goto fail;
+	}
 
-	dep = module_get_dependencies_noref(mod);
-	err = module_do_insmod_dep(dep, flags, cb, rec, reccount);
-	RET_CHECK_NOLOOP_OR_FAIL(err, flags, finish);
+	l = kmod_list_append(*list, kmod_module_ref(mod));
+	if (l == NULL) {
+		kmod_module_unref(mod);
+		err = -ENOMEM;
+		goto fail;
+	}
+	*list = l;
+	mod->visited = true;
 
-	options = module_options_concat(kmod_module_get_options(mod),
-							extra_options);
+	kmod_list_foreach(l, post) {
+		struct kmod_module *m = l->data;
+		err = __kmod_module_get_probe_list(m, list);
+		if (err < 0)
+			goto fail;
+	}
 
-	if (install_cmds != NULL)
-		err = module_do_install_commands(mod, options, cb);
-	else
-		err = kmod_module_insert_module(mod, flags, options);
-
-	free(options);
-
-	/*
-	 * Ignore "already loaded" error. We need to check here because of
-	 * race conditions. We checked first if module was already loaded but
-	 * it may have been loaded between the check and the moment we try to
-	 * insert it.
-	 */
-	if (err < 0 && err != -EEXIST && (flags & KMOD_PROBE_STOP_ON_FAILURE))
-		goto finish;
-
-	err = module_do_insmod_dep(post, flags, cb, rec, reccount);
-
-finish:
+fail:
 	kmod_module_unref_list(pre);
 	kmod_module_unref_list(post);
+
+	return err;
+}
+
+/* re-entrant */
+static int __kmod_module_get_probe_list(struct kmod_module *mod,
+						struct kmod_list **list)
+{
+	struct kmod_list *dep, *l;
+	int err = 0;
+
+	if (mod->visited) {
+		DBG(mod->ctx, "Ignore module '%s': already visited\n",
+								mod->name);
+		return 0;
+	}
+
+	dep = kmod_module_get_dependencies(mod);
+
+	/*
+	 * Use its softdeps and commands: just put it in the end of the list
+	 */
+	l = kmod_list_append(dep, kmod_module_ref(mod));
+	if (l == NULL) {
+		kmod_module_unref(mod);
+		err = -ENOMEM;
+		goto finish;
+	}
+	dep = l;
+
+	kmod_list_foreach(l, dep) {
+		struct kmod_module *m = l->data;
+		err = __kmod_module_fill_softdep(m, list);
+		if (err < 0)
+			break;
+	}
+
+finish:
+	kmod_module_unref_list(dep);
+	return err;
+}
+
+static int kmod_module_get_probe_list(struct kmod_module *mod,
+						struct kmod_list **list)
+{
+	int err;
+
+	assert(mod != NULL);
+	assert(list != NULL && *list == NULL);
+
+	/*
+	 * Make sure we don't get screwed by previous calls to this function
+	 */
+	kmod_set_modules_visited(mod->ctx, false);
+
+	err = __kmod_module_get_probe_list(mod, list);
+	if (err < 0) {
+		kmod_module_unref_list(*list);
+		*list = NULL;
+	}
 
 	return err;
 }
@@ -1110,19 +1055,22 @@ finish:
  * @mod: kmod module
  * @flags: flags are not passed to Linux Kernel, but instead they dictate the
  * behavior of this function.
- * @extra_options: module's options to pass to Linux Kernel.
- * @run_install: function to run when @mod is backed by a install command.
+ * @extra_options: module's options to pass to Linux Kernel. It applies only
+ * to @mod, not to its dependencies.
+ * @run_install: function to run when @mod is backed by an install command.
  * @data: data to give back to @run_install callback
  *
- * Insert a module in Linux kernel resolving dependencies, soft dependencies
+ * Insert a module in Linux kernel resolving dependencies, soft dependencies,
  * install commands and applying blacklist.
  *
  * If @run_install is NULL, and the flag KMOD_PROBE_STOP_ON_COMMANDS is not
- * given, this function will fork and exec by calling system(3). If you need
- * control over the execution of an install command, give a callback function
- * in @run_install.
+ * given, this function will fork and exec by calling system(3). Don't pass a
+ * NULL argument in @run_install if your binary is setuid/setgid (see warning
+ * in system(3)). If you need control over the execution of an install
+ * command, give a callback function instead.
  *
- * Returns: 0 on success or < 0 on failure.
+ * Returns: 0 on success, > 0 if stopped by a reason given in @flags or < 0 on
+ * failure.
  */
 KMOD_EXPORT int kmod_module_probe_insert_module(struct kmod_module *mod,
 			unsigned int flags, const char *extra_options,
@@ -1130,18 +1078,88 @@ KMOD_EXPORT int kmod_module_probe_insert_module(struct kmod_module *mod,
 						const char *cmd, void *data),
 			const void *data)
 {
+	struct kmod_list *list = NULL, *l;
 	struct probe_insert_cb cb;
+	int err;
+
+	if (mod == NULL)
+		return -ENOENT;
+
+	err = flags & (KMOD_PROBE_APPLY_BLACKLIST |
+					KMOD_PROBE_APPLY_BLACKLIST_ALL);
+	if (err != 0) {
+		if (module_is_blacklisted(mod))
+			return err;
+	}
+
+	err = kmod_module_get_probe_list(mod, &list);
+	if (err < 0)
+		return err;
+
+	if (flags & KMOD_PROBE_APPLY_BLACKLIST_ALL) {
+		struct kmod_list *filtered = NULL;
+
+		err = kmod_module_get_filtered_blacklist(mod->ctx,
+							list, &filtered);
+		if (err < 0)
+			return err;
+
+		kmod_module_unref_list(list);
+		if (filtered == NULL)
+			return KMOD_PROBE_APPLY_BLACKLIST_ALL;
+
+		list = filtered;
+	}
 
 	cb.run_install = run_install;
 	cb.data = (void *) data;
 
-	return  module_probe_insert_module(mod, flags, extra_options, &cb,
-								NULL, 0);
+	kmod_list_foreach(l, list) {
+		struct kmod_module *m = l->data;
+		const char *moptions = kmod_module_get_options(m);
+		const char *cmd = kmod_module_get_install_commands(m);
+		char *options = module_options_concat(moptions,
+					m == mod ? extra_options : NULL);
+
+		if (cmd != NULL) {
+			if (flags & KMOD_PROBE_STOP_ON_COMMAND) {
+				DBG(mod->ctx, "Stopping on '%s': "
+					"install command\n", m->name);
+				err = KMOD_PROBE_STOP_ON_COMMAND;
+				free(options);
+				break;
+			}
+			err = module_do_install_commands(m, options, &cb);
+		} else {
+			int state = kmod_module_get_initstate(m);
+
+			if (state == KMOD_MODULE_LIVE ||
+					state == KMOD_MODULE_COMING ||
+					state == KMOD_MODULE_BUILTIN) {
+				DBG(mod->ctx, "Ignoring '%s': "
+					"module already loaded\n", m->name);
+				free(options);
+				continue;
+			}
+			err = kmod_module_insert_module(m, flags, options);
+		}
+
+		free(options);
+
+		/*
+		 * Ignore "already loaded" error. We need to check here
+		 * because of race conditions. We checked first if module was
+		 * already loaded but it may have been loaded between the
+		 * check and the moment we try to insert it.
+		 */
+		if (err < 0 && err != -EEXIST &&
+				(flags & KMOD_PROBE_STOP_ON_DEP_FAILURE))
+			break;
+	}
+
+	kmod_module_unref_list(list);
+	return err;
 }
-
-#undef RECURSION_CHECK_STEP
-#undef RET_CHECK_NOLOOP_OR_FAIL
-
 
 /**
  * kmod_module_get_options:
