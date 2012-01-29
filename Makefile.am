@@ -151,7 +151,7 @@ testsuite_path_la_LDFLAGS = $(TESTSUITE_OVERRIDE_LIBS_LDFLAGS)
 testsuite_delete_module_la_LDFLAGS = $(TESTSUITE_OVERRIDE_LIBS_LDFLAGS)
 testsuite_init_module_la_LDFLAGS = $(TESTSUITE_OVERRIDE_LIBS_LDFLAGS)
 testsuite_init_module_la_SOURCES = testsuite/init_module.c \
-				   testsuite/stripped_module.h
+				   testsuite/stripped-module.h
 testsuite_init_module_la_LIBADD = libkmod/libkmod-private.la
 
 testsuite-distclean:
