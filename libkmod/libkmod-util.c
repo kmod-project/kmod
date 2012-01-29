@@ -134,8 +134,7 @@ inline int alias_normalize(const char *alias, char buf[PATH_MAX], size_t *len)
 		case ']':
 			return -EINVAL;
 		case '[':
-			while (alias[s] != ']' &&
-					alias[s] != '.' && alias[s] != '\0') {
+			while (alias[s] != ']' && alias[s] != '\0') {
 				buf[s] = alias[s];
 				s++;
 			}
@@ -146,7 +145,6 @@ inline int alias_normalize(const char *alias, char buf[PATH_MAX], size_t *len)
 			buf[s] = alias[s];
 			break;
 		case '\0':
-		case '.':
 			goto finish;
 		default:
 			buf[s] = c;
