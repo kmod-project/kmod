@@ -133,7 +133,7 @@ endif
 # TESTSUITE
 # ------------------------------------------------------------------------------
 
-testsuite/rootfs:
+testsuite/rootfs: $(top_srcdir)/testsuite/rootfs.tar.xz
 	$(AM_V_GEN) tar -C testsuite/ \
 		-xJf $(top_srcdir)/testsuite/rootfs.tar.xz
 
