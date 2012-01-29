@@ -74,6 +74,12 @@ struct kmod_module {
 	 * dependency loops
 	 */
 	bool visited : 1;
+
+	/*
+	 * set by kmod_module_get_probe_list: indicates for probe_insert()
+	 * whether the module's command and softdep should be ignored
+	 */
+	bool ignorecmd : 1;
 };
 
 static inline const char *path_join(const char *path, size_t prefixlen,
@@ -945,6 +951,7 @@ static char *module_options_concat(const char *opt, const char *xopt)
 }
 
 static int __kmod_module_get_probe_list(struct kmod_module *mod,
+						bool ignorecmd,
 						struct kmod_list **list);
 
 /* re-entrant */
@@ -962,7 +969,7 @@ static int __kmod_module_fill_softdep(struct kmod_module *mod,
 
 	kmod_list_foreach(l, pre) {
 		struct kmod_module *m = l->data;
-		err = __kmod_module_get_probe_list(m, list);
+		err = __kmod_module_get_probe_list(m, false, list);
 		if (err < 0)
 			goto fail;
 	}
@@ -975,10 +982,11 @@ static int __kmod_module_fill_softdep(struct kmod_module *mod,
 	}
 	*list = l;
 	mod->visited = true;
+	mod->ignorecmd = (pre != NULL || post != NULL);
 
 	kmod_list_foreach(l, post) {
 		struct kmod_module *m = l->data;
-		err = __kmod_module_get_probe_list(m, list);
+		err = __kmod_module_get_probe_list(m, false, list);
 		if (err < 0)
 			goto fail;
 	}
@@ -992,6 +1000,7 @@ fail:
 
 /* re-entrant */
 static int __kmod_module_get_probe_list(struct kmod_module *mod,
+						bool ignorecmd,
 						struct kmod_list **list)
 {
 	struct kmod_list *dep, *l;
@@ -1004,24 +1013,24 @@ static int __kmod_module_get_probe_list(struct kmod_module *mod,
 	}
 
 	dep = kmod_module_get_dependencies(mod);
-
-	/*
-	 * Use its softdeps and commands: just put it in the end of the list
-	 */
-	l = kmod_list_append(dep, kmod_module_ref(mod));
-	if (l == NULL) {
-		kmod_module_unref(mod);
-		err = -ENOMEM;
-		goto finish;
-	}
-	dep = l;
-
 	kmod_list_foreach(l, dep) {
 		struct kmod_module *m = l->data;
 		err = __kmod_module_fill_softdep(m, list);
 		if (err < 0)
-			break;
+			goto finish;
 	}
+
+	if (ignorecmd) {
+		l = kmod_list_append(*list, kmod_module_ref(mod));
+		if (l == NULL) {
+			kmod_module_unref(mod);
+			err = -ENOMEM;
+			goto finish;
+		}
+		*list = l;
+		mod->ignorecmd = true;
+	} else
+		err = __kmod_module_fill_softdep(mod, list);
 
 finish:
 	kmod_module_unref_list(dep);
@@ -1029,6 +1038,7 @@ finish:
 }
 
 static int kmod_module_get_probe_list(struct kmod_module *mod,
+						bool ignorecmd,
 						struct kmod_list **list)
 {
 	int err;
@@ -1041,7 +1051,7 @@ static int kmod_module_get_probe_list(struct kmod_module *mod,
 	 */
 	kmod_set_modules_visited(mod->ctx, false);
 
-	err = __kmod_module_get_probe_list(mod, list);
+	err = __kmod_module_get_probe_list(mod, ignorecmd, list);
 	if (err < 0) {
 		kmod_module_unref_list(*list);
 		*list = NULL;
@@ -1092,7 +1102,8 @@ KMOD_EXPORT int kmod_module_probe_insert_module(struct kmod_module *mod,
 			return err;
 	}
 
-	err = kmod_module_get_probe_list(mod, &list);
+	err = kmod_module_get_probe_list(mod,
+				!!(flags & KMOD_PROBE_IGNORE_COMMAND), &list);
 	if (err < 0)
 		return err;
 
@@ -1121,7 +1132,7 @@ KMOD_EXPORT int kmod_module_probe_insert_module(struct kmod_module *mod,
 		char *options = module_options_concat(moptions,
 					m == mod ? extra_options : NULL);
 
-		if (cmd != NULL) {
+		if (cmd != NULL && !m->ignorecmd) {
 			if (flags & KMOD_PROBE_STOP_ON_COMMAND) {
 				DBG(mod->ctx, "Stopping on '%s': "
 					"install command\n", m->name);
