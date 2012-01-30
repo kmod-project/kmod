@@ -1199,8 +1199,7 @@ KMOD_EXPORT int kmod_module_probe_insert_module(struct kmod_module *mod,
 			break;
 		}
 
-		if (err < 0 && err != -EEXIST &&
-				(flags & KMOD_PROBE_STOP_ON_DEP_FAILURE))
+		if (err < 0 && err != -EEXIST)
 			break;
 	}
 
