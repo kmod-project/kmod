@@ -157,24 +157,6 @@ TS_EXPORT int stat(const char *path, struct stat *st)
 	return _stat(p, st);
 }
 
-TS_EXPORT int stat64(const char *path, struct stat64 *st)
-{
-	const char *p;
-	char buf[PATH_MAX * 2];
-	static int (*_stat64)(const char *path, struct stat64 *buf);
-
-	if (!get_rootpath(__func__))
-		return -1;
-
-	_stat64 = get_libc_func("stat64");
-
-	p = trap_path(path, buf);
-	if (p == NULL)
-		return -1;
-
-	return _stat64(p, st);
-}
-
 TS_EXPORT int __xstat(int ver, const char *path, struct stat *st)
 {
 	const char *p;
