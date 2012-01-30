@@ -48,6 +48,7 @@ struct test {
 	testfunc func;
 	const char *config[_TC_LAST];
 	bool need_spawn;
+	bool expected_fail;
 };
 
 

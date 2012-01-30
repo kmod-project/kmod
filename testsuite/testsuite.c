@@ -407,21 +407,40 @@ static inline int test_run_parent(const struct test *t, int fdout[2],
 				WTERMSIG(err), strsignal(WTERMSIG(err)));
 	}
 
-	if (err == 0) {
-		if (matchout)
-			LOG("%sPASSED%s: %s\n",
-				ANSI_HIGHLIGHT_GREEN_ON, ANSI_HIGHLIGHT_OFF,
-				t->name);
-		else {
-			ERR("%sFAILED%s: exit ok but outputs do not match: %s\n",
-				ANSI_HIGHLIGHT_RED_ON, ANSI_HIGHLIGHT_OFF,
-				t->name);
-			err = EXIT_FAILURE;
+	if (t->expected_fail == false) {
+		if (err == 0) {
+			if (matchout)
+				LOG("%sPASSED%s: %s\n",
+					ANSI_HIGHLIGHT_GREEN_ON, ANSI_HIGHLIGHT_OFF,
+					t->name);
+			else {
+				ERR("%sFAILED%s: exit ok but outputs do not match: %s\n",
+					ANSI_HIGHLIGHT_RED_ON, ANSI_HIGHLIGHT_OFF,
+					t->name);
+				err = EXIT_FAILURE;
+			}
+		} else
+			ERR("%sFAILED%s: %s\n",
+					ANSI_HIGHLIGHT_RED_ON, ANSI_HIGHLIGHT_OFF,
+					t->name);
+	} else {
+		if (err == 0) {
+			if (matchout) {
+				LOG("%sUNEXPECTED PASS%s: %s\n",
+					ANSI_HIGHLIGHT_GREEN_ON, ANSI_HIGHLIGHT_OFF,
+					t->name);
+				err = EXIT_FAILURE;
+			} else
+				LOG("%sEXPECTED FAIL%s: exit ok but outputs do not match: %s\n",
+					ANSI_HIGHLIGHT_GREEN_ON, ANSI_HIGHLIGHT_OFF,
+					t->name);
+		} else {
+			ERR("%sEXPECTED FAIL%s: %s\n",
+					ANSI_HIGHLIGHT_GREEN_ON, ANSI_HIGHLIGHT_OFF,
+					t->name);
+			err = EXIT_SUCCESS;
 		}
-	} else
-		ERR("%sFAILED%s: %s\n",
-				ANSI_HIGHLIGHT_RED_ON, ANSI_HIGHLIGHT_OFF,
-				t->name);
+	}
 
 	return err;
 }
