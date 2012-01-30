@@ -163,7 +163,8 @@ int kmod_module_insert_module(struct kmod_module *mod, unsigned int flags, const
 int kmod_module_probe_insert_module(struct kmod_module *mod,
 			unsigned int flags, const char *extra_options,
 			int (*run_install)(struct kmod_module *m, const char *cmdline, void *data),
-			const void *data);
+			const void *data,
+			void (*print_action)(struct kmod_module *m, bool install, const char *options));
 
 const char *kmod_module_get_name(const struct kmod_module *mod);
 const char *kmod_module_get_path(const struct kmod_module *mod);

@@ -1090,6 +1090,9 @@ static int kmod_module_get_probe_list(struct kmod_module *mod,
  * to @mod, not to its dependencies.
  * @run_install: function to run when @mod is backed by an install command.
  * @data: data to give back to @run_install callback
+ * @print_action: function to call with the action being taken (install or
+ * insmod). It's useful for tools like modprobe when running with verbose
+ * output or in dry-run mode.
  *
  * Insert a module in Linux kernel resolving dependencies, soft dependencies,
  * install commands and applying blacklist.
@@ -1107,7 +1110,10 @@ KMOD_EXPORT int kmod_module_probe_insert_module(struct kmod_module *mod,
 			unsigned int flags, const char *extra_options,
 			int (*run_install)(struct kmod_module *m,
 						const char *cmd, void *data),
-			const void *data)
+			const void *data,
+			void (*print_action)(struct kmod_module *m,
+						bool install,
+						const char *options))
 {
 	struct kmod_list *list = NULL, *l;
 	struct probe_insert_cb cb;
@@ -1161,6 +1167,9 @@ KMOD_EXPORT int kmod_module_probe_insert_module(struct kmod_module *mod,
 				free(options);
 				break;
 			}
+			if (print_action != NULL)
+				print_action(m, true, options ?: "");
+
 			err = module_do_install_commands(m, options, &cb);
 		} else {
 			int state = kmod_module_get_initstate(m);
@@ -1178,6 +1187,9 @@ KMOD_EXPORT int kmod_module_probe_insert_module(struct kmod_module *mod,
 				free(options);
 				continue;
 			}
+			if (print_action != NULL)
+				print_action(m, false, options ?: "");
+
 			err = kmod_module_insert_module(m, flags, options);
 		}
 
