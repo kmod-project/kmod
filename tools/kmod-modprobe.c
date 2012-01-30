@@ -495,212 +495,6 @@ static int rmmod_all(struct kmod_ctx *ctx, char **args, int nargs)
 	return err;
 }
 
-#define INSMOD_RECURSION_STEP 15
-
-static int concat_options(const char *conf_opts, const char *extra_opts,
-								char **opts)
-{
-	if (conf_opts == NULL && extra_opts == NULL)
-		*opts = NULL;
-	else if (conf_opts == NULL)
-		*opts = strdup(extra_opts);
-	else if (extra_opts == NULL)
-		*opts = strdup(conf_opts);
-	else if (asprintf(opts, "%s %s", conf_opts, extra_opts) < 0)
-		return -ENOMEM;
-
-	return 0;
-}
-
-static int insmod_do_insert_module(struct kmod_module *mod, const char *opts)
-{
-	int flags = 0, err;
-
-	SHOW("insmod %s %s\n", kmod_module_get_path(mod), opts ? opts : "");
-
-	if (dry_run)
-		return 0;
-
-	if (strip_modversion || force)
-		flags |= KMOD_INSERT_FORCE_MODVERSION;
-	if (strip_vermagic || force)
-		flags |= KMOD_INSERT_FORCE_VERMAGIC;
-
-	err = kmod_module_insert_module(mod, flags, opts);
-	switch (err) {
-	case -EEXIST:
-		/*
-		 * We checked for EEXIST with an earlier call to
-		 * retrieve the initstate, but to avoid a race
-		 * condition, we don't make any assumptions and handle
-		 * the error again here
-		 */
-		if (!first_time)
-			err = 0;
-		else
-			ERR("Module %s already in kernel.\n",
-					kmod_module_get_name(mod));
-		break;
-	case -EPERM:
-		ERR("could not insert '%s': %s\n", kmod_module_get_name(mod),
-				strerror(-err));
-		break;
-	}
-
-	return err;
-
-}
-
-static bool insmod_recursion_has_loop(struct kmod_module *mod,
-						struct array *recursion)
-{
-	unsigned int i;
-
-	/*
-	 * Don't check every time to not impact normal use cases. If the
-	 * recursion hits INSMOD_RECURSION_STEP, then search loop in
-	 * @recursion.
-	 */
-	if ((recursion->count + 1) % INSMOD_RECURSION_STEP != 0)
-		return false;
-
-	for (i = 0; i < recursion->count; i++) {
-		if (recursion->array[i] != mod)
-			continue;
-
-		ERR("Dependency loop detected while inserting '%s'. Operation aborted.\n",
-						kmod_module_get_name(mod));
-
-		for (; i < recursion->count; i++)
-			ERR("\t%s\n", kmod_module_get_name(recursion->array[i]));
-
-		return true;
-	}
-
-	return false;
-}
-
-static int insmod_do_module(struct kmod_module *mod, const char *extra_opts,
-				bool do_dependencies, struct array *recursion);
-
-static int insmod_do_deps_list(struct kmod_list *list,
-				bool stop_on_errors, struct array *recursion)
-{
-	struct kmod_list *l;
-	struct kmod_module *m;
-	int r;
-
-	if (list == NULL)
-		return 0;
-
-	m = kmod_module_get_module(list);
-	r = insmod_recursion_has_loop(m, recursion);
-	kmod_module_unref(m);
-
-	if (r)
-		return -ELOOP;
-
-	kmod_list_foreach(l, list) {
-		m = kmod_module_get_module(l);
-		array_append(recursion, m);
-		r = insmod_do_module(m, NULL, false, recursion);
-		kmod_module_unref(m);
-		array_pop(recursion);
-
-		if (r == -ELOOP)
-			return r;
-
-		if (r < 0 && stop_on_errors)
-			return r;
-	}
-
-	return 0;
-}
-
-static int insmod_do_module(struct kmod_module *mod, const char *extra_opts,
-				bool do_dependencies, struct array *recursion)
-{
-	const char *modname = kmod_module_get_name(mod);
-	const char *conf_opts = kmod_module_get_options(mod);
-	struct kmod_list *pre = NULL, *post = NULL;
-	const char *cmd = NULL;
-	char *opts = NULL;
-	int err;
-
-	if (!ignore_commands) {
-		err = kmod_module_get_softdeps(mod, &pre, &post);
-		if (err < 0) {
-			WRN("could not get softdeps of '%s': %s\n",
-						modname, strerror(-err));
-			return err;
-		}
-
-		cmd = kmod_module_get_install_commands(mod);
-	}
-
-	if (cmd == NULL && !ignore_loaded) {
-		int state = kmod_module_get_initstate(mod);
-
-		if (state == KMOD_MODULE_BUILTIN) {
-			if (first_time) {
-				err = -EEXIST;
-				LOG("Module %s already in kernel (builtin).\n",
-								modname);
-			} else
-				err = 0;
-
-			goto error;
-		} else if (state == KMOD_MODULE_LIVE) {
-			if (first_time) {
-				err = -EEXIST;
-				LOG("Module %s already in kernel.\n", modname);
-
-			} else
-				err = 0;
-
-			goto error;
-		}
-	}
-
-	if (cmd == NULL && kmod_module_get_path(mod) == NULL) {
-		err = -ENOENT;
-		LOG("Module %s not found.\n", modname);
-		goto error;
-	}
-
-	err = insmod_do_deps_list(pre, false, recursion);
-	if (err == -ELOOP)
-		goto error;
-
-	if (do_dependencies) {
-		struct kmod_list *deps = kmod_module_get_dependencies(mod);
-
-		err = insmod_do_deps_list(deps, true, recursion);
-		if (err < 0)
-			goto error;
-	}
-
-	if ((err = concat_options(conf_opts, extra_opts, &opts)) < 0)
-		goto error;
-
-	if (cmd == NULL)
-		err = insmod_do_insert_module(mod, opts);
-	else
-		err = command_do(mod, "install", cmd, NULL);
-
-	if (err < 0)
-		goto error;
-
-	err = insmod_do_deps_list(post, false, recursion);
-
-error:
-	kmod_module_unref_list(pre);
-	kmod_module_unref_list(post);
-	free(opts);
-
-	return err;
-}
-
 static int handle_failed_lookup(struct kmod_ctx *ctx, const char *alias)
 {
 	struct kmod_module *mod;
@@ -729,11 +523,24 @@ static int handle_failed_lookup(struct kmod_ctx *ctx, const char *alias)
 	return 0;
 }
 
+static void print_action(struct kmod_module *m, bool install,
+							const char *options)
+{
+	if (install)
+		printf("install %s %s\n", kmod_module_get_install_commands(m),
+								options);
+	else
+		printf("insmod %s %s\n", kmod_module_get_path(m), options);
+}
+
 static int insmod(struct kmod_ctx *ctx, const char *alias,
 						const char *extra_options)
 {
 	struct kmod_list *l, *list = NULL;
-	int err;
+	int err, flags = 0;
+
+	void (*show)(struct kmod_module *m, bool install,
+						const char *options) = NULL;
 
 	err = kmod_module_new_from_lookup(ctx, alias, &list);
 	if (err < 0)
@@ -742,17 +549,24 @@ static int insmod(struct kmod_ctx *ctx, const char *alias,
 	if (list == NULL)
 		return handle_failed_lookup(ctx, alias);
 
-	if (use_blacklist) {
-		struct kmod_list *filtered = NULL;
-		err = kmod_module_get_filtered_blacklist(ctx, list, &filtered);
-		DBG("using blacklist: input %p, output=%p\n", list, filtered);
-		kmod_module_unref_list(list);
-		if (err < 0) {
-			LOG("could not filter alias list!\n");
-			return err;
-		}
-		list = filtered;
-	}
+	if (strip_modversion || force)
+		flags |= KMOD_PROBE_FORCE_MODVERSION;
+	if (strip_vermagic || force)
+		flags |= KMOD_PROBE_FORCE_VERMAGIC;
+	if (ignore_commands)
+		flags |= KMOD_PROBE_IGNORE_COMMAND;
+	if (ignore_loaded)
+		flags |= KMOD_PROBE_IGNORE_LOADED;
+	if (dry_run)
+		flags |= KMOD_PROBE_DRY_RUN;
+	if (do_show || verbose > DEFAULT_VERBOSE)
+		show = &print_action;
+
+
+	if (use_blacklist)
+		flags |= KMOD_PROBE_APPLY_BLACKLIST;
+	if (first_time)
+		flags |= KMOD_PROBE_STOP_ON_ALREADY_LOADED;
 
 	kmod_list_foreach(l, list) {
 		struct kmod_module *mod = kmod_module_get_module(l);
@@ -760,15 +574,18 @@ static int insmod(struct kmod_ctx *ctx, const char *alias,
 		if (lookup_only)
 			printf("%s\n", kmod_module_get_name(mod));
 		else {
-			struct array recursion;
-
-			array_init(&recursion, INSMOD_RECURSION_STEP);
-			err = insmod_do_module(mod, extra_options, true,
-								&recursion);
-			array_free_array(&recursion);
+			err = kmod_module_probe_insert_module(mod, flags,
+					extra_options, NULL, NULL, show);
 		}
+
+		if (err == KMOD_PROBE_STOP_ON_ALREADY_LOADED) {
+			ERR("Module %s already in kernel.\n",
+						kmod_module_get_name(mod));
+			err = -EEXIST;
+		}
+
 		kmod_module_unref(mod);
-		if (err < 0)
+		if (err != 0)
 			break;
 	}
 
