@@ -339,6 +339,7 @@ end:
 static int rmmod_do_remove_module(struct kmod_module *mod)
 {
 	const char *modname = kmod_module_get_name(mod);
+	struct kmod_list *deps, *itr;
 	int flags = 0, err;
 
 	SHOW("rmmod %s\n", kmod_module_get_name(mod));
@@ -355,6 +356,17 @@ static int rmmod_do_remove_module(struct kmod_module *mod)
 			err = 0;
 		else
 			LOG("Module %s is not in kernel.\n", modname);
+	}
+
+	deps = kmod_module_get_dependencies(mod);
+	if (deps != NULL) {
+		kmod_list_foreach(itr, deps) {
+			struct kmod_module *dep = kmod_module_get_module(itr);
+			if (kmod_module_get_refcnt(dep) == 0)
+				rmmod_do_remove_module(dep);
+			kmod_module_unref(dep);
+		}
+		kmod_module_unref_list(deps);
 	}
 
 	return err;
