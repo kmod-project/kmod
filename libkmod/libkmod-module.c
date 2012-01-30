@@ -1172,7 +1172,12 @@ KMOD_EXPORT int kmod_module_probe_insert_module(struct kmod_module *mod,
 
 			err = module_do_install_commands(m, options, &cb);
 		} else {
-			int state = kmod_module_get_initstate(m);
+			int state;
+
+			if (flags & KMOD_PROBE_IGNORE_LOADED)
+				state = -1;
+			else
+				state = kmod_module_get_initstate(m);
 
 			if (state == KMOD_MODULE_LIVE ||
 					state == KMOD_MODULE_COMING ||
@@ -1182,10 +1187,9 @@ KMOD_EXPORT int kmod_module_probe_insert_module(struct kmod_module *mod,
 					break;
 				}
 
-				DBG(mod->ctx, "Ignoring '%s': "
-					"module already loaded\n", m->name);
-				free(options);
-				continue;
+				DBG(mod->ctx, "Ignoring module '%s': "
+						"already loaded\n", m->name);
+				err = 0;
 			}
 			if (print_action != NULL)
 				print_action(m, false, options ?: "");
