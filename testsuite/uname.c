@@ -55,7 +55,7 @@ TS_EXPORT int uname(struct utsname *u)
 	sz = strlen(release) + 1;
 	if (sz > sizeof(u->release)) {
 		fprintf(stderr, "uname(): sizeof release (%s) "
-				"is greater than available space: %lu",
+				"is greater than available space: %zu",
 				release, sizeof(u->release));
 		errno = -EFAULT;
 		return -1;
