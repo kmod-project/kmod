@@ -1167,10 +1167,13 @@ KMOD_EXPORT int kmod_module_probe_insert_module(struct kmod_module *mod,
 				free(options);
 				break;
 			}
+
 			if (print_action != NULL)
 				print_action(m, true, options ?: "");
 
-			err = module_do_install_commands(m, options, &cb);
+			if (!(flags & KMOD_PROBE_DRY_RUN))
+				err = module_do_install_commands(m, options,
+									&cb);
 		} else {
 			int state;
 
@@ -1194,7 +1197,9 @@ KMOD_EXPORT int kmod_module_probe_insert_module(struct kmod_module *mod,
 			if (print_action != NULL)
 				print_action(m, false, options ?: "");
 
-			err = kmod_module_insert_module(m, flags, options);
+			if (!(flags & KMOD_PROBE_DRY_RUN))
+				err = kmod_module_insert_module(m, flags,
+								options);
 		}
 
 		free(options);

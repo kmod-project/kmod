@@ -129,6 +129,7 @@ enum kmod_probe {
 	KMOD_PROBE_FORCE_MODVERSION =		0x00002,
 	KMOD_PROBE_IGNORE_COMMAND =		0x00004,
 	KMOD_PROBE_IGNORE_LOADED =		0x00008,
+	KMOD_PROBE_DRY_RUN =			0x00010,
 
 	/* codes below can be used in return value, too */
 	KMOD_PROBE_APPLY_BLACKLIST_ALL =	0x10000,
