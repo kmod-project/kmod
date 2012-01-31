@@ -1,4 +1,4 @@
-LIBKMOD_1 {
+LIBKMOD_5 {
 global:
 	kmod_get_log_priority;
 	kmod_get_userdata;
@@ -11,9 +11,22 @@ global:
 	kmod_unref;
 	kmod_list_next;
 	kmod_list_prev;
+	kmod_list_last;
 
 	kmod_load_resources;
 	kmod_unload_resources;
+	kmod_validate_resources;
+	kmod_config_get_blacklists;
+	kmod_config_get_install_commands;
+	kmod_config_get_remove_commands;
+	kmod_config_get_aliases;
+	kmod_config_get_options;
+	kmod_config_get_softdeps;
+	kmod_config_iter_get_key;
+	kmod_config_iter_get_value;
+	kmod_config_iter_next;
+	kmod_config_iter_free_iter;
+	kmod_dump_index;
 
 	kmod_module_new_from_name;
 	kmod_module_new_from_path;
@@ -22,11 +35,13 @@ global:
 	kmod_module_ref;
 	kmod_module_unref;
 	kmod_module_unref_list;
+	kmod_module_get_module;
 	kmod_module_remove_module;
 	kmod_module_insert_module;
-	kmod_module_get_dependencies;
-	kmod_module_get_module;
+	kmod_module_probe_insert_module;
 
+	kmod_module_get_dependencies;
+	kmod_module_get_softdeps;
 	kmod_module_get_filtered_blacklist;
 
 	kmod_module_get_name;
@@ -45,15 +60,7 @@ global:
 	kmod_module_get_options;
 	kmod_module_get_install_commands;
 	kmod_module_get_remove_commands;
-local:
-        *;
-};
 
-LIBKMOD_2 {
-global:
-	kmod_list_last;
-
-	kmod_module_get_softdeps;
 	kmod_module_get_info;
 	kmod_module_info_get_key;
 	kmod_module_info_get_value;
@@ -62,12 +69,6 @@ global:
 	kmod_module_version_get_symbol;
 	kmod_module_version_get_crc;
 	kmod_module_versions_free_list;
-} LIBKMOD_1;
-
-LIBKMOD_3 {
-global:
-	kmod_validate_resources;
-
 	kmod_module_get_symbols;
 	kmod_module_symbol_get_symbol;
 	kmod_module_symbol_get_crc;
@@ -78,21 +79,6 @@ global:
 	kmod_module_dependency_symbol_get_crc;
 	kmod_module_dependency_symbol_get_bind;
 	kmod_module_dependency_symbols_free_list;
-
-	kmod_module_probe_insert_module;
-} LIBKMOD_2;
-
-LIBKMOD_4 {
-global:
-	kmod_config_get_blacklists;
-	kmod_config_get_install_commands;
-	kmod_config_get_remove_commands;
-	kmod_config_get_aliases;
-	kmod_config_get_options;
-	kmod_config_get_softdeps;
-	kmod_config_iter_get_key;
-	kmod_config_iter_get_value;
-	kmod_config_iter_next;
-	kmod_config_iter_free_iter;
-	kmod_dump_index;
-} LIBKMOD_3;
+local:
+        *;
+};

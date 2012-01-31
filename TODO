@@ -19,10 +19,6 @@ Features:
    - kmod_module_symbols_free_list()
    - kmod_module_dependency_symbols_free_list()
 
-* unify code from modprobe and libkmod:
-   - remove kmod_module_probe_insert() and turn it into
-     kmod_module_probe_get_list(); this way modprobe can use it too
-
 * provide modules.archive, a cache file with all modules compressed
   and a fast access. It's like a tar.gz, but with each entry
   compressed as opposed to the whole tar compressed, easy to pick
