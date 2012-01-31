@@ -590,10 +590,21 @@ static int insmod(struct kmod_ctx *ctx, const char *alias,
 					extra_options, NULL, NULL, show);
 		}
 
-		if (err == KMOD_PROBE_STOP_ON_ALREADY_LOADED) {
-			ERR("Module %s already in kernel.\n",
-						kmod_module_get_name(mod));
-			err = -EEXIST;
+		if (err >= 0)
+			/* ignore flag return values such as a mod being blacklisted */
+			err = 0;
+		else {
+			switch (err) {
+			case -EEXIST:
+				ERR("could not insert '%s': Module already in kernel\n",
+							kmod_module_get_name(mod));
+				break;
+			default:
+				ERR("could not insert '%s': %s\n",
+						kmod_module_get_name(mod),
+						strerror(-err));
+				break;
+			}
 		}
 
 		kmod_module_unref(mod);
