@@ -1097,11 +1097,10 @@ static int kmod_module_get_probe_list(struct kmod_module *mod,
  * Insert a module in Linux kernel resolving dependencies, soft dependencies,
  * install commands and applying blacklist.
  *
- * If @run_install is NULL, and the flag KMOD_PROBE_STOP_ON_COMMANDS is not
- * given, this function will fork and exec by calling system(3). Don't pass a
- * NULL argument in @run_install if your binary is setuid/setgid (see warning
- * in system(3)). If you need control over the execution of an install
- * command, give a callback function instead.
+ * If @run_install is NULL, this function will fork and exec by calling
+ * system(3). Don't pass a NULL argument in @run_install if your binary is
+ * setuid/setgid (see warning in system(3)). If you need control over the
+ * execution of an install command, give a callback function instead.
  *
  * Returns: 0 on success, > 0 if stopped by a reason given in @flags or < 0 on
  * failure.
@@ -1160,14 +1159,6 @@ KMOD_EXPORT int kmod_module_probe_insert_module(struct kmod_module *mod,
 					m == mod ? extra_options : NULL);
 
 		if (cmd != NULL && !m->ignorecmd) {
-			if (flags & KMOD_PROBE_STOP_ON_COMMAND) {
-				DBG(mod->ctx, "Stopping on '%s': "
-					"install command\n", m->name);
-				err = KMOD_PROBE_STOP_ON_COMMAND;
-				free(options);
-				break;
-			}
-
 			if (print_action != NULL)
 				print_action(m, true, options ?: "");
 

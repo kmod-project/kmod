@@ -135,7 +135,6 @@ enum kmod_probe {
 	/* codes below can be used in return value, too */
 	KMOD_PROBE_APPLY_BLACKLIST_ALL =	0x10000,
 	KMOD_PROBE_APPLY_BLACKLIST =		0x20000,
-	KMOD_PROBE_STOP_ON_COMMAND =		0x40000,
 };
 
 /*
