@@ -1186,7 +1186,7 @@ KMOD_EXPORT int kmod_module_probe_insert_module(struct kmod_module *mod,
 					state == KMOD_MODULE_COMING ||
 					state == KMOD_MODULE_BUILTIN) {
 				if (m == mod && (flags & KMOD_PROBE_STOP_ON_ALREADY_LOADED)) {
-					err = KMOD_PROBE_STOP_ON_ALREADY_LOADED;
+					err = -EEXIST;
 					break;
 				}
 
@@ -1206,8 +1206,8 @@ KMOD_EXPORT int kmod_module_probe_insert_module(struct kmod_module *mod,
 
 		/*
 		 * Treat "already loaded" error. If we were told to stop on
-		 * already loaded and the module being loaded is not a
-		 * softdep, bail out. Otherwise, just ignore and continue.
+		 * already loaded and the module being loaded is not a softdep
+		 * or dep, bail out. Otherwise, just ignore and continue.
 		 *
 		 * We need to check here because of race conditions. We
 		 * checked first if module was already loaded but it may have
@@ -1215,12 +1215,12 @@ KMOD_EXPORT int kmod_module_probe_insert_module(struct kmod_module *mod,
 		 * insert it.
 		 */
 		if (err == -EEXIST && m == mod &&
-				(flags & KMOD_PROBE_STOP_ON_ALREADY_LOADED)) {
-			err = KMOD_PROBE_STOP_ON_ALREADY_LOADED;
+				(flags & KMOD_PROBE_STOP_ON_ALREADY_LOADED))
 			break;
-		}
 
-		if (err < 0 && err != -EEXIST)
+		if (err == -EEXIST)
+			err = 0;
+		else if (err < 0)
 			break;
 	}
 
