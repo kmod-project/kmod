@@ -42,14 +42,19 @@ struct kmod_ctx *kmod_ref(struct kmod_ctx *ctx);
 struct kmod_ctx *kmod_unref(struct kmod_ctx *ctx);
 void kmod_set_log_fn(struct kmod_ctx *ctx,
 			void (*log_fn)(void *log_data,
-				int priority, const char *file, int line,
-				const char *fn, const char *format,
-				va_list args),
+					int priority, const char *file, int line,
+					const char *fn, const char *format,
+					va_list args),
 			const void *data);
 int kmod_get_log_priority(const struct kmod_ctx *ctx);
 void kmod_set_log_priority(struct kmod_ctx *ctx, int priority);
 void *kmod_get_userdata(const struct kmod_ctx *ctx);
 void kmod_set_userdata(struct kmod_ctx *ctx, const void *userdata);
+
+
+/*
+ * Management of libkmod's resources
+ */
 int kmod_load_resources(struct kmod_ctx *ctx);
 void kmod_unload_resources(struct kmod_ctx *ctx);
 
@@ -58,7 +63,6 @@ enum kmod_resources {
 	KMOD_RESOURCES_MUST_RELOAD = 1,
 	KMOD_RESOURCES_MUST_RECREATE = 2,
 };
-
 int kmod_validate_resources(struct kmod_ctx *ctx);
 
 enum kmod_index {
@@ -68,7 +72,6 @@ enum kmod_index {
 	/* Padding to make sure enum is not mapped to char */
 	_KMOD_INDEX_PAD = (1 << 31),
 };
-
 int kmod_dump_index(struct kmod_ctx *ctx, enum kmod_index type, int fd);
 
 /*
@@ -111,6 +114,27 @@ const char *kmod_config_iter_get_value(const struct kmod_config_iter *iter);
 bool kmod_config_iter_next(struct kmod_config_iter *iter);
 void kmod_config_iter_free_iter(struct kmod_config_iter *iter);
 
+/*
+ * kmod_module
+ *
+ * Operate on kernel modules
+ */
+struct kmod_module;
+int kmod_module_new_from_name(struct kmod_ctx *ctx, const char *name,
+						struct kmod_module **mod);
+int kmod_module_new_from_path(struct kmod_ctx *ctx, const char *path,
+						struct kmod_module **mod);
+int kmod_module_new_from_lookup(struct kmod_ctx *ctx, const char *given_alias,
+						struct kmod_list **list);
+int kmod_module_new_from_loaded(struct kmod_ctx *ctx,
+						struct kmod_list **list);
+
+struct kmod_module *kmod_module_ref(struct kmod_module *mod);
+struct kmod_module *kmod_module_unref(struct kmod_module *mod);
+int kmod_module_unref_list(struct kmod_list *list);
+struct kmod_module *kmod_module_get_module(const struct kmod_list *entry);
+
+
 /* Removal flags */
 enum kmod_remove {
 	KMOD_REMOVE_FORCE = O_TRUNC,
@@ -137,38 +161,36 @@ enum kmod_probe {
 	KMOD_PROBE_APPLY_BLACKLIST =		0x20000,
 };
 
-/*
- * kmod_module
- *
- * Operate on kernel modules
- */
-struct kmod_module;
-int kmod_module_new_from_name(struct kmod_ctx *ctx, const char *name,
-						struct kmod_module **mod);
-int kmod_module_new_from_path(struct kmod_ctx *ctx, const char *path,
-						struct kmod_module **mod);
-int kmod_module_new_from_lookup(struct kmod_ctx *ctx, const char *given_alias,
-						struct kmod_list **list);
-int kmod_module_new_from_loaded(struct kmod_ctx *ctx, struct kmod_list **list);
-
-struct kmod_module *kmod_module_ref(struct kmod_module *mod);
-struct kmod_module *kmod_module_unref(struct kmod_module *mod);
-int kmod_module_unref_list(struct kmod_list *list);
-struct kmod_module *kmod_module_get_module(const struct kmod_list *entry);
-struct kmod_list *kmod_module_get_dependencies(const struct kmod_module *mod);
-
-int kmod_module_get_filtered_blacklist(const struct kmod_ctx *ctx, const struct kmod_list *input, struct kmod_list **output);
-
 int kmod_module_remove_module(struct kmod_module *mod, unsigned int flags);
-int kmod_module_insert_module(struct kmod_module *mod, unsigned int flags, const char *options);
+int kmod_module_insert_module(struct kmod_module *mod, unsigned int flags,
+							const char *options);
 int kmod_module_probe_insert_module(struct kmod_module *mod,
 			unsigned int flags, const char *extra_options,
-			int (*run_install)(struct kmod_module *m, const char *cmdline, void *data),
+			int (*run_install)(struct kmod_module *m,
+						const char *cmdline, void *data),
 			const void *data,
-			void (*print_action)(struct kmod_module *m, bool install, const char *options));
+			void (*print_action)(struct kmod_module *m, bool install,
+						const char *options));
+
 
 const char *kmod_module_get_name(const struct kmod_module *mod);
 const char *kmod_module_get_path(const struct kmod_module *mod);
+const char *kmod_module_get_options(const struct kmod_module *mod);
+const char *kmod_module_get_install_commands(const struct kmod_module *mod);
+const char *kmod_module_get_remove_commands(const struct kmod_module *mod);
+struct kmod_list *kmod_module_get_dependencies(const struct kmod_module *mod);
+int kmod_module_get_softdeps(const struct kmod_module *mod,
+				struct kmod_list **pre, struct kmod_list **post);
+int kmod_module_get_filtered_blacklist(const struct kmod_ctx *ctx,
+					const struct kmod_list *input,
+					struct kmod_list **output);
+
+
+
+/*
+ * Information regarding "live information" from module's state, as returned
+ * by kernel
+ */
 
 enum kmod_module_initstate {
 	KMOD_MODULE_BUILTIN = 0,
@@ -182,19 +204,17 @@ const char *kmod_module_initstate_str(enum kmod_module_initstate state);
 int kmod_module_get_initstate(const struct kmod_module *mod);
 int kmod_module_get_refcnt(const struct kmod_module *mod);
 struct kmod_list *kmod_module_get_holders(const struct kmod_module *mod);
-
 struct kmod_list *kmod_module_get_sections(const struct kmod_module *mod);
 const char *kmod_module_section_get_name(const struct kmod_list *entry);
 unsigned long kmod_module_section_get_address(const struct kmod_list *entry);
 void kmod_module_section_free_list(struct kmod_list *list);
-
 long kmod_module_get_size(const struct kmod_module *mod);
 
-const char *kmod_module_get_options(const struct kmod_module *mod);
-const char *kmod_module_get_install_commands(const struct kmod_module *mod);
-const char *kmod_module_get_remove_commands(const struct kmod_module *mod);
 
-int kmod_module_get_softdeps(const struct kmod_module *mod, struct kmod_list **pre, struct kmod_list **post);
+
+/*
+ * Information retrieved from ELF headers and sections
+ */
 
 int kmod_module_get_info(const struct kmod_module *mod, struct kmod_list **list);
 const char *kmod_module_info_get_key(const struct kmod_list *entry);
