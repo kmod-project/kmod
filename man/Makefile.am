@@ -1,7 +1,10 @@
 MAN5 = depmod.d.5 modprobe.d.5 modules.dep.5
 MAN8 = depmod.8 insmod.8 lsmod.8 rmmod.8 modprobe.8 modinfo.8
+MAN_STUB = modules.dep.bin.5
 
+if BUILD_TOOLS
 dist_man_MANS = $(MAN5) $(MAN8) $(MAN_STUB)
+endif
 
 EXTRA_DIST = $(MAN5:%.5=%.xml) $(MAN8:%.8=%.xml)
 
