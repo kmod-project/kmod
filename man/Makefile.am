@@ -4,6 +4,7 @@ MAN_STUB = modules.dep.bin.5
 
 if BUILD_TOOLS
 dist_man_MANS = $(MAN5) $(MAN8) $(MAN_STUB)
+modules.dep.bin.5: modules.dep.5
 endif
 
 EXTRA_DIST = $(MAN5:%.5=%.xml) $(MAN8:%.8=%.xml)
@@ -11,6 +12,8 @@ EXTRA_DIST = $(MAN5:%.5=%.xml) $(MAN8:%.8=%.xml)
 XSLTPROC_FLAGS = \
 	--nonet \
 	--param funcsynopsis.style "'ansi'"
+
+CLEANFILES = $(dist_man_MANS)
 
 %.5 %.8: %.xml
 	$(AM_V_GEN)$(XSLTPROC) $(XSLTPROC_FLAGS) \
