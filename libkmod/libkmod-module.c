@@ -98,6 +98,17 @@ static inline const char *path_join(const char *path, size_t prefixlen,
 	return buf;
 }
 
+static inline bool module_is_inkernel(struct kmod_module *mod)
+{
+	int state = kmod_module_get_initstate(mod);
+	if (state == KMOD_MODULE_LIVE ||
+			state == KMOD_MODULE_COMING ||
+			state == KMOD_MODULE_BUILTIN)
+		return true;
+	else
+		return false;
+}
+
 int kmod_module_parse_depline(struct kmod_module *mod, char *line)
 {
 	struct kmod_ctx *ctx = mod->ctx;
@@ -1121,6 +1132,13 @@ KMOD_EXPORT int kmod_module_probe_insert_module(struct kmod_module *mod,
 	if (mod == NULL)
 		return -ENOENT;
 
+	if (module_is_inkernel(mod)) {
+		if (flags & KMOD_PROBE_STOP_ON_ALREADY_LOADED)
+			return -EEXIST;
+		else
+			return 0;
+	}
+
 	err = flags & (KMOD_PROBE_APPLY_BLACKLIST |
 					KMOD_PROBE_APPLY_BLACKLIST_ALL);
 	if (err != 0) {
@@ -1166,24 +1184,12 @@ KMOD_EXPORT int kmod_module_probe_insert_module(struct kmod_module *mod,
 				err = module_do_install_commands(m, options,
 									&cb);
 		} else {
-			int state;
-
-			if (flags & KMOD_PROBE_IGNORE_LOADED)
-				state = -1;
-			else
-				state = kmod_module_get_initstate(m);
-
-			if (state == KMOD_MODULE_LIVE ||
-					state == KMOD_MODULE_COMING ||
-					state == KMOD_MODULE_BUILTIN) {
-				if (m == mod && (flags & KMOD_PROBE_STOP_ON_ALREADY_LOADED)) {
-					err = -EEXIST;
-					break;
-				}
-
+			if (!(flags & KMOD_PROBE_IGNORE_LOADED) && module_is_inkernel(m)) {
 				DBG(mod->ctx, "Ignoring module '%s': "
 						"already loaded\n", m->name);
 				err = 0;
+				free(options);
+				continue;
 			}
 			if (print_action != NULL)
 				print_action(m, false, options ?: "");
