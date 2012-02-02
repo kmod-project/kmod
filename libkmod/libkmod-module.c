@@ -1554,18 +1554,18 @@ KMOD_EXPORT int kmod_module_new_from_loaded(struct kmod_ctx *ctx,
  */
 KMOD_EXPORT const char *kmod_module_initstate_str(enum kmod_module_initstate state)
 {
-    switch (state) {
-    case KMOD_MODULE_BUILTIN:
-	return "builtin";
-    case KMOD_MODULE_LIVE:
-	return "live";
-    case KMOD_MODULE_COMING:
-	return "coming";
-    case KMOD_MODULE_GOING:
-	return "going";
-    default:
-	return NULL;
-    }
+	switch (state) {
+	case KMOD_MODULE_BUILTIN:
+		return "builtin";
+	case KMOD_MODULE_LIVE:
+		return "live";
+	case KMOD_MODULE_COMING:
+		return "coming";
+	case KMOD_MODULE_GOING:
+		return "going";
+	default:
+		return NULL;
+	}
 }
 
 /**
