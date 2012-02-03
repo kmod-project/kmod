@@ -2,7 +2,6 @@
 *.la
 *.so
 /.dirstamp
-/rootfs/
 /test-alias
 /test-init
 /test-loaded

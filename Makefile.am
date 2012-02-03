@@ -127,10 +127,6 @@ endif
 # TESTSUITE
 # ------------------------------------------------------------------------------
 
-testsuite/rootfs: $(top_srcdir)/testsuite/rootfs.tar.xz
-	$(AM_V_GEN) tar -C testsuite/ \
-		-xJf $(top_srcdir)/testsuite/rootfs.tar.xz
-
 TESTSUITE_OVERRIDE_LIBS = testsuite/uname.la testsuite/path.la \
 			  testsuite/init_module.la \
 			  testsuite/delete_module.la
@@ -147,17 +143,6 @@ testsuite_init_module_la_LDFLAGS = $(TESTSUITE_OVERRIDE_LIBS_LDFLAGS)
 testsuite_init_module_la_SOURCES = testsuite/init_module.c \
 				   testsuite/stripped-module.h
 testsuite_init_module_la_LIBADD = libkmod/libkmod-private.la
-
-testsuite-distclean:
-	-rm -rf testsuite/rootfs
-
-testsuite-pack-rootfs:
-	$(AM_V_GEN) ( cd testsuite && tar -cJf \
-			$(abs_top_srcdir)/testsuite/rootfs.tar.xz \
-			rootfs )
-
-DISTCLEAN_LOCAL_HOOKS += testsuite-distclean
-EXTRA_DIST += testsuite/rootfs.tar.xz
 
 TESTSUITE_CPPFLAGS = $(AM_CPPFLAGS) \
 		     -DTESTSUITE_ROOTFS=\"$(abs_top_builddir)/testsuite/rootfs/\" \
