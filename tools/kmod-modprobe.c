@@ -608,8 +608,6 @@ static int insmod(struct kmod_ctx *ctx, const char *alias,
 		}
 
 		kmod_module_unref(mod);
-		if (err != 0)
-			break;
 	}
 
 	kmod_module_unref_list(list);
