@@ -941,7 +941,7 @@ static int cfg_files_list(struct cfg_file ***p_files, size_t *p_n_files,
 	}
 
 	closedir(d);
-	DBG("parsed configuration files from %s: %s\n", path, strerror(-err));
+	DBG("parsed configuration files from %s\n", path);
 	return err;
 }
 
@@ -2293,13 +2293,14 @@ static int depmod_load_symvers(struct depmod *depmod, const char *filename)
 	char line[10240];
 	FILE *fp;
 	unsigned int linenum = 0;
-	int err;
 
 	fp = fopen(filename, "r");
-	err = -errno;
-	DBG("load symvers: %s: %s\n", filename, strerror(-err));
-	if (fp == NULL)
+	if (fp == NULL) {
+		int err = -errno;
+		DBG("load symvers: %s: %m\n", filename);
 		return err;
+	}
+	DBG("load symvers: %s\n", filename);
 
 	/* eg. "0xb352177e\tfind_first_bit\tvmlinux\tEXPORT_SYMBOL" */
 	while (fgets(line, sizeof(line), fp) != NULL) {
@@ -2329,10 +2330,10 @@ static int depmod_load_symvers(struct depmod *depmod, const char *filename)
 	}
 	depmod_add_fake_syms(depmod);
 
-	DBG("loaded symvers: %s: %s\n", filename, strerror(-err));
+	DBG("loaded symvers: %s\n", filename);
 
 	fclose(fp);
-	return err;
+	return 0;
 }
 
 static int depmod_load_system_map(struct depmod *depmod, const char *filename)
@@ -2342,13 +2343,14 @@ static int depmod_load_system_map(struct depmod *depmod, const char *filename)
 	char line[10240];
 	FILE *fp;
 	unsigned int linenum = 0;
-	int err;
 
 	fp = fopen(filename, "r");
-	err = -errno;
-	DBG("load System.map: %s: %s\n", filename, strerror(-err));
-	if (fp == NULL)
+	if (fp == NULL) {
+		int err = -errno;
+		DBG("load System.map: %s: %m\n", filename);
 		return err;
+	}
+	DBG("load System.map: %s\n", filename);
 
 	/* eg. c0294200 R __ksymtab_devfs_alloc_devnum */
 	while (fgets(line, sizeof(line), fp) != NULL) {
@@ -2381,10 +2383,10 @@ static int depmod_load_system_map(struct depmod *depmod, const char *filename)
 	}
 	depmod_add_fake_syms(depmod);
 
-	DBG("loaded System.map: %s: %s\n", filename, strerror(-err));
+	DBG("loaded System.map: %s\n", filename);
 
 	fclose(fp);
-	return err;
+	return 0;
 }
 
 
@@ -2673,7 +2675,7 @@ static int do_depmod(int argc, char *argv[])
 	} else if (system_map != NULL) {
 		err = depmod_load_system_map(&depmod, system_map);
 		if (err < 0) {
-			CRIT("could not load %s: %s\n", module_symvers,
+			CRIT("could not load %s: %s\n", system_map,
 			     strerror(-err));
 			goto cmdline_failed;
 		}
