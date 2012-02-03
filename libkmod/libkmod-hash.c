@@ -83,6 +83,15 @@ void hash_free(struct hash *hash)
 	free(hash);
 }
 
+struct unaligned_short {
+    unsigned short v;
+} __attribute__((packed));
+
+static inline unsigned short get16bits(const char *ptr)
+{
+    return ((struct unaligned_short *)ptr)->v;
+}
+
 static inline unsigned int hash_superfast(const char *key, unsigned int len)
 {
 	/* Paul Hsieh (http://www.azillionmonkeys.com/qed/hash.html)
@@ -90,36 +99,35 @@ static inline unsigned int hash_superfast(const char *key, unsigned int len)
 	 * EFL's eina and possible others.
 	 */
 	unsigned int tmp, hash = len, rem = len & 3;
-	const unsigned short *itr = (const unsigned short *)key;
 
 	len /= 4;
 
 	/* Main loop */
 	for (; len > 0; len--) {
-		hash += itr[0];
-		tmp = (itr[1] << 11) ^ hash;
+		hash += get16bits(key);
+		tmp = (get16bits(key + 2) << 11) ^ hash;
 		hash = (hash << 16) ^ tmp;
-		itr += 2;
+		key += 4;
 		hash += hash >> 11;
 	}
 
 	/* Handle end cases */
 	switch (rem) {
 	case 3:
-		hash += *itr;
+		hash += get16bits(key);
 		hash ^= hash << 16;
 		hash ^= key[2] << 18;
 		hash += hash >> 11;
 		break;
 
 	case 2:
-		hash += *itr;
+		hash += get16bits(key);
 		hash ^= hash << 11;
 		hash += hash >> 17;
 		break;
 
 	case 1:
-		hash += *(const char *)itr;
+		hash += *key;
 		hash ^= hash << 10;
 		hash += hash >> 1;
 	}
