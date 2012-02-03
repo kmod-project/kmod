@@ -46,8 +46,7 @@
   <refsect1><title>DESCRIPTION</title>
     <para>
       <command>insmod</command> is a trivial program to insert a module into
-      the kernel: if the <replaceable>filename</replaceable> is a hyphen, the
-      module is taken from standard input. Most users will want to use
+      the kernel. Most users will want to use
       <citerefentry><refentrytitle>modprobe</refentrytitle>
         <manvolnum>8</manvolnum> </citerefentry> instead, which is more clever
       and can handle module dependencies.
