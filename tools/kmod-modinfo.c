@@ -19,6 +19,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <getopt.h>
 #include <errno.h>
 #include <string.h>
@@ -332,6 +333,24 @@ static void help(const char *progname)
 		progname);
 }
 
+static bool is_module_filename(const char *name)
+{
+	struct stat st;
+	const char *ptr;
+
+	if (stat(name, &st) == 0 && S_ISREG(st.st_mode) &&
+					(ptr = strstr(name, ".ko")) != NULL) {
+		/*
+		 * We screened for .ko; make sure this is either at the end of
+		 * the name or followed by another '.' (e.g. gz or xz modules)
+		 */
+		if(ptr[3] == '\0' || ptr[3] == '.')
+			return true;
+	}
+
+	return false;
+}
+
 static int do_modinfo(int argc, char *argv[])
 {
 	struct kmod_ctx *ctx;
@@ -418,15 +437,13 @@ static int do_modinfo(int argc, char *argv[])
 		fputs("Error: kmod_new() failed!\n", stderr);
 		return EXIT_FAILURE;
 	}
-	kmod_load_resources(ctx);
 
 	err = 0;
 	for (i = optind; i < argc; i++) {
 		const char *name = argv[i];
-		struct stat st;
 		int r;
 
-		if (stat(name, &st) == 0 && S_ISREG(st.st_mode))
+		if (is_module_filename(name))
 			r = modinfo_path_do(ctx, name);
 		else
 			r = modinfo_alias_do(ctx, name);
