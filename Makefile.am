@@ -163,11 +163,13 @@ EXTRA_DIST += testsuite/rootfs.tar.xz
 TESTSUITE_CPPFLAGS = $(AM_CPPFLAGS) \
 		     -DTESTSUITE_ROOTFS=\"$(abs_top_builddir)/testsuite/rootfs/\" \
 		     -DABS_TOP_BUILDDIR=\"$(abs_top_builddir)\"
+TESTSUITE_LDADD = testsuite/libtestsuite.la libkmod/libkmod-private.la
 
 check_LTLIBRARIES += testsuite/libtestsuite.la
 testsuite_libtestsuite_la_SOURCES = testsuite/testsuite.c \
 				    testsuite/testsuite.h
-testsuite_libtestsuite_la_DEPENDENCIES = testsuite/rootfs
+testsuite_libtestsuite_la_DEPENDENCIES = testsuite/rootfs \
+				    $(TESTSUITE_OVERRIDE_LIBS)
 testsuite_libtestsuite_la_CPPFLAGS = $(TESTSUITE_CPPFLAGS)
 
 TESTSUITE = testsuite/test-init testsuite/test-testsuite testsuite/test-loaded \
@@ -175,17 +177,17 @@ TESTSUITE = testsuite/test-init testsuite/test-testsuite testsuite/test-loaded \
 check_PROGRAMS = $(TESTSUITE)
 TESTS = $(TESTSUITE)
 
-testsuite_test_init_LDADD = testsuite/libtestsuite.la libkmod/libkmod-private.la
-testsuite_test_init_CPPFLAGS = $(TESTSUITE_CPPFLAGS)
 testsuite_test_testsuite_LDADD = testsuite/libtestsuite.la
 testsuite_test_testsuite_CPPFLAGS = $(TESTSUITE_CPPFLAGS)
-testsuite_test_loaded_LDADD = testsuite/libtestsuite.la libkmod/libkmod-private.la
+testsuite_test_init_LDADD = $(TESTSUITE_LDADD)
+testsuite_test_init_CPPFLAGS = $(TESTSUITE_CPPFLAGS)
+testsuite_test_loaded_LDADD = $(TESTSUITE_LDADD)
 testsuite_test_loaded_CPPFLAGS = $(TESTSUITE_CPPFLAGS)
-testsuite_test_modinfo_LDADD = testsuite/libtestsuite.la
+testsuite_test_modinfo_LDADD = $(TESTSUITE_LDADD)
 testsuite_test_modinfo_CPPFLAGS = $(TESTSUITE_CPPFLAGS)
-testsuite_test_alias_LDADD = testsuite/libtestsuite.la libkmod/libkmod-private.la
+testsuite_test_alias_LDADD = $(TESTSUITE_LDADD)
 testsuite_test_alias_CPPFLAGS = $(TESTSUITE_CPPFLAGS)
-testsuite_test_new_module_LDADD = testsuite/libtestsuite.la libkmod/libkmod-private.la
+testsuite_test_new_module_LDADD = $(TESTSUITE_LDADD)
 testsuite_test_new_module_CPPFLAGS = $(TESTSUITE_CPPFLAGS)
 
 DISTCHECK_CONFIGURE_FLAGS=--enable-gtk-doc
