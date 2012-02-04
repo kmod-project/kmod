@@ -269,7 +269,7 @@ static int kmod_module_new(struct kmod_ctx *ctx, const char *key,
  *
  * Create a new struct kmod_module using the module name. @name can not be an
  * alias, file name or anything else; it must be a module name. There's no
- * check if the module does exists in the system.
+ * check if the module exists in the system.
  *
  * This function is also used internally by many others that return a new
  * struct kmod_module or a new list of modules.
