@@ -1188,9 +1188,8 @@ KMOD_EXPORT int kmod_module_probe_insert_module(struct kmod_module *mod,
 						&& module_is_inkernel(m)) {
 				DBG(mod->ctx, "Ignoring module '%s': "
 						"already loaded\n", m->name);
-				err = 0;
-				free(options);
-				continue;
+				err = -EEXIST;
+				goto finish_module;
 			}
 			if (print_action != NULL)
 				print_action(m, false, options ?: "");
@@ -1200,6 +1199,7 @@ KMOD_EXPORT int kmod_module_probe_insert_module(struct kmod_module *mod,
 								options);
 		}
 
+finish_module:
 		free(options);
 
 		/*
