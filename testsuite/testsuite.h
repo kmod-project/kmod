@@ -25,10 +25,45 @@ struct test;
 typedef int (*testfunc)(const struct test *t);
 
 enum test_config {
+	/*
+	 * Where's the roots dir for this test. It will LD_PRELOAD path.so in
+	 * order to trap calls to functions using paths.
+	 */
 	TC_ROOTFS = 0,
+
+	/*
+	 * What's the desired string to be returned by `uname -r`. It will
+	 * trap calls to uname(3P) by LD_PRELOAD'ing uname.so and then filling
+	 * in the information in u.release.
+	 */
 	TC_UNAME_R,
+
+	/*
+	 * Fake calls to init_module(2), returning return-code and setting
+	 * errno to err-code. Set this variable with the following format:
+	 *
+	 *        modname:return-code:err-code
+	 *
+	 * When this variable is used, all calls to init_module() are trapped
+	 * and by default the return code is 0. In other words, they fake
+	 * "success" for all modules, except the ones in the list above, for
+	 * which the return codes are used.
+	 */
 	TC_INIT_MODULE_RETCODES,
+
+	/*
+	 * Fake calls to delete_module(2), returning return-code and setting
+	 * errno to err-code. Set this variable with the following format:
+	 *
+	 *        modname:return-code:err-code
+	 *
+	 * When this variable is used, all calls to init_module() are trapped
+	 * and by default the return code is 0. In other words, they fake
+	 * "success" for all modules, except the ones in the list above, for
+	 * which the return codes are used.
+	 */
 	TC_DELETE_MODULE_RETCODES,
+
 	_TC_LAST,
 };
 

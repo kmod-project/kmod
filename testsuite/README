@@ -1,0 +1,54 @@
+testsuite
+
+OVERVIEW
+========
+
+Kmod's testsuite was designed to automate the process of running tests with
+different scenarios, configurations and architectures. The idea is that once we
+received a bug report, we reproduce it using the testsuite so we avoid
+recurring on the same bug in future.
+
+
+FEATURES
+========
+
+- Isolate each test by running them in separate processes;
+- Exec a binary, so we can test the tools and not only the lib API
+- Fake accesses to filesystem so we can provide a test rootfs with all the
+  configuration, indexes, etc that test needs to be executed.
+- Fake calls to init_module(), delete_module() and uname(), so we don't have to
+  run tests as root and figure out how to deal with different architectures.
+
+HOW TO ADD A TEST
+=================
+
+The simplest way to add a test is to copy and paste one already there. Most of
+the options you can have are covered by another tests. This is what you need to
+pay attention when writing a test:
+
+1 - Look at testsuite.h, struct test, to see all the options available.
+
+2 - Fill in the name and description. Convention is to have the name equal to
+    the function used to test and the struct name as s<function-name>
+
+3 - If you want testsuite to compare the stdout/stderr of your tests in order
+to check if it worked or not, fill in output.{stderr,stdout} the file with the
+expected output. Bare in mind the same file is used for all architectures, so
+don't print arch-dependent content if you are comparing the output.
+
+4 - Fill in the config vector. Setting any of these configuration will make
+testsuite to export LD_PRELOAD with the necessary override libs before
+executing the test. If you are not exec'ing an external binary, you need to
+pass "need_spawn = true" below, otherwise it will not work (LD_PRELOAD is only
+applied when exec'ing a binary). See each config description in testsuite.h
+
+5 - need_spawn: if testsuite will exec itself before running a test
+
+6 - expected_fail: if that test is expected to fail, i.e. the return code is
+expected not to be 0.
+
+7 - If you added files to the rootfs, be sure to compact it back to
+rootfs.tar.xz before sending patches.
+
+8 - Tests can be run individually, outside of 'make check'. strace and gdb work
+too, as long as you tell them to operate on child process.
