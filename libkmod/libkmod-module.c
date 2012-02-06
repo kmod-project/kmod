@@ -1133,7 +1133,7 @@ KMOD_EXPORT int kmod_module_probe_insert_module(struct kmod_module *mod,
 		return -ENOENT;
 
 	if (module_is_inkernel(mod)) {
-		if (flags & KMOD_PROBE_STOP_ON_ALREADY_LOADED)
+		if (flags & KMOD_PROBE_FAIL_ON_LOADED)
 			return -EEXIST;
 		else
 			return 0;
@@ -1184,7 +1184,8 @@ KMOD_EXPORT int kmod_module_probe_insert_module(struct kmod_module *mod,
 				err = module_do_install_commands(m, options,
 									&cb);
 		} else {
-			if (!(flags & KMOD_PROBE_IGNORE_LOADED) && module_is_inkernel(m)) {
+			if (!(flags & KMOD_PROBE_IGNORE_LOADED)
+						&& module_is_inkernel(m)) {
 				DBG(mod->ctx, "Ignoring module '%s': "
 						"already loaded\n", m->name);
 				err = 0;
@@ -1212,7 +1213,7 @@ KMOD_EXPORT int kmod_module_probe_insert_module(struct kmod_module *mod,
 		 * insert it.
 		 */
 		if (err == -EEXIST && m == mod &&
-				(flags & KMOD_PROBE_STOP_ON_ALREADY_LOADED))
+				(flags & KMOD_PROBE_FAIL_ON_LOADED))
 			break;
 
 		if (err == -EEXIST)

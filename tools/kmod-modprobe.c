@@ -578,7 +578,7 @@ static int insmod(struct kmod_ctx *ctx, const char *alias,
 	if (use_blacklist)
 		flags |= KMOD_PROBE_APPLY_BLACKLIST;
 	if (first_time)
-		flags |= KMOD_PROBE_STOP_ON_ALREADY_LOADED;
+		flags |= KMOD_PROBE_FAIL_ON_LOADED;
 
 	kmod_list_foreach(l, list) {
 		struct kmod_module *mod = kmod_module_get_module(l);
