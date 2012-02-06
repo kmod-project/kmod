@@ -1,0 +1,3 @@
+Don't add new tests here. They are not built anymore on purpose and are being
+slowly migrated to testsuite dir. See testsuite/README in order to add new test
+cases.

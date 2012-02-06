@@ -38,8 +38,6 @@ Features:
 
 * Stop using system() inside the library and use fork + exec instead
 
-* Add README to testsuite
-
 Known Bugs:
 ===========
 
