@@ -1,3 +1,35 @@
+kmod 5
+======
+
+- Break libkmod's API to insert a module like modprobe does. It now accepts
+  extra an extra argument to print its action and acceptable flags were
+  sanitized.
+
+- Share more code between modprobe and libkmod: using the new version of
+  kmod_module_probe_insert_module() it's possible to share a great amount of
+  code between modprobe and libkmod
+
+- modprobe no longer works with paths: it only accepts module names and/or
+  aliases now.
+
+- testsuite was added to repository, allowing automated tests to be run and
+  easing the way bugs are reproduced.
+
+- modprobe: when dumping configuration ('-c' option) separate config
+  and indexes by adding a commented line between them.
+
+- Fix bugs wrt normalizing aliases and module names
+
+- Fix bug wrt inserting an alias that resolves to multiple modules: we should
+  not stop on the first error, but rather continue to try loading other
+  modules.
+
+- Fix unaligned memory access in hash function, causing depmod to output wrong
+  information in ARMv5
+
+- Fix man page build and install: now they are only installed if tools are
+  enabled
+
 kmod 4
 ======
 
