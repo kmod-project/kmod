@@ -38,6 +38,9 @@ Features:
 
 * Stop using system() inside the library and use fork + exec instead
 
+* Add tests for --show-depends: we need to first trap calls to
+  kmod_module_get_path(), because it's printed to stdout/stderr.
+
 Known Bugs:
 ===========
 

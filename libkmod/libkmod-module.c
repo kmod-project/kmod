@@ -1132,7 +1132,8 @@ KMOD_EXPORT int kmod_module_probe_insert_module(struct kmod_module *mod,
 	if (mod == NULL)
 		return -ENOENT;
 
-	if (module_is_inkernel(mod)) {
+	if (!(flags & KMOD_PROBE_IGNORE_LOADED)
+					&& module_is_inkernel(mod)) {
 		if (flags & KMOD_PROBE_FAIL_ON_LOADED)
 			return -EEXIST;
 		else
