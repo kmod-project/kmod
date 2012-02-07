@@ -56,18 +56,15 @@ static int alias_1(const struct test *t)
 
 	return EXIT_SUCCESS;
 }
-static const struct test salias_1 = {
-	.name = "alias_1",
+static DEFINE_TEST(alias_1,
 	.description = "check if alias_normalize does the right thing",
-	.func = alias_1,
 	.config = {
 		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-alias/",
 	},
 	.need_spawn = true,
 	.output = {
 		.stdout = TESTSUITE_ROOTFS "test-alias/correct.txt",
-	},
-};
+	});
 
 static const struct test *tests[] = {
 	&salias_1,

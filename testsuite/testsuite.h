@@ -101,10 +101,11 @@ int test_run(const struct test *t);
 #define ERR(fmt, ...) _LOG("ERR: ", fmt, ## __VA_ARGS__)
 
 /* Test definitions */
-#define DEFINE_TEST(_name) \
-	struct test s_name = { \
+#define DEFINE_TEST(_name, ...) \
+	const struct test s##_name = { \
 		.name = #_name, \
 		.func = _name, \
+		## __VA_ARGS__ \
 	}
 
 #define TESTSUITE_MAIN(_tests) \

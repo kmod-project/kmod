@@ -38,11 +38,8 @@ static int test_initlib(const struct test *t)
 
 	exit(EXIT_SUCCESS);
 }
-static const struct test stest_initlib = {
-	.name = "test_initlib",
-	.description = "test if libkmod's init function work",
-	.func = test_initlib,
-};
+static DEFINE_TEST(test_initlib,
+		.description = "test if libkmod's init function work");
 
 static int test_insert(const struct test *t)
 {
@@ -70,16 +67,13 @@ static int test_insert(const struct test *t)
 
 	exit(EXIT_SUCCESS);
 }
-static const struct test stest_insert = {
-	.name = "test_insert",
+static DEFINE_TEST(test_insert,
 	.description = "test if libkmod's insert_module returns ok",
-	.func = test_insert,
 	.config = {
 		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-modinfo/",
 		[TC_INIT_MODULE_RETCODES] = "bla:1:20",
 	},
-	.need_spawn = true,
-};
+	.need_spawn = true);
 
 static int test_remove(const struct test *t)
 {
@@ -107,16 +101,13 @@ static int test_remove(const struct test *t)
 
 	exit(EXIT_SUCCESS);
 }
-static const struct test stest_remove = {
-	.name = "test_remove",
+static DEFINE_TEST(test_remove,
 	.description = "test if libkmod's remove_module returns ok",
-	.func = test_remove,
 	.config = {
 		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-modinfo/",
 		[TC_DELETE_MODULE_RETCODES] = "bla:1:20",
 	},
-	.need_spawn = true,
-};
+	.need_spawn = true);
 
 static const struct test *tests[] = {
 	&stest_initlib,

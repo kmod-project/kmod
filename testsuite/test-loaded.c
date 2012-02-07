@@ -77,18 +77,15 @@ static int loaded_1(const struct test *t)
 
 	return EXIT_SUCCESS;
 }
-static const struct test sloaded_1 = {
-	.name = "sloaded_1",
+static DEFINE_TEST(loaded_1,
 	.description = "check if list of module is created",
-	.func = loaded_1,
 	.config = {
 		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-loaded/",
 	},
 	.need_spawn = true,
 	.output = {
 		.stdout = TESTSUITE_ROOTFS "test-loaded/correct.txt",
-	},
-};
+	});
 
 static const struct test *tests[] = {
 	&sloaded_1,

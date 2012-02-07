@@ -59,19 +59,15 @@ static int from_name(const struct test *t)
 
 	return EXIT_SUCCESS;
 }
-static const struct test sfrom_name = {
-	.name = "sfrom_name",
+static DEFINE_TEST(from_name,
 	.description = "check if module names are parsed correctly",
-	.func = from_name,
 	.config = {
 		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-new-module/from_name/",
 	},
 	.need_spawn = true,
 	.output = {
 		.stdout = TESTSUITE_ROOTFS "test-new-module/from_name/correct.txt",
-	},
-};
-
+	});
 
 static int from_alias(const struct test *t)
 {
@@ -108,18 +104,15 @@ static int from_alias(const struct test *t)
 
 	return EXIT_SUCCESS;
 }
-static const struct test sfrom_alias = {
-	.name = "sfrom_alias",
+static DEFINE_TEST(from_alias,
 	.description = "check if aliases are parsed correctly",
-	.func = from_alias,
 	.config = {
 		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-new-module/from_alias/",
 	},
 	.need_spawn = true,
 	.output = {
 		.stdout = TESTSUITE_ROOTFS "test-new-module/from_alias/correct.txt",
-	},
-};
+	});
 
 static const struct test *tests[] = {
 	&sfrom_name,
