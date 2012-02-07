@@ -74,30 +74,4 @@ static const struct test *tests[] = {
 	NULL,
 };
 
-int main(int argc, char *argv[])
-{
-	const struct test *t;
-	int arg;
-	size_t i;
-
-	arg = test_init(argc, argv, tests);
-	if (arg == 0)
-		return 0;
-
-	if (arg < argc) {
-		t = test_find(tests, argv[arg]);
-		if (t == NULL) {
-			fprintf(stderr, "could not find test %s\n", argv[arg]);
-			exit(EXIT_FAILURE);
-		}
-
-		return test_run(t);
-	}
-
-	for (i = 0; tests[i] != NULL; i++) {
-		if (test_run(tests[i]) != 0)
-			exit(EXIT_FAILURE);
-	}
-
-	exit(EXIT_SUCCESS);
-}
+TESTSUITE_MAIN(tests);
