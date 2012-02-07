@@ -28,30 +28,32 @@ pay attention when writing a test:
 
 1 - Look at testsuite.h, struct test, to see all the options available.
 
-2 - Fill in the name and description. Convention is to have the name equal to
-    the function used to test and the struct name as s<function-name>
+2 - Use TESTSUITE_MAIN and DEFINE_TEST to add new tests. Don't forget to fill
+    its description.
 
 3 - If you want testsuite to compare the stdout/stderr of your tests in order
-to check if it worked or not, fill in output.{stderr,stdout} the file with the
-expected output. Bare in mind the same file is used for all architectures, so
-don't print arch-dependent content if you are comparing the output.
+    to check if it worked or not, fill in output.{stderr,stdout} the file with
+    the expected output. Bare in mind the same file is used for all
+    architectures, so don't print arch-dependent content if you are comparing
+    the output.
 
 4 - Fill in the config vector. Setting any of these configuration will make
-testsuite to export LD_PRELOAD with the necessary override libs before
-executing the test. If you are not exec'ing an external binary, you need to
-pass "need_spawn = true" below, otherwise it will not work (LD_PRELOAD is only
-applied when exec'ing a binary). See each config description in testsuite.h
+    testsuite to export LD_PRELOAD with the necessary override libs before
+    executing the test. If you are not exec'ing an external binary, you need to
+    pass "need_spawn = true" below, otherwise it will not work (LD_PRELOAD is
+    only applied when exec'ing a binary). See each config description in
+    testsuite.h
 
 5 - need_spawn: if testsuite will exec itself before running a test
 
 6 - expected_fail: if that test is expected to fail, i.e. the return code is
-expected not to be 0.
+    expected not to be 0.
 
 7 - If you added files to the rootfs, be sure to compact it back to
-rootfs.tar.xz before sending patches.
+    rootfs.tar.xz before sending patches.
 
 8 - Tests can be run individually, outside of 'make check'. strace and gdb work
-too, as long as you tell them to operate on child process.
+    too, as long as you tell them to operate on child process.
 
 9 - Make sure test passes when using "default" build flags, i.e. by running
-bootstrap-configure instead of simpler bootstrap/autogen.sh
+    bootstrap-configure instead of simpler bootstrap/autogen.sh
