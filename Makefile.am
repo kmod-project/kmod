@@ -157,6 +157,11 @@ testsuite_init_module_la_LIBADD = libkmod/libkmod-private.la
 testsuite-distclean:
 	-rm -rf testsuite/rootfs
 
+testsuite-pack-rootfs:
+	$(AM_V_GEN) ( cd testsuite && tar -cJf \
+			$(abs_top_srcdir)/testsuite/rootfs.tar.xz \
+			rootfs )
+
 DISTCLEAN_LOCAL_HOOKS += testsuite-distclean
 EXTRA_DIST += testsuite/rootfs.tar.xz
 
