@@ -30,6 +30,8 @@ AC_PROG_MKDIR_P
 AC_PATH_PROG([XSLTPROC], [xsltproc])
 PKG_PROG_PKG_CONFIG
 
+AC_CHECK_FUNCS_ONCE(__xstat)
+
 AC_ARG_WITH([rootprefix],
         AS_HELP_STRING([--with-rootprefix=DIR], [rootfs directory prefix for config files and kernel modules]),
         [], [with_rootprefix=""])

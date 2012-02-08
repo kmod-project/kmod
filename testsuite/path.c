@@ -157,6 +157,7 @@ TS_EXPORT int stat(const char *path, struct stat *st)
 	return _stat(p, st);
 }
 
+#ifdef HAVE___XSTAT
 TS_EXPORT int __xstat(int ver, const char *path, struct stat *st)
 {
 	const char *p;
@@ -175,6 +176,7 @@ TS_EXPORT int __xstat(int ver, const char *path, struct stat *st)
 
 	return _xstat(ver, p, st);
 }
+#endif
 
 TS_EXPORT int access(const char *path, int mode)
 {
