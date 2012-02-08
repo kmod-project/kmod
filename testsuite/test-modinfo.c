@@ -25,7 +25,7 @@
 
 #include "testsuite.h"
 
-static int modinfo_jonsmodules(const struct test *t)
+static __noreturn int modinfo_jonsmodules(const struct test *t)
 {
 	const char *progname = ABS_TOP_BUILDDIR "/tools/modinfo";
 	const char *const args[] = {

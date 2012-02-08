@@ -25,7 +25,7 @@
 
 #include "testsuite.h"
 
-static int modprobe_show_depends(const struct test *t)
+static __noreturn int modprobe_show_depends(const struct test *t)
 {
 	const char *progname = ABS_TOP_BUILDDIR "/tools/modprobe";
 	const char *const args[] = {
@@ -47,7 +47,7 @@ static DEFINE_TEST(modprobe_show_depends,
 		.stdout = TESTSUITE_ROOTFS "test-modprobe/show-depends/correct.txt",
 	});
 
-static int modprobe_show_depends2(const struct test *t)
+static __noreturn int modprobe_show_depends2(const struct test *t)
 {
 	const char *progname = ABS_TOP_BUILDDIR "/tools/modprobe";
 	const char *const args[] = {

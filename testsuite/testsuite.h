@@ -138,3 +138,5 @@ int test_run(const struct test *t);
 	}							\
 
 #endif
+
+#define __noreturn __attribute__((noreturn))
