@@ -1013,7 +1013,6 @@ static int __kmod_module_fill_softdep(struct kmod_module *mod,
 		goto fail;
 	}
 	*list = l;
-	mod->visited = true;
 	mod->ignorecmd = (pre != NULL || post != NULL);
 
 	kmod_list_foreach(l, post) {
@@ -1043,6 +1042,7 @@ static int __kmod_module_get_probe_list(struct kmod_module *mod,
 								mod->name);
 		return 0;
 	}
+	mod->visited = true;
 
 	dep = kmod_module_get_dependencies(mod);
 	kmod_list_foreach(l, dep) {
