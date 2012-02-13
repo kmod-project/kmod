@@ -793,7 +793,7 @@ struct index_mm *index_mm_open(struct kmod_ctx *ctx, const char *filename,
 	}
 
 	if ((fd = open(filename, O_RDONLY|O_CLOEXEC)) < 0) {
-		ERR(ctx, "open(%s, O_RDONLY|O_CLOEXEC): %m\n", filename);
+		DBG(ctx, "open(%s, O_RDONLY|O_CLOEXEC): %m\n", filename);
 		goto fail_open;
 	}
 
