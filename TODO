@@ -38,6 +38,21 @@ Features:
 
 * Stop using system() inside the library and use fork + exec instead
 
+* testsuite:
+   - allow to set PATH, so install commands can contain tools in them
+   - when fake init_module() succeeds, create an entry in /sys/module
+   - when fake delete_module() succeeds, remove its entry from /sys/module
+   - add test for dependency loop _with install commands_ relying on module
+     already been loaded in order to succeed. E.g.:
+         install vboxdrv modprobe -i vboxdrv; modprobe -i vboxnetflt
+   - check if vboxdrv bug is the same of alsa package in Debian
+
+* add quirk so we don't calculate dependencies for modules already loaded -
+  that shall fix the bug of vboxdrv and alsa above
+
+* search /lib/modules/$(uname -r)/modules.builtin.bin before returning error
+  that module was not found
+
 Known Bugs:
 ===========
 
