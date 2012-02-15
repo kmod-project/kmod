@@ -39,7 +39,6 @@ Features:
 * Stop using system() inside the library and use fork + exec instead
 
 * testsuite:
-   - allow to set PATH, so install commands can contain tools in them
    - when fake init_module() succeeds, create an entry in /sys/module
    - when fake delete_module() succeeds, remove its entry from /sys/module
    - add test for dependency loop _with install commands_ relying on module

@@ -445,6 +445,29 @@ static inline int test_run_parent(const struct test *t, int fdout[2],
 	return err;
 }
 
+static int prepend_path(const char *extra)
+{
+	char *oldpath, *newpath;
+	int r;
+
+	if (extra == NULL)
+		return 0;
+
+	oldpath = getenv("PATH");
+	if (oldpath == NULL)
+		return setenv("PATH", extra, 1);
+
+	if (asprintf(&newpath, "%s:%s", extra, oldpath) < 0) {
+		ERR("failed to allocate memory to new PATH");
+		return -1;
+	}
+
+	r = setenv("PATH", newpath, 1);
+	free(newpath);
+
+	return r;
+}
+
 int test_run(const struct test *t)
 {
 	pid_t pid;
@@ -466,6 +489,11 @@ int test_run(const struct test *t)
 			ERR("could not create err pipe for %s\n", t->name);
 			return EXIT_FAILURE;
 		}
+	}
+
+	if (prepend_path(t->path) < 0) {
+		ERR("failed to prepend '%s' to PATH\n", t->path);
+		return EXIT_FAILURE;
 	}
 
 	LOG("running %s, in forked context\n", t->name);
