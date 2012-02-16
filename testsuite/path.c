@@ -98,7 +98,7 @@ TS_EXPORT FILE *fopen(const char *path, const char *mode)
 {
 	const char *p;
 	char buf[PATH_MAX * 2];
-	static int (*_fopen)(const char *path, const char *mode);
+	static FILE* (*_fopen)(const char *path, const char *mode);
 
 	if (!get_rootpath(__func__))
 		return NULL;
@@ -109,7 +109,7 @@ TS_EXPORT FILE *fopen(const char *path, const char *mode)
 	if (p == NULL)
 		return NULL;
 
-	return (void *) (long) (*_fopen)(p, mode);
+	return (*_fopen)(p, mode);
 }
 
 TS_EXPORT int open(const char *path, int flags, ...)
@@ -200,7 +200,7 @@ TS_EXPORT DIR *opendir(const char *path)
 {
 	const char *p;
 	char buf[PATH_MAX * 2];
-	static int (*_opendir)(const char *path);
+	static DIR* (*_opendir)(const char *path);
 
 	if (!get_rootpath(__func__))
 		return NULL;
@@ -211,5 +211,5 @@ TS_EXPORT DIR *opendir(const char *path)
 	if (p == NULL)
 		return NULL;
 
-	return (void *)(long)(*_opendir)(p);
+	return (*_opendir)(p);
 }
