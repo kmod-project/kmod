@@ -427,7 +427,7 @@ static inline int test_run_parent(const struct test *t, int fdout[2],
 		if (err == 0) {
 			if (matchout) {
 				LOG("%sUNEXPECTED PASS%s: %s\n",
-					ANSI_HIGHLIGHT_GREEN_ON, ANSI_HIGHLIGHT_OFF,
+					ANSI_HIGHLIGHT_RED_ON, ANSI_HIGHLIGHT_OFF,
 					t->name);
 				err = EXIT_FAILURE;
 			} else
