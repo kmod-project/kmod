@@ -68,9 +68,31 @@ static DEFINE_TEST(modprobe_show_depends2,
 	.output = {
 		.stdout = TESTSUITE_ROOTFS "test-modprobe/show-depends/correct-psmouse.txt",
 	});
+
+static __noreturn int modprobe_builtin(const struct test *t)
+{
+	const char *progname = ABS_TOP_BUILDDIR "/tools/modprobe";
+	const char *const args[] = {
+		progname,
+		"unix",
+		NULL,
+	};
+
+	test_spawn_prog(progname, args);
+	exit(EXIT_FAILURE);
+}
+static DEFINE_TEST(modprobe_builtin,
+	.description = "check if modprobe return 0 for builtin",
+	.expected_fail = true,
+	.config = {
+		[TC_UNAME_R] = "4.4.4",
+		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-modprobe/builtin",
+	});
+
 static const struct test *tests[] = {
 	&smodprobe_show_depends,
 	&smodprobe_show_depends2,
+	&smodprobe_builtin,
 	NULL,
 };
 
