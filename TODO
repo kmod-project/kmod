@@ -49,9 +49,6 @@ Features:
 * add quirk so we don't calculate dependencies for modules already loaded -
   that shall fix the bug of vboxdrv and alsa above
 
-* search /lib/modules/$(uname -r)/modules.builtin.bin before returning error
-  that module was not found
-
 Known Bugs:
 ===========
 

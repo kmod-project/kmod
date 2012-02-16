@@ -80,6 +80,13 @@ struct kmod_module {
 	 * whether the module's command and softdep should be ignored
 	 */
 	bool ignorecmd : 1;
+
+	/*
+	 * if module was created by searching the modules.builtin file, this
+	 * is set. There's nothing much useful one can do with such a
+	 * "module", except knowing it's builtin.
+	 */
+	bool builtin : 1;
 };
 
 static inline const char *path_join(const char *path, size_t prefixlen,
@@ -101,12 +108,13 @@ static inline const char *path_join(const char *path, size_t prefixlen,
 static inline bool module_is_inkernel(struct kmod_module *mod)
 {
 	int state = kmod_module_get_initstate(mod);
+
 	if (state == KMOD_MODULE_LIVE ||
 			state == KMOD_MODULE_COMING ||
 			state == KMOD_MODULE_BUILTIN)
 		return true;
-	else
-		return false;
+
+	return false;
 }
 
 int kmod_module_parse_depline(struct kmod_module *mod, char *line)
@@ -189,6 +197,11 @@ fail:
 void kmod_module_set_visited(struct kmod_module *mod, bool visited)
 {
 	mod->visited = visited;
+}
+
+void kmod_module_set_builtin(struct kmod_module *mod, bool builtin)
+{
+	mod->builtin = builtin;
 }
 
 /*
@@ -524,6 +537,10 @@ KMOD_EXPORT int kmod_module_new_from_lookup(struct kmod_ctx *ctx,
 
 	DBG(ctx, "lookup modules.aliases %s\n", alias);
 	err = kmod_lookup_alias_from_aliases_file(ctx, alias, list);
+	CHECK_ERR_AND_FINISH(err, fail, list, finish);
+
+	DBG(ctx, "lookup modules.builtin %s\n", alias);
+	err = kmod_lookup_alias_from_builtin_file(ctx, alias, list);
 	CHECK_ERR_AND_FINISH(err, fail, list, finish);
 
 finish:
@@ -1592,6 +1609,9 @@ KMOD_EXPORT int kmod_module_get_initstate(const struct kmod_module *mod)
 
 	if (mod == NULL)
 		return -ENOENT;
+
+	if (mod->builtin)
+		return KMOD_MODULE_BUILTIN;
 
 	pathlen = snprintf(path, sizeof(path),
 				"/sys/module/%s/initstate", mod->name);

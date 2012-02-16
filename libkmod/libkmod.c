@@ -37,7 +37,7 @@
 
 #define KMOD_HASH_SIZE (256)
 #define KMOD_LRU_MAX (128)
-#define _KMOD_INDEX_MODULES_SIZE KMOD_INDEX_MODULES_SYMBOL + 1
+#define _KMOD_INDEX_MODULES_SIZE KMOD_INDEX_MODULES_BUILTIN + 1
 
 /**
  * SECTION:libkmod
@@ -54,6 +54,7 @@ static struct _index_files {
 	[KMOD_INDEX_MODULES_DEP] = { .fn = "modules.dep", .prefix = "" },
 	[KMOD_INDEX_MODULES_ALIAS] = { .fn = "modules.alias", .prefix = "alias " },
 	[KMOD_INDEX_MODULES_SYMBOL] = { .fn = "modules.symbols", .prefix = "alias "},
+	[KMOD_INDEX_MODULES_BUILTIN] = { .fn = "modules.builtin", .prefix = ""},
 };
 
 static const char *default_config_paths[] = {
@@ -474,6 +475,24 @@ int kmod_lookup_alias_from_aliases_file(struct kmod_ctx *ctx, const char *name,
 {
 	return kmod_lookup_alias_from_alias_bin(ctx, KMOD_INDEX_MODULES_ALIAS,
 								name, list);
+}
+
+int kmod_lookup_alias_from_builtin_file(struct kmod_ctx *ctx, const char *name,
+						struct kmod_list **list)
+{
+	const struct kmod_list *l;
+
+	int err = kmod_lookup_alias_from_alias_bin(ctx,
+					KMOD_INDEX_MODULES_BUILTIN, name, list);
+	if (err < 0)
+		return err;
+
+	kmod_list_foreach(l, *list) {
+		struct kmod_module *m = l->data;
+		kmod_module_set_builtin(m, true);
+	}
+
+	return err;
 }
 
 char *kmod_search_moddep(struct kmod_ctx *ctx, const char *name)

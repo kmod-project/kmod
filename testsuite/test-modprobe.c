@@ -83,7 +83,6 @@ static __noreturn int modprobe_builtin(const struct test *t)
 }
 static DEFINE_TEST(modprobe_builtin,
 	.description = "check if modprobe return 0 for builtin",
-	.expected_fail = true,
 	.config = {
 		[TC_UNAME_R] = "4.4.4",
 		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-modprobe/builtin",
