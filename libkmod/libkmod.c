@@ -515,7 +515,7 @@ char *kmod_search_moddep(struct kmod_ctx *ctx, const char *name)
 
 	idx = index_file_open(fn);
 	if (idx == NULL) {
-		ERR(ctx, "could not open moddep file '%s'\n", fn);
+		DBG(ctx, "could not open moddep file '%s'\n", fn);
 		return NULL;
 	}
 
