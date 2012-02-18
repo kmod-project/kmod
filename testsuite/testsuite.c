@@ -205,7 +205,7 @@ static inline int test_run_child(const struct test *t, int fdout[2],
 	if (t->output.stdout != NULL) {
 		close(fdout[0]);
 		if (dup2(fdout[1], STDOUT_FILENO) < 0) {
-			ERR("could not redirect stdout to pipe: %m");
+			ERR("could not redirect stdout to pipe: %m\n");
 			exit(EXIT_FAILURE);
 		}
 	}
@@ -213,7 +213,7 @@ static inline int test_run_child(const struct test *t, int fdout[2],
 	if (t->output.stderr != NULL) {
 		close(fderr[0]);
 		if (dup2(fderr[1], STDERR_FILENO) < 0) {
-			ERR("could not redirect stdout to pipe: %m");
+			ERR("could not redirect stdout to pipe: %m\n");
 			exit(EXIT_FAILURE);
 		}
 	}
@@ -458,7 +458,7 @@ static int prepend_path(const char *extra)
 		return setenv("PATH", extra, 1);
 
 	if (asprintf(&newpath, "%s:%s", extra, oldpath) < 0) {
-		ERR("failed to allocate memory to new PATH");
+		ERR("failed to allocate memory to new PATH\n");
 		return -1;
 	}
 

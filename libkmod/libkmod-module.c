@@ -1012,7 +1012,8 @@ static int __kmod_module_fill_softdep(struct kmod_module *mod,
 
 	err = kmod_module_get_softdeps(mod, &pre, &post);
 	if (err < 0) {
-		ERR(mod->ctx, "could not get softdep: %s", strerror(-err));
+		ERR(mod->ctx, "could not get softdep: %s\n",
+							strerror(-err));
 		goto fail;
 	}
 

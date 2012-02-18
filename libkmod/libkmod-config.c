@@ -568,7 +568,7 @@ static int kmod_config_parse(struct kmod_config *config, int fd,
 	fp = fdopen(fd, "r");
 	if (fp == NULL) {
 		err = -errno;
-		ERR(config->ctx, "fd %d: %m", fd);
+		ERR(config->ctx, "fd %d: %m\n", fd);
 		close(fd);
 		return err;
 	}
