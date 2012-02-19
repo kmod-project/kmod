@@ -1192,7 +1192,17 @@ KMOD_EXPORT int kmod_module_probe_insert_module(struct kmod_module *mod,
 		struct kmod_module *m = l->data;
 		const char *moptions = kmod_module_get_options(m);
 		const char *cmd = kmod_module_get_install_commands(m);
-		char *options = module_options_concat(moptions,
+		char *options;
+
+		if (!(flags & KMOD_PROBE_IGNORE_LOADED)
+						&& module_is_inkernel(m)) {
+			DBG(mod->ctx, "Ignoring module '%s': already loaded\n",
+								m->name);
+			err = -EEXIST;
+			goto finish_module;
+		}
+
+		options = module_options_concat(moptions,
 					m == mod ? extra_options : NULL);
 
 		if (cmd != NULL && !m->ignorecmd) {
@@ -1203,13 +1213,6 @@ KMOD_EXPORT int kmod_module_probe_insert_module(struct kmod_module *mod,
 				err = module_do_install_commands(m, options,
 									&cb);
 		} else {
-			if (!(flags & KMOD_PROBE_IGNORE_LOADED)
-						&& module_is_inkernel(m)) {
-				DBG(mod->ctx, "Ignoring module '%s': "
-						"already loaded\n", m->name);
-				err = -EEXIST;
-				goto finish_module;
-			}
 			if (print_action != NULL)
 				print_action(m, false, options ?: "");
 
@@ -1218,9 +1221,9 @@ KMOD_EXPORT int kmod_module_probe_insert_module(struct kmod_module *mod,
 								options);
 		}
 
-finish_module:
 		free(options);
 
+finish_module:
 		/*
 		 * Treat "already loaded" error. If we were told to stop on
 		 * already loaded and the module being loaded is not a softdep
