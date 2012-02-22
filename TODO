@@ -1,12 +1,19 @@
 Features:
 =========
 
-* config: configs that do not need to be matched by fnmatch() could be using a
-  vector instead of a list. This way we could search in it by calling
-  bsearch().
+* testsuite:
+   - when fake init_module() succeeds, create an entry in /sys/module
+   - when fake delete_module() succeeds, remove its entry from /sys/module
+   - add test for dependency loop _with install commands_ relying on module
+     already been loaded in order to succeed. E.g.: alsa install rules on
+     debian:
 
-* index: drop the "open(), seek(), read()" implementation and use another one
-  with mmap(). When lookup() is called and the file is not mmaped, mmap it.
+   install snd /sbin/modprobe --ignore-install snd && { /sbin/modprobe --quiet snd-ioctl32 ; /sbin/modprobe --quiet snd-seq ; }
+   install snd_rawmidi /sbin/modprobe --ignore-install snd-rawmidi && { /sbin/modprobe --quiet snd-seq-midi ; : ; }
+   install snd_emu10k1 /sbin/modprobe --ignore-install snd-emu10k1 && { /sbin/modprobe --quiet snd-emu10k1-synth ; : ; }
+   install snd_pcm modprobe --ignore-install snd-pcm $CMDLINE_OPTS && { modprobe --quiet snd-pcm-oss ; : ; }
+   install snd_mixer modprobe --ignore-install snd-mixer $CMDLINE_OPTS && { modprobe --quiet snd-mixer-oss ; : ; }
+   install snd_seq modprobe --ignore-install snd-seq $CMDLINE_OPTS && { modprobe --quiet snd-seq-midi ; modprobe --quiet snd-seq-oss ; : ; }
 
 * review API, maybe unify all of these setters:
    - kmod_module_version_get_symbol()
@@ -19,46 +26,21 @@ Features:
    - kmod_module_symbols_free_list()
    - kmod_module_dependency_symbols_free_list()
 
-* provide modules.archive, a cache file with all modules compressed
-  and a fast access. It's like a tar.gz, but with each entry
-  compressed as opposed to the whole tar compressed, easy to pick
-  individual entries, that is, more like .gz.tar. As zlib compression
-  does not store the uncompressed file size, this could provide
-  it. The file format should be something like:
-     MAGIC-ID
-     DIRECTORY-ENTRY-SIZE
-     DIRECTORY (hash-like format, points to file offset and size)
-     ENTRIES (each is a compressed module)
-  Helper binary to:
-     kmod-archive list
-     kmod-archive add path.ko
-     kmod-archive rm path.ko
-     kmod-archive get path.ko
-     kmod-archive exists path.ko
-
 * Stop using system() inside the library and use fork + exec instead
 
-* testsuite:
-   - when fake init_module() succeeds, create an entry in /sys/module
-   - when fake delete_module() succeeds, remove its entry from /sys/module
-   - add test for dependency loop _with install commands_ relying on module
-     already been loaded in order to succeed. E.g.:
-         install vboxdrv modprobe -i vboxdrv; modprobe -i vboxnetflt
-   - check if vboxdrv bug is the same of alsa package in Debian
+* config: configs that do not need to be matched by fnmatch() could be using a
+  vector instead of a list. This way we could search in it by calling
+  bsearch().
 
-* add quirk so we don't calculate dependencies for modules already loaded -
-  that shall fix the bug of vboxdrv and alsa above
-
-Known Bugs:
-===========
-
+* index: drop the "open(), seek(), read()" implementation and use another one
+  with mmap(). When lookup() is called and the file is not mmaped, mmap it.
 
 Things to be added/removed in kernel (check what is really needed):
 ===================================================================
 
 * list of currently loaded modules
-	- readdir() in /sys/modules: dirs without a 'initstate' file mean the
-	  modules is builtin.
+	- readdir() in /sys/modules: dir without a 'initstate' file means the
+	  module is builtin.
 
 * module's size should be available under /sys
 	- DONE in 3.3: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux.git;a=commit;h=cca3e707301862ca9b9327e6a732463982f8cd1b
@@ -76,18 +58,14 @@ modprobe
 
 * 'modprobe -t' is gone, together with 'modprobe -l'
 
-* there's and additional '--remove-dependencies' flags to kmod-modprobe so we
+* there's and additional '--remove-dependencies' flags to modprobe so we
   can remove modules depending on that one
 
-* kmod-modprobe doesn't parse configuration files whose name don't end on
-  '.alias'  or '.conf'. modprobe used to warn about these files.
+* modprobe doesn't parse configuration files with names not ending in
+  '.alias' or '.conf'. modprobe used to warn about these files.
 
-* kmod-modprobe doesn't parse 'config' and 'include' commands in configuration
+* modprobe doesn't parse 'config' and 'include' commands in configuration
   files.
-
-* we don't use <module-dir>/modules.builtin{,.bin} indexes. Instead we rely on
-  module appearing on /sys/modules/* without a initstate file to determine if
-  it is builtin.
 
 * modprobe from m-i-t does not honour softdeps for install commands. E.g.:
   config:
