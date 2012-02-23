@@ -4,6 +4,7 @@
 /.dirstamp
 /test-alias
 /test-blacklist
+/test-dependencies
 /test-init
 /test-loaded
 /test-modinfo

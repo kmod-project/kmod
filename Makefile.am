@@ -161,7 +161,7 @@ testsuite_libtestsuite_la_CPPFLAGS = $(TESTSUITE_CPPFLAGS)
 
 TESTSUITE = testsuite/test-init testsuite/test-testsuite testsuite/test-loaded \
 	    testsuite/test-modinfo testsuite/test-alias testsuite/test-new-module \
-	    testsuite/test-modprobe testsuite/test-blacklist
+	    testsuite/test-modprobe testsuite/test-blacklist testsuite/test-dependencies
 check_PROGRAMS = $(TESTSUITE)
 TESTS = $(TESTSUITE)
 
@@ -181,6 +181,8 @@ testsuite_test_modprobe_LDADD = $(TESTSUITE_LDADD)
 testsuite_test_modprobe_CPPFLAGS = $(TESTSUITE_CPPFLAGS)
 testsuite_test_blacklist_LDADD = $(TESTSUITE_LDADD)
 testsuite_test_blacklist_CPPFLAGS = $(TESTSUITE_CPPFLAGS)
+testsuite_test_dependencies_LDADD = $(TESTSUITE_LDADD)
+testsuite_test_dependencies_CPPFLAGS = $(TESTSUITE_CPPFLAGS)
 
 testsuite-distclean:
 	-find testsuite/rootfs-dirty -type d -exec chmod +w {} \;
