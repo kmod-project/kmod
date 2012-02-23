@@ -3,6 +3,7 @@
 *.so
 /.dirstamp
 /test-alias
+/test-blacklist
 /test-init
 /test-loaded
 /test-modinfo
