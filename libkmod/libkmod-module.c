@@ -110,7 +110,6 @@ static inline bool module_is_inkernel(struct kmod_module *mod)
 	int state = kmod_module_get_initstate(mod);
 
 	if (state == KMOD_MODULE_LIVE ||
-			state == KMOD_MODULE_COMING ||
 			state == KMOD_MODULE_BUILTIN)
 		return true;
 
