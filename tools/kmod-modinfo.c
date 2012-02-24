@@ -274,7 +274,7 @@ static int modinfo_path_do(struct kmod_ctx *ctx, const char *path)
 
 static int modinfo_alias_do(struct kmod_ctx *ctx, const char *alias)
 {
-	struct kmod_list *l, *list = NULL;
+	struct kmod_list *l, *filtered, *list = NULL;
 	int err = kmod_module_new_from_lookup(ctx, alias, &list);
 	if (err < 0) {
 		LOG("Module alias %s not found.\n", alias);
@@ -286,14 +286,26 @@ static int modinfo_alias_do(struct kmod_ctx *ctx, const char *alias)
 		return -ENOENT;
 	}
 
-	kmod_list_foreach(l, list) {
+	err = kmod_module_apply_filter(ctx, KMOD_FILTER_BUILTIN, list, &filtered);
+	kmod_module_unref_list(list);
+	if (err < 0) {
+		LOG("Failed to filter list: %m\n");
+		return err;
+	}
+
+	if (filtered == NULL) {
+		LOG("Module %s not found.\n", alias);
+		return -ENOENT;
+	}
+
+	kmod_list_foreach(l, filtered) {
 		struct kmod_module *mod = kmod_module_get_module(l);
 		int r = modinfo_do(mod);
 		kmod_module_unref(mod);
 		if (r < 0)
 			err = r;
 	}
-	kmod_module_unref_list(list);
+	kmod_module_unref_list(filtered);
 	return err;
 }
 
