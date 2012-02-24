@@ -43,10 +43,18 @@ Information
 ===========
 
 Signed packages:
-	http://packages.profusion.mobi/kmod/
+	http://www.kernel.org/pub/linux/utils/kernel/kmod/
 
 Mailing list:
 	linux-modules@vger.kernel.org
 
-Repository:
-	git://git.profusion.mobi/
+Git:
+	git://git.kernel.org/pub/scm/utils/kernel/kmod/kmod.git
+	http://git.kernel.org/pub/scm/utils/kernel/kmod/kmod.git
+	https://git.kernel.org/pub/scm/utils/kernel/kmod/kmod.git
+
+Gitweb:
+	http://git.kernel.org/?p=utils/kernel/kmod/kmod.git
+
+Irc:
+	#kmod on irc.freenode.org

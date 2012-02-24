@@ -221,4 +221,4 @@ kmod-$(VERSION).tar.sign:
 tar: kmod-$(VERSION).tar.xz kmod-$(VERSION).tar.sign
 
 tar-sync: kmod-$(VERSION).tar.xz kmod-$(VERSION).tar.sign
-	scp $^ packages.profusion.mobi:/var/www/packages/kmod/
+	kup put kmod-$(VERSION).tar.xz  kmod-$(VERSION).tar.sign /pub/linux/utils/kernel/kmod/

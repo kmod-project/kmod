@@ -3,7 +3,7 @@ AC_INIT([kmod],
 	[5],
 	[linux-modules@vger.kernel.org],
 	[kmod],
-	[http://git.profusion.mobi/cgit.cgi/kmod.git/])
+	[http://git.kernel.org/?p=utils/kernel/kmod/kmod.git])
 
 AC_CONFIG_SRCDIR([libkmod/libkmod.c])
 AC_CONFIG_AUX_DIR([build-aux])
