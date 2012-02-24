@@ -162,6 +162,12 @@ enum kmod_probe {
 	KMOD_PROBE_APPLY_BLACKLIST =		0x20000,
 };
 
+/* Flags to kmod_module_apply_filter() */
+enum kmod_filter {
+	KMOD_FILTER_BLACKLIST = 0x00001,
+	KMOD_FILTER_BUILTIN = 0x00002,
+};
+
 int kmod_module_remove_module(struct kmod_module *mod, unsigned int flags);
 int kmod_module_insert_module(struct kmod_module *mod, unsigned int flags,
 							const char *options);
@@ -183,6 +189,10 @@ struct kmod_list *kmod_module_get_dependencies(const struct kmod_module *mod);
 int kmod_module_get_softdeps(const struct kmod_module *mod,
 				struct kmod_list **pre, struct kmod_list **post);
 int kmod_module_get_filtered_blacklist(const struct kmod_ctx *ctx,
+					const struct kmod_list *input,
+					struct kmod_list **output) __attribute__ ((deprecated));
+int kmod_module_apply_filter(const struct kmod_ctx *ctx,
+					enum kmod_filter filter_type,
 					const struct kmod_list *input,
 					struct kmod_list **output);
 

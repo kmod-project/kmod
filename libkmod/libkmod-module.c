@@ -577,8 +577,10 @@ KMOD_EXPORT int kmod_module_unref_list(struct kmod_list *list)
  * @input: list of kmod_module to be filtered with blacklist
  * @output: where to save the new list
  *
+ * Deprecated: use kmod_module_apply_filter instead.
+ *
  * Given a list @input, this function filter it out with config's blacklist
- * ans save it in @output.
+ * and save it in @output.
  *
  * Returns: 0 on success or < 0 otherwise. @output is saved with the updated
  * list.
@@ -587,49 +589,7 @@ KMOD_EXPORT int kmod_module_get_filtered_blacklist(const struct kmod_ctx *ctx,
 						const struct kmod_list *input,
 						struct kmod_list **output)
 {
-	const struct kmod_list *li;
-	const struct kmod_list *blacklist;
-
-	if (ctx == NULL || output == NULL)
-		return -ENOENT;
-
-	*output = NULL;
-	if (input == NULL)
-		return 0;
-
-	blacklist = kmod_get_blacklists(ctx);
-	kmod_list_foreach(li, input) {
-		struct kmod_module *mod = li->data;
-		const struct kmod_list *lb;
-		struct kmod_list *node;
-		bool filtered = false;
-
-		kmod_list_foreach(lb, blacklist) {
-			const char *name = lb->data;
-
-			if (streq(name, mod->name)) {
-				filtered = true;
-				break;
-			}
-		}
-
-		if (filtered)
-			continue;
-
-		node = kmod_list_append(*output, mod);
-		if (node == NULL)
-			goto fail;
-
-		*output = node;
-		kmod_module_ref(mod);
-	}
-
-	return 0;
-
-fail:
-	kmod_module_unref_list(*output);
-	*output = NULL;
-	return -ENOMEM;
+	return kmod_module_apply_filter(ctx, KMOD_FILTER_BLACKLIST, input, output);
 }
 
 static const struct kmod_list *module_get_dependencies_noref(const struct kmod_module *mod)
@@ -891,6 +851,61 @@ static bool module_is_blacklisted(struct kmod_module *mod)
 	}
 
 	return false;
+}
+
+/**
+ * kmod_module_apply_filter
+ * @ctx: kmod library context
+ * @filter_type: bitmask to filter modules on
+ * @input: list of kmod_module to be filtered
+ * @output: where to save the new list
+ *
+ * Given a list @input, this function filter it out by the filter mask
+ * and save it in @output.
+ *
+ * Returns: 0 on success or < 0 otherwise. @output is saved with the updated
+ * list.
+ */
+KMOD_EXPORT int kmod_module_apply_filter(const struct kmod_ctx *ctx,
+						enum kmod_filter filter_type,
+						const struct kmod_list *input,
+						struct kmod_list **output)
+{
+	const struct kmod_list *li;
+
+	if (ctx == NULL || output == NULL)
+		return -ENOENT;
+
+	*output = NULL;
+	if (input == NULL)
+		return 0;
+
+	kmod_list_foreach(li, input) {
+		struct kmod_module *mod = li->data;
+		struct kmod_list *node;
+
+		if ((filter_type & KMOD_FILTER_BLACKLIST) &&
+				module_is_blacklisted(mod))
+			continue;
+
+		if ((filter_type & KMOD_FILTER_BUILTIN) &&
+				kmod_module_get_initstate(mod) == KMOD_MODULE_BUILTIN)
+			continue;
+
+		node = kmod_list_append(*output, mod);
+		if (node == NULL)
+			goto fail;
+
+		*output = node;
+		kmod_module_ref(mod);
+	}
+
+	return 0;
+
+fail:
+	kmod_module_unref_list(*output);
+	*output = NULL;
+	return -ENOMEM;
 }
 
 static int command_do(struct kmod_module *mod, const char *type,
@@ -1172,8 +1187,8 @@ KMOD_EXPORT int kmod_module_probe_insert_module(struct kmod_module *mod,
 	if (flags & KMOD_PROBE_APPLY_BLACKLIST_ALL) {
 		struct kmod_list *filtered = NULL;
 
-		err = kmod_module_get_filtered_blacklist(mod->ctx,
-							list, &filtered);
+		err = kmod_module_apply_filter(mod->ctx,
+				KMOD_FILTER_BLACKLIST, list, &filtered);
 		if (err < 0)
 			return err;
 

@@ -82,3 +82,8 @@ global:
 local:
         *;
 };
+
+LIBKMOD_6 {
+global:
+	kmod_module_apply_filter;
+} LIBKMOD_5;
