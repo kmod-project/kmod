@@ -888,8 +888,7 @@ KMOD_EXPORT int kmod_module_apply_filter(const struct kmod_ctx *ctx,
 				module_is_blacklisted(mod))
 			continue;
 
-		if ((filter_type & KMOD_FILTER_BUILTIN) &&
-				kmod_module_get_initstate(mod) == KMOD_MODULE_BUILTIN)
+		if ((filter_type & KMOD_FILTER_BUILTIN) && mod->builtin)
 			continue;
 
 		node = kmod_list_append(*output, mod);
