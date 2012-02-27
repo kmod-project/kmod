@@ -18,6 +18,7 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stddef.h>
@@ -480,18 +481,53 @@ int kmod_lookup_alias_from_aliases_file(struct kmod_ctx *ctx, const char *name,
 int kmod_lookup_alias_from_builtin_file(struct kmod_ctx *ctx, const char *name,
 						struct kmod_list **list)
 {
-	const struct kmod_list *l;
+	char *line = NULL;
+	int err = 0;
 
-	int err = kmod_lookup_alias_from_alias_bin(ctx,
-					KMOD_INDEX_MODULES_BUILTIN, name, list);
-	if (err < 0)
-		return err;
+	assert(*list == NULL);
 
-	kmod_list_foreach(l, *list) {
-		struct kmod_module *m = l->data;
-		kmod_module_set_builtin(m, true);
+	if (ctx->indexes[KMOD_INDEX_MODULES_BUILTIN]) {
+		DBG(ctx, "use mmaped index '%s' modname=%s\n",
+				index_files[KMOD_INDEX_MODULES_BUILTIN].fn,
+				name);
+		line = index_mm_search(ctx->indexes[KMOD_INDEX_MODULES_BUILTIN],
+									name);
+	} else {
+		struct index_file *idx;
+		char fn[PATH_MAX];
+
+		snprintf(fn, sizeof(fn), "%s/%s.bin", ctx->dirname,
+				index_files[KMOD_INDEX_MODULES_BUILTIN].fn);
+		DBG(ctx, "file=%s modname=%s\n", fn, name);
+
+		idx = index_file_open(fn);
+		if (idx == NULL) {
+			DBG(ctx, "could not open builtin file '%s'\n", fn);
+			goto finish;
+		}
+
+		line = index_search(idx, name);
+		index_file_close(idx);
 	}
 
+	if (line != NULL) {
+		struct kmod_module *mod;
+
+		err = kmod_module_new_from_name(ctx, name, &mod);
+		if (err < 0) {
+			ERR(ctx, "Could not create module from name %s: %s\n",
+							name, strerror(-err));
+			goto finish;
+		}
+
+		kmod_module_set_builtin(mod, true);
+		*list = kmod_list_append(*list, mod);
+		if (*list == NULL)
+			err = -ENOMEM;
+	}
+
+finish:
+	free(line);
 	return err;
 }
 

@@ -485,6 +485,7 @@ static char *index_search__node(struct index_node_f *node, const char *key, int 
  */
 char *index_search(struct index_file *in, const char *key)
 {
+// FIXME: return value by reference instead of strdup
 	struct index_node_f *root;
 	char *value;
 
@@ -958,6 +959,7 @@ static char *index_mm_search_node(struct index_mm_node *node, const char *key,
  */
 char *index_mm_search(struct index_mm *idx, const char *key)
 {
+// FIXME: return value by reference instead of strdup
 	struct index_mm_node *root;
 	char *value;
 
