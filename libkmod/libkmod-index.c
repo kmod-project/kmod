@@ -458,13 +458,12 @@ static char *index_search__node(struct index_node_f *node, const char *key, int 
 		i += j;
 
 		if (key[i] == '\0') {
-			if (node->values) {
-				value = strdup(node->values[0].value);
-				index_close(node);
-				return value;
-			} else {
-				return NULL;
-			}
+			value = node->values != NULL
+				? strdup(node->values[0].value)
+				: NULL;
+
+			index_close(node);
+			return value;
 		}
 
 		child = index_readchild(node, key[i]);
@@ -932,13 +931,12 @@ static char *index_mm_search_node(struct index_mm_node *node, const char *key,
 		i += j;
 
 		if (key[i] == '\0') {
-			if (node->values.len > 0) {
-				value = strdup(node->values.values[0].value);
-				index_mm_free_node(node);
-				return value;
-			} else {
-				return NULL;
-			}
+			value = node->values.len > 0
+				? strdup(node->values.values[0].value)
+				: NULL;
+
+			index_mm_free_node(node);
+			return value;
 		}
 
 		child = index_mm_readchild(node, key[i]);
