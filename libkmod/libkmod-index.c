@@ -771,10 +771,9 @@ static void index_mm_free_node(struct index_mm_node *node)
 }
 
 struct index_mm *index_mm_open(struct kmod_ctx *ctx, const char *filename,
-				bool populate, unsigned long long *stamp)
+						unsigned long long *stamp)
 {
 	int fd;
-	int flags;
 	struct stat st;
 	struct index_mm *idx;
 	struct {
@@ -798,14 +797,11 @@ struct index_mm *index_mm_open(struct kmod_ctx *ctx, const char *filename,
 	}
 
 	fstat(fd, &st);
-	flags = MAP_PRIVATE;
-	if (populate)
-		flags |= MAP_POPULATE;
 
-	if ((idx->mm = mmap(0, st.st_size, PROT_READ, flags, fd, 0))
+	if ((idx->mm = mmap(0, st.st_size, PROT_READ, MAP_PRIVATE, fd, 0))
 							== MAP_FAILED) {
-		ERR(ctx, "mmap(0, %zd, PROT_READ, %d, %d, 0): %m\n",
-		    (size_t)st.st_size, flags, fd);
+		ERR(ctx, "mmap(0, %zd, PROT_READ, %d, MAP_PRIVATE, 0): %m\n",
+							st.st_size, fd);
 		goto fail;
 	}
 

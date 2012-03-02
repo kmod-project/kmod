@@ -807,7 +807,7 @@ KMOD_EXPORT int kmod_load_resources(struct kmod_ctx *ctx)
 
 		snprintf(path, sizeof(path), "%s/%s.bin", ctx->dirname,
 							index_files[i].fn);
-		ctx->indexes[i] = index_mm_open(ctx, path, true,
+		ctx->indexes[i] = index_mm_open(ctx, path,
 						&ctx->indexes_stamp[i]);
 		if (ctx->indexes[i] == NULL)
 			goto fail;
