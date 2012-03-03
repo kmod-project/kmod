@@ -25,6 +25,7 @@
 #include <errno.h>
 #include <fnmatch.h>
 #include <assert.h>
+#include <inttypes.h>
 
 #include "libkmod-private.h"
 #include "libkmod-index.h"
@@ -800,7 +801,7 @@ struct index_mm *index_mm_open(struct kmod_ctx *ctx, const char *filename,
 
 	if ((idx->mm = mmap(0, st.st_size, PROT_READ, MAP_PRIVATE, fd, 0))
 							== MAP_FAILED) {
-		ERR(ctx, "mmap(0, %zd, PROT_READ, %d, MAP_PRIVATE, 0): %m\n",
+		ERR(ctx, "mmap(0, %"PRIu64", PROT_READ, %d, MAP_PRIVATE, 0): %m\n",
 							st.st_size, fd);
 		goto fail;
 	}
