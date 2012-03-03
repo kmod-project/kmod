@@ -1,3 +1,27 @@
+kmod 6
+======
+
+- New API in libkmod:
+	- kmod_module_apply_filter(): a generic function to apply filters in a
+	  list of modules. This deprecates the use of
+	  kmod_module_get_filtered_blacklist()
+
+- More tests in testsuite
+
+- Add compatibility with uClibc again
+
+- Lookup modules.builtin.bin to decide if a module is built in kernel
+
+- Downgrade some log messages so we don't annoy people with useless messages
+
+- Bug fixes:
+	- Flag --ignore-loaded was not being properly handled
+	- Infinite loop with softdeps
+	- Infinite loop with dumb user configuration with install commands
+	- Fix leak in index when there's a partial match
+
+- Move repository and tarballs to kernel.org
+
 kmod 5
 ======
 
