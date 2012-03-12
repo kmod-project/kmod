@@ -23,7 +23,7 @@ typedef struct {
     struct kmod_ctx *ctx;
 } kmodobject;
 
-static PyTypeObject LibKmodType;
+static PyTypeObject KmodType;
 
 static PyObject *LibKmodError;
 
@@ -33,15 +33,16 @@ static PyObject *LibKmodError;
  */
 
 static int
-libkmod_init(kmodobject *self, PyObject *arg)
+libkmod_init(PyObject *self, PyObject *args, PyObject *kwds)
 {
+    kmodobject *kmod = (kmodobject *)self;
     char *mod_dir = NULL;
 
-    if (!PyArg_ParseTuple(arg, "|s", &mod_dir))
+    if (!PyArg_ParseTuple(args, "|s", &mod_dir))
        return -1;
 
-    self->ctx = kmod_new(mod_dir, NULL);
-    if (!self->ctx) {
+    kmod->ctx = kmod_new(mod_dir, NULL);
+    if (!kmod->ctx) {
         PyErr_SetFromErrno(PyExc_OSError);
         return -1;
     }
@@ -50,11 +51,13 @@ libkmod_init(kmodobject *self, PyObject *arg)
 }
 
 static void
-libkmod_dealloc(kmodobject *self)
+libkmod_dealloc(PyObject *self)
 {
+    kmodobject *kmod = (kmodobject *)self;
+
     /* if already closed, don't reclose it */
-    if (self->ctx != NULL){
-	    kmod_unref(self->ctx);
+    if (kmod->ctx != NULL){
+	    kmod_unref(kmod->ctx);
     }
     //self->ob_type->tp_free((PyObject*)self);
     PyObject_Del(self);
@@ -76,47 +79,17 @@ static PyMethodDef Libkmod_methods[] = {
     { NULL,             NULL}           /* sentinel */
 };
 
-static PyTypeObject LibKmodType = {
+
+static PyTypeObject KmodType = {
     PyObject_HEAD_INIT(NULL)
-    0,                         /*ob_size*/
-    "kmod.kmod",             /*tp_name*/
-    sizeof(kmodobject),             /*tp_basicsize*/
-    0,                         /*tp_itemsize*/
-    (destructor)libkmod_dealloc, /*tp_dealloc*/
-    0,                         /*tp_print*/
-    0,                         /*tp_getattr*/
-    0,                         /*tp_setattr*/
-    0,                         /*tp_compare*/
-    0,                         /*tp_repr*/
-    0,                         /*tp_as_number*/
-    0,                         /*tp_as_sequence*/
-    0,                         /*tp_as_mapping*/
-    0,                         /*tp_hash */
-    0,                         /*tp_call*/
-    0,                         /*tp_str*/
-    0,                         /*tp_getattro*/
-    0,                         /*tp_setattro*/
-    0,                         /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /*tp_flags*/
-    "Libkmod objects",           /* tp_doc */
-    0,                       /* tp_traverse */
-    0,                       /* tp_clear */
-    0,                       /* tp_richcompare */
-    0,                       /* tp_weaklistoffset */
-    0,                       /* tp_iter */
-    0,                       /* tp_iternext */
-    Libkmod_methods,             /* tp_methods */
-    0,             /* tp_members */
-    0,                         /* tp_getset */
-    0,                         /* tp_base */
-    0,                         /* tp_dict */
-    0,                         /* tp_descr_get */
-    0,                         /* tp_descr_set */
-    0,                         /* tp_dictoffset */
-    (initproc)libkmod_init,      /* tp_init */
-    0,                         /* tp_alloc */
-    0,
-    //(newfunc)Libkmod_new,                 /* tp_new */
+    .tp_name = "kmod.kmod",
+    .tp_basicsize = sizeof(kmodobject),
+    //.tp_new = PyType_GenericNew,
+    .tp_init = libkmod_init,
+    .tp_dealloc = libkmod_dealloc,
+    .tp_flags =Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = "Libkmod objects",
+    .tp_methods = Libkmod_methods,
 };
 
 #ifndef PyMODINIT_FUNC    /* declarations for DLL import/export */
@@ -127,16 +100,16 @@ initlibkmod(void)
 {
     PyObject *m;
 
-    LibKmodType.tp_new = PyType_GenericNew;
-    if (PyType_Ready(&LibKmodType) < 0)
+    KmodType.tp_new = PyType_GenericNew;
+    if (PyType_Ready(&KmodType) < 0)
         return;
 
     m = Py_InitModule3("libkmod", Libkmod_methods, "Libkmod module");
     if (m == NULL)
         return;
 
-    Py_INCREF(&LibKmodType);
-    PyModule_AddObject(m, "LibKmod", (PyObject *)&LibKmodType);
+    Py_INCREF(&KmodType);
+    PyModule_AddObject(m, "Kmod", (PyObject *)&KmodType);
 
     LibKmodError = PyErr_NewException("Libkmod.LibKmodError",
                                       NULL, NULL);
