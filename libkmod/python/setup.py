@@ -1,10 +1,10 @@
 from distutils.core import setup, Extension
 
-libkmod = Extension('libkmod',
+libkmod = Extension('kmod',
                     sources = ['libkmod.c'],
                     libraries= ['kmod'])
 
-setup (name = 'libkmod',
+setup (name = 'kmod',
        version = '1.0',
        description = 'Python binding for kmod',
        ext_modules = [libkmod])
