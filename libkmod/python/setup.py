@@ -5,6 +5,6 @@ libkmod = Extension('kmod',
                     libraries= ['kmod'])
 
 setup (name = 'kmod',
-       version = '1.0',
+       version = '0.1',
        description = 'Python binding for kmod',
        ext_modules = [libkmod])
