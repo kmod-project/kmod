@@ -27,19 +27,32 @@ static PyTypeObject KmodObjType;
 
 static PyObject *KmodError;
 
+/* ----------------------------------------------------------------------
+ * kmod toplevel module methods
+ */
+static PyObject *
+kmod_library_get_version(PyObject *self, PyObject *unused_args)
+{
+    return Py_BuildValue("s", "0.1");
+}
 
 /* ----------------------------------------------------------------------
- * kmod object initialization/deallocation
+ * Kmod object initialization/deallocation
  */
-
 static int
-libkmod_init(PyObject *self, PyObject *args, PyObject *kwds)
+kmod_obj_init(PyObject *self, PyObject *args, PyObject *kwds)
 {
     kmodobject *kmod = (kmodobject *)self;
     char *mod_dir = NULL;
 
     if (!PyArg_ParseTuple(args, "|s", &mod_dir))
        return -1;
+
+    /* init can be called multiple times */
+    if (kmod->ctx) {
+	    kmod_unload_resources(kmod->ctx);
+	    kmod_unref(kmod->ctx);
+    }
 
     kmod->ctx = kmod_new(mod_dir, NULL);
     if (!kmod->ctx) {
@@ -53,7 +66,7 @@ libkmod_init(PyObject *self, PyObject *args, PyObject *kwds)
 }
 
 static void
-libkmod_dealloc(PyObject *self)
+kmod_obj_dealloc(PyObject *self)
 {
     kmodobject *kmod = (kmodobject *)self;
 
@@ -67,14 +80,11 @@ libkmod_dealloc(PyObject *self)
     PyObject_Del(self);
 }
 
+/*
+ * list currently loaded modules and sizes
+ */
 static PyObject *
-libkmod_library_get_version(kmodobject *self)
-{
-    return Py_BuildValue("s", "whatup dude v1.234");
-}
-
-static PyObject *
-libkmod_kmod_loaded_modules(PyObject *self, PyObject *unused_args)
+kmod_obj_loaded_modules(PyObject *self, PyObject *unused_args)
 {
     kmodobject *kmod = (kmodobject *)self;
     struct kmod_list *list, *itr;
@@ -106,7 +116,7 @@ libkmod_kmod_loaded_modules(PyObject *self, PyObject *unused_args)
 }
 
 static PyObject *
-libkmod_kmod_modprobe(PyObject *self, PyObject *args)
+kmod_obj_modprobe(PyObject *self, PyObject *args)
 {
     kmodobject *kmod = (kmodobject *)self;
     struct kmod_list *list = NULL, *itr;
@@ -154,7 +164,7 @@ err:
 }
 
 static PyObject *
-libkmod_kmod_rmmod(PyObject *self, PyObject *args)
+kmod_obj_rmmod(PyObject *self, PyObject *args)
 {
     kmodobject *kmod = (kmodobject *)self;
     struct kmod_module *mod;
@@ -186,29 +196,32 @@ libkmod_kmod_rmmod(PyObject *self, PyObject *args)
  * Method tables and other bureaucracy
  */
 
-static PyMethodDef Libkmod_methods[] = {
-    { "getVersion",          (PyCFunction)libkmod_library_get_version, METH_NOARGS },
-    { NULL,             NULL}           /* sentinel */
+static PyMethodDef kmod_lib_methods[] = {
+    {"getVersion", kmod_library_get_version, METH_NOARGS },
+    {NULL, NULL}           /* sentinel */
 };
 
-static PyMethodDef kmodobj_methods[] = {
-    { "loaded_modules", libkmod_kmod_loaded_modules, METH_NOARGS },
-    { "modprobe", libkmod_kmod_modprobe, METH_VARARGS },
-    { "rmmod", libkmod_kmod_rmmod, METH_VARARGS },
-    { NULL,             NULL}           /* sentinel */
+static PyMethodDef kmod_obj_methods[] = {
+	{"loaded_modules", kmod_obj_loaded_modules, METH_NOARGS,
+	"List loaded kernel modules, and their sizes"},
+	{"modprobe", kmod_obj_modprobe, METH_VARARGS,
+	"Load a kernel module"},
+	{"rmmod", kmod_obj_rmmod, METH_VARARGS,
+	"Unload a kernel module"},
+	{NULL, NULL}           /* sentinel */
 };
 
 
 static PyTypeObject KmodObjType = {
     PyObject_HEAD_INIT(NULL)
-    .tp_name = "kmod.kmod",
+    .tp_name = "kmod.Kmod",
     .tp_basicsize = sizeof(kmodobject),
     .tp_new = PyType_GenericNew,
-    .tp_init = libkmod_init,
-    .tp_dealloc = libkmod_dealloc,
+    .tp_init = kmod_obj_init,
+    .tp_dealloc = kmod_obj_dealloc,
     .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = "Libkmod objects",
-    .tp_methods = kmodobj_methods,
+    .tp_doc = "kmod.Kmod object",
+    .tp_methods = kmod_obj_methods,
 };
 
 #ifndef PyMODINIT_FUNC    /* declarations for DLL import/export */
@@ -222,7 +235,7 @@ initkmod(void)
     if (PyType_Ready(&KmodObjType) < 0)
         return;
 
-    m = Py_InitModule3("kmod", Libkmod_methods, "kmod module");
+    m = Py_InitModule3("kmod", kmod_lib_methods, "kmod module");
     if (!m)
         return;
 
