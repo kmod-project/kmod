@@ -1,10 +1,13 @@
 python-kmod
 ===========
 
-Python bindings for libkmod
+Python bindings for kmod/libkmod
 
-libkmod is a C library to make inserting, removing, and listing
-Linux kernel modules easier. It can be found at:
+kmod is a set of tools to handle common tasks with Linux kernel modules like
+insert, remove, list, check properties, resolve dependencies and aliases.
+
+These tools are designed on top of libkmod, a library that is shipped with
+kmod. It can be found at:
 
 http://git.kernel.org/?p=utils/kernel/kmod/kmod.git;a=summary
 
