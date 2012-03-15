@@ -413,22 +413,17 @@ static int rmmod_do_module(struct kmod_module *mod, bool do_dependencies)
 		int state = kmod_module_get_initstate(mod);
 
 		if (state < 0) {
-			LOG ("Module %s not found.\n", modname);
-			err = -ENOENT;
+			if (first_time) {
+				LOG("Module %s is not in kernel.\n", modname);
+				err = -ENOENT;
+			} else {
+				err = 0;
+			}
 			goto error;
 		} else if (state == KMOD_MODULE_BUILTIN) {
 			LOG("Module %s is builtin.\n", modname);
 			err = -ENOENT;
 			goto error;
-		} else if (state != KMOD_MODULE_LIVE) {
-			if (first_time) {
-				LOG("Module %s is not in kernel.\n", modname);
-				err = -ENOENT;
-				goto error;
-			} else {
-				err = 0;
-				goto error;
-			}
 		}
 	}
 
@@ -480,8 +475,10 @@ static int rmmod(struct kmod_ctx *ctx, const char *alias)
 	if (err < 0)
 		return err;
 
-	if (list == NULL)
+	if (list == NULL) {
 		LOG("Module %s not found.\n", alias);
+		err = -ENOENT;
+	}
 
 	kmod_list_foreach(l, list) {
 		struct kmod_module *mod = kmod_module_get_module(l);
