@@ -999,7 +999,7 @@ static int do_modprobe(int argc, char **orig_argv)
 	else if (do_show_modversions)
 		err = show_modversions(ctx, args[0]);
 	else if (do_remove)
-		err = rmmod_all(ctx, args, use_all ? nargs : 1);
+		err = rmmod_all(ctx, args, nargs);
 	else if (use_all)
 		err = insmod_all(ctx, args, nargs);
 	else {
