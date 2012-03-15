@@ -923,7 +923,7 @@ static int do_modprobe(int argc, char **orig_argv)
 			break;
 		case 'q':
 			env_modprobe_options_append("-q");
-			verbose--;
+			verbose = LOG_EMERG;
 			break;
 		case 'v':
 			env_modprobe_options_append("-v");
