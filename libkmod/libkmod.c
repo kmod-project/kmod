@@ -59,8 +59,8 @@ static struct _index_files {
 };
 
 static const char *default_config_paths[] = {
-	"/run/modprobe.d",
 	SYSCONFDIR "/modprobe.d",
+	"/run/modprobe.d",
 	ROOTPREFIX "/lib/modprobe.d",
 	NULL
 };
