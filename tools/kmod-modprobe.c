@@ -17,6 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -538,13 +539,21 @@ static int handle_failed_lookup(struct kmod_ctx *ctx, const char *alias)
 static void print_action(struct kmod_module *m, bool install,
 							const char *options)
 {
-	if (install)
+	const char *path;
+
+	if (install) {
 		printf("install %s %s\n", kmod_module_get_install_commands(m),
 								options);
-	else
-		kmod_module_get_initstate(m) == KMOD_MODULE_BUILTIN
-			? printf("builtin %s\n", kmod_module_get_name(m))
-			: printf("insmod %s %s\n", kmod_module_get_path(m), options);
+		return;
+	}
+
+	path = kmod_module_get_path(m);
+
+	if (path == NULL) {
+		assert(kmod_module_get_initstate(m) == KMOD_MODULE_BUILTIN);
+		printf("builtin %s\n", kmod_module_get_name(m));
+	} else
+		printf("insmod %s %s\n", kmod_module_get_path(m), options);
 }
 
 static int insmod(struct kmod_ctx *ctx, const char *alias,
