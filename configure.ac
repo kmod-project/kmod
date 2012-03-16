@@ -126,9 +126,11 @@ CC_CHECK_CFLAGS_APPEND([ \
 			-fdiagnostics-show-option \
 			-fvisibility=hidden \
 			-ffunction-sections \
-			-fdata-sections \
-			-Wl,--as-needed \
-			-Wl,--gc-sections])
+			-fdata-sections])
+
+CC_CHECK_LDFLAGS_APPEND([ \
+			 -Wl,--as-needed \
+			 -Wl,--gc-sections])
 
 AC_CONFIG_HEADERS(config.h)
 AC_CONFIG_FILES([
