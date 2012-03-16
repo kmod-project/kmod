@@ -81,15 +81,14 @@ AC_DEFUN([CC_CHECK_CFLAGS_APPEND], [
   done
 ])
 
-dnl Check if the flag is supported by linker (cacheable)
-dnl CC_CHECK_LDFLAGS([FLAG], [ACTION-IF-FOUND],[ACTION-IF-NOT-FOUND])
+dnl Check if the flag is supported by linker
+dnl CC_CHECK_LDFLAGS_SILENT([FLAG], [ACTION-IF-FOUND],[ACTION-IF-NOT-FOUND])
 
-AC_DEFUN([CC_CHECK_LDFLAGS], [
-  AC_CACHE_CHECK([if $CC supports $1 flag],
-    AS_TR_SH([cc_cv_ldflags_$1]),
+AC_DEFUN([CC_CHECK_LDFLAGS_SILENT], [
+  AC_CACHE_VAL(AS_TR_SH([cc_cv_ldflags_$1]),
     [ac_save_LDFLAGS="$LDFLAGS"
      LDFLAGS="$LDFLAGS $1"
-     AC_LINK_IFELSE([int main() { return 1; }],
+     AC_LINK_IFELSE([AC_LANG_SOURCE([int main() { return 1; }])],
        [eval "AS_TR_SH([cc_cv_ldflags_$1])='yes'"],
        [eval "AS_TR_SH([cc_cv_ldflags_$1])="])
      LDFLAGS="$ac_save_LDFLAGS"
@@ -97,6 +96,38 @@ AC_DEFUN([CC_CHECK_LDFLAGS], [
 
   AS_IF([eval test x$]AS_TR_SH([cc_cv_ldflags_$1])[ = xyes],
     [$2], [$3])
+])
+
+dnl Check if the flag is supported by linker (cacheable)
+dnl CC_CHECK_LDFLAGS([FLAG], [ACTION-IF-FOUND],[ACTION-IF-NOT-FOUND])
+
+AC_DEFUN([CC_CHECK_LDFLAGS], [
+  AC_CACHE_CHECK([if $CC supports $1 flag],
+    AS_TR_SH([cc_cv_ldflags_$1]),
+    CC_CHECK_LDFLAGS_SILENT([$1]) dnl Don't execute actions here!
+  )
+
+  AS_IF([eval test x$]AS_TR_SH([cc_cv_ldflags_$1])[ = xyes],
+    [$2], [$3])
+])
+
+dnl CC_CHECK_LDFLAG_APPEND(FLAG, [action-if-found], [action-if-not-found])
+dnl Check for LDFLAG and appends them to LDFLAGS if supported
+AC_DEFUN([CC_CHECK_LDFLAG_APPEND], [
+  AC_CACHE_CHECK([if $CC supports $1 flag],
+    AS_TR_SH([cc_cv_ldflags_$1]),
+    CC_CHECK_LDFLAGS_SILENT([$1]) dnl Don't execute actions here!
+  )
+
+  AS_IF([eval test x$]AS_TR_SH([cc_cv_ldflags_$1])[ = xyes],
+    [LDFLAGS="$LDFLAGS $1"; DEBUG_LDFLAGS="$DEBUG_LDFLAGS $1"; $2], [$3])
+])
+
+dnl CC_CHECK_LDFLAGS_APPEND([FLAG1 FLAG2], [action-if-found], [action-if-not])
+AC_DEFUN([CC_CHECK_LDFLAGS_APPEND], [
+  for flag in $1; do
+    CC_CHECK_LDFLAG_APPEND($flag, [$2], [$3])
+  done
 ])
 
 dnl define the LDFLAGS_NOUNDEFINED variable with the correct value for
