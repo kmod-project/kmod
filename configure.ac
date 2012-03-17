@@ -18,6 +18,10 @@ AM_SILENT_RULES([yes])
 LT_INIT([disable-static pic-only])
 AC_PREFIX_DEFAULT([/usr])
 
+#####################################################################
+# Program checks and configurations
+#####################################################################
+
 AC_PROG_CC
 AC_PROG_CC_C99
 AC_C_TYPEOF
@@ -30,7 +34,20 @@ AC_PROG_MKDIR_P
 AC_PATH_PROG([XSLTPROC], [xsltproc])
 PKG_PROG_PKG_CONFIG
 
+
+#####################################################################
+# Function and structure checks
+#####################################################################
+
 AC_CHECK_FUNCS_ONCE(__xstat)
+
+# dietlibc doesn't have st.st_mtim struct member
+AC_CHECK_MEMBERS([struct stat.st_mtim], [], [], [#include <sys/stat.h>])
+
+
+#####################################################################
+# --with-
+#####################################################################
 
 AC_ARG_WITH([rootprefix],
         AS_HELP_STRING([--with-rootprefix=DIR], [rootfs directory prefix for config files and kernel modules]),
@@ -41,18 +58,6 @@ AC_ARG_WITH([rootlibdir],
         AS_HELP_STRING([--with-rootlibdir=DIR], [rootfs directory to install shared libraries]),
         [], [with_rootlibdir=$libdir])
 AC_SUBST([rootlibdir], [$with_rootlibdir])
-
-AC_ARG_ENABLE([tools],
-        AS_HELP_STRING([--disable-tools], [disable building tools that provide same functionality as module-init-tools @<:@default=enabled@:>@]),
-	[], enable_tools=yes)
-AM_CONDITIONAL([BUILD_TOOLS], [test "x$enable_tools" = "xyes"])
-
-AC_ARG_ENABLE([logging],
-	AS_HELP_STRING([--disable-logging], [disable system logging @<:@default=enabled@:>@]),
-	[], enable_logging=yes)
-AS_IF([test "x$enable_logging" = "xyes"], [
-	AC_DEFINE(ENABLE_LOGGING, [1], [System logging.])
-])
 
 AC_ARG_WITH([xz],
 	AS_HELP_STRING([--with-xz], [handle Xz-compressed modules @<:@default=disabled@:>@]),
@@ -74,6 +79,23 @@ AS_IF([test "x$with_zlib" != "xno"], [
 	AC_MSG_NOTICE([zlib support not requested])
 ])
 
+
+#####################################################################
+# --enable-
+#####################################################################
+
+AC_ARG_ENABLE([tools],
+        AS_HELP_STRING([--disable-tools], [disable building tools that provide same functionality as module-init-tools @<:@default=enabled@:>@]),
+	[], enable_tools=yes)
+AM_CONDITIONAL([BUILD_TOOLS], [test "x$enable_tools" = "xyes"])
+
+AC_ARG_ENABLE([logging],
+	AS_HELP_STRING([--disable-logging], [disable system logging @<:@default=enabled@:>@]),
+	[], enable_logging=yes)
+AS_IF([test "x$enable_logging" = "xyes"], [
+	AC_DEFINE(ENABLE_LOGGING, [1], [System logging.])
+])
+
 AC_ARG_ENABLE([debug],
 	AS_HELP_STRING([--enable-debug], [enable debug messages @<:@default=disabled@:>@]),
 	[], [enable_debug=no])
@@ -81,8 +103,15 @@ AS_IF([test "x$enable_debug" = "xyes"], [
 	AC_DEFINE(ENABLE_DEBUG, [1], [Debug messages.])
 ])
 
-# dietlibc doesn't have st.st_mtim struct member
-AC_CHECK_MEMBERS([struct stat.st_mtim], [], [], [#include <sys/stat.h>])
+m4_ifdef([GTK_DOC_CHECK], [
+GTK_DOC_CHECK([1.14],[--flavour no-tmpl-flat])
+], [
+AM_CONDITIONAL([ENABLE_GTK_DOC], false)])
+
+
+#####################################################################
+# Default CFLAGS and LDFLAGS
+#####################################################################
 
 CC_CHECK_CFLAGS_APPEND([ \
 			-pipe \
@@ -132,6 +161,11 @@ CC_CHECK_LDFLAGS_APPEND([ \
 			 -Wl,--as-needed \
 			 -Wl,--gc-sections])
 
+
+#####################################################################
+# Generate files from *.in
+#####################################################################
+
 AC_CONFIG_HEADERS(config.h)
 AC_CONFIG_FILES([
 	Makefile
@@ -140,10 +174,8 @@ AC_CONFIG_FILES([
 	libkmod/docs/version.xml
 ])
 
-m4_ifdef([GTK_DOC_CHECK], [
-GTK_DOC_CHECK([1.14],[--flavour no-tmpl-flat])
-], [
-AM_CONDITIONAL([ENABLE_GTK_DOC], false)])
+
+#####################################################################
 
 AC_OUTPUT
 AC_MSG_RESULT([
