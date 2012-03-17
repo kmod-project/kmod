@@ -14,14 +14,8 @@ AM_CPPFLAGS = \
 	-DLIBEXECDIR=\""$(libexecdir)"\" \
 	${zlib_CFLAGS}
 
-AM_CFLAGS = \
-	-fvisibility=hidden \
-	-ffunction-sections \
-	-fdata-sections
-
-AM_LDFLAGS = \
-	-Wl,--gc-sections \
-	-Wl,--as-needed
+AM_CFLAGS = $(WARNINGFLAGS)
+AM_LDFLAGS = $(GCLDFLAGS)
 
 SED_PROCESS = \
 	$(AM_V_GEN)$(MKDIR_P) $(dir $@) && $(SED) \

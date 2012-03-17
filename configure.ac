@@ -113,54 +113,56 @@ AM_CONDITIONAL([ENABLE_GTK_DOC], false)])
 # Default CFLAGS and LDFLAGS
 #####################################################################
 
-CC_CHECK_CFLAGS_APPEND([ \
-			-pipe \
-			-DANOTHER_BRICK_IN_THE \
-			-Wall \
-			-W \
-			-Wextra \
-			-Wno-inline \
-			-Wvla \
-			-Wundef \
-			-Wformat=2 \
-			-Wlogical-op \
-			-Wsign-compare \
-			-Wformat-security \
-			-Wmissing-include-dirs \
-			-Wformat-nonliteral \
-			-Wold-style-definition \
-			-Wpointer-arith \
-			-Winit-self \
-			-Wdeclaration-after-statement \
-			-Wfloat-equal \
-			-Wmissing-prototypes \
-			-Wstrict-prototypes \
-			-Wredundant-decls \
-			-Wmissing-declarations \
-			-Wmissing-noreturn \
-			-Wshadow \
-			-Wendif-labels \
-			-Wstrict-aliasing=2 \
-			-Wwrite-strings \
-			-Wno-long-long \
-			-Wno-overlength-strings \
-			-Wno-unused-parameter \
-			-Wno-missing-field-initializers \
-			-Wno-unused-result \
-			-Wnested-externs \
-			-Wchar-subscripts \
-			-Wtype-limits \
-			-Wuninitialized \
-			-fno-common \
-			-fdiagnostics-show-option \
-			-fvisibility=hidden \
-			-ffunction-sections \
-			-fdata-sections])
+CC_CHECK_FLAGS_APPEND(with_cflags, [CFLAGS], [\
+		       -pipe \
+		       -DANOTHER_BRICK_IN_THE \
+		       -Wall \
+		       -W \
+		       -Wextra \
+		       -Wno-inline \
+		       -Wvla \
+		       -Wundef \
+		       -Wformat=2 \
+		       -Wlogical-op \
+		       -Wsign-compare \
+		       -Wformat-security \
+		       -Wmissing-include-dirs \
+		       -Wformat-nonliteral \
+		       -Wold-style-definition \
+		       -Wpointer-arith \
+		       -Winit-self \
+		       -Wdeclaration-after-statement \
+		       -Wfloat-equal \
+		       -Wmissing-prototypes \
+		       -Wstrict-prototypes \
+		       -Wredundant-decls \
+		       -Wmissing-declarations \
+		       -Wmissing-noreturn \
+		       -Wshadow \
+		       -Wendif-labels \
+		       -Wstrict-aliasing=2 \
+		       -Wwrite-strings \
+		       -Wno-long-long \
+		       -Wno-overlength-strings \
+		       -Wno-unused-parameter \
+		       -Wno-missing-field-initializers \
+		       -Wno-unused-result \
+		       -Wnested-externs \
+		       -Wchar-subscripts \
+		       -Wtype-limits \
+		       -Wuninitialized \
+		       -fno-common \
+		       -fdiagnostics-show-option \
+		       -fvisibility=hidden \
+		       -ffunction-sections \
+		       -fdata-sections])
+AC_SUBST([WARNINGFLAGS], $with_cflags)
 
-CC_CHECK_LDFLAGS_APPEND([ \
-			 -Wl,--as-needed \
-			 -Wl,--gc-sections])
 
+CC_CHECK_FLAGS_APPEND([with_ldflags], [LDFLAGS], [ \
+		       -Wl,--as-needed \
+		       -Wl,--gc-sections])
+AC_SUBST([GCLDFLAGS], $with_ldflags)
 
 #####################################################################
 # Generate files from *.in
@@ -191,8 +193,8 @@ AC_MSG_RESULT([
 	bindir:			${bindir}
 
 	compiler:		${CC}
-	cflags:			${CFLAGS}
-	ldflags:		${LDFLAGS}
+	cflags:			${with_cflags} ${CFLAGS}
+	ldflags:		${with_ldflags} ${LDFLAGS}
 
 	tools:			${enable_tools}
 	logging:		${enable_logging}
