@@ -1,3 +1,24 @@
+kmod 7
+======
+
+- Re-order dirs for configuration files to match the change in systemd and
+  udev: now the priority is:
+	1. /etc/modprobe.d
+	2. /run/modprobe.d
+	3. /lib/modprobe.d
+
+- Fix setting CFLAGS/LDFLAGS in build system. This prevents us from not
+  allowing user to set his preference
+
+- Bug fixes:
+	- Return same error codes of module-init-tools when removing modules
+	  with modprobe
+	- Fix builtin output in "--show-depends" when target kernel is not the
+	  same of the running kernel
+	- 'modprobe -r' always look at all command line arguments
+	- Fix '-q' usage in modprobe
+	-
+
 kmod 6
 ======
 
