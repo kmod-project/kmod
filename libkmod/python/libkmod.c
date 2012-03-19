@@ -97,15 +97,32 @@ kmod_obj_loaded_modules(PyObject *self, PyObject *unused_args)
     }
 
     PyObject *pylist = PyList_New(0);
+    if (!pylist) {
+        kmod_module_unref_list(list);
+        return PyErr_NoMemory();
+    }
 
+    /* refcountapallooza. */
     kmod_list_foreach(itr, list) {
         struct kmod_module *mod = kmod_module_get_module(itr);
         const char *name = kmod_module_get_name(mod);
         long size = kmod_module_get_size(mod);
 
 	PyObject *entry = Py_BuildValue("(sl)", name, size);
+	if (!entry) {
+            Py_DECREF(pylist);
+            kmod_module_unref(mod);
+            kmod_module_unref_list(list);
+            return NULL;
+        }
 
-	PyList_Append(pylist, entry);
+	if (PyList_Append(pylist, entry) == -1) {
+            Py_DECREF(entry);
+            Py_DECREF(pylist);
+            kmod_module_unref(mod);
+            kmod_module_unref_list(list);
+            return NULL;
+        }
 
 	Py_DECREF(entry);
         kmod_module_unref(mod);
