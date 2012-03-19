@@ -50,8 +50,8 @@ kmod_obj_init(PyObject *self, PyObject *args, PyObject *kwds)
 
     /* init can be called multiple times */
     if (kmod->ctx) {
-	    kmod_unload_resources(kmod->ctx);
-	    kmod_unref(kmod->ctx);
+        kmod_unload_resources(kmod->ctx);
+        kmod_unref(kmod->ctx);
     }
 
     kmod->ctx = kmod_new(mod_dir, NULL);
@@ -74,7 +74,7 @@ kmod_obj_dealloc(PyObject *self)
 
     /* if already closed, don't reclose it */
     if (kmod->ctx != NULL){
-	    kmod_unref(kmod->ctx);
+            kmod_unref(kmod->ctx);
     }
     //self->ob_type->tp_free((PyObject*)self);
     PyObject_Del(self);
@@ -108,15 +108,15 @@ kmod_obj_loaded_modules(PyObject *self, PyObject *unused_args)
         const char *name = kmod_module_get_name(mod);
         long size = kmod_module_get_size(mod);
 
-	PyObject *entry = Py_BuildValue("(sl)", name, size);
-	if (!entry) {
+        PyObject *entry = Py_BuildValue("(sl)", name, size);
+        if (!entry) {
             Py_DECREF(pylist);
             kmod_module_unref(mod);
             kmod_module_unref_list(list);
             return NULL;
         }
 
-	if (PyList_Append(pylist, entry) == -1) {
+        if (PyList_Append(pylist, entry) == -1) {
             Py_DECREF(entry);
             Py_DECREF(pylist);
             kmod_module_unref(mod);
@@ -124,7 +124,7 @@ kmod_obj_loaded_modules(PyObject *self, PyObject *unused_args)
             return NULL;
         }
 
-	Py_DECREF(entry);
+        Py_DECREF(entry);
         kmod_module_unref(mod);
     }
     kmod_module_unref_list(list);
@@ -154,18 +154,18 @@ kmod_obj_modprobe(PyObject *self, PyObject *args)
     kmod_list_foreach(itr, list) {
         mod = kmod_module_get_module(itr);
 
-	err = kmod_module_probe_insert_module(mod, flags,
-	    NULL, NULL, NULL, NULL);
+        err = kmod_module_probe_insert_module(mod, flags,
+            NULL, NULL, NULL, NULL);
 
-	if (err < 0) {
-		if (err == -EEXIST) {
-			PyErr_SetString(KmodError, "Module already loaded");
-			goto err;
-		} else {
-			PyErr_SetString(KmodError, "Could not load module");
-			goto err;
-		}
-	}
+        if (err < 0) {
+            if (err == -EEXIST) {
+                PyErr_SetString(KmodError, "Module already loaded");
+                    goto err;
+            } else {
+                PyErr_SetString(KmodError, "Could not load module");
+                    goto err;
+            }
+        }
 
         kmod_module_unref(mod);
     }
@@ -189,7 +189,7 @@ kmod_obj_rmmod(PyObject *self, PyObject *args)
     int err;
 
     if (!PyArg_ParseTuple(args, "s", &module_name))
-       return NULL;
+        return NULL;
 
     err = kmod_module_new_from_name(kmod->ctx, module_name, &mod);
     if (err < 0) {
@@ -199,9 +199,9 @@ kmod_obj_rmmod(PyObject *self, PyObject *args)
 
     err = kmod_module_remove_module(mod, 0);
     if (err < 0) {
-	    PyErr_SetString(KmodError, "Could not remove module");
-	    kmod_module_unref(mod);
-	    return NULL;
+        PyErr_SetString(KmodError, "Could not remove module");
+        kmod_module_unref(mod);
+        return NULL;
     }
     kmod_module_unref(mod);
 
@@ -219,13 +219,13 @@ static PyMethodDef kmod_lib_methods[] = {
 };
 
 static PyMethodDef kmod_obj_methods[] = {
-	{"loaded_modules", kmod_obj_loaded_modules, METH_NOARGS,
-	"List loaded kernel modules, and their sizes"},
-	{"modprobe", kmod_obj_modprobe, METH_VARARGS,
-	"Load a kernel module"},
-	{"rmmod", kmod_obj_rmmod, METH_VARARGS,
-	"Unload a kernel module"},
-	{NULL, NULL}           /* sentinel */
+    {"loaded_modules", kmod_obj_loaded_modules, METH_NOARGS,
+    "List loaded kernel modules, and their sizes"},
+    {"modprobe", kmod_obj_modprobe, METH_VARARGS,
+    "Load a kernel module"},
+    {"rmmod", kmod_obj_rmmod, METH_VARARGS,
+    "Unload a kernel module"},
+    {NULL, NULL}           /* sentinel */
 };
 
 
@@ -266,5 +266,4 @@ initkmod(void)
         Py_INCREF(KmodError);
         PyModule_AddObject(m, "KmodError", KmodError);
     }
-
 }
