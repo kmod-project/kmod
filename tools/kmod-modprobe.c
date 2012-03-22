@@ -218,7 +218,7 @@ static int show_config(struct kmod_ctx *ctx)
 		{ "install", kmod_config_get_install_commands },
 		{ "remove", kmod_config_get_remove_commands },
 		{ "alias", kmod_config_get_aliases },
-		{ "option", kmod_config_get_options },
+		{ "options", kmod_config_get_options },
 		{ "softdep", kmod_config_get_softdeps },
 	};
 	size_t i;
