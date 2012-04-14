@@ -577,7 +577,7 @@ KMOD_EXPORT int kmod_module_unref_list(struct kmod_list *list)
  * @input: list of kmod_module to be filtered with blacklist
  * @output: where to save the new list
  *
- * Deprecated: Use kmod_module_apply_filter instead.
+ * This function should not be used. Use kmod_module_apply_filter instead.
  *
  * Given a list @input, this function filter it out with config's blacklist
  * and save it in @output.

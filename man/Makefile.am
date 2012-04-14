@@ -11,6 +11,7 @@ EXTRA_DIST = $(MAN5:%.5=%.xml) $(MAN8:%.8=%.xml)
 
 XSLTPROC_FLAGS = \
 	--nonet \
+	--stringparam man.output.quietly 1 \
 	--param funcsynopsis.style "'ansi'"
 
 CLEANFILES = $(dist_man_MANS)
