@@ -35,6 +35,8 @@ Features:
 * index: drop the "open(), seek(), read()" implementation and use another one
   with mmap(). When lookup() is called and the file is not mmaped, mmap it.
 
+* Implement actions in kmod tool like 'insert', 'remove', 'info', etc
+
 Things to be added/removed in kernel (check what is really needed):
 ===================================================================
 
