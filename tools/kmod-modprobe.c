@@ -607,6 +607,11 @@ static int insmod(struct kmod_ctx *ctx, const char *alias,
 				ERR("could not insert '%s': Module already in kernel\n",
 							kmod_module_get_name(mod));
 				break;
+			case -ENOENT:
+				ERR("could not insert '%s': Unknown symbol in module, "
+						"or unknown parameter (see dmesg)\n",
+						kmod_module_get_name(mod));
+				break;
 			default:
 				ERR("could not insert '%s': %s\n",
 						kmod_module_get_name(mod),
