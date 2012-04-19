@@ -1000,7 +1000,7 @@ static struct kmod_config_iter *kmod_config_iter_new(const struct kmod_ctx* ctx,
  * kmod_config_iter_next(). At least one call to kmod_config_iter_next() must
  * be made to initialize the iterator and check if it's valid.
  *
- * Returns: a new iterator over the blacklists or %NULL on failure. Free it
+ * Returns: a new iterator over the blacklists or NULL on failure. Free it
  * with kmod_config_iter_free_iter().
  */
 KMOD_EXPORT struct kmod_config_iter *kmod_config_get_blacklists(const struct kmod_ctx *ctx)
@@ -1020,7 +1020,7 @@ KMOD_EXPORT struct kmod_config_iter *kmod_config_get_blacklists(const struct kmo
  * kmod_config_iter_next(). At least one call to kmod_config_iter_next() must
  * be made to initialize the iterator and check if it's valid.
  *
- * Returns: a new iterator over the install commands or %NULL on failure. Free
+ * Returns: a new iterator over the install commands or NULL on failure. Free
  * it with kmod_config_iter_free_iter().
  */
 KMOD_EXPORT struct kmod_config_iter *kmod_config_get_install_commands(const struct kmod_ctx *ctx)
@@ -1040,7 +1040,7 @@ KMOD_EXPORT struct kmod_config_iter *kmod_config_get_install_commands(const stru
  * kmod_config_iter_next(). At least one call to kmod_config_iter_next() must
  * be made to initialize the iterator and check if it's valid.
  *
- * Returns: a new iterator over the remove commands or %NULL on failure. Free
+ * Returns: a new iterator over the remove commands or NULL on failure. Free
  * it with kmod_config_iter_free_iter().
  */
 KMOD_EXPORT struct kmod_config_iter *kmod_config_get_remove_commands(const struct kmod_ctx *ctx)
@@ -1060,7 +1060,7 @@ KMOD_EXPORT struct kmod_config_iter *kmod_config_get_remove_commands(const struc
  * kmod_config_iter_next(). At least one call to kmod_config_iter_next() must
  * be made to initialize the iterator and check if it's valid.
  *
- * Returns: a new iterator over the aliases or %NULL on failure. Free it with
+ * Returns: a new iterator over the aliases or NULL on failure. Free it with
  * kmod_config_iter_free_iter().
  */
 KMOD_EXPORT struct kmod_config_iter *kmod_config_get_aliases(const struct kmod_ctx *ctx)
@@ -1080,7 +1080,7 @@ KMOD_EXPORT struct kmod_config_iter *kmod_config_get_aliases(const struct kmod_c
  * kmod_config_iter_next(). At least one call to kmod_config_iter_next() must
  * be made to initialize the iterator and check if it's valid.
  *
- * Returns: a new iterator over the options or %NULL on failure. Free it with
+ * Returns: a new iterator over the options or NULL on failure. Free it with
  * kmod_config_iter_free_iter().
  */
 KMOD_EXPORT struct kmod_config_iter *kmod_config_get_options(const struct kmod_ctx *ctx)
@@ -1100,7 +1100,7 @@ KMOD_EXPORT struct kmod_config_iter *kmod_config_get_options(const struct kmod_c
  * kmod_config_iter_next(). At least one call to kmod_config_iter_next() must
  * be made to initialize the iterator and check if it's valid.
  *
- * Returns: a new iterator over the softdeps or %NULL on failure. Free it with
+ * Returns: a new iterator over the softdeps or NULL on failure. Free it with
  * kmod_config_iter_free_iter().
  */
 KMOD_EXPORT struct kmod_config_iter *kmod_config_get_softdeps(const struct kmod_ctx *ctx)
