@@ -1,3 +1,15 @@
+kmod 8
+======
+
+- No new features, small bug fixes only.
+	- Fix bug in "modprobe -c" output: be compatible with
+	  module-init-tools
+
+	- Give an useful error message when init_module fails due to bad
+	  parameter or unknown symbol
+
+	- Fix doc generation
+
 kmod 7
 ======
 
