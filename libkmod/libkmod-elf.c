@@ -705,7 +705,6 @@ static int kmod_elf_get_symbols_symtab(const struct kmod_elf *elf, struct kmod_m
 		a[count].symbol = itr;
 		memcpy(itr, strings + last, slen);
 		itr[slen] = '\0';
-		itr += slen + 1;
 		count++;
 	}
 
