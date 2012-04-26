@@ -1402,7 +1402,7 @@ static int depmod_modules_search(struct depmod *depmod)
 
 	err = depmod_modules_search_dir(depmod, d, baselen, path);
 	closedir(d);
-	return 0;
+	return err;
 }
 
 static int mod_cmp(const void *pa, const void *pb) {
