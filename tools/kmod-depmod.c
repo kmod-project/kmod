@@ -1242,7 +1242,7 @@ static int depmod_modules_search_file(struct depmod *depmod, size_t baselen, siz
 	const struct kmod_ext *eitr;
 	size_t modnamelen;
 	uint8_t matches = 0;
-	int err = 0;
+	int err;
 
 	for (eitr = kmod_exts; eitr->ext != NULL; eitr++) {
 		if (namelen <= eitr->len)
