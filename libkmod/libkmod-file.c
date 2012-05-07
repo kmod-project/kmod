@@ -199,7 +199,13 @@ static int load_zlib(struct kmod_file *file)
 		if (r == 0)
 			break;
 		else if (r < 0) {
-			err = -errno;
+			int gzerr;
+			const char *gz_errmsg = gzerror(file->gzf, &gzerr);
+
+			ERR(file->ctx, "gzip: %s\n", gz_errmsg);
+
+			/* gzip might not set errno here */
+			err = gzerr == Z_ERRNO ? -errno : -EINVAL;
 			goto error;
 		}
 		did += r;
