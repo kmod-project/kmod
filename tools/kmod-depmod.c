@@ -1542,8 +1542,11 @@ static int depmod_load_symbols(struct depmod *depmod)
 		struct kmod_list *l, *list = NULL;
 		int err = kmod_module_get_symbols(mod->kmod, &list);
 		if (err < 0) {
-			DBG("ignoring %s: no symbols: %s\n",
-				mod->path, strerror(-err));
+			if (err == -ENOENT)
+				DBG("ignoring %s: no symbols\n", mod->path);
+			else
+				ERR("failed to load symbols from %s: %s\n",
+						mod->path, strerror(-err));
 			continue;
 		}
 		kmod_list_foreach(l, list) {
