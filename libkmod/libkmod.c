@@ -85,9 +85,9 @@ struct kmod_ctx {
 	unsigned long long indexes_stamp[_KMOD_INDEX_MODULES_SIZE];
 };
 
-KMOD_EXPORT void kmod_log(const struct kmod_ctx *ctx,
-			  int priority, const char *file, int line,
-			  const char *fn, const char *format, ...)
+void kmod_log(const struct kmod_ctx *ctx,
+		int priority, const char *file, int line, const char *fn,
+		const char *format, ...)
 {
 	va_list args;
 
