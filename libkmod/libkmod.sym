@@ -2,7 +2,6 @@ LIBKMOD_5 {
 global:
 	kmod_get_log_priority;
 	kmod_get_userdata;
-	kmod_log;
 	kmod_new;
 	kmod_ref;
 	kmod_set_log_fn;
