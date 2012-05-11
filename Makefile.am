@@ -177,6 +177,8 @@ testsuite_test_new_module_CPPFLAGS = $(TESTSUITE_CPPFLAGS)
 testsuite_test_modprobe_LDADD = $(TESTSUITE_LDADD)
 testsuite_test_modprobe_CPPFLAGS = $(TESTSUITE_CPPFLAGS)
 
+EXTRA_DIST += testsuite/rootfs
+
 DISTCHECK_CONFIGURE_FLAGS=--enable-gtk-doc
 
 distclean-local: $(DISTCLEAN_LOCAL_HOOKS)
