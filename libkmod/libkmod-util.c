@@ -90,37 +90,6 @@ char *getline_wrapped(FILE *fp, unsigned int *linenum)
 	}
 }
 
-/*
- * Replace dashes with underscores.
- * Dashes inside character range patterns (e.g. [0-9]) are left unchanged.
- */
-char *underscores(struct kmod_ctx *ctx, char *s)
-{
-	unsigned int i;
-
-	if (!s)
-		return NULL;
-
-	for (i = 0; s[i]; i++) {
-		switch (s[i]) {
-		case '-':
-			s[i] = '_';
-			break;
-
-		case ']':
-			INFO(ctx, "Unmatched bracket in %s\n", s);
-			break;
-
-		case '[':
-			i += strcspn(&s[i], "]");
-			if (!s[i])
-				INFO(ctx, "Unmatched bracket in %s\n", s);
-			break;
-		}
-	}
-	return s;
-}
-
 inline int alias_normalize(const char *alias, char buf[PATH_MAX], size_t *len)
 {
 	size_t s;

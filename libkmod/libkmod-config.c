@@ -108,6 +108,37 @@ const char * const *kmod_softdep_get_post(const struct kmod_list *l, unsigned in
 	return dep->post;
 }
 
+/*
+ * Replace dashes with underscores.
+ * Dashes inside character range patterns (e.g. [0-9]) are left unchanged.
+ */
+static char *underscores(struct kmod_ctx *ctx, char *s)
+{
+	unsigned int i;
+
+	if (!s)
+		return NULL;
+
+	for (i = 0; s[i]; i++) {
+		switch (s[i]) {
+		case '-':
+			s[i] = '_';
+			break;
+
+		case ']':
+			INFO(ctx, "Unmatched bracket in %s\n", s);
+			break;
+
+		case '[':
+			i += strcspn(&s[i], "]");
+			if (!s[i])
+				INFO(ctx, "Unmatched bracket in %s\n", s);
+			break;
+		}
+	}
+	return s;
+}
+
 static int kmod_config_add_command(struct kmod_config *config,
 						const char *modname,
 						const char *command,
