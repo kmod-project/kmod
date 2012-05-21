@@ -21,6 +21,7 @@
 #include "libkmod.h"
 #include "libkmod-hash.h"
 
+#include "libkmod-util.h"
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
@@ -83,15 +84,6 @@ void hash_free(struct hash *hash)
 	free(hash);
 }
 
-struct unaligned_short {
-    unsigned short v;
-} __attribute__((packed));
-
-static inline unsigned short get16bits(const char *ptr)
-{
-    return ((struct unaligned_short *)ptr)->v;
-}
-
 static inline unsigned int hash_superfast(const char *key, unsigned int len)
 {
 	/* Paul Hsieh (http://www.azillionmonkeys.com/qed/hash.html)
@@ -104,8 +96,8 @@ static inline unsigned int hash_superfast(const char *key, unsigned int len)
 
 	/* Main loop */
 	for (; len > 0; len--) {
-		hash += get16bits(key);
-		tmp = (get16bits(key + 2) << 11) ^ hash;
+		hash += get_unaligned((uint16_t *) key);
+		tmp = (get_unaligned((uint16_t *)(key + 2)) << 11) ^ hash;
 		hash = (hash << 16) ^ tmp;
 		key += 4;
 		hash += hash >> 11;
@@ -114,14 +106,14 @@ static inline unsigned int hash_superfast(const char *key, unsigned int len)
 	/* Handle end cases */
 	switch (rem) {
 	case 3:
-		hash += get16bits(key);
+		hash += get_unaligned((uint16_t *) key);
 		hash ^= hash << 16;
 		hash ^= key[2] << 18;
 		hash += hash >> 11;
 		break;
 
 	case 2:
-		hash += get16bits(key);
+		hash += get_unaligned((uint16_t *) key);
 		hash ^= hash << 11;
 		hash += hash >> 17;
 		break;

@@ -33,7 +33,7 @@ unsigned long long stat_mstamp(const struct stat *st);
 	__p->__v;				\
 })
 
-#define bt_put_unaligned(val, ptr)		\
+#define put_unaligned(val, ptr)		\
 do {						\
 	struct __attribute__((packed)) {	\
 		typeof(*(ptr)) __v;		\
