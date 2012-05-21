@@ -25,4 +25,20 @@ char *modname_normalize(const char *modname, char buf[PATH_MAX], size_t *len) __
 char *path_to_modname(const char *path, char buf[PATH_MAX], size_t *len) __attribute__((nonnull(2)));
 unsigned long long stat_mstamp(const struct stat *st);
 
+#define get_unaligned(ptr)			\
+({						\
+	struct __attribute__((packed)) {	\
+		typeof(*(ptr)) __v;		\
+	} *__p = (typeof(__p)) (ptr);		\
+	__p->__v;				\
+})
+
+#define bt_put_unaligned(val, ptr)		\
+do {						\
+	struct __attribute__((packed)) {	\
+		typeof(*(ptr)) __v;		\
+	} *__p = (typeof(__p)) (ptr);		\
+	__p->__v = (val);			\
+} while(0)
+
 #endif
