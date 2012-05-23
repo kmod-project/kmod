@@ -675,7 +675,7 @@ static inline uint32_t read_long_mm(void **p)
 	uint32_t v;
 
 	/* addr may be unalined to uint32_t */
-	memcpy(&v, addr, sizeof(uint32_t));
+	v = get_unaligned((uint32_t *) addr);
 
 	*p = addr + sizeof(uint32_t);
 	return ntohl(v);
