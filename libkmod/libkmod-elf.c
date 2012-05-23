@@ -243,12 +243,12 @@ static inline int elf_get_section_info(const struct kmod_elf *elf, uint16_t idx,
 	elf_get_uint(elf, off + offsetof(typeof(*hdr), field), sizeof(hdr->field))
 
 	if (elf->class & KMOD_ELF_32) {
-		const Elf32_Shdr *hdr = (const Elf32_Shdr *)p;
+		const Elf32_Shdr *hdr _unused_ = (const Elf32_Shdr *)p;
 		*size = READV(sh_size);
 		*offset = READV(sh_offset);
 		*nameoff = READV(sh_name);
 	} else {
-		const Elf64_Shdr *hdr = (const Elf64_Shdr *)p;
+		const Elf64_Shdr *hdr _unused_ = (const Elf64_Shdr *)p;
 		*size = READV(sh_size);
 		*offset = READV(sh_offset);
 		*nameoff = READV(sh_name);
@@ -311,12 +311,12 @@ struct kmod_elf *kmod_elf_new(const void *memory, off_t size)
 	elf->header.strings.section = READV(e_shstrndx);	\
 	elf->header.machine = READV(e_machine)
 	if (elf->class & KMOD_ELF_32) {
-		const Elf32_Ehdr *hdr = elf_get_mem(elf, 0);
+		const Elf32_Ehdr *hdr _unused_ = elf_get_mem(elf, 0);
 		LOAD_HEADER;
 		hdr_size = sizeof(Elf32_Ehdr);
 		shdr_size = sizeof(Elf32_Shdr);
 	} else {
-		const Elf64_Ehdr *hdr = elf_get_mem(elf, 0);
+		const Elf64_Ehdr *hdr _unused_ = elf_get_mem(elf, 0);
 		LOAD_HEADER;
 		hdr_size = sizeof(Elf64_Ehdr);
 		shdr_size = sizeof(Elf64_Shdr);
@@ -561,11 +561,11 @@ int kmod_elf_strip_section(struct kmod_elf *elf, const char *section)
 #define WRITEV(field, value)			\
 	elf_set_uint(elf, off + offsetof(typeof(*hdr), field), sizeof(hdr->field), value)
 	if (elf->class & KMOD_ELF_32) {
-		const Elf32_Shdr *hdr = buf;
+		const Elf32_Shdr *hdr _unused_ = buf;
 		uint32_t val = ~(uint32_t)SHF_ALLOC;
 		return WRITEV(sh_flags, val);
 	} else {
-		const Elf64_Shdr *hdr = buf;
+		const Elf64_Shdr *hdr _unused_ = buf;
 		uint64_t val = ~(uint64_t)SHF_ALLOC;
 		return WRITEV(sh_flags, val);
 	}
