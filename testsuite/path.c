@@ -139,6 +139,23 @@ TS_EXPORT int open(const char *path, int flags, ...)
 	return _open(p, flags);
 }
 
+TS_EXPORT int mkdir(const char *path, mode_t mode)
+{
+	const char *p;
+	char buf[PATH_MAX * 2];
+	static int (*_mkdir)(const char *path, mode_t mode);
+
+	if (!get_rootpath(__func__))
+		return -1;
+
+	_mkdir = get_libc_func("mkdir");
+	p = trap_path(path, buf);
+	if (p == NULL)
+		return -1;
+
+	return _mkdir(p, mode);
+}
+
 TS_EXPORT int stat(const char *path, struct stat *st)
 {
 	const char *p;
