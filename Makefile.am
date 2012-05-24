@@ -127,7 +127,9 @@ endif
 # TESTSUITE
 # ------------------------------------------------------------------------------
 
-testsuite/rootfs-dirty: $(top_srcdir)/testsuite/rootfs
+ROOTFS = testsuite/rootfs
+
+$(ROOTFS): $(top_srcdir)/testsuite/rootfs-pristine
 	$(AM_V_GEN) cp -r $< $@
 
 TESTSUITE_OVERRIDE_LIBS = testsuite/uname.la testsuite/path.la \
@@ -148,15 +150,15 @@ testsuite_init_module_la_SOURCES = testsuite/init_module.c \
 testsuite_init_module_la_LIBADD = libkmod/libkmod-private.la
 
 TESTSUITE_CPPFLAGS = $(AM_CPPFLAGS) \
-		     -DTESTSUITE_ROOTFS=\"$(abs_top_builddir)/testsuite/rootfs-dirty/\" \
+		     -DTESTSUITE_ROOTFS=\"$(abs_top_builddir)/$(ROOTFS)/\" \
 		     -DABS_TOP_BUILDDIR=\"$(abs_top_builddir)\"
 TESTSUITE_LDADD = testsuite/libtestsuite.la libkmod/libkmod-private.la
 
 check_LTLIBRARIES += testsuite/libtestsuite.la
 testsuite_libtestsuite_la_SOURCES = testsuite/testsuite.c \
 				    testsuite/testsuite.h
-testsuite_libtestsuite_la_DEPENDENCIES = testsuite/rootfs-dirty \
-				    $(TESTSUITE_OVERRIDE_LIBS)
+testsuite_libtestsuite_la_DEPENDENCIES = $(ROOTFS) \
+					 $(TESTSUITE_OVERRIDE_LIBS)
 testsuite_libtestsuite_la_CPPFLAGS = $(TESTSUITE_CPPFLAGS)
 
 TESTSUITE = testsuite/test-init testsuite/test-testsuite testsuite/test-loaded \
@@ -185,11 +187,11 @@ testsuite_test_dependencies_LDADD = $(TESTSUITE_LDADD)
 testsuite_test_dependencies_CPPFLAGS = $(TESTSUITE_CPPFLAGS)
 
 testsuite-distclean:
-	-find testsuite/rootfs-dirty -type d -exec chmod +w {} \;
-	-$(RM) -rf testsuite/rootfs-dirty
+	-find $(ROOTFS) -type d -exec chmod +w {} \;
+	-$(RM) -rf $(ROOTFS)
 
 DISTCLEAN_LOCAL_HOOKS += testsuite-distclean
-EXTRA_DIST += testsuite/rootfs
+EXTRA_DIST += testsuite/rootfs-pristine
 
 DISTCHECK_CONFIGURE_FLAGS=--enable-gtk-doc --sysconfdir=/etc
 
