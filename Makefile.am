@@ -128,9 +128,16 @@ endif
 # ------------------------------------------------------------------------------
 
 ROOTFS = testsuite/rootfs
+ROOTFS_PRISTINE = $(top_srcdir)/testsuite/rootfs-pristine
+CREATE_ROOTFS = $(AM_V_GEN) ( $(RM) -rf $(ROOTFS) && \
+				cp -r $(ROOTFS_PRISTINE) $(ROOTFS) && \
+				touch testsuite/stamp-rootfs )
 
-$(ROOTFS): $(top_srcdir)/testsuite/rootfs-pristine
-	$(AM_V_GEN) cp -r $< $@
+rootfs:
+	$(CREATE_ROOTFS)
+
+$(ROOTFS): $(ROOTFS_PRISTINE)
+	$(CREATE_ROOTFS)
 
 TESTSUITE_OVERRIDE_LIBS = testsuite/uname.la testsuite/path.la \
 			  testsuite/init_module.la \
@@ -152,7 +159,8 @@ testsuite_init_module_la_LIBADD = libkmod/libkmod-private.la
 TESTSUITE_CPPFLAGS = $(AM_CPPFLAGS) \
 		     -DTESTSUITE_ROOTFS=\"$(abs_top_builddir)/$(ROOTFS)/\" \
 		     -DABS_TOP_BUILDDIR=\"$(abs_top_builddir)\"
-TESTSUITE_LDADD = testsuite/libtestsuite.la libkmod/libkmod-private.la
+TESTSUITE_LDADD = testsuite/libtestsuite.la libkmod/libkmod-private.la \
+		  libkmod/libkmod-util.la
 
 check_LTLIBRARIES += testsuite/libtestsuite.la
 testsuite_libtestsuite_la_SOURCES = testsuite/testsuite.c \
@@ -167,7 +175,7 @@ TESTSUITE = testsuite/test-init testsuite/test-testsuite testsuite/test-loaded \
 check_PROGRAMS = $(TESTSUITE)
 TESTS = $(TESTSUITE)
 
-testsuite_test_testsuite_LDADD = testsuite/libtestsuite.la
+testsuite_test_testsuite_LDADD = testsuite/libtestsuite.la libkmod/libkmod-util.la
 testsuite_test_testsuite_CPPFLAGS = $(TESTSUITE_CPPFLAGS)
 testsuite_test_init_LDADD = $(TESTSUITE_LDADD)
 testsuite_test_init_CPPFLAGS = $(TESTSUITE_CPPFLAGS)
@@ -189,6 +197,7 @@ testsuite_test_dependencies_CPPFLAGS = $(TESTSUITE_CPPFLAGS)
 testsuite-distclean:
 	-find $(ROOTFS) -type d -exec chmod +w {} \;
 	-$(RM) -rf $(ROOTFS)
+	-$(RM) testsuite/stamp-rootfs
 
 DISTCLEAN_LOCAL_HOOKS += testsuite-distclean
 EXTRA_DIST += testsuite/rootfs-pristine

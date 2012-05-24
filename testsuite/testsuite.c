@@ -26,8 +26,10 @@
 #include <unistd.h>
 #include <sys/epoll.h>
 #include <sys/prctl.h>
+#include <sys/stat.h>
 #include <sys/wait.h>
 
+#include "libkmod-util.h"
 #include "testsuite.h"
 
 static const char *ANSI_HIGHLIGHT_GREEN_ON = "\x1B[1;32m";
@@ -214,6 +216,28 @@ static inline int test_run_child(const struct test *t, int fdout[2],
 		close(fderr[0]);
 		if (dup2(fderr[1], STDERR_FILENO) < 0) {
 			ERR("could not redirect stdout to pipe: %m\n");
+			exit(EXIT_FAILURE);
+		}
+	}
+
+	if (t->config[TC_ROOTFS] != NULL) {
+		const char *stamp = TESTSUITE_ROOTFS "../stamp-rootfs";
+		const char *rootfs = t->config[TC_ROOTFS];
+		struct stat rootfsst, stampst;
+
+		if (stat(stamp, &stampst) != 0) {
+			ERR("could not stat %s\n - %m", stamp);
+			exit(EXIT_FAILURE);
+		}
+
+		if (stat(rootfs, &rootfsst) != 0) {
+			ERR("could not stat %s\n - %m", rootfs);
+			exit(EXIT_FAILURE);
+		}
+
+		if (stat_mstamp(&rootfsst) > stat_mstamp(&stampst)) {
+			ERR("rootfs %s is dirty, please run 'make rootfs' before runnning this test\n",
+								rootfs);
 			exit(EXIT_FAILURE);
 		}
 	}
