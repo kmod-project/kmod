@@ -4,6 +4,7 @@
 #include "macro.h"
 
 #include <limits.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <sys/types.h>
 
