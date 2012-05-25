@@ -70,7 +70,7 @@ static __noreturn int test_insert(const struct test *t)
 static DEFINE_TEST(test_insert,
 	.description = "test if libkmod's insert_module returns ok",
 	.config = {
-		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-modinfo/",
+		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-init/",
 		[TC_INIT_MODULE_RETCODES] = "bla:1:20",
 	},
 	.need_spawn = true);
@@ -104,7 +104,7 @@ static __noreturn int test_remove(const struct test *t)
 static DEFINE_TEST(test_remove,
 	.description = "test if libkmod's remove_module returns ok",
 	.config = {
-		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-modinfo/",
+		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-remove/",
 		[TC_DELETE_MODULE_RETCODES] = "bla:1:20",
 	},
 	.need_spawn = true);
