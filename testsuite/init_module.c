@@ -35,6 +35,7 @@
 
 /* FIXME: hack, change name so we don't clash */
 #undef ERR
+#include "mkdir.h"
 #include "testsuite.h"
 #include "stripped-module.h"
 
@@ -102,6 +103,55 @@ static void parse_retcodes(struct mod *_modules, const char *s)
 	}
 }
 
+static int write_one_line_file(const char *fn, const char *line, int len)
+{
+        FILE *f;
+        int r;
+
+        assert(fn);
+        assert(line);
+
+        f = fopen(fn, "we");
+        if (!f)
+                return -errno;
+
+        errno = 0;
+        if (fputs(line, f) < 0) {
+                r = -errno;
+                goto finish;
+        }
+
+        fflush(f);
+
+        if (ferror(f)) {
+                if (errno != 0)
+                        r = -errno;
+                else
+                        r = -EIO;
+        } else
+                r = 0;
+
+finish:
+        fclose(f);
+        return r;
+}
+
+static int create_sysfs_files(const char *modname)
+{
+	char buf[PATH_MAX];
+	const char *sysfsmod = "/sys/module/";
+	int len = strlen(sysfsmod);
+
+	memcpy(buf, sysfsmod, len);
+	strcpy(buf + len, modname);
+	len += strlen(modname);
+
+	mkdir_p(buf, 0755);
+
+	strcpy(buf + len, "/initstate");
+	return write_one_line_file(buf, "live\n", strlen("live\n"));
+}
+
 static struct mod *find_module(struct mod *_modules, const char *modname)
 {
 	struct mod *mod;
@@ -134,8 +184,6 @@ static void init_retcodes(void)
 TS_EXPORT long init_module(void *mem, unsigned long len, const char *args);
 
 /*
- * FIXME: change /sys/module/<modname> to fake-insert a module
- *
  * Default behavior is to exit successfully. If this is not the intended
  * behavior, set TESTSUITE_INIT_MODULE_RETCODES env var.
  */
@@ -167,8 +215,10 @@ long init_module(void *mem, unsigned long len, const char *args)
 
 	modname = (char *)buf + offsetof(struct module, name);
 	mod = find_module(modules, modname);
-	if (mod == NULL)
+	if (mod == NULL) {
+		create_sysfs_files(modname);
 		return 0;
+	}
 
 	errno = mod->errcode;
 	return mod->ret;

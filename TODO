@@ -2,7 +2,6 @@ Features:
 =========
 
 * testsuite:
-   - when fake init_module() succeeds, create an entry in /sys/module
    - when fake delete_module() succeeds, remove its entry from /sys/module
    - add test for dependency loop _with install commands_ relying on module
      already been loaded in order to succeed. E.g.: alsa install rules on
