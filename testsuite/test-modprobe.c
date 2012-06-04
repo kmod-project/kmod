@@ -88,10 +88,31 @@ static DEFINE_TEST(modprobe_builtin,
 		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-modprobe/builtin",
 	});
 
+static __noreturn int modprobe_softdep_loop(const struct test *t)
+{
+	const char *progname = ABS_TOP_BUILDDIR "/tools/modprobe";
+	const char *const args[] = {
+		progname,
+		"bluetooth",
+		NULL,
+	};
+
+	test_spawn_prog(progname, args);
+	exit(EXIT_FAILURE);
+}
+static DEFINE_TEST(modprobe_softdep_loop,
+	.description = "check if modprobe breaks softdep loop",
+	.config = {
+		[TC_UNAME_R] = "4.4.4",
+		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-modprobe/softdep-loop",
+		[TC_INIT_MODULE_RETCODES] = "",
+	});
+
 static const struct test *tests[] = {
 	&smodprobe_show_depends,
 	&smodprobe_show_depends2,
 	&smodprobe_builtin,
+	&smodprobe_softdep_loop,
 	NULL,
 };
 
