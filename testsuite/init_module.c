@@ -48,6 +48,7 @@ struct mod {
 
 static struct mod *modules;
 static bool need_init = true;
+static struct kmod_ctx *ctx;
 
 static void parse_retcodes(struct mod *_modules, const char *s)
 {
@@ -178,7 +179,31 @@ static void init_retcodes(void)
 						S_TC_INIT_MODULE_RETCODES);
 	}
 
+	ctx = kmod_new(NULL, NULL);
+
 	parse_retcodes(modules, s);
+}
+
+static inline bool module_is_inkernel(const char *modname)
+{
+	struct kmod_module *mod;
+	int state;
+	bool ret;
+
+	if (kmod_module_new_from_name(ctx, modname, &mod) < 0)
+		return false;
+
+	state = kmod_module_get_initstate(mod);
+
+	if (state == KMOD_MODULE_LIVE ||
+			state == KMOD_MODULE_BUILTIN)
+		ret = true;
+	else
+		ret = false;
+
+	kmod_module_unref(mod);
+
+	return ret;
 }
 
 TS_EXPORT long init_module(void *mem, unsigned long len, const char *args);
@@ -223,10 +248,11 @@ long init_module(void *mem, unsigned long len, const char *args)
 	if (mod != NULL) {
 		errno = mod->errcode;
 		err = mod->ret;
-	} else {
-		/* mimic kernel behavior here */
+	} else if (module_is_inkernel(modname)) {
+		err = -1;
+		errno = EEXIST;
+	} else
 		err = 0;
-	}
 
 	if (err == 0)
 		create_sysfs_files(modname);
@@ -243,4 +269,7 @@ void free_resources(void)
 		free(modules);
 		modules = mod;
 	}
+
+	if (ctx)
+		kmod_unref(ctx);
 }
