@@ -107,7 +107,7 @@ static struct mod *find_module(struct mod *_modules, const char *modname)
 	struct mod *mod;
 
 	for (mod = _modules; mod != NULL; mod = mod->next) {
-		if (strcmp(mod->name, modname))
+		if (strcmp(mod->name, modname) == 0)
 			return mod;
 	}
 
