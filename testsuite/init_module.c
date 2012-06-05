@@ -184,8 +184,13 @@ static void init_retcodes(void)
 TS_EXPORT long init_module(void *mem, unsigned long len, const char *args);
 
 /*
- * Default behavior is to exit successfully. If this is not the intended
- * behavior, set TESTSUITE_INIT_MODULE_RETCODES env var.
+ * Default behavior is to try to mimic init_module behavior inside the kernel.
+ * If it is a simple test that you know the error code, set the return code
+ * in TESTSUITE_INIT_MODULE_RETCODES env var instead.
+ *
+ * The exception is when the module name is not find in the memory passed.
+ * This is because we want to be able to pass dummy modules (and not real
+ * ones) and it still work.
  */
 long init_module(void *mem, unsigned long len, const char *args)
 {
@@ -215,13 +220,18 @@ long init_module(void *mem, unsigned long len, const char *args)
 
 	modname = (char *)buf + offsetof(struct module, name);
 	mod = find_module(modules, modname);
-	if (mod == NULL) {
-		create_sysfs_files(modname);
-		return 0;
+	if (mod != NULL) {
+		errno = mod->errcode;
+		err = mod->ret;
+	} else {
+		/* mimic kernel behavior here */
+		err = 0;
 	}
 
-	errno = mod->errcode;
-	return mod->ret;
+	if (err == 0)
+		create_sysfs_files(modname);
+
+	return err;
 }
 
 /* the test is going away anyway, but lets keep valgrind happy */
