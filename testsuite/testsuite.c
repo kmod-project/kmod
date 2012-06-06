@@ -174,6 +174,7 @@ static void test_export_environ(const struct test *t)
 	char *preload = NULL;
 	size_t preloadlen = 0;
 	size_t i;
+	const struct keyval *env;
 
 	unsetenv("LD_PRELOAD");
 
@@ -207,6 +208,9 @@ static void test_export_environ(const struct test *t)
 		setenv("LD_PRELOAD", preload, 1);
 
 	free(preload);
+
+	for (env = t->env_vars; env && env->key; env++)
+		setenv(env->key, env->val, 1);
 }
 
 static inline int test_run_child(const struct test *t, int fdout[2],

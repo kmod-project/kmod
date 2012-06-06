@@ -72,6 +72,10 @@ enum test_config {
 #define S_TC_INIT_MODULE_RETCODES "TESTSUITE_INIT_MODULE_RETCODES"
 #define S_TC_DELETE_MODULE_RETCODES "TESTSUITE_DELETE_MODULE_RETCODES"
 
+struct keyval {
+	const char *key;
+	const char *val;
+};
 
 struct test {
 	const char *name;
@@ -83,6 +87,7 @@ struct test {
 	testfunc func;
 	const char *config[_TC_LAST];
 	const char *path;
+	const struct keyval *env_vars;
 	bool need_spawn;
 	bool expected_fail;
 };
