@@ -23,6 +23,7 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <unistd.h>
 #include <sys/epoll.h>
 #include <sys/prctl.h>
@@ -56,6 +57,19 @@ struct _env_config {
 	[TC_INIT_MODULE_RETCODES] = { S_TC_INIT_MODULE_RETCODES, OVERRIDE_LIBDIR "init_module.so" },
 	[TC_DELETE_MODULE_RETCODES] = { S_TC_DELETE_MODULE_RETCODES, OVERRIDE_LIBDIR "delete_module.so" },
 };
+
+#define USEC_PER_SEC  1000000ULL
+#define USEC_PER_MSEC  1000ULL
+#define TEST_TIMEOUT_USEC 2 * USEC_PER_SEC
+static unsigned long long now_usec(void)
+{
+	struct timespec ts;
+
+	if (clock_gettime(CLOCK_MONOTONIC, &ts) != 0)
+		return 0;
+
+	return ts_usec(&ts);
+}
 
 static void help(void)
 {
@@ -251,10 +265,11 @@ static inline int test_run_child(const struct test *t, int fdout[2],
 }
 
 static inline bool test_run_parent_check_outputs(const struct test *t,
-					int fdout, int fderr, int fdmonitor)
+			int fdout, int fderr, int fdmonitor, pid_t child)
 {
 	struct epoll_event ep_outpipe, ep_errpipe, ep_monitor;
 	int err, fd_ep, fd_matchout = -1, fd_matcherr = -1;
+	unsigned long long end_usec, start_usec;
 
 	fd_ep = epoll_create1(EPOLL_CLOEXEC);
 	if (fd_ep < 0) {
@@ -310,11 +325,19 @@ static inline bool test_run_parent_check_outputs(const struct test *t,
 		goto out;
 	}
 
-	for (err = 0; fdmonitor >= 0 || fdout >= 0 || fderr >= 0;) {
-		int fdcount, i;
-		struct epoll_event ev[4];
+	start_usec = now_usec();
+	end_usec = start_usec + TEST_TIMEOUT_USEC;
 
-		fdcount = epoll_wait(fd_ep, ev, 4, -1);
+	for (err = 0; fdmonitor >= 0 || fdout >= 0 || fderr >= 0;) {
+		int fdcount, i, timeout;
+		struct epoll_event ev[4];
+		unsigned long long curr_usec = now_usec();
+
+		if (curr_usec > end_usec)
+			break;
+
+		timeout = (end_usec - curr_usec) / USEC_PER_MSEC;
+		fdcount = epoll_wait(fd_ep, ev, 4, timeout);
 		if (fdcount < 0) {
 			if (errno == EINTR)
 				continue;
@@ -388,8 +411,14 @@ static inline bool test_run_parent_check_outputs(const struct test *t,
 				*fd = -1;
 			}
 		}
-
 	}
+
+	if (err == 0 && fdmonitor >= 0) {
+		err = -EINVAL;
+		ERR("Test '%s' timed out, killing %d\n", t->name, child);
+		kill(child, SIGKILL);
+	}
+
 out:
 	if (fd_matchout >= 0)
 		close(fd_matchout);
@@ -401,7 +430,7 @@ out:
 }
 
 static inline int test_run_parent(const struct test *t, int fdout[2],
-						int fderr[2], int fdmonitor[2])
+				int fderr[2], int fdmonitor[2], pid_t child)
 {
 	pid_t pid;
 	int err;
@@ -415,7 +444,7 @@ static inline int test_run_parent(const struct test *t, int fdout[2],
 	close(fdmonitor[1]);
 
 	matchout = test_run_parent_check_outputs(t, fdout[0], fderr[0],
-								fdmonitor[0]);
+							fdmonitor[0], child);
 
 	/*
 	 * break pipe on the other end: either child already closed or we want
@@ -445,6 +474,7 @@ static inline int test_run_parent(const struct test *t, int fdout[2],
 	} else if (WIFSIGNALED(err)) {
 		ERR("'%s' [%u] terminated by signal %d (%s)\n", t->name, pid,
 				WTERMSIG(err), strsignal(WTERMSIG(err)));
+		return EXIT_FAILURE;
 	}
 
 	if (t->expected_fail == false) {
@@ -552,7 +582,7 @@ int test_run(const struct test *t)
 	}
 
 	if (pid > 0)
-		return test_run_parent(t, fdout, fderr, fdmonitor);
+		return test_run_parent(t, fdout, fderr, fdmonitor, pid);
 
 	return test_run_child(t, fdout, fderr, fdmonitor);
 }

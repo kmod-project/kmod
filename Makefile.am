@@ -169,6 +169,7 @@ testsuite_libtestsuite_la_SOURCES = testsuite/testsuite.c \
 testsuite_libtestsuite_la_DEPENDENCIES = $(ROOTFS) \
 					 $(TESTSUITE_OVERRIDE_LIBS)
 testsuite_libtestsuite_la_CPPFLAGS = $(TESTSUITE_CPPFLAGS)
+testsuite_libtestsuite_la_LIBADD = -lrt
 
 TESTSUITE = testsuite/test-init testsuite/test-testsuite testsuite/test-loaded \
 	    testsuite/test-modinfo testsuite/test-alias testsuite/test-new-module \
