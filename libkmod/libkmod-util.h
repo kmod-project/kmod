@@ -25,6 +25,7 @@ int alias_normalize(const char *alias, char buf[PATH_MAX], size_t *len) _must_ch
 char *modname_normalize(const char *modname, char buf[PATH_MAX], size_t *len) __attribute__((nonnull(1, 2)));
 char *path_to_modname(const char *path, char buf[PATH_MAX], size_t *len) __attribute__((nonnull(2)));
 unsigned long long stat_mstamp(const struct stat *st);
+unsigned long long ts_usec(const struct timespec *ts);
 
 #define get_unaligned(ptr)			\
 ({						\
