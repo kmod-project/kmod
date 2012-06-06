@@ -108,11 +108,37 @@ static DEFINE_TEST(modprobe_softdep_loop,
 		[TC_INIT_MODULE_RETCODES] = "",
 	});
 
+static __noreturn int modprobe_install_cmd_loop(const struct test *t)
+{
+	const char *progname = ABS_TOP_BUILDDIR "/tools/modprobe";
+	const char *const args[] = {
+		progname,
+		"snd-pcm",
+		NULL,
+	};
+
+	test_spawn_prog(progname, args);
+	exit(EXIT_FAILURE);
+}
+static DEFINE_TEST(modprobe_install_cmd_loop,
+	.description = "check if modprobe breaks softdep loop",
+	.config = {
+		[TC_UNAME_R] = "4.4.4",
+		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-modprobe/install-cmd-loop",
+		[TC_INIT_MODULE_RETCODES] = "",
+	},
+	.env_vars = (const struct keyval[]) {
+		{ "MODPROBE", ABS_TOP_BUILDDIR "/tools/modprobe" },
+		{ }
+		},
+	);
+
 static const struct test *tests[] = {
 	&smodprobe_show_depends,
 	&smodprobe_show_depends2,
 	&smodprobe_builtin,
 	&smodprobe_softdep_loop,
+	&smodprobe_install_cmd_loop,
 	NULL,
 };
 

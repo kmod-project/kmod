@@ -1,0 +1,2 @@
+kernel/sound/core/snd.ko.gz:
+kernel/sound/core/snd-pcm.ko.gz: kernel/sound/core/snd.ko.gz
