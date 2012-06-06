@@ -121,7 +121,7 @@ static __noreturn int modprobe_install_cmd_loop(const struct test *t)
 	exit(EXIT_FAILURE);
 }
 static DEFINE_TEST(modprobe_install_cmd_loop,
-	.description = "check if modprobe breaks softdep loop",
+	.description = "check if modprobe breaks install-commands loop",
 	.config = {
 		[TC_UNAME_R] = "4.4.4",
 		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-modprobe/install-cmd-loop",
