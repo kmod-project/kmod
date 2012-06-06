@@ -798,12 +798,14 @@ struct index_mm *index_mm_open(struct kmod_ctx *ctx, const char *filename,
 	}
 
 	fstat(fd, &st);
+	if ((size_t) st.st_size < sizeof(hdr))
+		goto fail_nommap;
 
 	if ((idx->mm = mmap(0, st.st_size, PROT_READ, MAP_PRIVATE, fd, 0))
 							== MAP_FAILED) {
 		ERR(ctx, "mmap(0, %"PRIu64", PROT_READ, %d, MAP_PRIVATE, 0): %m\n",
 							st.st_size, fd);
-		goto fail;
+		goto fail_nommap;
 	}
 
 	p = idx->mm;
@@ -833,9 +835,9 @@ struct index_mm *index_mm_open(struct kmod_ctx *ctx, const char *filename,
 	return idx;
 
 fail:
+	munmap(idx->mm, st.st_size);
+fail_nommap:
 	close(fd);
-	if (idx->mm != MAP_FAILED)
-		munmap(idx->mm, st.st_size);
 fail_open:
 	free(idx);
 	return NULL;
