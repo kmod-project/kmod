@@ -196,7 +196,7 @@ static void test_export_environ(const struct test *t)
 }
 
 static inline int test_run_child(const struct test *t, int fdout[2],
-								int fderr[2])
+						int fderr[2], int fdmonitor[2])
 {
 	/* kill child if parent dies */
 	prctl(PR_SET_PDEATHSIG, SIGTERM);
@@ -219,6 +219,8 @@ static inline int test_run_child(const struct test *t, int fdout[2],
 			exit(EXIT_FAILURE);
 		}
 	}
+
+	close(fdmonitor[0]);
 
 	if (t->config[TC_ROOTFS] != NULL) {
 		const char *stamp = TESTSUITE_ROOTFS "../stamp-rootfs";
@@ -249,13 +251,10 @@ static inline int test_run_child(const struct test *t, int fdout[2],
 }
 
 static inline bool test_run_parent_check_outputs(const struct test *t,
-							int fdout, int fderr)
+					int fdout, int fderr, int fdmonitor)
 {
-	struct epoll_event ep_outpipe, ep_errpipe;
+	struct epoll_event ep_outpipe, ep_errpipe, ep_monitor;
 	int err, fd_ep, fd_matchout = -1, fd_matcherr = -1;
-
-	if (t->output.stdout == NULL && t->output.stderr == NULL)
-		return true;
 
 	fd_ep = epoll_create1(EPOLL_CLOEXEC);
 	if (fd_ep < 0) {
@@ -302,7 +301,16 @@ static inline bool test_run_parent_check_outputs(const struct test *t,
 	} else
 		fderr = -1;
 
-	for (err = 0; fdout >= 0 || fderr >= 0;) {
+	memset(&ep_monitor, 0, sizeof(struct epoll_event));
+	ep_monitor.events = EPOLLHUP;
+	ep_monitor.data.ptr = &fdmonitor;
+	if (epoll_ctl(fd_ep, EPOLL_CTL_ADD, fdmonitor, &ep_monitor) < 0) {
+		err = -errno;
+		ERR("could not add monitor fd to epoll: %m\n");
+		goto out;
+	}
+
+	for (err = 0; fdmonitor >= 0 || fdout >= 0 || fderr >= 0;) {
 		int fdcount, i;
 		struct epoll_event ev[4];
 
@@ -335,8 +343,13 @@ static inline bool test_run_parent_check_outputs(const struct test *t,
 
 				if (*fd == fdout)
 					fd_match = fd_matchout;
-				else
+				else if (*fd == fderr)
 					fd_match = fd_matcherr;
+				else {
+					ERR("Unexpected activity on monitor pipe\n");
+					err = -EINVAL;
+					goto out;
+				}
 
 				for (;;) {
 					int rmatch = read(fd_match,
@@ -388,7 +401,7 @@ out:
 }
 
 static inline int test_run_parent(const struct test *t, int fdout[2],
-								int fderr[2])
+						int fderr[2], int fdmonitor[2])
 {
 	pid_t pid;
 	int err;
@@ -399,8 +412,10 @@ static inline int test_run_parent(const struct test *t, int fdout[2],
 		close(fdout[1]);
 	if (t->output.stderr != NULL)
 		close(fderr[1]);
+	close(fdmonitor[1]);
 
-	matchout = test_run_parent_check_outputs(t, fdout[0], fderr[0]);
+	matchout = test_run_parent_check_outputs(t, fdout[0], fderr[0],
+								fdmonitor[0]);
 
 	/*
 	 * break pipe on the other end: either child already closed or we want
@@ -410,6 +425,7 @@ static inline int test_run_parent(const struct test *t, int fdout[2],
 		close(fdout[0]);
 	if (t->output.stderr != NULL)
 		close(fderr[0]);
+	close(fdmonitor[0]);
 
 	do {
 		pid = wait(&err);
@@ -497,6 +513,7 @@ int test_run(const struct test *t)
 	pid_t pid;
 	int fdout[2];
 	int fderr[2];
+	int fdmonitor[2];
 
 	if (t->need_spawn && oneshot)
 		test_run_spawned(t);
@@ -515,6 +532,11 @@ int test_run(const struct test *t)
 		}
 	}
 
+	if (pipe(fdmonitor) != 0) {
+		ERR("could not create monitor pipe for %s\n", t->name);
+		return EXIT_FAILURE;
+	}
+
 	if (prepend_path(t->path) < 0) {
 		ERR("failed to prepend '%s' to PATH\n", t->path);
 		return EXIT_FAILURE;
@@ -530,7 +552,7 @@ int test_run(const struct test *t)
 	}
 
 	if (pid > 0)
-		return test_run_parent(t, fdout, fderr);
+		return test_run_parent(t, fdout, fderr, fdmonitor);
 
-	return test_run_child(t, fdout, fderr);
+	return test_run_child(t, fdout, fderr, fdmonitor);
 }
