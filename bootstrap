@@ -4,7 +4,7 @@ gtkdocize --docdir libkmod/docs || touch libkmod/docs/gtk-doc.make
 autoreconf --install --symlink
 
 libdir() {
-	echo $(cd $1/$(gcc -print-multi-os-directory); pwd)
+	(cd "$1/$(gcc -print-multi-os-directory)"; pwd)
 }
 
 args="--prefix=/usr \
