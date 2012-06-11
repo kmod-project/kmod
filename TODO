@@ -3,18 +3,8 @@ Features:
 
 * testsuite:
    - when fake delete_module() succeeds, remove its entry from /sys/module
-   - add test for dependency loop _with install commands_ relying on module
-     already been loaded in order to succeed. E.g.: alsa install rules on
-     debian:
 
-   install snd /sbin/modprobe --ignore-install snd && { /sbin/modprobe --quiet snd-ioctl32 ; /sbin/modprobe --quiet snd-seq ; }
-   install snd_rawmidi /sbin/modprobe --ignore-install snd-rawmidi && { /sbin/modprobe --quiet snd-seq-midi ; : ; }
-   install snd_emu10k1 /sbin/modprobe --ignore-install snd-emu10k1 && { /sbin/modprobe --quiet snd-emu10k1-synth ; : ; }
-   install snd_pcm modprobe --ignore-install snd-pcm $CMDLINE_OPTS && { modprobe --quiet snd-pcm-oss ; : ; }
-   install snd_mixer modprobe --ignore-install snd-mixer $CMDLINE_OPTS && { modprobe --quiet snd-mixer-oss ; : ; }
-   install snd_seq modprobe --ignore-install snd-seq $CMDLINE_OPTS && { modprobe --quiet snd-seq-midi ; modprobe --quiet snd-seq-oss ; : ; }
-
-* review API, maybe unify all of these setters:
+* review API, maybe unify all of these getters:
    - kmod_module_version_get_symbol()
    - kmod_module_version_get_crc()
    - kmod_module_symbol_get_symbol()
@@ -23,7 +13,16 @@ Features:
    - kmod_module_dependency_symbol_get_crc()
    - kmod_module_versions_free_list()
    - kmod_module_symbols_free_list()
-   - kmod_module_dependency_symbols_free_list()
+   - kmod_module_dependency_symbols_free_list(
+
+   Main reason for this is that they need to open and read the module to get
+   this information. If module is compressed, that means uncompressing +
+   allocating necessary space + deallocating for each of them. depmod uses most
+   of these functions and in the end it uncompresses the module ~6x times more
+   than needed, which makes depmod very slow if compared to module-init-tools.
+
+   We might want to either cache the elf file within kmod_module or create
+   another struct that the user ref()/unref().
 
 * Stop using system() inside the library and use fork + exec instead
 
