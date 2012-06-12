@@ -896,32 +896,7 @@ KMOD_EXPORT int kmod_dump_index(struct kmod_ctx *ctx, enum kmod_index type,
 	return 0;
 }
 
-const struct kmod_list *kmod_get_blacklists(const struct kmod_ctx *ctx)
+const struct kmod_config *kmod_get_config(const struct kmod_ctx *ctx)
 {
-	return ctx->config->blacklists;
-}
-
-const struct kmod_list *kmod_get_options(const struct kmod_ctx *ctx)
-{
-	return ctx->config->options;
-}
-
-const struct kmod_list *kmod_get_install_commands(const struct kmod_ctx *ctx)
-{
-	return ctx->config->install_commands;
-}
-
-const struct kmod_list *kmod_get_remove_commands(const struct kmod_ctx *ctx)
-{
-	return ctx->config->remove_commands;
-}
-
-const struct kmod_list *kmod_get_softdeps(const struct kmod_ctx *ctx)
-{
-	return ctx->config->softdeps;
-}
-
-const struct kmod_list *kmod_get_aliases(const struct kmod_ctx *ctx)
-{
-	return ctx->config->aliases;
+	return ctx->config;
 }

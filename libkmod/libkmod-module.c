@@ -840,7 +840,8 @@ elf_failed:
 static bool module_is_blacklisted(struct kmod_module *mod)
 {
 	struct kmod_ctx *ctx = mod->ctx;
-	const struct kmod_list *bl = kmod_get_blacklists(ctx);
+	const struct kmod_config *config = kmod_get_config(ctx);
+	const struct kmod_list *bl = config->blacklists;
 	const struct kmod_list *l;
 
 	kmod_list_foreach(l, bl) {
@@ -1280,13 +1281,14 @@ KMOD_EXPORT const char *kmod_module_get_options(const struct kmod_module *mod)
 	if (!mod->init.options) {
 		/* lazy init */
 		struct kmod_module *m = (struct kmod_module *)mod;
-		const struct kmod_list *l, *ctx_options;
+		const struct kmod_list *l;
+		const struct kmod_config *config;
 		char *opts = NULL;
 		size_t optslen = 0;
 
-		ctx_options = kmod_get_options(mod->ctx);
+		config = kmod_get_config(mod->ctx);
 
-		kmod_list_foreach(l, ctx_options) {
+		kmod_list_foreach(l, config->options) {
 			const char *modname = kmod_option_get_modname(l);
 			const char *str;
 			size_t len;
@@ -1354,11 +1356,12 @@ KMOD_EXPORT const char *kmod_module_get_install_commands(const struct kmod_modul
 	if (!mod->init.install_commands) {
 		/* lazy init */
 		struct kmod_module *m = (struct kmod_module *)mod;
-		const struct kmod_list *l, *ctx_install_commands;
+		const struct kmod_list *l;
+		const struct kmod_config *config;
 
-		ctx_install_commands = kmod_get_install_commands(mod->ctx);
+		config = kmod_get_config(mod->ctx);
 
-		kmod_list_foreach(l, ctx_install_commands) {
+		kmod_list_foreach(l, config->install_commands) {
 			const char *modname = kmod_command_get_modname(l);
 
 			if (fnmatch(modname, mod->name, 0) != 0)
@@ -1426,7 +1429,8 @@ KMOD_EXPORT int kmod_module_get_softdeps(const struct kmod_module *mod,
 						struct kmod_list **pre,
 						struct kmod_list **post)
 {
-	const struct kmod_list *l, *ctx_softdeps;
+	const struct kmod_list *l;
+	const struct kmod_config *config;
 
 	if (mod == NULL || pre == NULL || post == NULL)
 		return -ENOENT;
@@ -1434,9 +1438,9 @@ KMOD_EXPORT int kmod_module_get_softdeps(const struct kmod_module *mod,
 	assert(*pre == NULL);
 	assert(*post == NULL);
 
-	ctx_softdeps = kmod_get_softdeps(mod->ctx);
+	config = kmod_get_config(mod->ctx);
 
-	kmod_list_foreach(l, ctx_softdeps) {
+	kmod_list_foreach(l, config->softdeps) {
 		const char *modname = kmod_softdep_get_name(l);
 		const char * const *array;
 		unsigned count;
@@ -1481,11 +1485,12 @@ KMOD_EXPORT const char *kmod_module_get_remove_commands(const struct kmod_module
 	if (!mod->init.remove_commands) {
 		/* lazy init */
 		struct kmod_module *m = (struct kmod_module *)mod;
-		const struct kmod_list *l, *ctx_remove_commands;
+		const struct kmod_list *l;
+		const struct kmod_config *config;
 
-		ctx_remove_commands = kmod_get_remove_commands(mod->ctx);
+		config = kmod_get_config(mod->ctx);
 
-		kmod_list_foreach(l, ctx_remove_commands) {
+		kmod_list_foreach(l, config->remove_commands) {
 			const char *modname = kmod_command_get_modname(l);
 
 			if (fnmatch(modname, mod->name, 0) != 0)

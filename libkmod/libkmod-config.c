@@ -975,6 +975,7 @@ static struct kmod_config_iter *kmod_config_iter_new(const struct kmod_ctx* ctx,
 							enum config_type type)
 {
 	struct kmod_config_iter *iter = calloc(1, sizeof(*iter));
+	const struct kmod_config *config = kmod_get_config(ctx);
 
 	if (iter == NULL)
 		return NULL;
@@ -983,31 +984,31 @@ static struct kmod_config_iter *kmod_config_iter_new(const struct kmod_ctx* ctx,
 
 	switch (type) {
 	case CONFIG_TYPE_BLACKLIST:
-		iter->list = kmod_get_blacklists(ctx);
+		iter->list = config->blacklists;
 		iter->get_key = kmod_blacklist_get_modname;
 		break;
 	case CONFIG_TYPE_INSTALL:
-		iter->list = kmod_get_install_commands(ctx);
+		iter->list = config->install_commands;
 		iter->get_key = kmod_command_get_modname;
 		iter->get_value = kmod_command_get_command;
 		break;
 	case CONFIG_TYPE_REMOVE:
-		iter->list = kmod_get_remove_commands(ctx);
+		iter->list = config->remove_commands;
 		iter->get_key = kmod_command_get_modname;
 		iter->get_value = kmod_command_get_command;
 		break;
 	case CONFIG_TYPE_ALIAS:
-		iter->list = kmod_get_aliases(ctx);
+		iter->list = config->aliases;
 		iter->get_key = kmod_alias_get_name;
 		iter->get_value = kmod_alias_get_modname;
 		break;
 	case CONFIG_TYPE_OPTION:
-		iter->list = kmod_get_options(ctx);
+		iter->list = config->options;
 		iter->get_key = kmod_option_get_modname;
 		iter->get_value = kmod_option_get_options;
 		break;
 	case CONFIG_TYPE_SOFTDEP:
-		iter->list = kmod_get_softdeps(ctx);
+		iter->list = config->softdeps;
 		iter->get_key = kmod_softdep_get_name;
 		iter->get_value = softdep_get_plain_softdep;
 		iter->intermediate = true;
