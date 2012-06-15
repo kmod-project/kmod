@@ -2266,19 +2266,25 @@ static int depmod_output(struct depmod *depmod, FILE *out)
 		if (r < 0) {
 			if (unlinkat(dfd, tmp, 0) != 0)
 				ERR("unlinkat(%s, %s): %m\n", dname, tmp);
-		} else {
-			unlinkat(dfd, itr->name, 0);
-			if (renameat(dfd, tmp, dfd, itr->name) != 0) {
-				err = -errno;
-				CRIT("renameat(%s, %s, %s, %s): %m\n",
-				     dname, tmp, dname, itr->name);
-				break;
-			}
+
+			ERR("Could not write index '%s': %s\n", itr->name,
+								strerror(-r));
+			err = -errno;
+			break;
+		}
+
+		unlinkat(dfd, itr->name, 0);
+		if (renameat(dfd, tmp, dfd, itr->name) != 0) {
+			err = -errno;
+			CRIT("renameat(%s, %s, %s, %s): %m\n",
+					dname, tmp, dname, itr->name);
+			break;
 		}
 	}
 
 	if (dfd >= 0)
 		close(dfd);
+
 	return err;
 }
 
