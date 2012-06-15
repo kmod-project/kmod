@@ -2119,12 +2119,11 @@ static int output_builtin_bin(struct depmod *depmod, FILE *out)
 		return 0;
 
 	snprintf(infile, sizeof(infile), "%s/modules.builtin",
-		 depmod->cfg->dirname);
+							depmod->cfg->dirname);
 	in = fopen(infile, "r");
 	if (in == NULL) {
-		int err = -errno;
 		WRN("could not open %s: %m\n", infile);
-		return err;
+		return 0;
 	}
 
 	idx = index_create();
