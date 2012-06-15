@@ -2237,6 +2237,7 @@ static int depmod_output(struct depmod *depmod, FILE *out)
 		FILE *fp = out;
 		char tmp[NAME_MAX] = "";
 		int r;
+		long eof;
 
 		if (fp == NULL) {
 			int flags = O_CREAT | O_TRUNC | O_WRONLY;
@@ -2262,6 +2263,7 @@ static int depmod_output(struct depmod *depmod, FILE *out)
 		if (fp == out)
 			continue;
 
+		eof = ftell(fp);
 		fclose(fp);
 		if (r < 0) {
 			if (unlinkat(dfd, tmp, 0) != 0)
@@ -2278,6 +2280,13 @@ static int depmod_output(struct depmod *depmod, FILE *out)
 			err = -errno;
 			CRIT("renameat(%s, %s, %s, %s): %m\n",
 					dname, tmp, dname, itr->name);
+			break;
+		}
+
+		if (eof == EOF) {
+			err = -ENOSPC;
+			ERR("Could not create index: output truncated: %s\n",
+								strerror(-err));
 			break;
 		}
 	}
