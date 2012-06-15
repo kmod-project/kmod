@@ -153,13 +153,6 @@ end:
 	return err >= 0 ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
-#ifndef KMOD_BUNDLE_TOOL
-int main(int argc, char *argv[])
-{
-	return do_insmod(argc, argv);
-}
-
-#else
 #include "kmod.h"
 
 const struct kmod_cmd kmod_cmd_compat_insmod = {
@@ -167,5 +160,3 @@ const struct kmod_cmd kmod_cmd_compat_insmod = {
 	.cmd = do_insmod,
 	.help = "compat insmod command",
 };
-
-#endif

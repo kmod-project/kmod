@@ -2759,13 +2759,6 @@ cmdline_failed:
 	return EXIT_FAILURE;
 }
 
-#ifndef KMOD_BUNDLE_TOOL
-int main(int argc, char *argv[])
-{
-	return do_depmod(argc, argv);
-}
-
-#else
 #include "kmod.h"
 
 const struct kmod_cmd kmod_cmd_compat_depmod = {
@@ -2773,5 +2766,3 @@ const struct kmod_cmd kmod_cmd_compat_depmod = {
 	.cmd = do_depmod,
 	.help = "compat depmod command",
 };
-
-#endif

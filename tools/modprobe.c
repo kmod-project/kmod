@@ -1031,13 +1031,6 @@ cmdline_failed:
 	return EXIT_FAILURE;
 }
 
-#ifndef KMOD_BUNDLE_TOOL
-int main(int argc, char *argv[])
-{
-	return do_modprobe(argc, argv);
-}
-
-#else
 #include "kmod.h"
 
 const struct kmod_cmd kmod_cmd_compat_modprobe = {
@@ -1045,5 +1038,3 @@ const struct kmod_cmd kmod_cmd_compat_modprobe = {
 	.cmd = do_modprobe,
 	.help = "compat modprobe command",
 };
-
-#endif

@@ -85,13 +85,6 @@ static int do_lsmod(int argc, char *argv[])
 	return EXIT_SUCCESS;
 }
 
-#ifndef KMOD_BUNDLE_TOOL
-int main(int argc, char *argv[])
-{
-	return do_lsmod(argc, argv);
-}
-
-#else
 #include "kmod.h"
 
 const struct kmod_cmd kmod_cmd_compat_lsmod = {
@@ -105,5 +98,3 @@ const struct kmod_cmd kmod_cmd_list = {
 	.cmd = do_lsmod,
 	.help = "list currently loaded modules",
 };
-
-#endif
