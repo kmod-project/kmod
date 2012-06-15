@@ -63,25 +63,25 @@ static const char *default_cfg_paths[] = {
 
 static const char cmdopts_s[] = "aAb:C:E:F:euqrvnP:wmVh";
 static const struct option cmdopts[] = {
-	{"all", no_argument, 0, 'a'},
-	{"quick", no_argument, 0, 'A'},
-	{"basedir", required_argument, 0, 'b'},
-	{"config", required_argument, 0, 'C'},
-	{"symvers", required_argument, 0, 'E'},
-	{"filesyms", required_argument, 0, 'F'},
-	{"errsyms", no_argument, 0, 'e'},
-	{"unresolved-error", no_argument, 0, 'u'}, /* deprecated */
-	{"quiet", no_argument, 0, 'q'}, /* deprecated */
-	{"root", no_argument, 0, 'r'}, /* deprecated */
-	{"verbose", no_argument, 0, 'v'},
-	{"show", no_argument, 0, 'n'},
-	{"dry-run", no_argument, 0, 'n'},
-	{"symbol-prefix", no_argument, 0, 'P'},
-	{"warn", no_argument, 0, 'w'},
-	{"map", no_argument, 0, 'm'}, /* deprecated */
-	{"version", no_argument, 0, 'V'},
-	{"help", no_argument, 0, 'h'},
-	{NULL, 0, 0, 0}
+	{ "all", no_argument, 0, 'a' },
+	{ "quick", no_argument, 0, 'A' },
+	{ "basedir", required_argument, 0, 'b' },
+	{ "config", required_argument, 0, 'C' },
+	{ "symvers", required_argument, 0, 'E' },
+	{ "filesyms", required_argument, 0, 'F' },
+	{ "errsyms", no_argument, 0, 'e' },
+	{ "unresolved-error", no_argument, 0, 'u' }, /* deprecated */
+	{ "quiet", no_argument, 0, 'q' }, /* deprecated */
+	{ "root", no_argument, 0, 'r' }, /* deprecated */
+	{ "verbose", no_argument, 0, 'v' },
+	{ "show", no_argument, 0, 'n' },
+	{ "dry-run", no_argument, 0, 'n' },
+	{ "symbol-prefix", no_argument, 0, 'P' },
+	{ "warn", no_argument, 0, 'w' },
+	{ "map", no_argument, 0, 'm' }, /* deprecated */
+	{ "version", no_argument, 0, 'V' },
+	{ "help", no_argument, 0, 'h' },
+	{ }
 };
 
 static void help(const char *progname)
@@ -2208,16 +2208,16 @@ static int depmod_output(struct depmod *depmod, FILE *out)
 		const char *name;
 		int (*cb)(struct depmod *depmod, FILE *out);
 	} *itr, depfiles[] = {
-		{"modules.dep", output_deps},
-		{"modules.dep.bin", output_deps_bin},
-		{"modules.alias", output_aliases},
-		{"modules.alias.bin", output_aliases_bin},
-		{"modules.softdep", output_softdeps},
-		{"modules.symbols", output_symbols},
-		{"modules.symbols.bin", output_symbols_bin},
-		{"modules.builtin.bin", output_builtin_bin},
-		{"modules.devname", output_devname},
-		{NULL, NULL}
+		{ "modules.dep", output_deps },
+		{ "modules.dep.bin", output_deps_bin },
+		{ "modules.alias", output_aliases },
+		{ "modules.alias.bin", output_aliases_bin },
+		{ "modules.softdep", output_softdeps },
+		{ "modules.symbols", output_symbols },
+		{ "modules.symbols.bin", output_symbols_bin },
+		{ "modules.builtin.bin", output_builtin_bin },
+		{ "modules.devname", output_devname },
+		{ }
 	};
 	const char *dname = depmod->cfg->dirname;
 	int dfd, err = 0;
