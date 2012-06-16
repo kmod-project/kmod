@@ -2236,8 +2236,7 @@ static int depmod_output(struct depmod *depmod, FILE *out)
 	for (itr = depfiles; itr->name != NULL; itr++) {
 		FILE *fp = out;
 		char tmp[NAME_MAX] = "";
-		int r;
-		long eof;
+		int r, ferr;
 
 		if (fp == NULL) {
 			int flags = O_CREAT | O_TRUNC | O_WRONLY;
@@ -2263,8 +2262,8 @@ static int depmod_output(struct depmod *depmod, FILE *out)
 		if (fp == out)
 			continue;
 
-		eof = ftell(fp);
-		fclose(fp);
+		ferr = ferror(fp) | fclose(fp);
+
 		if (r < 0) {
 			if (unlinkat(dfd, tmp, 0) != 0)
 				ERR("unlinkat(%s, %s): %m\n", dname, tmp);
@@ -2283,10 +2282,10 @@ static int depmod_output(struct depmod *depmod, FILE *out)
 			break;
 		}
 
-		if (eof == EOF) {
+		if (ferr) {
 			err = -ENOSPC;
-			ERR("Could not create index: output truncated: %s\n",
-								strerror(-err));
+			ERR("Could not create index '%s'. Output is truncated: %s\n",
+						itr->name, strerror(-err));
 			break;
 		}
 	}
