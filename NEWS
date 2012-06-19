@@ -1,3 +1,16 @@
+kmod 9
+======
+
+- Improvements to testsuite:
+	- Check for correct handling of softdep loops
+	- Check for correct handling of install command loops
+
+- Bug fixes:
+	- Fix build with compilers that don't support --gc-sections
+	- Handle errors when dealing with gzipp'ed modules
+	- depmod now handles errors while writing indexes, so it doesn't end up
+	  with corrupted index without telling the user
+
 kmod 8
 ======
 
