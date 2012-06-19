@@ -147,7 +147,7 @@ static int create_sysfs_files(const char *modname)
 	strcpy(buf + len, modname);
 	len += strlen(modname);
 
-	mkdir_p(buf, 0755);
+	assert(mkdir_p(buf, 0755) >= 0);
 
 	strcpy(buf + len, "/initstate");
 	return write_one_line_file(buf, "live\n", strlen("live\n"));

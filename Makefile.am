@@ -127,7 +127,8 @@ ROOTFS = testsuite/rootfs
 ROOTFS_PRISTINE = $(top_srcdir)/testsuite/rootfs-pristine
 CREATE_ROOTFS = $(AM_V_GEN) ( $(RM) -rf $(ROOTFS) && \
 				cp -r $(ROOTFS_PRISTINE) $(ROOTFS) && \
-				touch testsuite/stamp-rootfs )
+				touch testsuite/stamp-rootfs && \
+				find $(ROOTFS) -type d -exec chmod +w {} \; )
 
 rootfs:
 	$(CREATE_ROOTFS)
@@ -193,7 +194,6 @@ testsuite_test_dependencies_LDADD = $(TESTSUITE_LDADD)
 testsuite_test_dependencies_CPPFLAGS = $(TESTSUITE_CPPFLAGS)
 
 testsuite-distclean:
-	-find $(ROOTFS) -type d -exec chmod +w {} \;
 	-$(RM) -rf $(ROOTFS)
 	-$(RM) testsuite/stamp-rootfs
 
