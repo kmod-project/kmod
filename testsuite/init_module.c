@@ -16,6 +16,7 @@
  */
 
 #include <assert.h>
+#include <elf.h>
 #include <errno.h>
 #include <dirent.h>
 #include <fcntl.h>
@@ -206,6 +207,12 @@ static inline bool module_is_inkernel(const char *modname)
 	return ret;
 }
 
+static uint8_t elf_identify(void *mem)
+{
+	uint8_t *p = mem;
+	return p[EI_CLASS];
+}
+
 TS_EXPORT long init_module(void *mem, unsigned long len, const char *args);
 
 /*
@@ -225,6 +232,8 @@ long init_module(void *mem, unsigned long len, const char *args)
 	const void *buf;
 	uint64_t bufsize;
 	int err;
+	uint8_t class;
+	off_t offset;
 
 	init_retcodes();
 
@@ -236,14 +245,18 @@ long init_module(void *mem, unsigned long len, const char *args)
 								&bufsize);
 	kmod_elf_unref(elf);
 
-	/*
-	 * We couldn't find the module's name inside the ELF file. Just exit
-	 * as if it was successful
-	 */
+	/* We couldn't parse the ELF file. Just exit as if it was successful */
 	if (err < 0)
 		return 0;
 
-	modname = (char *)buf + offsetof(struct module, name);
+	/* We need to open both 32 and 64 bits module - hack! */
+	class = elf_identify(mem);
+	if (class == ELFCLASS64)
+		offset = MODULE_NAME_OFFSET_64;
+	else
+		offset = MODULE_NAME_OFFSET_32;
+
+	modname = (char *)buf + offset;
 	mod = find_module(modules, modname);
 	if (mod != NULL) {
 		errno = mod->errcode;

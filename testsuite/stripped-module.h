@@ -13,6 +13,7 @@ struct list_head {
 };
 
 #define MODULE_NAME_LEN (64 - sizeof(unsigned long))
+
 struct module
 {
 	enum module_state state;
@@ -23,5 +24,9 @@ struct module
 	/* Unique handle for this module */
 	char name[MODULE_NAME_LEN];
 };
+
+/*                                padding */
+#define MODULE_NAME_OFFSET_64 4 + 4           + 2 * 8
+#define MODULE_NAME_OFFSET_32 4 + 2 * 4
 
 #endif
