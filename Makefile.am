@@ -132,6 +132,7 @@ CREATE_ROOTFS = $(AM_V_GEN) ( $(RM) -rf $(ROOTFS) && \
 
 rootfs:
 	$(CREATE_ROOTFS)
+.PHONY: rootfs
 
 $(ROOTFS): $(ROOTFS_PRISTINE)
 	$(CREATE_ROOTFS)
@@ -141,6 +142,8 @@ TESTSUITE_OVERRIDE_LIBS = testsuite/uname.la testsuite/path.la \
 			  testsuite/delete_module.la
 TESTSUITE_OVERRIDE_LIBS_LDFLAGS = avoid-version -module -shared -export-dynamic \
 				  -rpath /nowhere -ldl
+
+check-local: rootfs
 
 check_LTLIBRARIES = $(TESTSUITE_OVERRIDE_LIBS)
 
