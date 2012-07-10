@@ -62,7 +62,7 @@ libkmod_libkmod_la_SOURCES =\
 	libkmod/libkmod-elf.c
 
 EXTRA_DIST += libkmod/libkmod.sym
-EXTRA_DIST += libkmod/COPYING libkmod/README
+EXTRA_DIST += libkmod/README libkmod/COPYING testsuite/COPYING COPYING
 
 libkmod_libkmod_la_LDFLAGS = $(AM_LDFLAGS) \
 	-version-info $(LIBKMOD_CURRENT):$(LIBKMOD_REVISION):$(LIBKMOD_AGE) \
