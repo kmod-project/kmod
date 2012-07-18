@@ -16,8 +16,7 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _LIBKMOD_TESTSUITE_
-#define _LIBKMOD_TESTSUITE_
+#pragma once
 
 #include <stdbool.h>
 #include <stdarg.h>
@@ -143,7 +142,5 @@ int test_run(const struct test *t);
 								\
 		exit(EXIT_SUCCESS);				\
 	}							\
-
-#endif
 
 #define __noreturn __attribute__((noreturn))

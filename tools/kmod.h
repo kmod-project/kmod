@@ -17,8 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _KMOD_MACRO_H_
-#define _KMOD_MACRO_H_
+#pragma once
 
 #include "macro.h"
 
@@ -36,4 +35,3 @@ extern const struct kmod_cmd kmod_cmd_compat_modprobe;
 extern const struct kmod_cmd kmod_cmd_compat_depmod;
 
 extern const struct kmod_cmd kmod_cmd_list;
-#endif

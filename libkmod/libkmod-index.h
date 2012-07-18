@@ -18,8 +18,7 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _LIBKMOD_INDEX_H
-#define _LIBKMOD_INDEX_H
+#pragma once
 
 #include <stdint.h>
 
@@ -127,5 +126,3 @@ void index_mm_close(struct index_mm *index);
 char *index_mm_search(struct index_mm *idx, const char *key);
 struct index_value *index_mm_searchwild(struct index_mm *idx, const char *key);
 void index_mm_dump(struct index_mm *idx, int fd, const char *prefix);
-
-#endif

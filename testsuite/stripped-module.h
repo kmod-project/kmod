@@ -1,5 +1,4 @@
-#ifndef _TESTSUITE_STRIPPED_MODULE_H
-#define _TESTSUITE_STRIPPED_MODULE_H
+#pragma once
 
 enum module_state
 {
@@ -28,5 +27,3 @@ struct module
 /*                                padding */
 #define MODULE_NAME_OFFSET_64 4 + 4           + 2 * 8
 #define MODULE_NAME_OFFSET_32 4 + 2 * 4
-
-#endif

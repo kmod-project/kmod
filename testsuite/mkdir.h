@@ -16,12 +16,9 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef _LIBKMOD_TESTSUITE_MKDIR_
-#define _LIBKMOD_TESTSUITE_MKDIR_
+#pragma once
 
 #include <sys/stat.h>
 #include <sys/types.h>
 
 int mkdir_p(const char *path, mode_t mode);
-
-#endif

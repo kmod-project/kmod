@@ -17,9 +17,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
-
-#ifndef _LIBKMOD_MACRO_H_
-#define _LIBKMOD_MACRO_H_
+#pragma once
 
 #include <stddef.h>
 
@@ -82,5 +80,3 @@
 #define _printf_format_(a,b) __attribute__((format (printf, a, b)))
 #define _unused_ __attribute__((unused))
 #define _always_inline_ __inline__ __attribute__((always_inline))
-
-#endif

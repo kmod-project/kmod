@@ -1,5 +1,4 @@
-#ifndef _LIBKMOD_ARRAY_H_
-#define _LIBKMOD_ARRAY_H_
+#pragma once
 
 /*
  * Declaration of struct array is in header because we may want to embed the
@@ -19,5 +18,3 @@ void array_pop(struct array *array);
 void array_free_array(struct array *array);
 void array_sort(struct array *array, int (*cmp)(const void *a, const void *b));
 int array_remove_at(struct array *array, unsigned int pos);
-
-#endif

@@ -1,6 +1,4 @@
-#ifndef _LIBKMOD_UTIL_H_
-#define _LIBKMOD_UTIL_H_
-
+#pragma once
 #include "macro.h"
 
 #include <limits.h>
@@ -42,5 +40,3 @@ do {						\
 	} *__p = (typeof(__p)) (ptr);		\
 	__p->__v = (val);			\
 } while(0)
-
-#endif

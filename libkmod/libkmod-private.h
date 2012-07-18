@@ -1,5 +1,4 @@
-#ifndef _LIBKMOD_PRIVATE_H_
-#define _LIBKMOD_PRIVATE_H_
+#pragma once
 
 #include <stdbool.h>
 #include <stdio.h>
@@ -170,5 +169,3 @@ int kmod_elf_get_section(const struct kmod_elf *elf, const char *section, const 
 
 /* util functions */
 #include "libkmod-util.h"
-
-#endif
