@@ -101,7 +101,11 @@
   <refsect1><title>OPTIONS</title>
     <variablelist>
       <varlistentry>
-        <term><option>-a</option> <option>--all</option>
+        <term>
+          <option>-a</option>
+        </term>
+        <term>
+          <option>--all</option>
         </term>
         <listitem>
           <para>
@@ -111,7 +115,11 @@
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>-A</option> <option>--quick</option>
+        <term>
+          <option>-A</option>
+        </term>
+        <term>
+          <option>--quick</option>
         </term>
         <listitem>
           <para>
@@ -124,6 +132,8 @@
       <varlistentry>
         <term>
           <option>-b <replaceable>basedir</replaceable></option>
+        </term>
+        <term>
           <option>--basedir <replaceable>basedir</replaceable></option>
         </term>
         <listitem>
@@ -141,7 +151,11 @@
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>-C</option> <option>--config <replaceable>file or directory</replaceable></option>
+        <term>
+          <option>-C</option>
+        </term>
+        <term>
+          <option>--config <replaceable>file or directory</replaceable></option>
         </term>
         <listitem>
           <para>
@@ -151,7 +165,11 @@
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>-e</option> <option>--errsyms</option>
+        <term>
+          <option>-e</option>
+        </term>
+        <term>
+          <option>--errsyms</option>
         </term>
         <listitem>
           <para>
@@ -166,7 +184,11 @@
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>-E</option> <option>--symvers</option>
+        <term>
+          <option>-E</option>
+        </term>
+        <term>
+          <option>--symvers</option>
         </term>
           <listitem>
             <para>
@@ -179,7 +201,11 @@
           </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>-F</option> <option>--filesyms <replaceable>System.map</replaceable></option>
+        <term>
+          <option>-F</option>
+        </term>
+        <term>
+          <option>--filesyms <replaceable>System.map</replaceable></option>
         </term>
         <listitem>
           <para>
@@ -191,7 +217,11 @@
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>-h</option> <option>--help</option>
+        <term>
+          <option>-h</option>
+        </term>
+        <term>
+          <option>--help</option>
         </term>
         <listitem>
           <para>
@@ -200,7 +230,11 @@
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>-n</option> <option>--dry-run</option>
+        <term>
+          <option>-n</option>
+        </term>
+        <term>
+          <option>--dry-run</option>
         </term>
         <listitem>
           <para>
@@ -210,7 +244,8 @@
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>-P</option>
+        <term>
+          <option>-P</option>
         </term>
         <listitem>
           <para>
@@ -220,7 +255,11 @@
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>-v</option> <option>--verbose</option>
+        <term>
+          <option>-v</option>
+        </term>
+        <term>
+          <option>--verbose</option>
         </term>
         <listitem>
           <para>
@@ -231,7 +270,11 @@
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>-V</option> <option>--version</option>
+        <term>
+          <option>-V</option>
+        </term>
+        <term>
+          <option>--version</option>
         </term>
         <listitem>
           <para>
@@ -241,7 +284,8 @@
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>-w</option>
+        <term>
+          <option>-w</option>
         </term>
         <listitem>
           <para>
