@@ -76,6 +76,8 @@
       <varlistentry>
         <term>
           <option>-V</option>
+        </term>
+        <term>
           <option>--version</option>
         </term>
         <listitem>
@@ -87,6 +89,8 @@
       <varlistentry>
         <term>
           <option>-F</option>
+        </term>
+        <term>
           <option>--field</option>
         </term>
         <listitem>
@@ -106,6 +110,8 @@
       <varlistentry>
         <term>
           <option>-b <replaceable>basedir</replaceable></option>
+        </term>
+        <term>
           <option>--basedir <replaceable>basedir</replaceable></option>
         </term>
         <listitem>
@@ -132,6 +138,8 @@
       <varlistentry>
         <term>
           <option>-0</option>
+        </term>
+        <term>
           <option>--null</option>
         </term>
         <listitem>
