@@ -121,13 +121,23 @@
   <refsect1><title>OPTIONS</title>
     <variablelist>
       <varlistentry>
-        <term><option>-a</option> <option>--all</option></term>
+        <term>
+          <option>-a</option>
+        </term>
+        <term>
+          <option>--all</option>
+        </term>
         <listitem>
           <para>Insert all module names on the command line.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>-b</option> <option>--use-blacklist</option></term>
+        <term>
+          <option>-b</option>
+        </term>
+        <term>
+          <option>--use-blacklist</option>
+        </term>
         <listitem>
           <para>
             This option causes <command>modprobe</command> to apply the
@@ -140,7 +150,12 @@
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>-C</option> <option>--config</option></term>
+        <term>
+          <option>-C</option>
+        </term>
+        <term>
+          <option>--config</option>
+        </term>
         <listitem>
           <para>This option overrides the default configuration directory
             (<filename>/etc/modprobe.d</filename>).
@@ -154,7 +169,12 @@
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>-c</option> <option>--showconfig</option></term>
+        <term>
+          <option>-c</option>
+        </term>
+        <term>
+          <option>--showconfig</option>
+        </term>
         <listitem>
           <para>
             Dump out the effective configuration from the config directory and
@@ -163,7 +183,8 @@
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>--dump-modversions</option>
+        <term>
+          <option>--dump-modversions</option>
         </term>
         <listitem>
           <para>
@@ -174,7 +195,12 @@
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>-d</option> <option>--dirname</option></term>
+        <term>
+          <option>-d</option>
+        </term>
+        <term>
+          <option>--dirname</option>
+        </term>
         <listitem>
           <para>
             Root directory for modules, <filename>/</filename> by default.
@@ -182,7 +208,9 @@
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>--first-time</option></term>
+        <term>
+          <option>--first-time</option>
+        </term>
         <listitem>
           <para>
             Normally, <command>modprobe</command> will succeed (and do
@@ -196,7 +224,9 @@
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>--force-vermagic</option></term>
+        <term>
+          <option>--force-vermagic</option>
+        </term>
         <listitem>
           <para>
             Every module contains a small string containing important
@@ -213,7 +243,9 @@
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>--force-modversion</option></term>
+        <term>
+          <option>--force-modversion</option>
+        </term>
         <listitem>
           <para>
             When modules are compiled with CONFIG_MODVERSIONS set, a section
@@ -232,7 +264,12 @@
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>-f</option> <option>--force</option></term>
+        <term>
+          <option>-f</option>
+        </term>
+        <term>
+          <option>--force</option>
+        </term>
         <listitem>
           <para>
             Try to strip any versioning information from the module which might
@@ -251,7 +288,11 @@
       <varlistentry>
         <term>
           <option>-i</option>
+        </term>
+        <term>
           <option>--ignore-install</option>
+        </term>
+        <term>
           <option>--ignore-remove</option>
         </term>
         <listitem>
@@ -274,7 +315,11 @@
       <varlistentry>
         <term>
           <option>-n</option>
+        </term>
+        <term>
           <option>--dry-run</option>
+        </term>
+        <term>
           <option>--show</option>
         </term>
         <listitem>
@@ -291,6 +336,8 @@
       <varlistentry>
         <term>
           <option>-q</option>
+        </term>
+        <term>
           <option>--quiet</option>
         </term>
         <listitem>
@@ -308,6 +355,8 @@
       <varlistentry>
         <term>
           <option>-R</option>
+        </term>
+        <term>
           <option>--resolve-alias</option>
         </term>
         <listitem>
@@ -320,6 +369,8 @@
       <varlistentry>
         <term>
           <option>-r</option>
+        </term>
+        <term>
           <option>--remove</option>
         </term>
         <listitem>
@@ -341,6 +392,8 @@
       <varlistentry>
         <term>
           <option>-S</option>
+        </term>
+        <term>
           <option>--set-version</option>
         </term>
         <listitem>
@@ -374,6 +427,8 @@
       <varlistentry>
         <term>
           <option>-s</option>
+        </term>
+        <term>
           <option>--syslog</option>
         </term>
         <listitem>
@@ -394,6 +449,8 @@
       <varlistentry>
         <term>
           <option>-V</option>
+        </term>
+        <term>
           <option>--version</option>
         </term>
         <listitem>
@@ -403,6 +460,8 @@
       <varlistentry>
         <term>
           <option>-v</option>
+        </term>
+        <term>
           <option>--verbose</option>
         </term>
         <listitem>
