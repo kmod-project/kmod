@@ -177,9 +177,7 @@
         <term><option>-d</option> <option>--dirname</option></term>
         <listitem>
           <para>
-            Directory where modules can be found,
-            <filename>/lib/modules/<replaceable>RELEASE</replaceable></filename>
-            by default.
+            Root directory for modules, <filename>/</filename> by default.
           </para>
         </listitem>
       </varlistentry>
