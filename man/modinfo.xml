@@ -145,10 +145,23 @@
       <varlistentry>
         <term>
           <option>-a</option>
+          <option>--author</option>
+        </term>
+        <term>
           <option>-d</option>
+          <option>--description</option>
+        </term>
+        <term>
           <option>-l</option>
+          <option>--license</option>
+        </term>
+        <term>
           <option>-p</option>
+          <option>--parameters</option>
+        </term>
+        <term>
           <option>-n</option>
+          <option>--filename</option>
         </term>
         <listitem>
           <para>
