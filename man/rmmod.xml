@@ -60,7 +60,11 @@
   <refsect1><title>OPTIONS</title>
     <variablelist>
       <varlistentry>
-        <term><option>-v</option> <option>--verbose</option>
+        <term>
+          <option>-v</option>
+        </term>
+        <term>
+          <option>--verbose</option>
         </term>
         <listitem>
           <para>
@@ -71,7 +75,11 @@
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>-f</option> <option>--force</option>
+        <term>
+          <option>-f</option>
+        </term>
+        <term>
+          <option>--force</option>
         </term>
         <listitem>
           <para>
@@ -102,7 +110,11 @@
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>-s</option> <option>--syslog</option>
+        <term>
+          <option>-s</option>
+        </term>
+        <term>
+          <option>--syslog</option>
         </term>
         <listitem>
           <para>
