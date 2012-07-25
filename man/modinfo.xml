@@ -105,6 +105,17 @@
       </varlistentry>
       <varlistentry>
         <term>
+          <option>-b <replaceable>basedir</replaceable></option>
+          <option>--basedir <replaceable>basedir</replaceable></option>
+        </term>
+        <listitem>
+          <para>
+            Root directory for modules, <filename>/</filename> by default.
+          </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>
           <option>-k <replaceable>kernel</replaceable></option>
         </term>
         <listitem>
