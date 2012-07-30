@@ -89,6 +89,11 @@ AC_ARG_ENABLE([tools],
 	[], enable_tools=yes)
 AM_CONDITIONAL([BUILD_TOOLS], [test "x$enable_tools" = "xyes"])
 
+AC_ARG_ENABLE([manpages],
+        AS_HELP_STRING([--disable-manpages], [disable manpages @<:@default=enabled@:>@]),
+	[], enable_manpages=yes)
+AM_CONDITIONAL([BUILD_MANPAGES], [test "x$enable_manpages" = "xyes"])
+
 AC_ARG_ENABLE([logging],
 	AS_HELP_STRING([--disable-logging], [disable system logging @<:@default=enabled@:>@]),
 	[], enable_logging=yes)

@@ -1,4 +1,8 @@
-SUBDIRS = . libkmod/docs man
+SUBDIRS = . libkmod/docs
+
+if BUILD_MANPAGES
+SUBDIRS += man
+endif
 
 DISTCLEAN_LOCAL_HOOKS =
 EXTRA_DIST =
