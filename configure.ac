@@ -206,4 +206,5 @@ AC_MSG_RESULT([
 	compression:		xz=${with_xz}  zlib=${with_zlib}
 	debug:			${enable_debug}
 	doc:			${enable_gtk_doc}
+	man:			${enable_manpages}
 ])
