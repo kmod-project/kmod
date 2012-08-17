@@ -161,6 +161,7 @@ enum kmod_probe {
 	/* codes below can be used in return value, too */
 	KMOD_PROBE_APPLY_BLACKLIST_ALL =	0x10000,
 	KMOD_PROBE_APPLY_BLACKLIST =		0x20000,
+	KMOD_PROBE_APPLY_BLACKLIST_ALIAS_ONLY =	0x40000,
 };
 
 /* Flags to kmod_module_apply_filter() */

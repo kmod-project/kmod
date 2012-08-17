@@ -1172,9 +1172,15 @@ KMOD_EXPORT int kmod_module_probe_insert_module(struct kmod_module *mod,
 			return 0;
 	}
 
-	err = flags & (KMOD_PROBE_APPLY_BLACKLIST |
-					KMOD_PROBE_APPLY_BLACKLIST_ALL);
-	if (err != 0) {
+	/*
+	 * Ugly assignement + check. We need to check if we were told to check
+	 * blacklist and also return the reason why we failed.
+	 * KMOD_PROBE_APPLY_BLACKLIST_ALIAS_ONLY will take effect only if the
+	 * module is an alias, so we also need to check it
+	 */
+	if ((mod->alias != NULL && ((err = flags & KMOD_PROBE_APPLY_BLACKLIST_ALIAS_ONLY)))
+			|| (err = flags & KMOD_PROBE_APPLY_BLACKLIST_ALL)
+			|| (err = flags & KMOD_PROBE_APPLY_BLACKLIST)) {
 		if (module_is_blacklisted(mod))
 			return err;
 	}
