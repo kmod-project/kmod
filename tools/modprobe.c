@@ -582,6 +582,7 @@ static int insmod(struct kmod_ctx *ctx, const char *alias,
 	if (do_show || verbose > DEFAULT_VERBOSE)
 		show = &print_action;
 
+	flags |= KMOD_PROBE_APPLY_BLACKLIST_ALIAS_ONLY;
 
 	if (use_blacklist)
 		flags |= KMOD_PROBE_APPLY_BLACKLIST;
