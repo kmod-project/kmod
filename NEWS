@@ -1,3 +1,22 @@
+kmod 10
+=======
+
+- New features:
+	- Read coresize from /sys if supported
+
+	- Add flag to kmod_module_probe_insert() to apply blaklisting during
+	  probe only if mod is and alias. Now modprobe uses this flag by default.
+	  This is needed to fix a change in behavior regarding module-init-tools
+	  and ultimately make us loading a blacklisted module.
+
+- Better formatting in man pages
+
+- Add option to disable man pages at build time
+
+- Fixes in testsuite and refactor of LDPRELOAD'ed libraries
+
+- Re-licensing testsuite as LGPL
+
 kmod 9
 ======
 
