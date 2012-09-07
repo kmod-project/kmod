@@ -184,16 +184,20 @@ WRAP_2ARGS(FILE*, NULL, fopen, const char*);
 WRAP_2ARGS(int, -1, mkdir, mode_t);
 WRAP_2ARGS(int, -1, access, int);
 WRAP_2ARGS(int, -1, stat, struct stat*);
-WRAP_2ARGS(int, -1, stat64, struct stat64*);
 WRAP_2ARGS(int, -1, lstat, struct stat*);
+#ifndef _FILE_OFFSET_BITS
+WRAP_2ARGS(int, -1, stat64, struct stat64*);
 WRAP_2ARGS(int, -1, lstat64, struct stat64*);
+WRAP_OPEN(64);
+#endif
 
 WRAP_OPEN();
-WRAP_OPEN(64);
 
 #ifdef HAVE___XSTAT
 WRAP_VERSTAT(__x,);
-WRAP_VERSTAT(__x,64);
 WRAP_VERSTAT(__lx,);
+#ifndef _FILE_OFFSET_BITS
+WRAP_VERSTAT(__x,64);
 WRAP_VERSTAT(__lx,64);
+#endif
 #endif
