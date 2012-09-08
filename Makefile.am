@@ -134,8 +134,7 @@ CREATE_ROOTFS = $(AM_V_GEN) ( $(RM) -rf $(ROOTFS) && \
 				touch testsuite/stamp-rootfs && \
 				find $(ROOTFS) -type d -exec chmod +w {} \; )
 
-# disable jobserver to avoid running in parallel with the testsuite
--rootfs:
+rootfs:
 	$(CREATE_ROOTFS)
 .PHONY: rootfs
 
