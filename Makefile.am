@@ -147,7 +147,7 @@ TESTSUITE_OVERRIDE_LIBS = testsuite/uname.la testsuite/path.la \
 TESTSUITE_OVERRIDE_LIBS_LDFLAGS = avoid-version -module -shared -export-dynamic \
 				  -rpath /nowhere -ldl
 
-check-local: rootfs
+check-am: rootfs
 
 check_LTLIBRARIES = $(TESTSUITE_OVERRIDE_LIBS)
 
