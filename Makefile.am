@@ -201,8 +201,8 @@ testsuite_test_dependencies_LDADD = $(TESTSUITE_LDADD)
 testsuite_test_dependencies_CPPFLAGS = $(TESTSUITE_CPPFLAGS)
 
 testsuite-distclean:
-	-$(RM) -rf $(ROOTFS)
-	-$(RM) testsuite/stamp-rootfs
+	$(RM) -r $(ROOTFS)
+	$(RM) testsuite/stamp-rootfs
 
 DISTCLEAN_LOCAL_HOOKS += testsuite-distclean
 EXTRA_DIST += testsuite/rootfs-pristine
