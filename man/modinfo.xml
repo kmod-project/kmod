@@ -173,11 +173,11 @@
         </term>
         <listitem>
           <para>
-            These are shortcuts for <literal>author</literal>,
-            <literal>description</literal>, <literal>license</literal>.
-            <literal>parm</literal> and <literal>filename</literal>
-            respectively, to ease the transition from the old modutils
-            <command>modinfo</command>.
+            These are shortcuts for the <option>--field</option> flag's
+            <literal>author</literal>, <literal>description</literal>,
+            <literal>license</literal>, <literal>parm</literal> and
+            <literal>filename</literal> arguments, to ease the transition
+            from the old modutils <command>modinfo</command>.
           </para>
         </listitem>
       </varlistentry>
