@@ -13,7 +13,6 @@ AM_MAKEFLAGS = --no-print-directory
 AM_CPPFLAGS = \
 	-include $(top_builddir)/config.h \
 	-I$(top_srcdir)/libkmod \
-	-DROOTPREFIX=\""$(rootprefix)"\" \
 	-DSYSCONFDIR=\""$(sysconfdir)"\" \
 	-DLIBEXECDIR=\""$(libexecdir)"\" \
 	${zlib_CFLAGS}

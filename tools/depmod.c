@@ -57,7 +57,7 @@ static const char CFG_BUILTIN_KEY[] = "built-in";
 static const char *default_cfg_paths[] = {
 	"/run/depmod.d",
 	SYSCONFDIR "/depmod.d",
-	ROOTPREFIX "/lib/depmod.d",
+	"/lib/depmod.d",
 	NULL
 };
 
@@ -2649,7 +2649,7 @@ static int do_depmod(int argc, char *argv[])
 	}
 
 	cfg.dirnamelen = snprintf(cfg.dirname, PATH_MAX,
-				  "%s" ROOTPREFIX "/lib/modules/%s",
+				  "%s/lib/modules/%s",
 				  root == NULL ? "" : root, cfg.kversion);
 
 	if (optind == argc)
