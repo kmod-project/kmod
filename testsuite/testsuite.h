@@ -81,8 +81,17 @@ struct test {
 	const char *name;
 	const char *description;
 	struct {
+		/* File with correct stdout */
 		const char *stdout;
+		/* File with correct stderr */
 		const char *stderr;
+
+		/*
+		 * Vector with pair of files
+		 * key = correct file
+		 * val = file to check
+		 */
+		const struct keyval *files;
 	} output;
 	testfunc func;
 	const char *config[_TC_LAST];

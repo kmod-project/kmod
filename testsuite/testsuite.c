@@ -434,6 +434,100 @@ out:
 	return err == 0;
 }
 
+static inline int safe_read(int fd, void *buf, size_t count)
+{
+	int r;
+
+	while (1) {
+		r = read(fd, buf, count);
+		if (r == -1 && errno == -EINTR)
+			continue;
+		break;
+	}
+
+	return r;
+}
+
+static bool check_generated_files(const struct test *t)
+{
+	const struct keyval *k;
+
+	/* This is not meant to be a diff replacement, just stupidly check if
+	 * the files match. Bear in mind they can be binary files */
+	for (k = t->output.files; k && k->key; k++) {
+		struct stat sta, stb;
+		int fda = -1, fdb = -1;
+		char bufa[4096];
+		char bufb[4096];
+
+		fda = open(k->key, O_RDONLY);
+		if (fda < 0) {
+			ERR("could not open %s\n - %m\n", k->key);
+			goto fail;
+		}
+
+		fdb = open(k->val, O_RDONLY);
+		if (fdb < 0) {
+			ERR("could not open %s\n - %m\n", k->val);
+			goto fail;
+		}
+
+		if (fstat(fda, &sta) != 0) {
+			ERR("could not fstat %d %s\n - %m\n", fda, k->key);
+			goto fail;
+		}
+
+		if (fstat(fdb, &stb) != 0) {
+			ERR("could not fstat %d %s\n - %m\n", fdb, k->key);
+			goto fail;
+		}
+
+		if (sta.st_size != stb.st_size) {
+			ERR("sizes do not match %s %s\n", k->key, k->val);
+			goto fail;
+		}
+
+		for (;;) {
+			int r, done;
+
+			r = safe_read(fda, bufa, sizeof(bufa));
+			if (r < 0)
+				goto fail;
+
+			if (r == 0)
+				/* size is already checked, go to next file */
+				goto next;
+
+			for (done = 0; done < r;) {
+				int r2 = safe_read(fdb, bufb + done, r - done);
+
+				if (r2 <= 0)
+					goto fail;
+
+				done += r2;
+			}
+
+			if (memcmp(bufa, bufb, r) != 0)
+				goto fail;
+		}
+
+next:
+		close(fda);
+		close(fdb);
+		continue;
+
+fail:
+		if (fda >= 0)
+			close(fda);
+		if (fdb >= 0)
+			close(fdb);
+
+		return false;
+	}
+
+	return true;
+}
+
 static inline int test_run_parent(const struct test *t, int fdout[2],
 				int fderr[2], int fdmonitor[2], pid_t child)
 {
@@ -481,6 +575,9 @@ static inline int test_run_parent(const struct test *t, int fdout[2],
 				WTERMSIG(err), strsignal(WTERMSIG(err)));
 		return EXIT_FAILURE;
 	}
+
+	if (matchout)
+		matchout = check_generated_files(t);
 
 	if (t->expected_fail == false) {
 		if (err == 0) {
