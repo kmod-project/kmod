@@ -5,6 +5,7 @@
 /test-alias
 /test-blacklist
 /test-dependencies
+/test-depmod
 /test-init
 /test-loaded
 /test-modinfo
