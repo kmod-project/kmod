@@ -567,8 +567,10 @@ static int kmod_config_parse_kcmdline(struct kmod_config *config)
 			modname = p + 1;
 			break;
 		case '.':
-			*p = '\0';
-			param = p + 1;
+			if (param == NULL) {
+				*p = '\0';
+				param = p + 1;
+			}
 			break;
 		case '=':
 			if (param != NULL)
