@@ -164,7 +164,8 @@ int hash_add(struct hash *hash, const char *key, const void *value)
 	for (; entry < entry_end; entry++) {
 		int c = strcmp(key, entry->key);
 		if (c == 0) {
-			hash->free_value((void *)entry->value);
+			if (hash->free_value)
+				hash->free_value((void *)entry->value);
 			entry->value = value;
 			return 0;
 		} else if (c < 0) {
@@ -262,6 +263,9 @@ int hash_del(struct hash *hash, const char *key)
 		sizeof(struct hash_entry), hash_entry_cmp);
 	if (entry == NULL)
 		return -ENOENT;
+
+	if (hash->free_value)
+		hash->free_value((void *)entry->value);
 
 	entry_end = bucket->entries + bucket->used;
 	memmove(entry, entry + 1,
