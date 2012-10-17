@@ -35,9 +35,9 @@ Features:
 
 * Implement actions in kmod tool like 'insert', 'remove', 'info', etc
 
-* Deprecate "rmmod -w", friends and KMOD_REMOVE_NOWAIT from libkmod.
-  The blocking delete_module will be removed from the kernel. Deprecate it and
-  print a warning to the user because he shouldn't be using it.
+* Finish removal of "rmmod -w" when it's gone from kernel.
+
+* Deprecate not using KMOD_REMOVE_NOWAIT on libkmod.
 
 Things to be added/removed in kernel (check what is really needed):
 ===================================================================

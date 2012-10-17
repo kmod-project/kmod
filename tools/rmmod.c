@@ -52,8 +52,6 @@ static void help(const char *progname)
 		"\t-s, --syslog      print to syslog, not stderr\n"
 		"\t-v, --verbose     enables more messages\n"
 		"\t-V, --version     show version\n"
-		"\t-w, --wait        begins module removal even if it is used and\n"
-		"\t                  will stop new users from accessing it.\n"
 		"\t-h, --help        show this help\n",
 		progname);
 }
@@ -161,6 +159,8 @@ static int do_rmmod(int argc, char *argv[])
 			verbose++;
 			break;
 		case 'w':
+			fprintf(stderr, "'Wait' behavior is targeted for removal from kernel.\nWe will now sleep for 10s, and then continue.\n");
+			sleep(10);
 			flags &= ~KMOD_REMOVE_NOWAIT;
 			break;
 		case 'h':
