@@ -60,6 +60,7 @@ struct kmod_module {
 	const char *install_commands;	/* owned by kmod_config */
 	const char *remove_commands;	/* owned by kmod_config */
 	char *alias; /* only set if this module was created from an alias */
+	struct kmod_file *file;
 	int n_dep;
 	int refcount;
 	struct {
@@ -436,6 +437,10 @@ KMOD_EXPORT struct kmod_module *kmod_module_unref(struct kmod_module *mod)
 
 	kmod_pool_del_module(mod->ctx, mod, mod->hashkey);
 	kmod_module_unref_list(mod->dep);
+
+	if (mod->file)
+		kmod_file_unref(mod->file);
+
 	kmod_unref(mod->ctx);
 	free(mod->options);
 	free(mod->path);
@@ -2043,6 +2048,25 @@ KMOD_EXPORT void kmod_module_section_free_list(struct kmod_list *list)
 	}
 }
 
+static struct kmod_elf *kmod_module_get_elf(const struct kmod_module *mod)
+{
+	if (mod->file == NULL) {
+		const char *path = kmod_module_get_path(mod);
+
+		if (path == NULL) {
+			errno = ENOENT;
+			return NULL;
+		}
+
+		((struct kmod_module *)mod)->file = kmod_file_open(mod->ctx,
+									path);
+		if (mod->file == NULL)
+			return NULL;
+	}
+
+	return kmod_file_get_elf(mod->file);
+}
+
 struct kmod_module_info {
 	char *key;
 	char value[];
@@ -2088,12 +2112,8 @@ static void kmod_module_info_free(struct kmod_module_info *info)
  */
 KMOD_EXPORT int kmod_module_get_info(const struct kmod_module *mod, struct kmod_list **list)
 {
-	struct kmod_file *file;
 	struct kmod_elf *elf;
-	const char *path;
-	const void *mem;
 	char **strings;
-	size_t size;
 	int i, count, ret = 0;
 
 	if (mod == NULL || list == NULL)
@@ -2101,28 +2121,13 @@ KMOD_EXPORT int kmod_module_get_info(const struct kmod_module *mod, struct kmod_
 
 	assert(*list == NULL);
 
-	path = kmod_module_get_path(mod);
-	if (path == NULL)
-		return -ENOENT;
-
-	file = kmod_file_open(mod->ctx, path);
-	if (file == NULL)
+	elf = kmod_module_get_elf(mod);
+	if (elf == NULL)
 		return -errno;
 
-	size = kmod_file_get_size(file);
-	mem = kmod_file_get_contents(file);
-
-	elf = kmod_elf_new(mem, size);
-	if (elf == NULL) {
-		ret = -errno;
-		goto elf_open_error;
-	}
-
 	count = kmod_elf_get_strings(elf, ".modinfo", &strings);
-	if (count < 0) {
-		ret = count;
-		goto get_strings_error;
-	}
+	if (count < 0)
+		return count;
 
 	for (i = 0; i < count; i++) {
 		struct kmod_module_info *info;
@@ -2164,11 +2169,6 @@ KMOD_EXPORT int kmod_module_get_info(const struct kmod_module *mod, struct kmod_
 
 list_error:
 	free(strings);
-get_strings_error:
-	kmod_elf_unref(elf);
-elf_open_error:
-	kmod_file_unref(file);
-
 	return ret;
 }
 
@@ -2266,12 +2266,8 @@ static void kmod_module_version_free(struct kmod_module_version *version)
  */
 KMOD_EXPORT int kmod_module_get_versions(const struct kmod_module *mod, struct kmod_list **list)
 {
-	struct kmod_file *file;
 	struct kmod_elf *elf;
-	const char *path;
-	const void *mem;
 	struct kmod_modversion *versions;
-	size_t size;
 	int i, count, ret = 0;
 
 	if (mod == NULL || list == NULL)
@@ -2279,28 +2275,13 @@ KMOD_EXPORT int kmod_module_get_versions(const struct kmod_module *mod, struct k
 
 	assert(*list == NULL);
 
-	path = kmod_module_get_path(mod);
-	if (path == NULL)
-		return -ENOENT;
-
-	file = kmod_file_open(mod->ctx, path);
-	if (file == NULL)
+	elf = kmod_module_get_elf(mod);
+	if (elf == NULL)
 		return -errno;
 
-	size = kmod_file_get_size(file);
-	mem = kmod_file_get_contents(file);
-
-	elf = kmod_elf_new(mem, size);
-	if (elf == NULL) {
-		ret = -errno;
-		goto elf_open_error;
-	}
-
 	count = kmod_elf_get_modversions(elf, &versions);
-	if (count < 0) {
-		ret = count;
-		goto get_strings_error;
-	}
+	if (count < 0)
+		return count;
 
 	for (i = 0; i < count; i++) {
 		struct kmod_module_version *mv;
@@ -2329,11 +2310,6 @@ KMOD_EXPORT int kmod_module_get_versions(const struct kmod_module *mod, struct k
 
 list_error:
 	free(versions);
-get_strings_error:
-	kmod_elf_unref(elf);
-elf_open_error:
-	kmod_file_unref(file);
-
 	return ret;
 }
 
@@ -2431,12 +2407,8 @@ static void kmod_module_symbol_free(struct kmod_module_symbol *symbol)
  */
 KMOD_EXPORT int kmod_module_get_symbols(const struct kmod_module *mod, struct kmod_list **list)
 {
-	struct kmod_file *file;
 	struct kmod_elf *elf;
-	const char *path;
-	const void *mem;
 	struct kmod_modversion *symbols;
-	size_t size;
 	int i, count, ret = 0;
 
 	if (mod == NULL || list == NULL)
@@ -2444,28 +2416,13 @@ KMOD_EXPORT int kmod_module_get_symbols(const struct kmod_module *mod, struct km
 
 	assert(*list == NULL);
 
-	path = kmod_module_get_path(mod);
-	if (path == NULL)
-		return -ENOENT;
-
-	file = kmod_file_open(mod->ctx, path);
-	if (file == NULL)
+	elf = kmod_module_get_elf(mod);
+	if (elf == NULL)
 		return -errno;
 
-	size = kmod_file_get_size(file);
-	mem = kmod_file_get_contents(file);
-
-	elf = kmod_elf_new(mem, size);
-	if (elf == NULL) {
-		ret = -errno;
-		goto elf_open_error;
-	}
-
 	count = kmod_elf_get_symbols(elf, &symbols);
-	if (count < 0) {
-		ret = count;
-		goto get_strings_error;
-	}
+	if (count < 0)
+		return count;
 
 	for (i = 0; i < count; i++) {
 		struct kmod_module_symbol *mv;
@@ -2494,11 +2451,6 @@ KMOD_EXPORT int kmod_module_get_symbols(const struct kmod_module *mod, struct km
 
 list_error:
 	free(symbols);
-get_strings_error:
-	kmod_elf_unref(elf);
-elf_open_error:
-	kmod_file_unref(file);
-
 	return ret;
 }
 
@@ -2599,12 +2551,8 @@ static void kmod_module_dependency_symbol_free(struct kmod_module_dependency_sym
  */
 KMOD_EXPORT int kmod_module_get_dependency_symbols(const struct kmod_module *mod, struct kmod_list **list)
 {
-	struct kmod_file *file;
 	struct kmod_elf *elf;
-	const char *path;
-	const void *mem;
 	struct kmod_modversion *symbols;
-	size_t size;
 	int i, count, ret = 0;
 
 	if (mod == NULL || list == NULL)
@@ -2612,28 +2560,13 @@ KMOD_EXPORT int kmod_module_get_dependency_symbols(const struct kmod_module *mod
 
 	assert(*list == NULL);
 
-	path = kmod_module_get_path(mod);
-	if (path == NULL)
-		return -ENOENT;
-
-	file = kmod_file_open(mod->ctx, path);
-	if (file == NULL)
+	elf = kmod_module_get_elf(mod);
+	if (elf == NULL)
 		return -errno;
 
-	size = kmod_file_get_size(file);
-	mem = kmod_file_get_contents(file);
-
-	elf = kmod_elf_new(mem, size);
-	if (elf == NULL) {
-		ret = -errno;
-		goto elf_open_error;
-	}
-
 	count = kmod_elf_get_dependency_symbols(elf, &symbols);
-	if (count < 0) {
-		ret = count;
-		goto get_strings_error;
-	}
+	if (count < 0)
+		return count;
 
 	for (i = 0; i < count; i++) {
 		struct kmod_module_dependency_symbol *mv;
@@ -2664,11 +2597,6 @@ KMOD_EXPORT int kmod_module_get_dependency_symbols(const struct kmod_module *mod
 
 list_error:
 	free(symbols);
-get_strings_error:
-	kmod_elf_unref(elf);
-elf_open_error:
-	kmod_file_unref(file);
-
 	return ret;
 }
 

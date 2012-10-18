@@ -56,6 +56,7 @@ struct kmod_file {
 	void *memory;
 	const struct file_ops *ops;
 	const struct kmod_ctx *ctx;
+	struct kmod_elf *elf;
 };
 
 #ifdef ENABLE_XZ
@@ -268,6 +269,15 @@ static const struct file_ops reg_ops = {
 	load_reg, unload_reg
 };
 
+struct kmod_elf *kmod_file_get_elf(struct kmod_file *file)
+{
+	if (file->elf)
+		return file->elf;
+
+	file->elf = kmod_elf_new(file->memory, file->size);
+	return file->elf;
+}
+
 struct kmod_file *kmod_file_open(const struct kmod_ctx *ctx,
 						const char *filename)
 {
@@ -345,6 +355,9 @@ off_t kmod_file_get_size(const struct kmod_file *file)
 
 void kmod_file_unref(struct kmod_file *file)
 {
+	if (file->elf)
+		kmod_elf_unref(file->elf);
+
 	file->ops->unload(file);
 	if (file->fd >= 0)
 		close(file->fd);
