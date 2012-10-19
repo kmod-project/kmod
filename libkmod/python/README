@@ -35,6 +35,6 @@ Example (python invoked as root)
 Building
 --------
 
-Ensure Python and kmod headers are installed and run::
+Ensure Python, Cython, and the kmod headers are installed and run::
 
   $ python setup.py build
