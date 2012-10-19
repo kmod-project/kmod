@@ -97,6 +97,11 @@ cdef extern from 'libkmod.h':
     long kmod_module_get_size(const_kmod_module_ptr mod)
 
     # Information retrieved from ELF headers and section
+    int kmod_module_get_info(const_kmod_module_ptr mod, kmod_list **list)
+    const_char_ptr kmod_module_info_get_key(const_kmod_list_ptr entry)
+    const_char_ptr kmod_module_info_get_value(const_kmod_list_ptr entry)
+    void kmod_module_info_free_list(kmod_list *list)
+
     int kmod_module_get_versions(const_kmod_module_ptr mod, kmod_list **list)
     const_char_ptr kmod_module_version_get_symbol(const_kmod_list_ptr entry)
     _stdint.uint64_t kmod_module_version_get_crc(const_kmod_list_ptr entry)

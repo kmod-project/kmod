@@ -69,6 +69,27 @@ cdef class Module (object):
         return _libkmod_h.kmod_module_get_size(self.module)
     size = property(fget=_size_get)
 
+    def _info_get(self):
+        cdef _list.ModList ml = _list.ModList()
+        cdef _list.ModListItem mli
+        err = _libkmod_h.kmod_module_get_info(self.module, &ml.list)
+        if err < 0:
+            raise _KmodError('Could not get versions')
+        info = {}
+        try:
+            for item in ml:
+                mli = <_list.ModListItem> item
+                key = _util.char_ptr_to_str(
+                    _libkmod_h.kmod_module_info_get_key(mli.list))
+                value = _util.char_ptr_to_str(
+                    _libkmod_h.kmod_module_info_get_value(mli.list))
+                info[key] = value
+        finally:
+            _libkmod_h.kmod_module_info_free_list(ml.list)
+            ml.list = NULL
+        return info
+    info = property(fget=_info_get)
+
     def _versions_get(self):
         cdef _list.ModList ml = _list.ModList()
         cdef _list.ModListItem mli
