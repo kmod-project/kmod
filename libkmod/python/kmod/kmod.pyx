@@ -24,6 +24,7 @@ cdef class Kmod (object):
     "Wrap a struct kmod_ctx* item"
     def __cinit__(self):
         self._kmod_ctx = NULL
+        self.mod_dir = None
 
     def __dealloc__(self):
         self._cleanup()
