@@ -18,10 +18,6 @@ cdef extern from *:
     ctypedef void* const_void_ptr 'const void *'
 
 
-cdef extern from 'errno.h':
-    enum: EEXIST
-
-
 cdef extern from 'stdbool.h':
     ctypedef struct bool:
         pass

@@ -9,6 +9,8 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
+cimport libc.errno as _errno
+
 cimport _libkmod_h
 from error import KmodError as _KmodError
 cimport list as _list
@@ -103,7 +105,7 @@ cdef class Module (object):
         # TODO: convert callbacks and data from Python object to C types
         err = _libkmod_h.kmod_module_probe_insert_module(
             self.module, flags, opt, install, d, print_action)
-        if err == -_libkmod_h.EEXIST:
+        if err == -_errno.EEXIST:
             raise _KmodError('Module already loaded')
         elif err < 0:
             raise _KmodError('Could not load module')
