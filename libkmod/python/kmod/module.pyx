@@ -67,6 +67,24 @@ cdef class Module (object):
         return _libkmod_h.kmod_module_get_size(self.module)
     size = property(fget=_size_get)
 
+    def _versions_get(self):
+        cdef _list.ModList ml = _list.ModList()
+        cdef _list.ModListItem mli
+        err = _libkmod_h.kmod_module_get_versions(self.module, &ml.list)
+        if err < 0:
+            raise _KmodError('Could not get versions')
+        try:
+            for item in ml:
+                mli = <_list.ModListItem> item
+                symbol = _util.char_ptr_to_str(
+                    _libkmod_h.kmod_module_version_get_symbol(mli.list))
+                crc = _libkmod_h.kmod_module_version_get_crc(mli.list)
+                yield {'symbol': symbol, 'crc': crc}
+        finally:
+            _libkmod_h.kmod_module_versions_free_list(ml.list)
+            ml.list = NULL
+    versions = property(fget=_versions_get)
+
     def insert(self, flags=0, extra_options=None, install_callback=None,
                data=None, print_action_callback=None):
         cdef char *opt = NULL

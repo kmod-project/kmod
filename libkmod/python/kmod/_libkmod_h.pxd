@@ -9,13 +9,18 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
+cimport libc.stdint as _stdint
+
+
 cdef extern from *:
     ctypedef char* const_char_ptr 'const char *'
     ctypedef char* const_char_const_ptr 'const char const *'
     ctypedef void* const_void_ptr 'const void *'
 
+
 cdef extern from 'errno.h':
     enum: EEXIST
+
 
 cdef extern from 'stdbool.h':
     ctypedef struct bool:
@@ -94,3 +99,9 @@ cdef extern from 'libkmod.h':
     # returned by kernel
     int kmod_module_get_refcnt(const_kmod_module_ptr mod)
     long kmod_module_get_size(const_kmod_module_ptr mod)
+
+    # Information retrieved from ELF headers and section
+    int kmod_module_get_versions(const_kmod_module_ptr mod, kmod_list **list)
+    const_char_ptr kmod_module_version_get_symbol(const_kmod_list_ptr entry)
+    _stdint.uint64_t kmod_module_version_get_crc(const_kmod_list_ptr entry)
+    void kmod_module_versions_free_list(kmod_list *list)
