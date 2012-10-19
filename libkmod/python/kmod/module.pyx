@@ -76,7 +76,7 @@ cdef class Module (object):
         cdef _list.ModListItem mli
         err = _libkmod_h.kmod_module_get_info(self.module, &ml.list)
         if err < 0:
-            raise _KmodError('Could not get versions')
+            raise _KmodError('Could not get info')
         info = _collections.OrderedDict()
         try:
             for item in ml:
