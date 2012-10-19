@@ -1,0 +1,3 @@
+include COPYING
+include COPYING.LESSER
+recursive-include kmod *.pxd
