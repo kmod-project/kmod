@@ -1,0 +1,2 @@
+class KmodError (Exception):
+    pass

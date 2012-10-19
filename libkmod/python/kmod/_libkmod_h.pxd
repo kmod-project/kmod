@@ -1,0 +1,77 @@
+cdef extern from *:
+    ctypedef char* const_char_ptr 'const char *'
+    ctypedef char* const_char_const_ptr 'const char const *'
+    ctypedef void* const_void_ptr 'const void *'
+
+cdef extern from 'errno.h':
+    enum: EEXIST
+
+cdef extern from 'stdbool.h':
+    ctypedef struct bool:
+        pass
+
+
+cdef extern from 'libkmod.h':
+    # library user context - reads the config and system
+    # environment, user variables, allows custom logging
+    cdef struct kmod_ctx:
+        pass
+
+    kmod_ctx *kmod_new(
+        const_char_ptr dirname, const_char_const_ptr config_paths)
+    kmod_ctx *kmod_ref(kmod_ctx *ctx)
+    kmod_ctx *kmod_unref(kmod_ctx *ctx)
+
+    # Management of libkmod's resources
+    int kmod_load_resources(kmod_ctx *ctx)
+    void kmod_unload_resources(kmod_ctx *ctx)
+
+    # access to kmod generated lists
+    cdef struct kmod_list:
+        pass
+    ctypedef kmod_list* const_kmod_list_ptr 'const struct kmod_list *'
+    kmod_list *kmod_list_next(
+        const_kmod_list_ptr list, const_kmod_list_ptr curr)
+    kmod_list *kmod_list_prev(
+        const_kmod_list_ptr list, const_kmod_list_ptr curr)
+    kmod_list *kmod_list_last(const_kmod_list_ptr list)
+
+    # Operate on kernel modules
+    cdef struct kmod_module:
+        pass
+    ctypedef kmod_module* const_kmod_module_ptr 'const struct kmod_module *'
+    int kmod_module_new_from_name(
+        kmod_ctx *ctx, const_char_ptr name, kmod_module **mod)
+    int kmod_module_new_from_lookup(
+        kmod_ctx *ctx, const_char_ptr given_alias, kmod_list **list)
+    int kmod_module_new_from_loaded(kmod_ctx *ctx, kmod_list **list)
+
+    kmod_module *kmod_module_ref(kmod_module *mod)
+    kmod_module *kmod_module_unref(kmod_module *mod)
+    int kmod_module_unref_list(kmod_list *list)
+    kmod_module *kmod_module_get_module(kmod_list *entry)
+
+    # Flags to kmod_module_probe_insert_module
+    # codes below can be used in return value, too
+    enum: KMOD_PROBE_APPLY_BLACKLIST
+
+    #ctypedef int (*install_callback_t)(
+    #    kmod_module *m, const_char_ptr cmdline, const_void_ptr data)
+    #ctypedef void (*print_action_callback_t)(
+    #    kmod_module *m, bool install, const_char_ptr options)
+
+    int kmod_module_remove_module(
+        kmod_module *mod, unsigned int flags)
+    int kmod_module_insert_module(
+        kmod_module *mod, unsigned int flags, const_char_ptr options)
+    int kmod_module_probe_insert_module(
+        kmod_module *mod, unsigned int flags, const_char_ptr extra_options,
+        int (*run_install)(
+            kmod_module *m, const_char_ptr cmdline, void *data),
+        const_void_ptr data,
+        void (*print_action)(
+            kmod_module *m, bool install, const_char_ptr options),
+        )
+
+    const_char_ptr kmod_module_get_name(const_kmod_module_ptr mod)
+    long kmod_module_get_size(const_kmod_module_ptr mod)
