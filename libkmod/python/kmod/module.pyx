@@ -9,6 +9,8 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
+import collections as _collections
+
 cimport libc.errno as _errno
 
 cimport _libkmod_h
@@ -75,7 +77,7 @@ cdef class Module (object):
         err = _libkmod_h.kmod_module_get_info(self.module, &ml.list)
         if err < 0:
             raise _KmodError('Could not get versions')
-        info = {}
+        info = _collections.OrderedDict()
         try:
             for item in ml:
                 mli = <_list.ModListItem> item
