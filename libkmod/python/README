@@ -20,28 +20,21 @@ https://github.com/agrover/python-kmod
 Example (python invoked as root)
 --------------------------------
 
->>>import kmod
+::
 
->>>km = kmod.Kmod()
-
->>>km.loaded_modules()
-
-[('nfs', 407706),
- ('nfs_acl', 12741)
-
-...
-
- ('virtio_blk', 17549)]
-
->>>km.modprobe("btrfs")
-
->>>km.rmmod("btrfs")
+  >>> import kmod
+  >>> km = kmod.Kmod()
+  >>> km.loaded_modules()
+  [('nfs', 407706),
+   ('nfs_acl', 12741)
+   ...
+   ('virtio_blk', 17549)]
+  >>> km.modprobe("btrfs")
+  >>> km.rmmod("btrfs")
 
 Building
 --------
 
-Ensure Python and kmod headers are installed and run:
+Ensure Python and kmod headers are installed and run::
 
-python setup.py build
-
-
+  $ python setup.py build
