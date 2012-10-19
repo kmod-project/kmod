@@ -9,6 +9,8 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
+"Define the Kmod class"
+
 cimport cython as _cython
 cimport _libkmod_h
 from error import KmodError as _KmodError
@@ -19,6 +21,7 @@ import list as _list
 
 
 cdef class Kmod (object):
+    "Wrap a struct kmod_ctx* item"
     def __cinit__(self):
         self._kmod_ctx = NULL
 
