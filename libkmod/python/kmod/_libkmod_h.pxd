@@ -74,4 +74,12 @@ cdef extern from 'libkmod.h':
         )
 
     const_char_ptr kmod_module_get_name(const_kmod_module_ptr mod)
+    const_char_ptr kmod_module_get_path(const_kmod_module_ptr mod)
+    const_char_ptr kmod_module_get_options(const_kmod_module_ptr mod)
+    const_char_ptr kmod_module_get_install_commands(const_kmod_module_ptr mod)
+    const_char_ptr kmod_module_get_remove_commands(const_kmod_module_ptr mod)
+
+    # Information regarding "live information" from module's state, as
+    # returned by kernel
+    int kmod_module_get_refcnt(const_kmod_module_ptr mod)
     long kmod_module_get_size(const_kmod_module_ptr mod)

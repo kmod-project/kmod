@@ -1,9 +1,9 @@
-import sys as _sys
-
 cimport _libkmod_h
 from error import KmodError as _KmodError
 cimport list as _list
 import list as _list
+cimport _util
+import _util
 
 
 cdef class Module (object):
@@ -24,13 +24,33 @@ cdef class Module (object):
         self.module = _libkmod_h.kmod_module_get_module(item.list)
 
     def _name_get(self):
-        name = _libkmod_h.kmod_module_get_name(self.module)
-        if _sys.version_info >= (3,):  # Python 3
-            name = str(name, 'ascii')
-        else:  # Python 2
-            name = unicode(name, 'ascii')
-        return name
+        return _util.char_ptr_to_str(
+            _libkmod_h.kmod_module_get_name(self.module))
     name = property(fget=_name_get)
+
+    def _path_get(self):
+        return _util.char_ptr_to_str(
+            _libkmod_h.kmod_module_get_path(self.module))
+    path = property(fget=_path_get)
+
+    def _options_get(self):
+        return _util.char_ptr_to_str(
+            _libkmod_h.kmod_module_get_options(self.module))
+    options = property(fget=_options_get)
+
+    def _install_commands_get(self):
+        return _util.char_ptr_to_str(
+            _libkmod_h.kmod_module_get_install_commands(self.module))
+    install_commands = property(fget=_install_commands_get)
+
+    def _remove_commands_get(self):
+        return _util.char_ptr_to_str(
+            _libkmod_h.kmod_module_get_remove_commands(self.module))
+    remove_commands = property(fget=_remove_commands_get)
+
+    def _refcnt_get(self):
+        return _libkmod_h.kmod_module_get_refcnt(self.module)
+    refcnt = property(fget=_refcnt_get)
 
     def _size_get(self):
         return _libkmod_h.kmod_module_get_size(self.module)
