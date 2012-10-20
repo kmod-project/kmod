@@ -1,13 +1,18 @@
-# Copyright (C) 2012 Red Hat, Inc. All rights reserved.
-#               2012 W. Trevor King
+# Copyright (C) 2012 W. Trevor King <wking@tremily.us>
 #
-# This copyrighted material is made available to anyone wishing to use,
-# modify, copy, or redistribute it subject to the terms and conditions
-# of the GNU Lesser General Public License v.2.1.
+# This file is part of python-kmod.
+#
+# python-kmod is free software: you can redistribute it and/or modify it under
+# the terms of the GNU Lesser General Public License version 2.1 as published
+# by the Free Software Foundation.
+#
+# python-kmod is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
+# details.
 #
 # You should have received a copy of the GNU Lesser General Public License
-# along with this program; if not, write to the Free Software Foundation,
-# Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+# along with python-kmod.  If not, see <http://www.gnu.org/licenses/>.
 
 import sys as _sys
 
