@@ -31,7 +31,6 @@ AC_C_BIGENDIAN
 
 AC_PROG_SED
 AC_PROG_MKDIR_P
-AC_PATH_PROG([XSLTPROC], [xsltproc])
 PKG_PROG_PKG_CONFIG
 
 
@@ -88,6 +87,10 @@ AC_ARG_ENABLE([manpages],
         AS_HELP_STRING([--disable-manpages], [disable manpages @<:@default=enabled@:>@]),
 	[], enable_manpages=yes)
 AM_CONDITIONAL([BUILD_MANPAGES], [test "x$enable_manpages" = "xyes"])
+AC_PATH_PROG([XSLTPROC], [xsltproc], [no])
+if test "x$XSLTPROC" = "xno" && test "x$enable_manpages" = "xyes"; then
+	AC_MSG_ERROR([xsltproc command not found, try ./configure --disable-manpages])
+fi
 
 AC_ARG_ENABLE([logging],
 	AS_HELP_STRING([--disable-logging], [disable system logging @<:@default=enabled@:>@]),
