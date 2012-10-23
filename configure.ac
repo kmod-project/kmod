@@ -88,9 +88,9 @@ AC_ARG_ENABLE([manpages],
 	[], enable_manpages=yes)
 AM_CONDITIONAL([BUILD_MANPAGES], [test "x$enable_manpages" = "xyes"])
 AC_PATH_PROG([XSLTPROC], [xsltproc], [no])
-if test "x$XSLTPROC" = "xno" && test "x$enable_manpages" = "xyes"; then
+AS_IF([test "x$XSLTPROC" = "xno" && test "x$enable_manpages" = "xyes"], [
 	AC_MSG_ERROR([xsltproc command not found, try ./configure --disable-manpages])
-fi
+])
 
 AC_ARG_ENABLE([logging],
 	AS_HELP_STRING([--disable-logging], [disable system logging @<:@default=enabled@:>@]),
