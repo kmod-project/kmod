@@ -996,6 +996,7 @@ struct mod {
 	const char *path;
 	const char *relpath; /* path relative to '$ROOT/lib/modules/$VER/' */
 	char *uncrelpath; /* same as relpath but ending in .ko */
+	struct kmod_list *info_list;
 	struct array deps; /* struct symbol */
 	size_t baselen; /* points to start of basename/filename */
 	size_t modnamelen;
@@ -1028,6 +1029,7 @@ static void mod_free(struct mod *mod)
 	DBG("free %p kmod=%p, path=%s\n", mod, mod->kmod, mod->path);
 	array_free_array(&mod->deps);
 	kmod_module_unref(mod->kmod);
+	kmod_module_info_free_list(mod->info_list);
 	free(mod->uncrelpath);
 	free(mod);
 }
@@ -1541,16 +1543,16 @@ static struct symbol *depmod_symbol_find(const struct depmod *depmod,
 	return hash_find(depmod->symbols, name);
 }
 
-static int depmod_load_symbols(struct depmod *depmod)
+static int depmod_load_symbols_and_info(struct depmod *depmod)
 {
-	const struct mod **itr, **itr_end;
+	struct mod **itr, **itr_end;
 
 	DBG("load symbols (%zd modules)\n", depmod->modules.count);
 
-	itr = (const struct mod **)depmod->modules.array;
+	itr = (struct mod **)depmod->modules.array;
 	itr_end = itr + depmod->modules.count;
 	for (; itr < itr_end; itr++) {
-		const struct mod *mod = *itr;
+		struct mod *mod = *itr;
 		struct kmod_list *l, *list = NULL;
 		int err = kmod_module_get_symbols(mod->kmod, &list);
 		if (err < 0) {
@@ -1559,7 +1561,7 @@ static int depmod_load_symbols(struct depmod *depmod)
 			else
 				ERR("failed to load symbols from %s: %s\n",
 						mod->path, strerror(-err));
-			continue;
+			goto load_info;
 		}
 		kmod_list_foreach(l, list) {
 			const char *name = kmod_module_symbol_get_symbol(l);
@@ -1567,6 +1569,9 @@ static int depmod_load_symbols(struct depmod *depmod)
 			depmod_symbol_add(depmod, name, crc, mod);
 		}
 		kmod_module_symbols_free_list(list);
+
+load_info:
+		kmod_module_get_info(mod->kmod, &mod->info_list);
 	}
 
 	DBG("loaded symbols (%zd modules, %zd symbols)\n",
@@ -1742,7 +1747,7 @@ static int depmod_load(struct depmod *depmod)
 {
 	int err;
 
-	err = depmod_load_symbols(depmod);
+	err = depmod_load_symbols_and_info(depmod);
 	if (err < 0)
 		return err;
 
@@ -1962,11 +1967,9 @@ static int output_aliases(struct depmod *depmod, FILE *out)
 
 	for (i = 0; i < depmod->modules.count; i++) {
 		const struct mod *mod = depmod->modules.array[i];
-		struct kmod_list *l, *list = NULL;
-		int r = kmod_module_get_info(mod->kmod, &list);
-		if (r < 0 || list == NULL)
-			continue;
-		kmod_list_foreach(l, list) {
+		struct kmod_list *l;
+
+		kmod_list_foreach(l, mod->info_list) {
 			const char *key = kmod_module_info_get_key(l);
 			const char *value = kmod_module_info_get_value(l);
 
@@ -1976,7 +1979,6 @@ static int output_aliases(struct depmod *depmod, FILE *out)
 			fprintf(out, "alias %s %s\n",
 				value, kmod_module_get_name(mod->kmod));
 		}
-		kmod_module_info_free_list(list);
 	}
 
 	return 0;
@@ -1997,11 +1999,9 @@ static int output_aliases_bin(struct depmod *depmod, FILE *out)
 
 	for (i = 0; i < depmod->modules.count; i++) {
 		const struct mod *mod = depmod->modules.array[i];
-		struct kmod_list *l, *list = NULL;
-		int r = kmod_module_get_info(mod->kmod, &list);
-		if (r < 0 || list == NULL)
-			continue;
-		kmod_list_foreach(l, list) {
+		struct kmod_list *l;
+
+		kmod_list_foreach(l, mod->info_list) {
 			const char *key = kmod_module_info_get_key(l);
 			const char *value = kmod_module_info_get_value(l);
 			const char *modname, *alias;
@@ -2021,7 +2021,6 @@ static int output_aliases_bin(struct depmod *depmod, FILE *out)
 				WRN("duplicate module alias:\n%s %s\n",
 				    alias, modname);
 		}
-		kmod_module_info_free_list(list);
 	}
 
 	index_write(idx, out);
@@ -2040,11 +2039,9 @@ static int output_softdeps(struct depmod *depmod, FILE *out)
 
 	for (i = 0; i < depmod->modules.count; i++) {
 		const struct mod *mod = depmod->modules.array[i];
-		struct kmod_list *l, *list = NULL;
-		int r = kmod_module_get_info(mod->kmod, &list);
-		if (r < 0 || list == NULL)
-			continue;
-		kmod_list_foreach(l, list) {
+		struct kmod_list *l;
+
+		kmod_list_foreach(l, mod->info_list) {
 			const char *key = kmod_module_info_get_key(l);
 			const char *value = kmod_module_info_get_value(l);
 
@@ -2054,7 +2051,6 @@ static int output_softdeps(struct depmod *depmod, FILE *out)
 			fprintf(out, "softdep %s %s\n",
 				kmod_module_get_name(mod->kmod), value);
 		}
-		kmod_module_info_free_list(list);
 	}
 
 	return 0;
@@ -2169,17 +2165,12 @@ static int output_devname(struct depmod *depmod, FILE *out)
 
 	for (i = 0; i < depmod->modules.count; i++) {
 		const struct mod *mod = depmod->modules.array[i];
-		struct kmod_list *l, *list = NULL;
+		struct kmod_list *l;
 		const char *devname = NULL;
 		char type = '\0';
 		unsigned int major = 0, minor = 0;
-		int r;
 
-		r = kmod_module_get_info(mod->kmod, &list);
-		if (r < 0 || list == NULL)
-			continue;
-
-		kmod_list_foreach(l, list) {
+		kmod_list_foreach(l, mod->info_list) {
 			const char *key = kmod_module_info_get_key(l);
 			const char *value = kmod_module_info_get_value(l);
 			unsigned int maj, min;
@@ -2208,7 +2199,6 @@ static int output_devname(struct depmod *depmod, FILE *out)
 				break;
 			}
 		}
-		kmod_module_info_free_list(list);
 	}
 
 	return 0;
