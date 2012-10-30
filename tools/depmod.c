@@ -997,6 +997,7 @@ struct mod {
 	const char *relpath; /* path relative to '$ROOT/lib/modules/$VER/' */
 	char *uncrelpath; /* same as relpath but ending in .ko */
 	struct kmod_list *info_list;
+	struct kmod_list *dep_sym_list;
 	struct array deps; /* struct symbol */
 	size_t baselen; /* points to start of basename/filename */
 	size_t modnamelen;
@@ -1030,6 +1031,7 @@ static void mod_free(struct mod *mod)
 	array_free_array(&mod->deps);
 	kmod_module_unref(mod->kmod);
 	kmod_module_info_free_list(mod->info_list);
+	kmod_module_dependency_symbols_free_list(mod->dep_sym_list);
 	free(mod->uncrelpath);
 	free(mod);
 }
@@ -1543,7 +1545,7 @@ static struct symbol *depmod_symbol_find(const struct depmod *depmod,
 	return hash_find(depmod->symbols, name);
 }
 
-static int depmod_load_symbols_and_info(struct depmod *depmod)
+static int depmod_load_modules(struct depmod *depmod)
 {
 	struct mod **itr, **itr_end;
 
@@ -1572,6 +1574,8 @@ static int depmod_load_symbols_and_info(struct depmod *depmod)
 
 load_info:
 		kmod_module_get_info(mod->kmod, &mod->info_list);
+		kmod_module_get_dependency_symbols(mod->kmod,
+						   &mod->dep_sym_list);
 	}
 
 	DBG("loaded symbols (%zd modules, %zd symbols)\n",
@@ -1583,16 +1587,10 @@ load_info:
 static int depmod_load_module_dependencies(struct depmod *depmod, struct mod *mod)
 {
 	const struct cfg *cfg = depmod->cfg;
-	struct kmod_list *l, *list = NULL;
-	int err = kmod_module_get_dependency_symbols(mod->kmod, &list);
-	if (err < 0) {
-		DBG("ignoring %s: no dependency symbols: %s\n",
-		    mod->path, strerror(-err));
-		return 0;
-	}
+	struct kmod_list *l;
 
 	DBG("do dependencies of %s\n", mod->path);
-	kmod_list_foreach(l, list) {
+	kmod_list_foreach(l, mod->dep_sym_list) {
 		const char *name = kmod_module_dependency_symbol_get_symbol(l);
 		uint64_t crc = kmod_module_dependency_symbol_get_crc(l);
 		int bindtype = kmod_module_dependency_symbol_get_bind(l);
@@ -1618,7 +1616,7 @@ static int depmod_load_module_dependencies(struct depmod *depmod, struct mod *mo
 
 		mod_add_dependency(mod, sym);
 	}
-	kmod_module_dependency_symbols_free_list(list);
+
 	return 0;
 }
 
@@ -1633,6 +1631,12 @@ static int depmod_load_dependencies(struct depmod *depmod)
 	itr_end = itr + depmod->modules.count;
 	for (; itr < itr_end; itr++) {
 		struct mod *mod = *itr;
+
+		if (mod->dep_sym_list == NULL) {
+			DBG("ignoring %s: no dependency symbols\n", mod->path);
+			continue;
+		}
+
 		depmod_load_module_dependencies(depmod, mod);
 	}
 
@@ -1747,7 +1751,7 @@ static int depmod_load(struct depmod *depmod)
 {
 	int err;
 
-	err = depmod_load_symbols_and_info(depmod);
+	err = depmod_load_modules(depmod);
 	if (err < 0)
 		return err;
 
