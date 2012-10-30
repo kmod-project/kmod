@@ -995,6 +995,7 @@ struct mod {
 	struct kmod_module *kmod;
 	const char *path;
 	const char *relpath; /* path relative to '$ROOT/lib/modules/$VER/' */
+	char *uncrelpath; /* same as relpath but ending in .ko */
 	struct array deps; /* struct symbol */
 	size_t baselen; /* points to start of basename/filename */
 	size_t modnamelen;
@@ -1003,7 +1004,6 @@ struct mod {
 	uint16_t idx; /* index in depmod->modules.array */
 	uint16_t users; /* how many modules depend on this one */
 	uint8_t dep_loop : 1;
-	char *uncrelpath; /* same as relpath but ending in .ko */
 	char modname[];
 };
 
