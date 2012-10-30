@@ -993,7 +993,7 @@ static void cfg_free(struct cfg *cfg)
 /* depmod calculations ***********************************************/
 struct mod {
 	struct kmod_module *kmod;
-	const char *path;
+	char *path;
 	const char *relpath; /* path relative to '$ROOT/lib/modules/$VER/' */
 	char *uncrelpath; /* same as relpath but ending in .ko */
 	struct kmod_list *info_list;
@@ -1029,10 +1029,11 @@ static void mod_free(struct mod *mod)
 {
 	DBG("free %p kmod=%p, path=%s\n", mod, mod->kmod, mod->path);
 	array_free_array(&mod->deps);
-	kmod_module_unref(mod->kmod);
+	assert(mod->kmod == NULL);
 	kmod_module_info_free_list(mod->info_list);
 	kmod_module_dependency_symbols_free_list(mod->dep_sym_list);
 	free(mod->uncrelpath);
+	free(mod->path);
 	free(mod);
 }
 
@@ -1141,7 +1142,7 @@ static int depmod_module_add(struct depmod *depmod, struct kmod_module *kmod)
 
 	array_init(&mod->deps, 4);
 
-	mod->path = kmod_module_get_path(kmod);
+	mod->path = strdup(kmod_module_get_path(kmod));
 	lastslash = strrchr(mod->path, '/');
 	mod->baselen = lastslash - mod->path;
 	if (strncmp(mod->path, cfg->dirname, cfg->dirnamelen) == 0 &&
@@ -1576,6 +1577,8 @@ load_info:
 		kmod_module_get_info(mod->kmod, &mod->info_list);
 		kmod_module_get_dependency_symbols(mod->kmod,
 						   &mod->dep_sym_list);
+		kmod_module_unref(mod->kmod);
+		mod->kmod = NULL;
 	}
 
 	DBG("loaded symbols (%zd modules, %zd symbols)\n",
