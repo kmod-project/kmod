@@ -1980,8 +1980,7 @@ static int output_aliases(struct depmod *depmod, FILE *out)
 			if (!streq(key, "alias"))
 				continue;
 
-			fprintf(out, "alias %s %s\n",
-				value, kmod_module_get_name(mod->kmod));
+			fprintf(out, "alias %s %s\n", value, mod->modname);
 		}
 	}
 
@@ -2008,7 +2007,7 @@ static int output_aliases_bin(struct depmod *depmod, FILE *out)
 		kmod_list_foreach(l, mod->info_list) {
 			const char *key = kmod_module_info_get_key(l);
 			const char *value = kmod_module_info_get_value(l);
-			const char *modname, *alias;
+			const char *alias;
 			int duplicate;
 
 			if (!streq(key, "alias"))
@@ -2018,12 +2017,11 @@ static int output_aliases_bin(struct depmod *depmod, FILE *out)
 			if (alias == NULL)
 				continue;
 
-			modname = kmod_module_get_name(mod->kmod);
-			duplicate = index_insert(idx, alias, modname,
+			duplicate = index_insert(idx, alias, mod->modname,
 						 mod->idx);
 			if (duplicate && depmod->cfg->warn_dups)
 				WRN("duplicate module alias:\n%s %s\n",
-				    alias, modname);
+				    alias, mod->modname);
 		}
 	}
 
@@ -2052,8 +2050,7 @@ static int output_softdeps(struct depmod *depmod, FILE *out)
 			if (!streq(key, "softdep"))
 				continue;
 
-			fprintf(out, "softdep %s %s\n",
-				kmod_module_get_name(mod->kmod), value);
+			fprintf(out, "softdep %s %s\n", mod->modname, value);
 		}
 	}
 
@@ -2197,8 +2194,7 @@ static int output_devname(struct depmod *depmod, FILE *out)
 			}
 
 			if (type != '\0' && devname != NULL) {
-				fprintf(out, "%s %s %c%u:%u\n",
-					kmod_module_get_name(mod->kmod),
+				fprintf(out, "%s %s %c%u:%u\n", mod->modname,
 					devname, type, major, minor);
 				break;
 			}
