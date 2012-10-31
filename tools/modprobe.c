@@ -937,16 +937,12 @@ static int do_modprobe(int argc, char **orig_argv)
 			break;
 		case 'V':
 			puts(PACKAGE " version " VERSION);
-			if (argv != orig_argv)
-				free(argv);
-			free(config_paths);
-			return EXIT_SUCCESS;
+			err = EXIT_SUCCESS;
+			goto done;
 		case 'h':
 			help(basename(argv[0]));
-			if (argv != orig_argv)
-				free(argv);
-			free(config_paths);
-			return EXIT_SUCCESS;
+			err = EXIT_SUCCESS;
+			goto done;
 		case '?':
 			goto cmdline_failed;
 		default:
@@ -1019,6 +1015,7 @@ static int do_modprobe(int argc, char **orig_argv)
 	if (use_syslog)
 		closelog();
 
+done:
 	if (argv != orig_argv)
 		free(argv);
 
