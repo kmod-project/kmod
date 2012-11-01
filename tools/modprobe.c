@@ -193,7 +193,7 @@ static void log_modprobe(void *data, int priority, const char *file, int line,
 	if (vasprintf(&str, format, args) < 0)
 		return;
 
-	if (use_syslog) {
+	if (use_syslog > 1) {
 #ifdef ENABLE_DEBUG
 		syslog(priority, "%s: %s:%d %s() %s", prioname, file, line,
 		       fn, str);
@@ -231,7 +231,7 @@ static void _log(int prio, const char *fmt, ...)
 
 	prioname = prio_to_str(prio);
 
-	if (use_syslog)
+	if (use_syslog > 1)
 		syslog(prio, "%s: %s", prioname, msg);
 	else
 		fprintf(stderr, "modprobe: %s: %s", prioname, msg);
@@ -843,8 +843,7 @@ static int do_modprobe(int argc, char **orig_argv)
 
 	argv = prepend_options_from_env(&argc, orig_argv);
 	if (argv == NULL) {
-		fputs("Error: could not prepend options from command line\n",
-			stderr);
+		ERR("Could not prepend options from command line\n");
 		return EXIT_FAILURE;
 	}
 
@@ -903,8 +902,9 @@ static int do_modprobe(int argc, char **orig_argv)
 			size_t bytes = sizeof(char *) * (n_config_paths + 2);
 			void *tmp = realloc(config_paths, bytes);
 			if (!tmp) {
-				fputs("Error: out-of-memory\n", stderr);
-				goto cmdline_failed;
+				ERR("out-of-memory\n");
+				err = -1;
+				goto done;
 			}
 			config_paths = tmp;
 			config_paths[n_config_paths] = optarg;
@@ -935,28 +935,35 @@ static int do_modprobe(int argc, char **orig_argv)
 			break;
 		case 'V':
 			puts(PACKAGE " version " VERSION);
-			err = EXIT_SUCCESS;
+			err = 0;
 			goto done;
 		case 'h':
 			help(basename(argv[0]));
-			err = EXIT_SUCCESS;
+			err = 0;
 			goto done;
 		case '?':
-			goto cmdline_failed;
+			err = -1;
+			goto done;
 		default:
-			fprintf(stderr, "Error: unexpected getopt_long() value '%c'.\n",
-									c);
-			goto cmdline_failed;
+			ERR("unexpected getopt_long() value '%c'.\n", c);
+			err = -1;
+			goto done;
 		}
 	}
 
 	args = argv + optind;
 	nargs = argc - optind;
 
+	if (use_syslog) {
+		openlog("modprobe", LOG_CONS, LOG_DAEMON);
+		use_syslog++;
+	}
+
 	if (!do_show_config) {
 		if (nargs == 0) {
-			fputs("Error: missing parameters. See -h.\n", stderr);
-			goto cmdline_failed;
+			ERR("missing parameters. See -h.\n");
+			err = -1;
+			goto done;
 		}
 	}
 
@@ -966,9 +973,9 @@ static int do_modprobe(int argc, char **orig_argv)
 			root = "";
 		if (kversion == NULL) {
 			if (uname(&u) < 0) {
-				fprintf(stderr, "Error: uname() failed: %s\n",
-					strerror(errno));
-				goto cmdline_failed;
+				ERR("uname() failed: %m\n");
+				err = -1;
+				goto done;
 			}
 			kversion = u.release;
 		}
@@ -980,15 +987,15 @@ static int do_modprobe(int argc, char **orig_argv)
 
 	ctx = kmod_new(dirname, config_paths);
 	if (!ctx) {
-		fputs("Error: kmod_new() failed!\n", stderr);
-		goto cmdline_failed;
+		ERR("kmod_new() failed!\n");
+		err = -1;
+		goto done;
 	}
-	kmod_load_resources(ctx);
 
 	kmod_set_log_priority(ctx, verbose);
 	kmod_set_log_fn(ctx, log_modprobe, NULL);
-	if (use_syslog)
-		openlog("modprobe", LOG_CONS, LOG_DAEMON);
+
+	kmod_load_resources(ctx);
 
 	if (do_show_config)
 		err = show_config(ctx);
@@ -1009,21 +1016,16 @@ static int do_modprobe(int argc, char **orig_argv)
 
 	kmod_unref(ctx);
 
-	if (use_syslog)
+done:
+	if (use_syslog > 1)
 		closelog();
 
-done:
 	if (argv != orig_argv)
 		free(argv);
 
 	free(config_paths);
+
 	return err >= 0 ? EXIT_SUCCESS : EXIT_FAILURE;
-
-cmdline_failed:
-	if (argv != orig_argv)
-		free(argv);
-	free(config_paths);
-	return EXIT_FAILURE;
 }
 
 #include "kmod.h"
