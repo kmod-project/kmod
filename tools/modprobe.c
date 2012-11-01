@@ -184,6 +184,35 @@ static _always_inline_ const char *prio_to_str(int prio)
 	return prioname;
 }
 
+static void log_modprobe(void *data, int priority, const char *file, int line,
+			const char *fn, const char *format, va_list args)
+{
+	const char *prioname = prio_to_str(priority);
+	char *str;
+
+	if (vasprintf(&str, format, args) < 0)
+		return;
+
+	if (use_syslog) {
+#ifdef ENABLE_DEBUG
+		syslog(priority, "%s: %s:%d %s() %s", prioname, file, line,
+		       fn, str);
+#else
+		syslog(priority, "%s: %s", prioname, str);
+#endif
+	} else {
+#ifdef ENABLE_DEBUG
+		fprintf(stderr, "modprobe: %s: %s:%d %s() %s", prioname, file,
+			line, fn, str);
+#else
+		fprintf(stderr, "modprobe: %s: %s", prioname, str);
+#endif
+	}
+
+	free(str);
+	(void)data;
+}
+
 static inline void _log(int prio, const char *fmt, ...)
 {
 	const char *prioname;
@@ -794,35 +823,6 @@ static char **prepend_options_from_env(int *p_argc, char **orig_argv)
 	*p_argc = i + argc - 1;
 
 	return new_argv;
-}
-
-static void log_modprobe(void *data, int priority, const char *file, int line,
-			const char *fn, const char *format, va_list args)
-{
-	const char *prioname = prio_to_str(priority);
-	char *str;
-
-	if (vasprintf(&str, format, args) < 0)
-		return;
-
-	if (use_syslog) {
-#ifdef ENABLE_DEBUG
-		syslog(priority, "%s: %s:%d %s() %s", prioname, file, line,
-		       fn, str);
-#else
-		syslog(priority, "%s: %s", prioname, str);
-#endif
-	} else {
-#ifdef ENABLE_DEBUG
-		fprintf(stderr, "modprobe: %s: %s:%d %s() %s", prioname, file,
-			line, fn, str);
-#else
-		fprintf(stderr, "modprobe: %s: %s", prioname, str);
-#endif
-	}
-
-	free(str);
-	(void)data;
 }
 
 static int do_modprobe(int argc, char **orig_argv)
