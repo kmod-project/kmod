@@ -152,21 +152,10 @@ static inline void _show(const char *fmt, ...)
 	va_end(args);
 }
 
-static inline void _log(int prio, const char *fmt, ...)
+static _always_inline_ const char *prio_to_str(int prio)
 {
 	const char *prioname;
-	char buf[32], *msg;
-	va_list args;
-
-	if (prio > verbose)
-		return;
-
-	va_start(args, fmt);
-	if (vasprintf(&msg, fmt, args) < 0)
-		msg = NULL;
-	va_end(args);
-	if (msg == NULL)
-		return;
+	char buf[32];
 
 	switch (prio) {
 	case LOG_CRIT:
@@ -191,6 +180,27 @@ static inline void _log(int prio, const char *fmt, ...)
 		snprintf(buf, sizeof(buf), "LOG-%03d", prio);
 		prioname = buf;
 	}
+
+	return prioname;
+}
+
+static inline void _log(int prio, const char *fmt, ...)
+{
+	const char *prioname;
+	char *msg;
+	va_list args;
+
+	if (prio > verbose)
+		return;
+
+	va_start(args, fmt);
+	if (vasprintf(&msg, fmt, args) < 0)
+		msg = NULL;
+	va_end(args);
+	if (msg == NULL)
+		return;
+
+	prioname = prio_to_str(prio);
 
 	if (use_syslog)
 		syslog(LOG_NOTICE, "%s: %s", prioname, msg);
@@ -789,32 +799,8 @@ static char **prepend_options_from_env(int *p_argc, char **orig_argv)
 static void log_syslog(void *data, int priority, const char *file, int line,
 			const char *fn, const char *format, va_list args)
 {
-	char *str, buf[32];
-	const char *prioname;
-
-	switch (priority) {
-	case LOG_CRIT:
-		prioname = "FATAL";
-		break;
-	case LOG_ERR:
-		prioname = "ERROR";
-		break;
-	case LOG_WARNING:
-		prioname = "WARNING";
-		break;
-	case LOG_NOTICE:
-		prioname = "NOTICE";
-		break;
-	case LOG_INFO:
-		prioname = "INFO";
-		break;
-	case LOG_DEBUG:
-		prioname = "DEBUG";
-		break;
-	default:
-		snprintf(buf, sizeof(buf), "LOG-%03d", priority);
-		prioname = buf;
-	}
+	char *str;
+	const char *prioname = prio_to_str(priority);
 
 	if (vasprintf(&str, format, args) < 0)
 		return;
