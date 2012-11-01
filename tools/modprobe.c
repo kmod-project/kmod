@@ -213,7 +213,7 @@ static void log_modprobe(void *data, int priority, const char *file, int line,
 	(void)data;
 }
 
-static inline void _log(int prio, const char *fmt, ...)
+static void _log(int prio, const char *fmt, ...)
 {
 	const char *prioname;
 	char *msg;
@@ -232,9 +232,9 @@ static inline void _log(int prio, const char *fmt, ...)
 	prioname = prio_to_str(prio);
 
 	if (use_syslog)
-		syslog(LOG_NOTICE, "%s: %s", prioname, msg);
+		syslog(prio, "%s: %s", prioname, msg);
 	else
-		fprintf(stderr, "%s: %s", prioname, msg);
+		fprintf(stderr, "modprobe: %s: %s", prioname, msg);
 	free(msg);
 
 	if (prio <= LOG_CRIT)
