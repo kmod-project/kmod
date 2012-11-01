@@ -796,19 +796,31 @@ static char **prepend_options_from_env(int *p_argc, char **orig_argv)
 	return new_argv;
 }
 
-static void log_syslog(void *data, int priority, const char *file, int line,
+static void log_modprobe(void *data, int priority, const char *file, int line,
 			const char *fn, const char *format, va_list args)
 {
-	char *str;
 	const char *prioname = prio_to_str(priority);
+	char *str;
 
 	if (vasprintf(&str, format, args) < 0)
 		return;
+
+	if (use_syslog) {
 #ifdef ENABLE_DEBUG
-	syslog(LOG_NOTICE, "%s: %s:%d %s() %s", prioname, file, line, fn, str);
+		syslog(priority, "%s: %s:%d %s() %s", prioname, file, line,
+		       fn, str);
 #else
-	syslog(LOG_NOTICE, "%s: %s", prioname, str);
+		syslog(priority, "%s: %s", prioname, str);
 #endif
+	} else {
+#ifdef ENABLE_DEBUG
+		fprintf(stderr, "modprobe: %s: %s:%d %s() %s", prioname, file,
+			line, fn, str);
+#else
+		fprintf(stderr, "modprobe: %s: %s", prioname, str);
+#endif
+	}
+
 	free(str);
 	(void)data;
 }
@@ -974,10 +986,9 @@ static int do_modprobe(int argc, char **orig_argv)
 	kmod_load_resources(ctx);
 
 	kmod_set_log_priority(ctx, verbose);
-	if (use_syslog) {
+	kmod_set_log_fn(ctx, log_modprobe, NULL);
+	if (use_syslog)
 		openlog("modprobe", LOG_CONS, LOG_DAEMON);
-		kmod_set_log_fn(ctx, log_syslog, NULL);
-	}
 
 	if (do_show_config)
 		err = show_config(ctx);
