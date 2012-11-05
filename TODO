@@ -4,6 +4,8 @@ Features:
 * testsuite:
    - when fake delete_module() succeeds, remove its entry from /sys/module
 
+* unify logging functions of tools/{modprobe.c,depmod.c,...}
+
 * review API, maybe unify all of these getters:
    - kmod_module_version_get_symbol()
    - kmod_module_version_get_crc()
@@ -13,16 +15,7 @@ Features:
    - kmod_module_dependency_symbol_get_crc()
    - kmod_module_versions_free_list()
    - kmod_module_symbols_free_list()
-   - kmod_module_dependency_symbols_free_list(
-
-   Main reason for this is that they need to open and read the module to get
-   this information. If module is compressed, that means uncompressing +
-   allocating necessary space + deallocating for each of them. depmod uses most
-   of these functions and in the end it uncompresses the module ~6x times more
-   than needed, which makes depmod very slow if compared to module-init-tools.
-
-   We might want to either cache the elf file within kmod_module or create
-   another struct that the user ref()/unref().
+   - kmod_module_dependency_symbols_free_list()
 
 * Stop using system() inside the library and use fork + exec instead
 
