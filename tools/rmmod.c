@@ -28,6 +28,8 @@
 #include <syslog.h>
 #include "libkmod.h"
 
+#define LOGPREFIX "rmmod: "
+#define ERR(...) fprintf(stderr, LOGPREFIX "ERROR: " __VA_ARGS__)
 
 static const char cmdopts_s[] = "fsvVwh";
 static const struct option cmdopts[] = {
@@ -102,7 +104,7 @@ static int check_module_inuse(struct kmod_module *mod) {
 	struct kmod_list *holders;
 
 	if (kmod_module_get_initstate(mod) == -ENOENT) {
-		fprintf(stderr, "Error: Module %s is not currently loaded\n",
+		ERR("Module %s is not currently loaded\n",
 				kmod_module_get_name(mod));
 		return -ENOENT;
 	}
@@ -111,8 +113,7 @@ static int check_module_inuse(struct kmod_module *mod) {
 	if (holders != NULL) {
 		struct kmod_list *itr;
 
-		fprintf(stderr, "Error: Module %s is in use by:",
-				kmod_module_get_name(mod));
+		ERR("Module %s is in use by:", kmod_module_get_name(mod));
 
 		kmod_list_foreach(itr, holders) {
 			struct kmod_module *hm = kmod_module_get_module(itr);
@@ -126,8 +127,7 @@ static int check_module_inuse(struct kmod_module *mod) {
 	}
 
 	if (kmod_module_get_refcnt(mod) != 0) {
-		fprintf(stderr, "Error: Module %s is in use\n",
-				kmod_module_get_name(mod));
+		ERR("Module %s is in use\n", kmod_module_get_name(mod));
 		return -EBUSY;
 	}
 
@@ -159,7 +159,7 @@ static int do_rmmod(int argc, char *argv[])
 			verbose++;
 			break;
 		case 'w':
-			fprintf(stderr, "'Wait' behavior is targeted for removal from kernel.\nWe will now sleep for 10s, and then continue.\n");
+			ERR("'Wait' behavior is targeted for removal from kernel.\nWe will now sleep for 10s, and then continue.\n");
 			sleep(10);
 			flags &= ~KMOD_REMOVE_NOWAIT;
 			break;
@@ -172,21 +172,19 @@ static int do_rmmod(int argc, char *argv[])
 		case '?':
 			return EXIT_FAILURE;
 		default:
-			fprintf(stderr,
-				"Error: unexpected getopt_long() value '%c'.\n",
-				c);
+			ERR("unexpected getopt_long() value '%c'.\n", c);
 			return EXIT_FAILURE;
 		}
 	}
 
 	if (optind >= argc) {
-		fprintf(stderr, "Error: missing module name.\n");
+		ERR("missing module name.\n");
 		return EXIT_FAILURE;
 	}
 
 	ctx = kmod_new(NULL, &null_config);
 	if (!ctx) {
-		fputs("Error: kmod_new() failed!\n", stderr);
+		ERR("kmod_new() failed!\n");
 		return EXIT_FAILURE;
 	}
 
@@ -206,8 +204,8 @@ static int do_rmmod(int argc, char *argv[])
 			err = kmod_module_new_from_name(ctx, arg, &mod);
 
 		if (err < 0) {
-			fprintf(stderr, "Error: could not use module %s: %s\n",
-				arg, strerror(-err));
+			ERR("could not use module %s: %s\n", arg,
+			    strerror(-err));
 			break;
 		}
 
@@ -219,9 +217,8 @@ static int do_rmmod(int argc, char *argv[])
 
 		err = kmod_module_remove_module(mod, flags);
 		if (err < 0) {
-			fprintf(stderr,
-				"Error: could not remove module %s: %s\n",
-				arg, strerror(-err));
+			ERR("could not remove module %s: %s\n", arg,
+			    strerror(-err));
 			r++;
 		}
 next:
