@@ -130,7 +130,7 @@ static inline void _show(const char *fmt, ...)
 	va_end(args);
 }
 
-static inline void _log(int prio, const char *fmt, ...)
+static void _log(int prio, const char *fmt, ...)
 {
 	const char *prioname;
 	char buf[32], *msg;
