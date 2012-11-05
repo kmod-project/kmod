@@ -170,7 +170,7 @@ static void _log(int prio, const char *fmt, ...)
 		prioname = buf;
 	}
 
-	fprintf(stderr, "%s: %s", prioname, msg);
+	fprintf(stderr, "depmod: %s: %s", prioname, msg);
 	free(msg);
 
 	if (prio <= LOG_CRIT)
