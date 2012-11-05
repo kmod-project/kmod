@@ -24,6 +24,8 @@
 #include <string.h>
 #include "libkmod.h"
 
+#define LOGPREFIX "insmod: "
+#define ERR(...) fprintf(stderr, LOGPREFIX "ERROR: " __VA_ARGS__)
 
 static const char cmdopts_s[] = "psfVh";
 static const struct option cmdopts[] = {
@@ -89,22 +91,20 @@ static int do_insmod(int argc, char *argv[])
 		case '?':
 			return EXIT_FAILURE;
 		default:
-			fprintf(stderr,
-				"Error: unexpected getopt_long() value '%c'.\n",
+			ERR("unexpected getopt_long() value '%c'.\n",
 				c);
 			return EXIT_FAILURE;
 		}
 	}
 
 	if (optind >= argc) {
-		fprintf(stderr, "Error: missing filename.\n");
+		ERR("missing filename.\n");
 		return EXIT_FAILURE;
 	}
 
 	filename = argv[optind];
 	if (strcmp(filename, "-") == 0) {
-		fputs("Error: this tool does not support loading from stdin!\n",
-		      stderr);
+		ERR("this tool does not support loading from stdin!\n");
 		return EXIT_FAILURE;
 	}
 
@@ -112,7 +112,7 @@ static int do_insmod(int argc, char *argv[])
 		size_t len = strlen(argv[i]);
 		void *tmp = realloc(opts, optslen + len + 2);
 		if (tmp == NULL) {
-			fputs("Error: out of memory\n", stderr);
+			ERR("out of memory\n");
 			free(opts);
 			return EXIT_FAILURE;
 		}
@@ -128,22 +128,22 @@ static int do_insmod(int argc, char *argv[])
 
 	ctx = kmod_new(NULL, &null_config);
 	if (!ctx) {
-		fputs("Error: kmod_new() failed!\n", stderr);
+		ERR("kmod_new() failed!\n");
 		free(opts);
 		return EXIT_FAILURE;
 	}
 
 	err = kmod_module_new_from_path(ctx, filename, &mod);
 	if (err < 0) {
-		fprintf(stderr, "Error: could not load module %s: %s\n",
-			filename, strerror(-err));
+		ERR("could not load module %s: %s\n", filename,
+		    strerror(-err));
 		goto end;
 	}
 
 	err = kmod_module_insert_module(mod, 0, opts);
 	if (err < 0) {
-		fprintf(stderr, "Error: could not insert module %s: %s\n",
-			filename, mod_strerror(-err));
+		ERR("could not insert module %s: %s\n", filename,
+		    mod_strerror(-err));
 	}
 	kmod_module_unref(mod);
 
