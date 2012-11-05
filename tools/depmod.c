@@ -2615,14 +2615,12 @@ static int do_depmod(int argc, char *argv[])
 		case 'q':
 		case 'r':
 		case 'm':
-			if (idx > 0) {
-				fprintf(stderr,
-					"ignored deprecated option --%s\n",
-					cmdopts[idx].name);
-			} else {
-				fprintf(stderr,
-					"ignored deprecated option -%c\n", c);
-			}
+			if (idx > 0)
+				WRN("Ignored deprecated option --%s\n",
+				    cmdopts[idx].name);
+			else
+				WRN("Ignored deprecated option -%c\n", c);
+
 			break;
 		case 'h':
 			help(basename(argv[0]));
@@ -2635,9 +2633,7 @@ static int do_depmod(int argc, char *argv[])
 		case '?':
 			goto cmdline_failed;
 		default:
-			fprintf(stderr,
-				"Error: unexpected getopt_long() value '%c'.\n",
-				c);
+			ERR("unexpected getopt_long() value '%c'.\n", c);
 			goto cmdline_failed;
 		}
 	}
