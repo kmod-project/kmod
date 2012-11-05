@@ -27,9 +27,11 @@
 #include <unistd.h>
 #include <syslog.h>
 #include "libkmod.h"
+#include "macro.h"
 
-#define LOGPREFIX "rmmod: "
-#define ERR(...) fprintf(stderr, LOGPREFIX "ERROR: " __VA_ARGS__)
+#define DEFAULT_VERBOSE LOG_ERR
+static int verbose = DEFAULT_VERBOSE;
+static int use_syslog;
 
 static const char cmdopts_s[] = "fsvVwh";
 static const struct option cmdopts[] = {
@@ -58,14 +60,12 @@ static void help(const char *progname)
 		progname);
 }
 
-static void log_syslog(void *data, int priority, const char *file, int line,
-				const char *fn, const char *format,
-				va_list args)
+static _always_inline_ const char *prio_to_str(int prio)
 {
-	char *str, buf[32];
 	const char *prioname;
+	char buf[32];
 
-	switch (priority) {
+	switch (prio) {
 	case LOG_CRIT:
 		prioname = "FATAL";
 		break;
@@ -85,20 +85,70 @@ static void log_syslog(void *data, int priority, const char *file, int line,
 		prioname = "DEBUG";
 		break;
 	default:
-		snprintf(buf, sizeof(buf), "LOG-%03d", priority);
+		snprintf(buf, sizeof(buf), "LOG-%03d", prio);
 		prioname = buf;
 	}
 
+	return prioname;
+}
+
+static void log_rmmod(void *data, int priority, const char *file, int line,
+			const char *fn, const char *format, va_list args)
+{
+	const char *prioname = prio_to_str(priority);
+	char *str;
+
 	if (vasprintf(&str, format, args) < 0)
 		return;
+
+	if (use_syslog > 1) {
 #ifdef ENABLE_DEBUG
-	syslog(LOG_NOTICE, "%s: %s:%d %s() %s", prioname, file, line, fn, str);
+		syslog(priority, "%s: %s:%d %s() %s", prioname, file, line,
+		       fn, str);
 #else
-	syslog(LOG_NOTICE, "%s: %s", prioname, str);
+		syslog(priority, "%s: %s", prioname, str);
 #endif
+	} else {
+#ifdef ENABLE_DEBUG
+		fprintf(stderr, "rmmod: %s: %s:%d %s() %s", prioname, file,
+			line, fn, str);
+#else
+		fprintf(stderr, "rmmod: %s: %s", prioname, str);
+#endif
+	}
+
 	free(str);
 	(void)data;
 }
+
+static void _log(int prio, const char *fmt, ...)
+{
+	const char *prioname;
+	char *msg;
+	va_list args;
+
+	if (prio > verbose)
+		return;
+
+	va_start(args, fmt);
+	if (vasprintf(&msg, fmt, args) < 0)
+		msg = NULL;
+	va_end(args);
+	if (msg == NULL)
+		return;
+
+	prioname = prio_to_str(prio);
+
+	if (use_syslog > 1)
+		syslog(prio, "%s: %s", prioname, msg);
+	else
+		fprintf(stderr, "rmmod: %s: %s", prioname, msg);
+	free(msg);
+
+	if (prio <= LOG_CRIT)
+		exit(EXIT_FAILURE);
+}
+#define ERR(...) _log(LOG_ERR, __VA_ARGS__)
 
 static int check_module_inuse(struct kmod_module *mod) {
 	struct kmod_list *holders;
@@ -139,8 +189,6 @@ static int do_rmmod(int argc, char *argv[])
 	struct kmod_ctx *ctx;
 	const char *null_config = NULL;
 	int flags = KMOD_REMOVE_NOWAIT;
-	int use_syslog = 0;
-	int verbose = 0;
 	int i, err, r = 0;
 
 	for (;;) {
@@ -177,22 +225,26 @@ static int do_rmmod(int argc, char *argv[])
 		}
 	}
 
+	if (use_syslog) {
+		openlog("rmmod", LOG_CONS, LOG_DAEMON);
+		use_syslog++;
+	}
+
 	if (optind >= argc) {
 		ERR("missing module name.\n");
-		return EXIT_FAILURE;
+		r = EXIT_FAILURE;
+		goto done;
 	}
 
 	ctx = kmod_new(NULL, &null_config);
 	if (!ctx) {
 		ERR("kmod_new() failed!\n");
-		return EXIT_FAILURE;
+		r = EXIT_FAILURE;
+		goto done;
 	}
 
-	kmod_set_log_priority(ctx, kmod_get_log_priority(ctx) + verbose);
-	if (use_syslog) {
-		openlog("rmmod", LOG_CONS, LOG_DAEMON);
-		kmod_set_log_fn(ctx, log_syslog, NULL);
-	}
+	kmod_set_log_priority(ctx, kmod_get_log_priority(ctx));
+	kmod_set_log_fn(ctx, log_rmmod, NULL);
 
 	for (i = optind; i < argc; i++) {
 		struct kmod_module *mod;
@@ -227,7 +279,8 @@ next:
 
 	kmod_unref(ctx);
 
-	if (use_syslog)
+done:
+	if (use_syslog > 1)
 		closelog();
 
 	return r == 0 ? EXIT_SUCCESS : EXIT_FAILURE;
