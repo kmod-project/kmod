@@ -62,38 +62,6 @@ static void help(void)
 		binname);
 }
 
-static _always_inline_ const char *prio_to_str(int prio)
-{
-	const char *prioname;
-	char buf[32];
-
-	switch (prio) {
-	case LOG_CRIT:
-		prioname = "FATAL";
-		break;
-	case LOG_ERR:
-		prioname = "ERROR";
-		break;
-	case LOG_WARNING:
-		prioname = "WARNING";
-		break;
-	case LOG_NOTICE:
-		prioname = "NOTICE";
-		break;
-	case LOG_INFO:
-		prioname = "INFO";
-		break;
-	case LOG_DEBUG:
-		prioname = "DEBUG";
-		break;
-	default:
-		snprintf(buf, sizeof(buf), "LOG-%03d", prio);
-		prioname = buf;
-	}
-
-	return prioname;
-}
-
 static void log_rmmod(void *data, int priority, const char *file, int line,
 			const char *fn, const char *format, va_list args)
 {

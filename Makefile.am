@@ -108,7 +108,7 @@ noinst_SCRIPTS = tools/insmod tools/rmmod tools/lsmod \
 tools_kmod_SOURCES = tools/kmod.c tools/kmod.h tools/lsmod.c \
 		     tools/rmmod.c tools/insmod.c \
 		     tools/modinfo.c tools/modprobe.c \
-		     tools/depmod.c
+		     tools/depmod.c tools/log.h
 tools_kmod_LDADD = libkmod/libkmod-util.la \
 		   libkmod/libkmod.la
 

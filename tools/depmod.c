@@ -26,7 +26,6 @@
 #include <getopt.h>
 #include <errno.h>
 #include <string.h>
-#include <syslog.h>
 #include <limits.h>
 #include <dirent.h>
 #include <sys/utsname.h>

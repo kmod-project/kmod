@@ -38,3 +38,5 @@ extern const struct kmod_cmd kmod_cmd_list;
 
 /* kmod.c */
 extern const char *binname;
+
+#include "log.h"
