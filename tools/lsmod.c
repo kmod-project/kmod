@@ -25,6 +25,7 @@
 #include <string.h>
 #include "libkmod.h"
 
+#include "kmod.h"
 
 static int do_lsmod(int argc, char *argv[])
 {
@@ -84,8 +85,6 @@ static int do_lsmod(int argc, char *argv[])
 
 	return EXIT_SUCCESS;
 }
-
-#include "kmod.h"
 
 const struct kmod_cmd kmod_cmd_compat_lsmod = {
 	.name = "lsmod",

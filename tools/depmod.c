@@ -36,6 +36,8 @@
 #include <unistd.h>
 #include <ctype.h>
 
+#include "kmod.h"
+
 #define DEFAULT_VERBOSE LOG_WARNING
 static int verbose = DEFAULT_VERBOSE;
 
@@ -86,7 +88,7 @@ static const struct option cmdopts[] = {
 	{ }
 };
 
-static void help(const char *progname)
+static void help(void)
 {
 	fprintf(stderr,
 		"Usage:\n"
@@ -114,7 +116,7 @@ static void help(const char *progname)
 		"\t                     current kernel symbols.\n"
 		"\t-E, --symvers=FILE   Use Module.symvers file to check\n"
 		"\t                     symbol versions.\n",
-		progname);
+		binname);
 }
 
 static inline void _show(const char *fmt, ...)
@@ -2623,7 +2625,7 @@ static int do_depmod(int argc, char *argv[])
 
 			break;
 		case 'h':
-			help(basename(argv[0]));
+			help();
 			free(config_paths);
 			return EXIT_SUCCESS;
 		case 'V':
@@ -2772,8 +2774,6 @@ cmdline_failed:
 	free(root);
 	return EXIT_FAILURE;
 }
-
-#include "kmod.h"
 
 const struct kmod_cmd kmod_cmd_compat_depmod = {
 	.name = "depmod",

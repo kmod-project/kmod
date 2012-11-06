@@ -36,6 +36,8 @@
 #include "libkmod-array.h"
 #include "macro.h"
 
+#include "kmod.h"
+
 static int log_priority = LOG_CRIT;
 static int use_syslog = 0;
 
@@ -89,7 +91,7 @@ static const struct option cmdopts[] = {
 	{NULL, 0, 0, 0}
 };
 
-static void help(const char *progname)
+static void help(void)
 {
 	fprintf(stderr,
 		"Usage:\n"
@@ -136,7 +138,7 @@ static void help(const char *progname)
 		"\t-v, --verbose               enables more messages\n"
 		"\t-V, --version               show version\n"
 		"\t-h, --help                  show this help\n",
-		progname, progname, progname, progname, progname, progname);
+		binname, binname, binname, binname, binname, binname);
 }
 
 static inline void _show(const char *fmt, ...)
@@ -938,7 +940,7 @@ static int do_modprobe(int argc, char **orig_argv)
 			err = 0;
 			goto done;
 		case 'h':
-			help(basename(argv[0]));
+			help();
 			err = 0;
 			goto done;
 		case '?':
@@ -1027,8 +1029,6 @@ done:
 
 	return err >= 0 ? EXIT_SUCCESS : EXIT_FAILURE;
 }
-
-#include "kmod.h"
 
 const struct kmod_cmd kmod_cmd_compat_modprobe = {
 	.name = "modprobe",

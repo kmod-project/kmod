@@ -24,6 +24,8 @@
 #include <string.h>
 #include "libkmod.h"
 
+#include "kmod.h"
+
 #define LOGPREFIX "insmod: "
 #define ERR(...) fprintf(stderr, LOGPREFIX "ERROR: " __VA_ARGS__)
 
@@ -34,7 +36,7 @@ static const struct option cmdopts[] = {
 	{NULL, 0, 0, 0}
 };
 
-static void help(const char *progname)
+static void help(void)
 {
 	fprintf(stderr,
 		"Usage:\n"
@@ -42,7 +44,7 @@ static void help(const char *progname)
 		"Options:\n"
 		"\t-V, --version     show version\n"
 		"\t-h, --help        show this help\n",
-		progname);
+		binname);
 }
 
 static const char *mod_strerror(int err)
@@ -83,7 +85,7 @@ static int do_insmod(int argc, char *argv[])
 			/* ignored, for compatibility only */
 			break;
 		case 'h':
-			help(basename(argv[0]));
+			help();
 			return EXIT_SUCCESS;
 		case 'V':
 			puts(PACKAGE " version " VERSION);
@@ -152,8 +154,6 @@ end:
 	free(opts);
 	return err >= 0 ? EXIT_SUCCESS : EXIT_FAILURE;
 }
-
-#include "kmod.h"
 
 const struct kmod_cmd kmod_cmd_compat_insmod = {
 	.name = "insmod",

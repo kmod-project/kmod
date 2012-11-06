@@ -29,6 +29,8 @@
 #include "libkmod.h"
 #include "macro.h"
 
+#include "kmod.h"
+
 #define DEFAULT_VERBOSE LOG_ERR
 static int verbose = DEFAULT_VERBOSE;
 static int use_syslog;
@@ -44,7 +46,7 @@ static const struct option cmdopts[] = {
 	{NULL, 0, 0, 0}
 };
 
-static void help(const char *progname)
+static void help(void)
 {
 	fprintf(stderr,
 		"Usage:\n"
@@ -57,7 +59,7 @@ static void help(const char *progname)
 		"\t-v, --verbose     enables more messages\n"
 		"\t-V, --version     show version\n"
 		"\t-h, --help        show this help\n",
-		progname);
+		binname);
 }
 
 static _always_inline_ const char *prio_to_str(int prio)
@@ -212,7 +214,7 @@ static int do_rmmod(int argc, char *argv[])
 			flags &= ~KMOD_REMOVE_NOWAIT;
 			break;
 		case 'h':
-			help(basename(argv[0]));
+			help();
 			return EXIT_SUCCESS;
 		case 'V':
 			puts(PACKAGE " version " VERSION);
@@ -285,8 +287,6 @@ done:
 
 	return r == 0 ? EXIT_SUCCESS : EXIT_FAILURE;
 }
-
-#include "kmod.h"
 
 const struct kmod_cmd kmod_cmd_compat_rmmod = {
 	.name = "rmmod",

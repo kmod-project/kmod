@@ -28,6 +28,8 @@
 #include <sys/stat.h>
 #include "libkmod.h"
 
+#include "kmod.h"
+
 #define LOGPREFIX "modinfo: "
 #define ERR(...) fprintf(stderr, LOGPREFIX "ERROR: " __VA_ARGS__)
 
@@ -326,7 +328,7 @@ static const struct option cmdopts[] = {
 	{NULL, 0, 0, 0}
 };
 
-static void help(const char *progname)
+static void help(void)
 {
 	fprintf(stderr,
 		"Usage:\n"
@@ -343,7 +345,7 @@ static void help(const char *progname)
 		"\t-b, --basedir=DIR           Use DIR as filesystem root for /lib/modules\n"
 		"\t-V, --version               Show version\n"
 		"\t-h, --help                  Show this help\n",
-		progname);
+		binname);
 }
 
 static bool is_module_filename(const char *name)
@@ -408,7 +410,7 @@ static int do_modinfo(int argc, char *argv[])
 			root = optarg;
 			break;
 		case 'h':
-			help(basename(argv[0]));
+			help();
 			return EXIT_SUCCESS;
 		case 'V':
 			puts(PACKAGE " version " VERSION);
@@ -465,8 +467,6 @@ static int do_modinfo(int argc, char *argv[])
 	kmod_unref(ctx);
 	return err >= 0 ? EXIT_SUCCESS : EXIT_FAILURE;
 }
-
-#include "kmod.h"
 
 const struct kmod_cmd kmod_cmd_compat_modinfo = {
 	.name = "modinfo",
