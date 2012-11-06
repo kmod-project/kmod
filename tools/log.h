@@ -26,8 +26,6 @@
 
 void log_open(bool use_syslog);
 void log_close(void);
-void log_kmod(void *data, int priority, const char *file, int line,
-	      const char *fn, const char *format, va_list args);
 void log_printf(int prio, const char *fmt, ...);
 #define CRIT(...) log_printf(LOG_CRIT, __VA_ARGS__)
 #define ERR(...) log_printf(LOG_ERR, __VA_ARGS__)
@@ -37,40 +35,3 @@ void log_printf(int prio, const char *fmt, ...);
 
 struct kmod_ctx;
 void log_setup_kmod_log(struct kmod_ctx *ctx, int priority);
-
-_always_inline_ const char *prio_to_str(int prio);
-
-
-/* inline functions */
-
-_always_inline_ const char *prio_to_str(int prio)
-{
-	const char *prioname;
-	char buf[32];
-
-	switch (prio) {
-	case LOG_CRIT:
-		prioname = "FATAL";
-		break;
-	case LOG_ERR:
-		prioname = "ERROR";
-		break;
-	case LOG_WARNING:
-		prioname = "WARNING";
-		break;
-	case LOG_NOTICE:
-		prioname = "NOTICE";
-		break;
-	case LOG_INFO:
-		prioname = "INFO";
-		break;
-	case LOG_DEBUG:
-		prioname = "DEBUG";
-		break;
-	default:
-		snprintf(buf, sizeof(buf), "LOG-%03d", prio);
-		prioname = buf;
-	}
-
-	return prioname;
-}

@@ -27,22 +27,40 @@
 static bool log_use_syslog;
 static int log_priority = LOG_ERR;
 
-void log_open(bool use_syslog)
+static _always_inline_ const char *prio_to_str(int prio)
 {
-	log_use_syslog = use_syslog;
+	const char *prioname;
+	char buf[32];
 
-	if (log_use_syslog)
-		openlog(binname, LOG_CONS, LOG_DAEMON);
+	switch (prio) {
+	case LOG_CRIT:
+		prioname = "FATAL";
+		break;
+	case LOG_ERR:
+		prioname = "ERROR";
+		break;
+	case LOG_WARNING:
+		prioname = "WARNING";
+		break;
+	case LOG_NOTICE:
+		prioname = "NOTICE";
+		break;
+	case LOG_INFO:
+		prioname = "INFO";
+		break;
+	case LOG_DEBUG:
+		prioname = "DEBUG";
+		break;
+	default:
+		snprintf(buf, sizeof(buf), "LOG-%03d", prio);
+		prioname = buf;
+	}
+
+	return prioname;
 }
 
-void log_close(void)
-{
-	if (log_use_syslog)
-		closelog();
-}
-
-void log_kmod(void *data, int priority, const char *file, int line,
-	      const char *fn, const char *format, va_list args)
+static void log_kmod(void *data, int priority, const char *file, int line,
+		     const char *fn, const char *format, va_list args)
 {
 	const char *prioname = prio_to_str(priority);
 	char *str;
@@ -68,6 +86,19 @@ void log_kmod(void *data, int priority, const char *file, int line,
 
 	free(str);
 	(void)data;
+}
+void log_open(bool use_syslog)
+{
+	log_use_syslog = use_syslog;
+
+	if (log_use_syslog)
+		openlog(binname, LOG_CONS, LOG_DAEMON);
+}
+
+void log_close(void)
+{
+	if (log_use_syslog)
+		closelog();
 }
 
 void log_printf(int prio, const char *fmt, ...)
