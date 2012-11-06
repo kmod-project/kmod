@@ -17,13 +17,21 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <stdbool.h>
 #include <stdio.h>
 #include <syslog.h>
 
 #include "kmod.h"
 
+void log_open(bool use_syslog);
+void log_close(void);
+void log_kmod(void *data, int priority, const char *file, int line,
+	      const char *fn, const char *format, va_list args);
+
 _always_inline_ const char *prio_to_str(int prio);
 
+
+/* inline functions */
 
 _always_inline_ const char *prio_to_str(int prio)
 {

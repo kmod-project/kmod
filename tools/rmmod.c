@@ -61,35 +61,6 @@ static void help(void)
 		binname);
 }
 
-static void log_rmmod(void *data, int priority, const char *file, int line,
-			const char *fn, const char *format, va_list args)
-{
-	const char *prioname = prio_to_str(priority);
-	char *str;
-
-	if (vasprintf(&str, format, args) < 0)
-		return;
-
-	if (use_syslog > 1) {
-#ifdef ENABLE_DEBUG
-		syslog(priority, "%s: %s:%d %s() %s", prioname, file, line,
-		       fn, str);
-#else
-		syslog(priority, "%s: %s", prioname, str);
-#endif
-	} else {
-#ifdef ENABLE_DEBUG
-		fprintf(stderr, "rmmod: %s: %s:%d %s() %s", prioname, file,
-			line, fn, str);
-#else
-		fprintf(stderr, "rmmod: %s: %s", prioname, str);
-#endif
-	}
-
-	free(str);
-	(void)data;
-}
-
 static void _log(int prio, const char *fmt, ...)
 {
 	const char *prioname;
@@ -108,7 +79,7 @@ static void _log(int prio, const char *fmt, ...)
 
 	prioname = prio_to_str(prio);
 
-	if (use_syslog > 1)
+	if (use_syslog)
 		syslog(prio, "%s: %s", prioname, msg);
 	else
 		fprintf(stderr, "rmmod: %s: %s", prioname, msg);
@@ -194,10 +165,7 @@ static int do_rmmod(int argc, char *argv[])
 		}
 	}
 
-	if (use_syslog) {
-		openlog("rmmod", LOG_CONS, LOG_DAEMON);
-		use_syslog++;
-	}
+	log_open(use_syslog);
 
 	if (optind >= argc) {
 		ERR("missing module name.\n");
@@ -213,7 +181,7 @@ static int do_rmmod(int argc, char *argv[])
 	}
 
 	kmod_set_log_priority(ctx, kmod_get_log_priority(ctx));
-	kmod_set_log_fn(ctx, log_rmmod, NULL);
+	kmod_set_log_fn(ctx, log_kmod, NULL);
 
 	for (i = optind; i < argc; i++) {
 		struct kmod_module *mod;
@@ -249,8 +217,7 @@ next:
 	kmod_unref(ctx);
 
 done:
-	if (use_syslog > 1)
-		closelog();
+	log_close();
 
 	return r == 0 ? EXIT_SUCCESS : EXIT_FAILURE;
 }

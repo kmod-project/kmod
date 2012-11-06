@@ -153,35 +153,6 @@ static inline void _show(const char *fmt, ...)
 	va_end(args);
 }
 
-static void log_modprobe(void *data, int priority, const char *file, int line,
-			const char *fn, const char *format, va_list args)
-{
-	const char *prioname = prio_to_str(priority);
-	char *str;
-
-	if (vasprintf(&str, format, args) < 0)
-		return;
-
-	if (use_syslog > 1) {
-#ifdef ENABLE_DEBUG
-		syslog(priority, "%s: %s:%d %s() %s", prioname, file, line,
-		       fn, str);
-#else
-		syslog(priority, "%s: %s", prioname, str);
-#endif
-	} else {
-#ifdef ENABLE_DEBUG
-		fprintf(stderr, "modprobe: %s: %s:%d %s() %s", prioname, file,
-			line, fn, str);
-#else
-		fprintf(stderr, "modprobe: %s: %s", prioname, str);
-#endif
-	}
-
-	free(str);
-	(void)data;
-}
-
 static void _log(int prio, const char *fmt, ...)
 {
 	const char *prioname;
@@ -200,7 +171,7 @@ static void _log(int prio, const char *fmt, ...)
 
 	prioname = prio_to_str(prio);
 
-	if (use_syslog > 1)
+	if (use_syslog)
 		syslog(prio, "%s: %s", prioname, msg);
 	else
 		fprintf(stderr, "modprobe: %s: %s", prioname, msg);
@@ -923,10 +894,7 @@ static int do_modprobe(int argc, char **orig_argv)
 	args = argv + optind;
 	nargs = argc - optind;
 
-	if (use_syslog) {
-		openlog("modprobe", LOG_CONS, LOG_DAEMON);
-		use_syslog++;
-	}
+	log_open(use_syslog);
 
 	if (!do_show_config) {
 		if (nargs == 0) {
@@ -962,7 +930,7 @@ static int do_modprobe(int argc, char **orig_argv)
 	}
 
 	kmod_set_log_priority(ctx, verbose);
-	kmod_set_log_fn(ctx, log_modprobe, NULL);
+	kmod_set_log_fn(ctx, log_kmod, NULL);
 
 	kmod_load_resources(ctx);
 
@@ -986,8 +954,7 @@ static int do_modprobe(int argc, char **orig_argv)
 	kmod_unref(ctx);
 
 done:
-	if (use_syslog > 1)
-		closelog();
+	log_close();
 
 	if (argv != orig_argv)
 		free(argv);
