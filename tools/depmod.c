@@ -89,8 +89,7 @@ static const struct option cmdopts[] = {
 
 static void help(void)
 {
-	fprintf(stderr,
-		"Usage:\n"
+	printf("Usage:\n"
 		"\t%s -[aA] [options] [forced_version]\n"
 		"\n"
 		"If no arguments (except options) are given, \"depmod -a\" is assumed\n"

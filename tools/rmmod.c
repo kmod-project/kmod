@@ -48,8 +48,7 @@ static const struct option cmdopts[] = {
 
 static void help(void)
 {
-	fprintf(stderr,
-		"Usage:\n"
+	printf("Usage:\n"
 		"\t%s [options] modulename ...\n"
 		"Options:\n"
 		"\t-f, --force       forces a module unload and may crash your\n"

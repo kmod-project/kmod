@@ -93,8 +93,7 @@ static const struct option cmdopts[] = {
 
 static void help(void)
 {
-	fprintf(stderr,
-		"Usage:\n"
+	printf("Usage:\n"
 		"\t%s [options] [-i] [-b] modulename\n"
 		"\t%s [options] -a [-i] [-b] modulename [modulename...]\n"
 		"\t%s [options] -r [-i] modulename\n"
