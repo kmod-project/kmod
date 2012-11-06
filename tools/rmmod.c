@@ -25,7 +25,6 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <syslog.h>
 #include "libkmod.h"
 #include "macro.h"
 
@@ -60,35 +59,6 @@ static void help(void)
 		"\t-h, --help        show this help\n",
 		binname);
 }
-
-static void _log(int prio, const char *fmt, ...)
-{
-	const char *prioname;
-	char *msg;
-	va_list args;
-
-	if (prio > verbose)
-		return;
-
-	va_start(args, fmt);
-	if (vasprintf(&msg, fmt, args) < 0)
-		msg = NULL;
-	va_end(args);
-	if (msg == NULL)
-		return;
-
-	prioname = prio_to_str(prio);
-
-	if (use_syslog)
-		syslog(prio, "%s: %s", prioname, msg);
-	else
-		fprintf(stderr, "rmmod: %s: %s", prioname, msg);
-	free(msg);
-
-	if (prio <= LOG_CRIT)
-		exit(EXIT_FAILURE);
-}
-#define ERR(...) _log(LOG_ERR, __VA_ARGS__)
 
 static int check_module_inuse(struct kmod_module *mod) {
 	struct kmod_list *holders;

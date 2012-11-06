@@ -26,9 +26,6 @@
 
 #include "kmod.h"
 
-#define LOGPREFIX "insmod: "
-#define ERR(...) fprintf(stderr, LOGPREFIX "ERROR: " __VA_ARGS__)
-
 static const char cmdopts_s[] = "psfVh";
 static const struct option cmdopts[] = {
 	{"version", no_argument, 0, 'V'},

@@ -29,7 +29,6 @@
 #include <sys/utsname.h>
 #include <sys/wait.h>
 #include <unistd.h>
-#include <syslog.h>
 #include <limits.h>
 
 #include "libkmod.h"
@@ -40,6 +39,7 @@
 
 static int log_priority = LOG_CRIT;
 static int use_syslog = 0;
+#define LOG(...) log_printf(log_priority, __VA_ARGS__)
 
 #define DEFAULT_VERBOSE LOG_WARNING
 static int verbose = DEFAULT_VERBOSE;
@@ -152,39 +152,6 @@ static inline void _show(const char *fmt, ...)
 	fflush(stdout);
 	va_end(args);
 }
-
-static void _log(int prio, const char *fmt, ...)
-{
-	const char *prioname;
-	char *msg;
-	va_list args;
-
-	if (prio > verbose)
-		return;
-
-	va_start(args, fmt);
-	if (vasprintf(&msg, fmt, args) < 0)
-		msg = NULL;
-	va_end(args);
-	if (msg == NULL)
-		return;
-
-	prioname = prio_to_str(prio);
-
-	if (use_syslog)
-		syslog(prio, "%s: %s", prioname, msg);
-	else
-		fprintf(stderr, "modprobe: %s: %s", prioname, msg);
-	free(msg);
-
-	if (prio <= LOG_CRIT)
-		exit(EXIT_FAILURE);
-}
-#define ERR(...) _log(LOG_ERR, __VA_ARGS__)
-#define WRN(...) _log(LOG_WARNING, __VA_ARGS__)
-#define INF(...) _log(LOG_INFO, __VA_ARGS__)
-#define DBG(...) _log(LOG_DEBUG, __VA_ARGS__)
-#define LOG(...) _log(log_priority, __VA_ARGS__)
 #define SHOW(...) _show(__VA_ARGS__)
 
 static int show_config(struct kmod_ctx *ctx)

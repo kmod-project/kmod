@@ -30,9 +30,6 @@
 
 #include "kmod.h"
 
-#define LOGPREFIX "modinfo: "
-#define ERR(...) fprintf(stderr, LOGPREFIX "ERROR: " __VA_ARGS__)
-
 static char separator = '\n';
 static const char *field = NULL;
 

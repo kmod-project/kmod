@@ -129,58 +129,6 @@ static inline void _show(const char *fmt, ...)
 	fflush(stdout);
 	va_end(args);
 }
-
-static void _log(int prio, const char *fmt, ...)
-{
-	const char *prioname;
-	char buf[32], *msg;
-	va_list args;
-
-	if (prio > verbose)
-		return;
-
-	va_start(args, fmt);
-	if (vasprintf(&msg, fmt, args) < 0)
-		msg = NULL;
-	va_end(args);
-	if (msg == NULL)
-		return;
-
-	switch (prio) {
-	case LOG_CRIT:
-		prioname = "FATAL";
-		break;
-	case LOG_ERR:
-		prioname = "ERROR";
-		break;
-	case LOG_WARNING:
-		prioname = "WARNING";
-		break;
-	case LOG_NOTICE:
-		prioname = "NOTICE";
-		break;
-	case LOG_INFO:
-		prioname = "INFO";
-		break;
-	case LOG_DEBUG:
-		prioname = "DEBUG";
-		break;
-	default:
-		snprintf(buf, sizeof(buf), "LOG-%03d", prio);
-		prioname = buf;
-	}
-
-	fprintf(stderr, "depmod: %s: %s", prioname, msg);
-	free(msg);
-
-	if (prio <= LOG_CRIT)
-		exit(EXIT_FAILURE);
-}
-#define CRIT(...) _log(LOG_CRIT, __VA_ARGS__)
-#define ERR(...) _log(LOG_ERR, __VA_ARGS__)
-#define WRN(...) _log(LOG_WARNING, __VA_ARGS__)
-#define INF(...) _log(LOG_INFO, __VA_ARGS__)
-#define DBG(...) _log(LOG_DEBUG, __VA_ARGS__)
 #define SHOW(...) _show(__VA_ARGS__)
 
 

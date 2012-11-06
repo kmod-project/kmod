@@ -17,6 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <syslog.h>
@@ -27,6 +28,12 @@ void log_open(bool use_syslog);
 void log_close(void);
 void log_kmod(void *data, int priority, const char *file, int line,
 	      const char *fn, const char *format, va_list args);
+void log_printf(int prio, const char *fmt, ...);
+#define CRIT(...) log_printf(LOG_CRIT, __VA_ARGS__)
+#define ERR(...) log_printf(LOG_ERR, __VA_ARGS__)
+#define WRN(...) log_printf(LOG_WARNING, __VA_ARGS__)
+#define INF(...) log_printf(LOG_INFO, __VA_ARGS__)
+#define DBG(...) log_printf(LOG_DEBUG, __VA_ARGS__)
 
 struct kmod_ctx;
 void log_setup_kmod_log(struct kmod_ctx *ctx, int priority);

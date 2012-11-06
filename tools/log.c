@@ -70,6 +70,34 @@ void log_kmod(void *data, int priority, const char *file, int line,
 	(void)data;
 }
 
+void log_printf(int prio, const char *fmt, ...)
+{
+	const char *prioname;
+	char *msg;
+	va_list args;
+
+	if (prio > log_priority)
+		return;
+
+	va_start(args, fmt);
+	if (vasprintf(&msg, fmt, args) < 0)
+		msg = NULL;
+	va_end(args);
+	if (msg == NULL)
+		return;
+
+	prioname = prio_to_str(prio);
+
+	if (log_use_syslog)
+		syslog(prio, "%s: %s", prioname, msg);
+	else
+		fprintf(stderr, "%s: %s: %s", binname, prioname, msg);
+	free(msg);
+
+	if (prio <= LOG_CRIT)
+		exit(EXIT_FAILURE);
+}
+
 void log_setup_kmod_log(struct kmod_ctx *ctx, int priority)
 {
 	log_priority = priority;
