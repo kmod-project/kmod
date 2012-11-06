@@ -929,8 +929,7 @@ static int do_modprobe(int argc, char **orig_argv)
 		goto done;
 	}
 
-	kmod_set_log_priority(ctx, verbose);
-	kmod_set_log_fn(ctx, log_kmod, NULL);
+	log_setup_kmod_log(ctx, verbose);
 
 	kmod_load_resources(ctx);
 

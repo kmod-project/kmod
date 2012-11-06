@@ -28,6 +28,9 @@ void log_close(void);
 void log_kmod(void *data, int priority, const char *file, int line,
 	      const char *fn, const char *format, va_list args);
 
+struct kmod_ctx;
+void log_setup_kmod_log(struct kmod_ctx *ctx, int priority);
+
 _always_inline_ const char *prio_to_str(int prio);
 
 

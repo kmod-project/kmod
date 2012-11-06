@@ -2673,7 +2673,8 @@ static int do_depmod(int argc, char *argv[])
 		CRIT("kmod_new(\"%s\", {NULL}) failed: %m\n", cfg.dirname);
 		goto cmdline_failed;
 	}
-	kmod_set_log_priority(ctx, verbose);
+
+	log_setup_kmod_log(ctx, verbose);
 
 	err = depmod_init(&depmod, &cfg, ctx);
 	if (err < 0) {

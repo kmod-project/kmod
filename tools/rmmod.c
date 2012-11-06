@@ -180,8 +180,7 @@ static int do_rmmod(int argc, char *argv[])
 		goto done;
 	}
 
-	kmod_set_log_priority(ctx, kmod_get_log_priority(ctx));
-	kmod_set_log_fn(ctx, log_kmod, NULL);
+	log_setup_kmod_log(ctx, verbose);
 
 	for (i = optind; i < argc; i++) {
 		struct kmod_module *mod;

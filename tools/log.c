@@ -21,9 +21,11 @@
 #include <stdlib.h>
 #include <syslog.h>
 
+#include "libkmod.h"
 #include "kmod.h"
 
 static bool log_use_syslog;
+static int log_priority = LOG_ERR;
 
 void log_open(bool use_syslog)
 {
@@ -66,4 +68,12 @@ void log_kmod(void *data, int priority, const char *file, int line,
 
 	free(str);
 	(void)data;
+}
+
+void log_setup_kmod_log(struct kmod_ctx *ctx, int priority)
+{
+	log_priority = priority;
+
+	kmod_set_log_priority(ctx, log_priority);
+	kmod_set_log_fn(ctx, log_kmod, NULL);
 }
