@@ -57,7 +57,7 @@ static void help(void)
 		"\t-v, --verbose     enables more messages\n"
 		"\t-V, --version     show version\n"
 		"\t-h, --help        show this help\n",
-		binname);
+		program_invocation_short_name);
 }
 
 static int check_module_inuse(struct kmod_module *mod) {

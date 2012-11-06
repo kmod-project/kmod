@@ -114,7 +114,7 @@ static void help(void)
 		"\t                     current kernel symbols.\n"
 		"\t-E, --symvers=FILE   Use Module.symvers file to check\n"
 		"\t                     symbol versions.\n",
-		binname);
+		program_invocation_short_name);
 }
 
 static inline void _show(const char *fmt, ...)

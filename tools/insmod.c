@@ -40,7 +40,7 @@ static void help(void)
 		"Options:\n"
 		"\t-V, --version     show version\n"
 		"\t-h, --help        show this help\n",
-		binname);
+		program_invocation_short_name);
 }
 
 static const char *mod_strerror(int err)

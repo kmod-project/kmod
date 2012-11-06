@@ -341,7 +341,7 @@ static void help(void)
 		"\t-b, --basedir=DIR           Use DIR as filesystem root for /lib/modules\n"
 		"\t-V, --version               Show version\n"
 		"\t-h, --help                  Show this help\n",
-		binname);
+		program_invocation_short_name);
 }
 
 static bool is_module_filename(const char *name)

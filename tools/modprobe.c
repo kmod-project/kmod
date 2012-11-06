@@ -137,7 +137,9 @@ static void help(void)
 		"\t-v, --verbose               enables more messages\n"
 		"\t-V, --version               show version\n"
 		"\t-h, --help                  show this help\n",
-		binname, binname, binname, binname, binname, binname);
+		program_invocation_short_name, program_invocation_short_name,
+		program_invocation_short_name, program_invocation_short_name,
+		program_invocation_short_name, program_invocation_short_name);
 }
 
 static inline void _show(const char *fmt, ...)

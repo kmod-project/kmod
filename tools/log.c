@@ -17,6 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <syslog.h>
@@ -77,10 +78,12 @@ static void log_kmod(void *data, int priority, const char *file, int line,
 #endif
 	} else {
 #ifdef ENABLE_DEBUG
-		fprintf(stderr, "%s: %s: %s:%d %s() %s", binname, prioname,
-			file, line, fn, str);
+		fprintf(stderr, "%s: %s: %s:%d %s() %s",
+			program_invocation_short_name, prioname, file, line,
+			fn, str);
 #else
-		fprintf(stderr, "%s: %s: %s", binname, prioname, str);
+		fprintf(stderr, "%s: %s: %s", program_invocation_short_name,
+			prioname, str);
 #endif
 	}
 
@@ -92,7 +95,7 @@ void log_open(bool use_syslog)
 	log_use_syslog = use_syslog;
 
 	if (log_use_syslog)
-		openlog(binname, LOG_CONS, LOG_DAEMON);
+		openlog(program_invocation_short_name, LOG_CONS, LOG_DAEMON);
 }
 
 void log_close(void)
@@ -122,7 +125,8 @@ void log_printf(int prio, const char *fmt, ...)
 	if (log_use_syslog)
 		syslog(prio, "%s: %s", prioname, msg);
 	else
-		fprintf(stderr, "%s: %s: %s", binname, prioname, msg);
+		fprintf(stderr, "%s: %s: %s", program_invocation_short_name,
+			prioname, msg);
 	free(msg);
 
 	if (prio <= LOG_CRIT)
