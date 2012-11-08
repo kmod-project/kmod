@@ -4,8 +4,6 @@ Features:
 * testsuite:
    - when fake delete_module() succeeds, remove its entry from /sys/module
 
-* unify logging functions of tools/{modprobe.c,depmod.c,...}
-
 * review API, maybe unify all of these getters:
    - kmod_module_version_get_symbol()
    - kmod_module_version_get_crc()
