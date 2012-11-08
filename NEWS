@@ -1,3 +1,31 @@
+kmod 11
+=======
+
+- Improvements to testsuite:
+	- Fix testsuite defining symbols twice on 32 bit systems
+	- Allow to check generated files against correct ones
+
+- New features:
+	- libkmod now keeps a file opened after the first call to
+	  kmod_module_get_{info,versions,symbols,dependency_symbols}. This
+	  reduces signficantly the amount of time depmod tool takes to
+	  execute. Particularly if compressed modules are used.
+	- Remove --with-rootprefix from build system. It was not a great idea
+	  after all and should not be use since it causes more harm then
+	  benefits.
+	- Hide --wait option on rmmod. This feature is being targeted for
+	  removal from kernel. rmmod still accepts this option, but it's hidden
+	  now: man page and usage() says nothing about it and if it's used,
+	  user will get a 10s sleep. This way we can check and help if anyone
+	  is using this feature.
+	- Refactor message logging on all tools, giving proper prefix, routing
+	  everything to syslog when asked for, etc.
+
+- Bug fixes:
+	- Fix parsing of modules.order when using compressed modules
+	- Usage messages go to stdout instead of stderr
+	- Fix memory leak in hash implementation
+
 kmod 10
 =======
 
