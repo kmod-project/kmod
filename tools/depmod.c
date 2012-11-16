@@ -1114,7 +1114,7 @@ static int depmod_module_add(struct depmod *depmod, struct kmod_module *kmod)
 				      mod->uncrelpath, mod);
 		if (err < 0) {
 			ERR("hash_add_unique %s: %s\n",
-			    mod->relpath, strerror(-err));
+			    mod->uncrelpath, strerror(-err));
 			hash_del(depmod->modules_by_name, mod->modname);
 			goto fail;
 		}
@@ -1134,8 +1134,8 @@ static int depmod_module_del(struct depmod *depmod, struct mod *mod)
 {
 	DBG("del %p kmod=%p, path=%s\n", mod, mod->kmod, mod->path);
 
-	if (mod->relpath != NULL)
-		hash_del(depmod->modules_by_uncrelpath, mod->relpath);
+	if (mod->uncrelpath != NULL)
+		hash_del(depmod->modules_by_uncrelpath, mod->uncrelpath);
 
 	hash_del(depmod->modules_by_name, mod->modname);
 
