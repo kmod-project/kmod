@@ -977,7 +977,7 @@ static void mod_free(struct mod *mod)
 {
 	DBG("free %p kmod=%p, path=%s\n", mod, mod->kmod, mod->path);
 	array_free_array(&mod->deps);
-	assert(mod->kmod == NULL);
+	kmod_module_unref(mod->kmod);
 	kmod_module_info_free_list(mod->info_list);
 	kmod_module_dependency_symbols_free_list(mod->dep_sym_list);
 	free(mod->uncrelpath);
