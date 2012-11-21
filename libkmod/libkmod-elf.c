@@ -375,6 +375,31 @@ const void *kmod_elf_get_memory(const struct kmod_elf *elf)
 	return elf->memory;
 }
 
+static int elf_find_section(const struct kmod_elf *elf, const char *section)
+{
+	uint64_t nameslen;
+	const char *names = elf_get_strings_section(elf, &nameslen);
+	uint16_t i;
+
+	for (i = 1; i < elf->header.section.count; i++) {
+		uint64_t off, size;
+		uint32_t nameoff;
+		const char *n;
+		int err = elf_get_section_info(elf, i, &off, &size, &nameoff);
+		if (err < 0)
+			continue;
+		if (nameoff >= nameslen)
+			continue;
+		n = names + nameoff;
+		if (!streq(section, n))
+			continue;
+
+		return i;
+	}
+
+	return -ENOENT;
+}
+
 int kmod_elf_get_section(const struct kmod_elf *elf, const char *section, const void **buf, uint64_t *buf_size)
 {
 	uint64_t nameslen;
@@ -550,26 +575,29 @@ int kmod_elf_get_modversions(const struct kmod_elf *elf, struct kmod_modversion 
 
 int kmod_elf_strip_section(struct kmod_elf *elf, const char *section)
 {
-	uint64_t size, off;
+	uint64_t off, size;
 	const void *buf;
-	int err = kmod_elf_get_section(elf, section, &buf, &size);
-	if (err < 0)
-		return err;
+	int idx = elf_find_section(elf, section);
+	uint64_t val;
 
+	if (idx < 0)
+		return idx;
+
+	buf = elf_get_section_header(elf, idx);
 	off = (const uint8_t *)buf - elf->memory;
 
-#define WRITEV(field, value)			\
-	elf_set_uint(elf, off + offsetof(typeof(*hdr), field), sizeof(hdr->field), value)
 	if (elf->class & KMOD_ELF_32) {
-		const Elf32_Shdr *hdr _unused_ = buf;
-		uint32_t val = ~(uint32_t)SHF_ALLOC;
-		return WRITEV(sh_flags, val);
+		off += offsetof(Elf32_Shdr, sh_flags);
+		size = sizeof(((Elf32_Shdr *)buf)->sh_flags);
 	} else {
-		const Elf64_Shdr *hdr _unused_ = buf;
-		uint64_t val = ~(uint64_t)SHF_ALLOC;
-		return WRITEV(sh_flags, val);
+		off += offsetof(Elf64_Shdr, sh_flags);
+		size = sizeof(((Elf64_Shdr *)buf)->sh_flags);
 	}
-#undef WRITEV
+
+	val = elf_get_uint(elf, off, size);
+	val &= ~(uint64_t)SHF_ALLOC;
+
+	return elf_set_uint(elf, off, size, val);
 }
 
 int kmod_elf_strip_vermagic(struct kmod_elf *elf)
