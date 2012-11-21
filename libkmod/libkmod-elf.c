@@ -611,7 +611,6 @@ int kmod_elf_strip_vermagic(struct kmod_elf *elf)
 			i += strlen(s);
 			continue;
 		}
-		s += len;
 		off = (const uint8_t *)s - elf->memory;
 
 		if (elf->changed == NULL) {
