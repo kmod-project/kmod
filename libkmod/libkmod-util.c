@@ -316,10 +316,10 @@ const struct kmod_ext kmod_exts[] = {
 #ifdef ENABLE_XZ
 	{".ko.xz", sizeof(".ko.xz") - 1},
 #endif
-	{NULL, 0},
+	{ }
 };
 
-int path_ends_with_kmod_ext(const char *path, size_t len)
+bool path_ends_with_kmod_ext(const char *path, size_t len)
 {
 	const struct kmod_ext *eitr;
 

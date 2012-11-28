@@ -28,7 +28,7 @@ extern const struct kmod_ext {
 	size_t len;
 } kmod_exts[];
 #define KMOD_EXT_UNC 0
-int path_ends_with_kmod_ext(const char *path, size_t len) __attribute__((nonnull(1)));
+bool path_ends_with_kmod_ext(const char *path, size_t len) __attribute__((nonnull(1)));
 
 unsigned long long stat_mstamp(const struct stat *st);
 unsigned long long ts_usec(const struct timespec *ts);
