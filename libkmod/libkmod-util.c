@@ -308,6 +308,31 @@ char *path_make_absolute_cwd(const char *p)
 	return r;
 }
 
+const struct kmod_ext kmod_exts[] = {
+	{".ko", sizeof(".ko") - 1},
+#ifdef ENABLE_ZLIB
+	{".ko.gz", sizeof(".ko.gz") - 1},
+#endif
+#ifdef ENABLE_XZ
+	{".ko.xz", sizeof(".ko.xz") - 1},
+#endif
+	{NULL, 0},
+};
+
+int path_ends_with_kmod_ext(const char *path, size_t len)
+{
+	const struct kmod_ext *eitr;
+
+	for (eitr = kmod_exts; eitr->ext != NULL; eitr++) {
+		if (len <= eitr->len)
+			continue;
+		if (streq(path + len - eitr->len, eitr->ext))
+			return true;
+	}
+
+	return false;
+}
+
 #define USEC_PER_SEC  1000000ULL
 #define NSEC_PER_USEC 1000ULL
 unsigned long long ts_usec(const struct timespec *ts)

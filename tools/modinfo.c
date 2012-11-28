@@ -27,6 +27,7 @@
 #include <sys/utsname.h>
 #include <sys/stat.h>
 #include "libkmod.h"
+#include "libkmod-util.h"
 
 #include "kmod.h"
 
@@ -347,17 +348,10 @@ static void help(void)
 static bool is_module_filename(const char *name)
 {
 	struct stat st;
-	const char *ptr;
 
 	if (stat(name, &st) == 0 && S_ISREG(st.st_mode) &&
-					(ptr = strstr(name, ".ko")) != NULL) {
-		/*
-		 * We screened for .ko; make sure this is either at the end of
-		 * the name or followed by another '.' (e.g. gz or xz modules)
-		 */
-		if(ptr[3] == '\0' || ptr[3] == '.')
+		path_ends_with_kmod_ext(name, strlen(name)))
 			return true;
-	}
 
 	return false;
 }
