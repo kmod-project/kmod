@@ -1191,7 +1191,7 @@ static int depmod_modules_search_file(struct depmod *depmod, size_t baselen, siz
 	size_t modnamelen;
 	int err;
 
-	if (!path_ends_with_kmod_ext(path, baselen + namelen))
+	if (!path_ends_with_kmod_ext(path + baselen, namelen))
 		return 0;
 
 	if (path_to_modname(path, modname, &modnamelen) == NULL) {
@@ -2387,8 +2387,9 @@ static int depfile_up_to_date_dir(DIR *d, time_t mtime, size_t baselen, char *pa
 						     path);
 			closedir(subdir);
 		} else if (S_ISREG(st.st_mode)) {
-			if (!path_ends_with_kmod_ext(path, namelen))
+			if (!path_ends_with_kmod_ext(name, namelen))
 				continue;
+
 			memcpy(path + baselen, name, namelen + 1);
 			err = st.st_mtime <= mtime;
 			if (err == 0) {
