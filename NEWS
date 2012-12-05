@@ -1,3 +1,13 @@
+kmod 12
+=======
+
+- Bug fixes:
+	- Fix removing vermagic from module when told to force load a module
+	- Fix removing __versions section when told to force load a module: we
+	  need to mangle the section header, not the section.
+	- modinfo no longer fails while loading a module from file when path
+	  contains ".ko" substring
+
 kmod 11
 =======
 
