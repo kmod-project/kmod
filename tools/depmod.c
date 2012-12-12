@@ -1428,13 +1428,14 @@ corrupted:
 }
 
 static int depmod_symbol_add(struct depmod *depmod, const char *name,
-					uint64_t crc, const struct mod *owner)
+					bool prefix_skipped, uint64_t crc,
+					const struct mod *owner)
 {
 	size_t namelen;
 	int err;
 	struct symbol *sym;
 
-	if (name[0] == depmod->cfg->sym_prefix)
+	if (!prefix_skipped && (name[0] == depmod->cfg->sym_prefix))
 		name++;
 
 	namelen = strlen(name) + 1;
@@ -1491,7 +1492,7 @@ static int depmod_load_modules(struct depmod *depmod)
 		kmod_list_foreach(l, list) {
 			const char *name = kmod_module_symbol_get_symbol(l);
 			uint64_t crc = kmod_module_symbol_get_crc(l);
-			depmod_symbol_add(depmod, name, crc, mod);
+			depmod_symbol_add(depmod, name, false, crc, mod);
 		}
 		kmod_module_symbols_free_list(list);
 
@@ -2226,9 +2227,9 @@ static int depmod_output(struct depmod *depmod, FILE *out)
 static void depmod_add_fake_syms(struct depmod *depmod)
 {
 	/* __this_module is magic inserted by kernel loader. */
-	depmod_symbol_add(depmod, "__this_module", 0, NULL);
+	depmod_symbol_add(depmod, "__this_module", true, 0, NULL);
 	/* On S390, this is faked up too */
-	depmod_symbol_add(depmod, "_GLOBAL_OFFSET_TABLE_", 0, NULL);
+	depmod_symbol_add(depmod, "_GLOBAL_OFFSET_TABLE_", true, 0, NULL);
 }
 
 static int depmod_load_symvers(struct depmod *depmod, const char *filename)
@@ -2269,7 +2270,7 @@ static int depmod_load_symvers(struct depmod *depmod, const char *filename)
 			continue;
 		}
 
-		depmod_symbol_add(depmod, sym, crc, NULL);
+		depmod_symbol_add(depmod, sym, false, crc, NULL);
 	}
 	depmod_add_fake_syms(depmod);
 
@@ -2310,6 +2311,10 @@ static int depmod_load_system_map(struct depmod *depmod, const char *filename)
 			goto invalid_syntax;
 		p++;
 
+		/* skip prefix */
+		if (p[0] == depmod->cfg->sym_prefix)
+			p++;
+
 		/* Covers gpl-only and normal symbols. */
 		if (strncmp(p, ksymstr, ksymstr_len) != 0)
 			continue;
@@ -2318,7 +2323,7 @@ static int depmod_load_system_map(struct depmod *depmod, const char *filename)
 		if (end != NULL)
 			*end = '\0';
 
-		depmod_symbol_add(depmod, p + ksymstr_len, 0, NULL);
+		depmod_symbol_add(depmod, p + ksymstr_len, true, 0, NULL);
 		continue;
 
 	invalid_syntax:
