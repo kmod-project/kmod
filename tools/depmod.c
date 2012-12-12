@@ -63,7 +63,7 @@ static const struct option cmdopts[] = {
 	{ "verbose", no_argument, 0, 'v' },
 	{ "show", no_argument, 0, 'n' },
 	{ "dry-run", no_argument, 0, 'n' },
-	{ "symbol-prefix", no_argument, 0, 'P' },
+	{ "symbol-prefix", required_argument, 0, 'P' },
 	{ "warn", no_argument, 0, 'w' },
 	{ "map", no_argument, 0, 'm' }, /* deprecated */
 	{ "version", no_argument, 0, 'V' },
