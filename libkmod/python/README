@@ -24,11 +24,11 @@ Example (python invoked as root)
 
   >>> import kmod
   >>> km = kmod.Kmod()
-  >>> km.loaded_modules()
-  [('nfs', 407706),
-   ('nfs_acl', 12741)
+  >>> [(m.name, m.size) for m in km.loaded()]
+  [(u'nfs', 407706),
+   (u'nfs_acl', 12741)
    ...
-   ('virtio_blk', 17549)]
+   (u'virtio_blk', 17549)]
   >>> km.modprobe("btrfs")
   >>> km.rmmod("btrfs")
 
