@@ -107,5 +107,9 @@ cdef class Kmod (object):
             mod.insert(*args, **kwargs)
 
     def rmmod(self, module_name, *args, **kwargs):
+       """
+       remove module from current tree
+       e.g. km.rmmod("thinkpad_acpi")
+       """
        mod = self.module_from_name(name=module_name)
        mod.remove(*args, **kwargs)
