@@ -117,6 +117,13 @@ cdef class Module (object):
 
     def insert(self, flags=0, extra_options=None, install_callback=None,
                data=None, print_action_callback=None):
+        """
+        insert module to current tree. 
+        e.g.
+        km = kmod.Kmod()
+        tp = km.module_from_name("thinkpad_acpi")
+        tp.insert(extra_options='fan_control=1')
+        """
         cdef char *opt = NULL
         #cdef _libkmod_h.install_callback_t install = NULL
         cdef int (*install)(
@@ -139,6 +146,13 @@ cdef class Module (object):
             raise _KmodError('Could not load module')
 
     def remove(self, flags=0):
+        """
+        remove module from current tree
+        e.g.
+        km = kmod.Kmod()
+        tp = km.module_from_name("thinkpad_acpi")
+        tp.remove()
+        """
         err = _libkmod_h.kmod_module_remove_module(self.module, flags)
         if err < 0:
             raise _KmodError('Could not remove module')
