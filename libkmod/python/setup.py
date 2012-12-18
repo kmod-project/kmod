@@ -50,6 +50,8 @@ setup(
     description='Python binding for kmod',
     packages=[package_name],
     provides=[package_name],
+    maintainer="Andy Grover",
+    maintainer_email="agrover@redhat.com",
     cmdclass = {'build_ext': _build_ext},
     ext_modules=ext_modules,
     )
