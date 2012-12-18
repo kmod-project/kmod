@@ -39,7 +39,7 @@ for filename in sorted(_os.listdir(package_name)):
     if extension == '.pyx':
         ext_modules.append(
             _Extension(
-                '{}.{}'.format(package_name, basename),
+                '{0}.{1}'.format(package_name, basename),
                 [_os.path.join(package_name, filename)],
                 libraries=['kmod'],
                 ))
