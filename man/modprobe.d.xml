@@ -40,7 +40,7 @@
   </refnamediv>
 
   <refsynopsisdiv>
-    <para><filename>/usr/lib/modprobe.d/*.conf</filename></para>
+    <para><filename>/lib/modprobe.d/*.conf</filename></para>
     <para><filename>/etc/modprobe.d/*.conf</filename></para>
     <para><filename>/run/modprobe.d/*.conf</filename></para>
   </refsynopsisdiv>
