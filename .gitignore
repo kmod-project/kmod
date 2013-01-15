@@ -16,6 +16,7 @@ Makefile.in
 /configure
 /libtool
 /stamp-h1
+/test-suite.log
 
 *~
 .*.swp
