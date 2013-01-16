@@ -2094,6 +2094,25 @@ static void kmod_module_info_free(struct kmod_module_info *info)
 	free(info);
 }
 
+static struct kmod_list *kmod_module_info_append(struct kmod_list **list, const char *key, size_t keylen, const char *value, size_t valuelen)
+{
+	struct kmod_module_info *info;
+	struct kmod_list *n;
+
+	info = kmod_module_info_new(key, keylen, value, valuelen);
+	if (info == NULL) {
+		kmod_module_info_free_list(*list);
+		return NULL;
+	}
+	n = kmod_list_append(*list, info);
+	if (n == NULL) {
+		kmod_module_info_free(info);
+		kmod_module_info_free_list(*list);
+	}
+	*list = n;
+	return n;
+}
+
 /**
  * kmod_module_get_info:
  * @mod: kmod module
@@ -2114,7 +2133,7 @@ KMOD_EXPORT int kmod_module_get_info(const struct kmod_module *mod, struct kmod_
 {
 	struct kmod_elf *elf;
 	char **strings;
-	int i, count, ret = 0;
+	int i, count, ret = -ENOMEM;
 
 	if (mod == NULL || list == NULL)
 		return -ENOENT;
@@ -2130,7 +2149,6 @@ KMOD_EXPORT int kmod_module_get_info(const struct kmod_module *mod, struct kmod_
 		return count;
 
 	for (i = 0; i < count; i++) {
-		struct kmod_module_info *info;
 		struct kmod_list *n;
 		const char *key, *value;
 		size_t keylen, valuelen;
@@ -2146,24 +2164,9 @@ KMOD_EXPORT int kmod_module_get_info(const struct kmod_module *mod, struct kmod_
 			valuelen = strlen(value);
 		}
 
-		info = kmod_module_info_new(key, keylen, value, valuelen);
-		if (info == NULL) {
-			ret = -errno;
-			kmod_module_info_free_list(*list);
-			*list = NULL;
+		n = kmod_module_info_append(list, key, keylen, value, valuelen);
+		if (n == NULL)
 			goto list_error;
-		}
-
-		n = kmod_list_append(*list, info);
-		if (n != NULL)
-			*list = n;
-		else {
-			kmod_module_info_free(info);
-			kmod_module_info_free_list(*list);
-			*list = NULL;
-			ret = -ENOMEM;
-			goto list_error;
-		}
 	}
 	ret = count;
 
