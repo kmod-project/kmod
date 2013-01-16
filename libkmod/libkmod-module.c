@@ -2100,16 +2100,13 @@ static struct kmod_list *kmod_module_info_append(struct kmod_list **list, const 
 	struct kmod_list *n;
 
 	info = kmod_module_info_new(key, keylen, value, valuelen);
-	if (info == NULL) {
-		kmod_module_info_free_list(*list);
+	if (info == NULL)
 		return NULL;
-	}
 	n = kmod_list_append(*list, info);
-	if (n == NULL) {
+	if (n != NULL)
+		*list = n;
+	else
 		kmod_module_info_free(info);
-		kmod_module_info_free_list(*list);
-	}
-	*list = n;
 	return n;
 }
 
@@ -2171,6 +2168,10 @@ KMOD_EXPORT int kmod_module_get_info(const struct kmod_module *mod, struct kmod_
 	ret = count;
 
 list_error:
+	if (ret < 0) {
+		kmod_module_info_free_list(*list);
+		*list = NULL;
+	}
 	free(strings);
 	return ret;
 }
