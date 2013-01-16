@@ -62,7 +62,8 @@ libkmod_libkmod_la_SOURCES =\
 	libkmod/libkmod-index.h \
 	libkmod/libkmod-module.c \
 	libkmod/libkmod-file.c \
-	libkmod/libkmod-elf.c
+	libkmod/libkmod-elf.c \
+	libkmod/libkmod-signature.c
 
 EXTRA_DIST += libkmod/libkmod.sym
 EXTRA_DIST += libkmod/README libkmod/COPYING testsuite/COPYING COPYING

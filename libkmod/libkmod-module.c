@@ -2120,7 +2120,9 @@ static struct kmod_list *kmod_module_info_append(struct kmod_list **list, const 
  *
  * Get a list of entries in ELF section ".modinfo", these contain
  * alias, license, depends, vermagic and other keys with respective
- * values.
+ * values. If the module is signed (CONFIG_MODULE_SIG), information
+ * about the module signature is included as well: signer,
+ * sig_key and sig_hashalgo.
  *
  * After use, free the @list by calling kmod_module_info_free_list().
  *
@@ -2131,6 +2133,7 @@ KMOD_EXPORT int kmod_module_get_info(const struct kmod_module *mod, struct kmod_
 	struct kmod_elf *elf;
 	char **strings;
 	int i, count, ret = -ENOMEM;
+	struct kmod_signature_info sig_info;
 
 	if (mod == NULL || list == NULL)
 		return -ENOENT;
@@ -2164,6 +2167,46 @@ KMOD_EXPORT int kmod_module_get_info(const struct kmod_module *mod, struct kmod_
 		n = kmod_module_info_append(list, key, keylen, value, valuelen);
 		if (n == NULL)
 			goto list_error;
+	}
+
+	if (kmod_module_signature_info(mod->file, &sig_info)) {
+		struct kmod_list *n;
+		char *key_hex;
+
+		n = kmod_module_info_append(list, "signer", strlen("signer"),
+				sig_info.signer, sig_info.signer_len);
+		if (n == NULL)
+			goto list_error;
+		count++;
+
+		/* Display the key id as 01:12:DE:AD:BE:EF:... */
+		key_hex = malloc(sig_info.key_id_len * 3);
+		if (key_hex == NULL)
+			goto list_error;
+		for (i = 0; i < (int)sig_info.key_id_len; i++) {
+			sprintf(key_hex + i * 3, "%02X",
+					(unsigned char)sig_info.key_id[i]);
+			if (i < (int)sig_info.key_id_len - 1)
+				key_hex[i * 3 + 2] = ':';
+		}
+		n = kmod_module_info_append(list, "sig_key", strlen("sig_key"),
+				key_hex, sig_info.key_id_len * 3 - 1);
+		free(key_hex);
+		if (n == NULL)
+			goto list_error;
+		count++;
+
+		n = kmod_module_info_append(list,
+				"sig_hashalgo", strlen("sig_hashalgo"),
+				sig_info.hash_algo, strlen(sig_info.hash_algo));
+		if (n == NULL)
+			goto list_error;
+		count++;
+
+		/*
+		 * Omit sig_info.id_type and sig_info.algo for now, as these
+		 * are currently constant.
+		 */
 	}
 	ret = count;
 

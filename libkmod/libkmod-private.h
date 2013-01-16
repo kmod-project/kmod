@@ -168,5 +168,14 @@ int kmod_elf_strip_vermagic(struct kmod_elf *elf) _must_check_ __attribute__((no
  */
 int kmod_elf_get_section(const struct kmod_elf *elf, const char *section, const void **buf, uint64_t *buf_size) _must_check_ __attribute__((nonnull(1,2,3,4)));
 
+/* libkmod-signature.c */
+struct kmod_signature_info {
+	const char *signer;
+	size_t signer_len;
+	const char *key_id;
+	size_t key_id_len;
+	const char *algo, *hash_algo, *id_type;
+};
+bool kmod_module_signature_info(const struct kmod_file *file, struct kmod_signature_info *sig_info) _must_check_ __attribute__((nonnull(1, 2)));
 /* util functions */
 #include "libkmod-util.h"
