@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012  ProFUSION embedded systems
+ * Copyright (C) 2012-2013  ProFUSION embedded systems
  * Copyright (C) 2012  Pedro Pedruzzi
  *
  * This program is free software; you can redistribute it and/or
