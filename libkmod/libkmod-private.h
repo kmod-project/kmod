@@ -35,6 +35,15 @@ static _always_inline_ _printf_format_(2, 3) void
 
 #define KCMD_LINE_SIZE 4096
 
+#ifndef HAVE_SECURE_GETENV
+#  ifdef HAVE___SECURE_GETENV
+#    define secure_getenv __secure_getenv
+#  else
+#    warning neither secure_getenv nor __secure_getenv is available
+#    define secure_getenv getenv
+#  endif
+#endif
+
 void kmod_log(const struct kmod_ctx *ctx,
 		int priority, const char *file, int line, const char *fn,
 		const char *format, ...) __attribute__((format(printf, 6, 7))) __attribute__((nonnull(1, 3, 5)));

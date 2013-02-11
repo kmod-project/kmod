@@ -254,7 +254,7 @@ KMOD_EXPORT struct kmod_ctx *kmod_new(const char *dirname,
 	ctx->dirname = get_kernel_release(dirname);
 
 	/* environment overwrites config */
-	env = getenv("KMOD_LOG");
+	env = secure_getenv("KMOD_LOG");
 	if (env != NULL)
 		kmod_set_log_priority(ctx, log_priority(env));
 
