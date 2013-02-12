@@ -102,8 +102,18 @@ cdef class Kmod (object):
         for mod in self.loaded():
             yield (mod.name, mod.size)
 
-    def modprobe(self, alias_name, *args, **kwargs):
-        for mod in self.lookup(alias_name=alias_name):
+    def modprobe(self, name, quiet=False, *args, **kwargs):
+        """
+        Load a module (or alias) and all modules on which it depends.
+        The 'quiet' option defaults to False; set to True to mimic the behavior
+        of the '--quiet' commandline option.
+        """
+        mods = list(self.lookup(alias_name=name))
+
+        if not mods and not quiet:
+            raise _KmodError('Could not modprobe %s' % name)
+
+        for mod in mods:
             mod.insert(*args, **kwargs)
 
     def rmmod(self, module_name, *args, **kwargs):
