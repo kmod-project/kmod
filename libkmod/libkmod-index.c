@@ -801,9 +801,9 @@ struct index_mm *index_mm_open(struct kmod_ctx *ctx, const char *filename,
 	if ((size_t) st.st_size < sizeof(hdr))
 		goto fail_nommap;
 
-	if ((idx->mm = mmap(0, st.st_size, PROT_READ, MAP_PRIVATE, fd, 0))
+	if ((idx->mm = mmap(NULL, st.st_size, PROT_READ, MAP_PRIVATE, fd, 0))
 							== MAP_FAILED) {
-		ERR(ctx, "mmap(0, %"PRIu64", PROT_READ, %d, MAP_PRIVATE, 0): %m\n",
+		ERR(ctx, "mmap(NULL, %"PRIu64", PROT_READ, %d, MAP_PRIVATE, 0): %m\n",
 							st.st_size, fd);
 		goto fail_nommap;
 	}
