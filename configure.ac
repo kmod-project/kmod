@@ -43,6 +43,9 @@ AC_CHECK_FUNCS_ONCE(__xstat)
 # dietlibc doesn't have st.st_mtim struct member
 AC_CHECK_MEMBERS([struct stat.st_mtim], [], [], [#include <sys/stat.h>])
 
+# Check kernel headers
+AC_CHECK_HEADERS_ONCE([linux/module.h])
+
 
 #####################################################################
 # --with-

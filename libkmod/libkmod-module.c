@@ -33,9 +33,14 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/mman.h>
+#include <sys/syscall.h>
 #include <sys/wait.h>
 #include <string.h>
 #include <fnmatch.h>
+
+#ifdef HAVE_LINUX_MODULE_H
+#include <linux/module.h>
+#endif
 
 #include "libkmod.h"
 #include "libkmod-private.h"
@@ -763,6 +768,14 @@ KMOD_EXPORT int kmod_module_remove_module(struct kmod_module *mod,
 
 extern long init_module(const void *mem, unsigned long len, const char *args);
 
+#ifndef __NR_finit_module
+# define __NR_finit_module -1
+#endif
+static inline int finit_module(int fd, const char *uargs, int flags)
+{
+   return syscall(__NR_finit_module, fd, uargs, flags);
+}
+
 /**
  * kmod_module_insert_module:
  * @mod: kmod module
@@ -803,6 +816,21 @@ KMOD_EXPORT int kmod_module_insert_module(struct kmod_module *mod,
 		return err;
 	}
 
+	if (kmod_file_get_direct(file)) {
+		unsigned int kernel_flags = 0;
+
+#ifdef HAVE_LINUX_MODULE_H
+		if (flags & KMOD_INSERT_FORCE_VERMAGIC)
+			kernel_flags |= MODULE_INIT_IGNORE_VERMAGIC;
+		if (flags & KMOD_INSERT_FORCE_MODVERSION)
+			kernel_flags |= MODULE_INIT_IGNORE_MODVERSIONS;
+#endif
+
+		err = finit_module(kmod_file_get_fd(file), args, kernel_flags);
+		if (err == 0 || errno != ENOSYS)
+			goto init_finished;
+	}
+
 	size = kmod_file_get_size(file);
 	mem = kmod_file_get_contents(file);
 
@@ -829,6 +857,7 @@ KMOD_EXPORT int kmod_module_insert_module(struct kmod_module *mod,
 	}
 
 	err = init_module(mem, size, args);
+init_finished:
 	if (err < 0) {
 		err = -errno;
 		INFO(mod->ctx, "Failed to insert module '%s': %m\n", path);
