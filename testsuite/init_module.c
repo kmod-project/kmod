@@ -28,6 +28,7 @@
 #include <stddef.h>
 #include <string.h>
 #include <stdio.h>
+#include <sys/mman.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -270,6 +271,29 @@ long init_module(void *mem, unsigned long len, const char *args)
 
 	if (err == 0)
 		create_sysfs_files(modname);
+
+	return err;
+}
+
+TS_EXPORT int finit_module(const int fd, const char *args, const int flags);
+
+int finit_module(const int fd, const char *args, const int flags)
+{
+	int err;
+	void *mem;
+	unsigned long len;
+	struct stat st;
+
+	if (fstat(fd, &st) < 0)
+		return -1;
+
+	len = st.st_size;
+	mem = mmap(NULL, len, PROT_READ, MAP_PRIVATE, fd, 0);
+	if (mem == MAP_FAILED)
+		return -1;
+
+	err = init_module(mem, len, args);
+	munmap(mem, len);
 
 	return err;
 }
