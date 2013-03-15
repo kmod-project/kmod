@@ -62,8 +62,14 @@ static void help(void)
 
 static int check_module_inuse(struct kmod_module *mod) {
 	struct kmod_list *holders;
+	int state;
 
-	if (kmod_module_get_initstate(mod) == -ENOENT) {
+	state = kmod_module_get_initstate(mod);
+
+	if (state == KMOD_MODULE_BUILTIN) {
+		ERR("Module %s is builtin.\n", kmod_module_get_name(mod));
+		return -ENOENT;
+	} else if (state < 0) {
 		ERR("Module %s is not currently loaded\n",
 				kmod_module_get_name(mod));
 		return -ENOENT;
