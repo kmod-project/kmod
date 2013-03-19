@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 
 
 char *getline_wrapped(FILE *fp, unsigned int *linenum) __attribute__((nonnull(1)));
