@@ -70,6 +70,31 @@ static DEFINE_TEST(modprobe_show_depends2,
 		.stdout = TESTSUITE_ROOTFS "test-modprobe/show-depends/correct-psmouse.txt",
 	});
 
+
+static __noreturn int modprobe_show_alias_to_none(const struct test *t)
+{
+	const char *progname = ABS_TOP_BUILDDIR "/tools/modprobe";
+	const char *const args[] = {
+		progname,
+		"--show-depends", "--ignore-install", "--quiet", "psmouse",
+		NULL,
+	};
+
+	test_spawn_prog(progname, args);
+	exit(EXIT_FAILURE);
+}
+static DEFINE_TEST(modprobe_show_alias_to_none,
+	.description = "check if modprobe --show-depends doesn't explode with an alias to nothing",
+	.expected_fail = true,
+	.config = {
+		[TC_UNAME_R] = "4.4.4",
+		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-modprobe/alias-to-none",
+	},
+	.output = {
+		.stdout = TESTSUITE_ROOTFS "test-modprobe/show-depends/correct-psmouse.txt",
+	});
+
+
 static __noreturn int modprobe_builtin(const struct test *t)
 {
 	const char *progname = ABS_TOP_BUILDDIR "/tools/modprobe";
@@ -134,9 +159,11 @@ static DEFINE_TEST(modprobe_install_cmd_loop,
 		},
 	);
 
+
 static const struct test *tests[] = {
 	&smodprobe_show_depends,
 	&smodprobe_show_depends2,
+	&smodprobe_show_alias_to_none,
 	&smodprobe_builtin,
 	&smodprobe_softdep_loop,
 	&smodprobe_install_cmd_loop,
