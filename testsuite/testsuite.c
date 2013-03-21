@@ -573,7 +573,7 @@ static inline int test_run_parent(const struct test *t, int fdout[2],
 	} else if (WIFSIGNALED(err)) {
 		ERR("'%s' [%u] terminated by signal %d (%s)\n", t->name, pid,
 				WTERMSIG(err), strsignal(WTERMSIG(err)));
-		return EXIT_FAILURE;
+		return t->expected_fail ? EXIT_SUCCESS : EXIT_FAILURE;
 	}
 
 	if (matchout)
