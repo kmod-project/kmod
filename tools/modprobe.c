@@ -495,8 +495,12 @@ static void print_action(struct kmod_module *m, bool install,
 	path = kmod_module_get_path(m);
 
 	if (path == NULL) {
-		assert(kmod_module_get_initstate(m) == KMOD_MODULE_BUILTIN);
-		printf("builtin %s\n", kmod_module_get_name(m));
+		/*
+		 * Either a builtin module, or an alias, print only for
+		 * builtin
+		 */
+		if (kmod_module_get_initstate(m) == KMOD_MODULE_BUILTIN)
+			printf("builtin %s\n", kmod_module_get_name(m));
 	} else
 		printf("insmod %s %s\n", kmod_module_get_path(m), options);
 }

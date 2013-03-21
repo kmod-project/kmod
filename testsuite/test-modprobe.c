@@ -85,7 +85,6 @@ static __noreturn int modprobe_show_alias_to_none(const struct test *t)
 }
 static DEFINE_TEST(modprobe_show_alias_to_none,
 	.description = "check if modprobe --show-depends doesn't explode with an alias to nothing",
-	.expected_fail = true,
 	.config = {
 		[TC_UNAME_R] = "4.4.4",
 		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-modprobe/alias-to-none",
