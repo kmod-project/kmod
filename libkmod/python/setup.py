@@ -19,6 +19,7 @@ from distutils.core import setup
 from distutils.extension import Extension as _Extension
 import os as _os
 import sys as _sys
+import platform
 
 from Cython.Distutils import build_ext as _build_ext
 
@@ -34,15 +35,16 @@ from version import __version__
 _this_dir = _os.path.dirname(__file__)
 
 ext_modules = []
-for filename in sorted(_os.listdir(package_name)):
-    basename,extension = _os.path.splitext(filename)
-    if extension == '.pyx':
-        ext_modules.append(
-            _Extension(
-                '{0}.{1}'.format(package_name, basename),
-                [_os.path.join(package_name, filename)],
-                libraries=['kmod'],
-                ))
+if platform.system() == "Linux":
+    for filename in sorted(_os.listdir(package_name)):
+        basename,extension = _os.path.splitext(filename)
+        if extension == '.pyx':
+            ext_modules.append(
+                _Extension(
+                    '{0}.{1}'.format(package_name, basename),
+                    [_os.path.join(package_name, filename)],
+                    libraries=['kmod'],
+                    ))
 
 setup(
     name=package_name,

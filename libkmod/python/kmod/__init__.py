@@ -17,4 +17,8 @@
 "Libkmod -- Python interface to kmod API."
 
 from .version import __version__
-from .kmod import Kmod
+try:
+    from .kmod import Kmod
+except ImportError:
+    # this is a non-Linux platform
+    pass
