@@ -768,14 +768,6 @@ KMOD_EXPORT int kmod_module_remove_module(struct kmod_module *mod,
 
 extern long init_module(const void *mem, unsigned long len, const char *args);
 
-#ifndef __NR_finit_module
-# define __NR_finit_module -1
-#endif
-static inline int finit_module(int fd, const char *uargs, int flags)
-{
-   return syscall(__NR_finit_module, fd, uargs, flags);
-}
-
 /**
  * kmod_module_insert_module:
  * @mod: kmod module

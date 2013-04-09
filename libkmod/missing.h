@@ -1,5 +1,8 @@
 #pragma once
 
+#include <unistd.h>
+#include <sys/syscall.h>
+
 #ifdef HAVE_LINUX_MODULE_H
 #include <linux/module.h>
 #endif
@@ -10,4 +13,15 @@
 
 #ifndef MODULE_INIT_IGNORE_VERMAGIC
 # define MODULE_INIT_IGNORE_VERMAGIC 2
+#endif
+
+#ifndef __NR_finit_module
+# define __NR_finit_module -1
+#endif
+
+#ifndef HAVE_FINIT_MODULE
+static inline int finit_module(int fd, const char *uargs, int flags)
+{
+	return syscall(__NR_finit_module, fd, uargs, flags);
+}
 #endif

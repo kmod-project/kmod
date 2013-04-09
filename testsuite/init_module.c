@@ -16,6 +16,10 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
+#ifndef HAVE_FINIT_MODULE
+#define HAVE_FINIT_MODULE 1
+#endif
+
 #include <assert.h>
 #include <elf.h>
 #include <errno.h>
