@@ -819,12 +819,10 @@ KMOD_EXPORT int kmod_module_insert_module(struct kmod_module *mod,
 	if (kmod_file_get_direct(file)) {
 		unsigned int kernel_flags = 0;
 
-#ifdef HAVE_LINUX_MODULE_H
 		if (flags & KMOD_INSERT_FORCE_VERMAGIC)
 			kernel_flags |= MODULE_INIT_IGNORE_VERMAGIC;
 		if (flags & KMOD_INSERT_FORCE_MODVERSION)
 			kernel_flags |= MODULE_INIT_IGNORE_MODVERSIONS;
-#endif
 
 		err = finit_module(kmod_file_get_fd(file), args, kernel_flags);
 		if (err == 0 || errno != ENOSYS)

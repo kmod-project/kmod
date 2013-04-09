@@ -55,6 +55,7 @@ libkmod_libkmod_la_SOURCES =\
 	libkmod/libkmod.h \
 	libkmod/libkmod-private.h \
 	libkmod/macro.h \
+	libkmod/missing.h \
 	libkmod/libkmod.c \
 	libkmod/libkmod-list.c \
 	libkmod/libkmod-config.c \

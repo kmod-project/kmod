@@ -5,6 +5,7 @@
 #include <syslog.h>
 #include <limits.h>
 
+#include "missing.h"
 #include "macro.h"
 #include "libkmod.h"
 
