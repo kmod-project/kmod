@@ -309,11 +309,12 @@ TS_EXPORT long int syscall(long int __sysno, ...)
 	va_list ap;
 	long ret;
 
-	switch (__sysno) {
-	case -1:
-		errno = -ENOSYS;
+	if (__sysno == -1) {
+		errno = ENOSYS;
 		return -1;
-	case __NR_finit_module: {
+	}
+
+	if (__sysno == __NR_finit_module) {
 		const char *args;
 		int flags;
 		int fd;
@@ -328,7 +329,6 @@ TS_EXPORT long int syscall(long int __sysno, ...)
 
 		va_end(ap);
 		return ret;
-	}
 	}
 
 	/*
