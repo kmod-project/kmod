@@ -1,3 +1,25 @@
+kmod 13
+=======
+
+- Bug fixes:
+	- Add the long option --symbol-prefix option to depmod (it was absent)
+	  and fix its behavior
+	- Don't abort if there's a bogus line in configuration file like "alias
+	  psmouse off". Some distros are carrying this since the days of
+	  modutils
+
+- New features:
+	- Add support for finit_module(2). If the module is load straight from
+	  the disk and without compression we use finit_module() syscall when
+	  available, falling back to init_module() otherwise
+	- kmod_module_get_info() also returns the signature if the module is
+	  signed and modinfo uses it
+	- Use secure_getenv if available
+	- rmmod understands builtin modules, just like modprobe does
+	- Improve compatibility with musl-libc
+	- Test cases exit with success when receiving a signal if they are
+	  xfail tests
+
 kmod 12
 =======
 
