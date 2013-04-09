@@ -1,8 +1,16 @@
 Features:
 =========
 
+* Implement actions in kmod tool like 'insert', 'remove', 'info', etc
+
 * testsuite:
    - when fake delete_module() succeeds, remove its entry from /sys/module
+
+* Stop using system() inside the library and use fork + exec instead
+
+* config: configs that do not need to be matched by fnmatch() could be using a
+  vector instead of a list. This way we could search in it by calling
+  bsearch().
 
 * review API, maybe unify all of these getters:
    - kmod_module_version_get_symbol()
@@ -15,16 +23,8 @@ Features:
    - kmod_module_symbols_free_list()
    - kmod_module_dependency_symbols_free_list()
 
-* Stop using system() inside the library and use fork + exec instead
-
-* config: configs that do not need to be matched by fnmatch() could be using a
-  vector instead of a list. This way we could search in it by calling
-  bsearch().
-
 * index: drop the "open(), seek(), read()" implementation and use another one
   with mmap(). When lookup() is called and the file is not mmaped, mmap it.
-
-* Implement actions in kmod tool like 'insert', 'remove', 'info', etc
 
 * Finish removal of "rmmod -w" when it's gone from kernel.
 
@@ -37,11 +37,10 @@ Things to be added/removed in kernel (check what is really needed):
 	- readdir() in /sys/modules: dir without a 'initstate' file means the
 	  module is builtin.
 
-* module's size should be available under /sys
-	- DONE in 3.3: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux.git;a=commit;h=cca3e707301862ca9b9327e6a732463982f8cd1b
-
 * kill /proc/modules ?
 	- Unlikely, given other tools might depend on it
+
+
 
 Things that are different from module-init-tools on purpose (!TODO)
 ===================================================================
