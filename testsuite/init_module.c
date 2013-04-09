@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2012-2013  ProFUSION embedded systems
+ * Copyright (C) 2012-2013  Lucas De Marchi <lucas.de.marchi@gmail.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -35,6 +36,7 @@
 #include <sys/mman.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/syscall.h>
 #include <unistd.h>
 
 /* kmod_elf_get_section() is not exported, we need the private header */
@@ -300,6 +302,40 @@ int finit_module(const int fd, const char *args, const int flags)
 	munmap(mem, len);
 
 	return err;
+}
+
+TS_EXPORT long int syscall(long int __sysno, ...)
+{
+	va_list ap;
+	long ret;
+
+	switch (__sysno) {
+	case -1:
+		errno = -ENOSYS;
+		return -1;
+	case __NR_finit_module: {
+		const char *args;
+		int flags;
+		int fd;
+
+		va_start(ap, __sysno);
+
+		fd = va_arg(ap, int);
+		args = va_arg(ap, const char *);
+		flags = va_arg(ap, int);
+
+		ret = finit_module(fd, args, flags);
+
+		va_end(ap);
+		return ret;
+	}
+	}
+
+	/*
+	 * FIXME: no way to call the libc function - let's hope there are no
+	 * other users.
+	 */
+	abort();
 }
 
 /* the test is going away anyway, but lets keep valgrind happy */
