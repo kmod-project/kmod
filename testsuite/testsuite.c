@@ -440,7 +440,7 @@ static inline int safe_read(int fd, void *buf, size_t count)
 
 	while (1) {
 		r = read(fd, buf, count);
-		if (r == -1 && errno == -EINTR)
+		if (r == -1 && errno == EINTR)
 			continue;
 		break;
 	}
