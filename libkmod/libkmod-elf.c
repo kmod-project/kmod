@@ -280,10 +280,10 @@ struct kmod_elf *kmod_elf_new(const void *memory, off_t size)
 	size_t hdr_size, shdr_size, min_size;
 	int class;
 
-	assert(sizeof(uint16_t) == sizeof(Elf32_Half));
-	assert(sizeof(uint16_t) == sizeof(Elf64_Half));
-	assert(sizeof(uint32_t) == sizeof(Elf32_Word));
-	assert(sizeof(uint32_t) == sizeof(Elf64_Word));
+	assert_cc(sizeof(uint16_t) == sizeof(Elf32_Half));
+	assert_cc(sizeof(uint16_t) == sizeof(Elf64_Half));
+	assert_cc(sizeof(uint32_t) == sizeof(Elf32_Word));
+	assert_cc(sizeof(uint32_t) == sizeof(Elf64_Word));
 
 	class = elf_identify(memory, size);
 	if (class < 0) {
@@ -513,7 +513,7 @@ int kmod_elf_get_modversions(const struct kmod_elf *elf, struct kmod_modversion 
 	int i, count, err;
 #define MODVERSION_SEC_SIZE (sizeof(struct kmod_modversion64))
 
-	assert(sizeof(struct kmod_modversion64) ==
+	assert_cc(sizeof(struct kmod_modversion64) ==
 					sizeof(struct kmod_modversion32));
 
 	if (elf->class == KMOD_ELF_32)
