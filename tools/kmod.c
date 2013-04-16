@@ -37,6 +37,7 @@ static const struct kmod_cmd kmod_cmd_help;
 static const struct kmod_cmd *kmod_cmds[] = {
 	&kmod_cmd_help,
 	&kmod_cmd_list,
+	&kmod_cmd_static_nodes,
 };
 
 static const struct kmod_cmd *kmod_compat_cmds[] = {

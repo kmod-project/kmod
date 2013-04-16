@@ -35,5 +35,6 @@ extern const struct kmod_cmd kmod_cmd_compat_modprobe;
 extern const struct kmod_cmd kmod_cmd_compat_depmod;
 
 extern const struct kmod_cmd kmod_cmd_list;
+extern const struct kmod_cmd kmod_cmd_static_nodes;
 
 #include "log.h"
