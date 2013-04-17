@@ -203,10 +203,11 @@ static int do_static_nodes(int argc, char *argv[])
                 ret = EXIT_FAILURE;
                 goto finish;
         }
+
         snprintf(modules, sizeof(modules), "/lib/modules/%s/modules.devname", kernel.release);
         in = fopen(modules, "re");
-        if (in == NULL && errno != ENOENT) {
-                fprintf(stderr, "Error: could not open /lib/modules/%s/modules.devname!\n", kernel.release);
+        if (in == NULL) {
+                fprintf(stderr, "Error: could not open /lib/modules/%s/modules.devname - %m\n", kernel.release);
                 ret = EXIT_FAILURE;
                 goto finish;
         }
