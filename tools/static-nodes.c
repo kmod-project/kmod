@@ -84,13 +84,21 @@ static const struct static_nodes_format static_nodes_format_human = {
 
 static int write_tmpfiles(FILE *out, char modname[], char devname[], char type, unsigned int maj, unsigned int min)
 {
+        const char *dir;
         int ret;
 
+        dir = strrchr(devname, '/');
+        if (dir) {
+                ret = fprintf(out, "d /dev/%.*s 0755 - - -\n", (int)(dir - devname), devname);
+                if (ret < 0)
+                        return EXIT_FAILURE;
+        }
+
         ret = fprintf(out, "%c /dev/%s 0600 - - - %u:%u\n", type, devname, maj, min);
-        if (ret >= 0)
-                return EXIT_SUCCESS;
-        else
+        if (ret < 0)
                 return EXIT_FAILURE;
+
+        return EXIT_SUCCESS;
 }
 
 static const struct static_nodes_format static_nodes_format_tmpfiles = {
