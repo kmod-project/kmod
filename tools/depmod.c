@@ -101,6 +101,7 @@ static void help(void)
 		program_invocation_short_name);
 }
 
+_printf_format_(1, 2)
 static inline void _show(const char *fmt, ...)
 {
 	va_list args;
@@ -1256,7 +1257,7 @@ static int depmod_modules_search_dir(struct depmod *depmod, DIR *d, size_t basel
 		namelen = strlen(name);
 		if (baselen + namelen + 2 >= PATH_MAX) {
 			path[baselen] = '\0';
-			ERR("path is too long %s%s %zd\n", path, name);
+			ERR("path is too long %s%s\n", path, name);
 			continue;
 		}
 		memcpy(path + baselen, name, namelen + 1);
@@ -1504,7 +1505,7 @@ load_info:
 		mod->kmod = NULL;
 	}
 
-	DBG("loaded symbols (%zd modules, %zd symbols)\n",
+	DBG("loaded symbols (%zd modules, %u symbols)\n",
 	    depmod->modules.count, hash_get_count(depmod->symbols));
 
 	return 0;
@@ -1550,7 +1551,7 @@ static int depmod_load_dependencies(struct depmod *depmod)
 {
 	struct mod **itr, **itr_end;
 
-	DBG("load dependencies (%zd modules, %zd symbols)\n",
+	DBG("load dependencies (%zd modules, %u symbols)\n",
 	    depmod->modules.count, hash_get_count(depmod->symbols));
 
 	itr = (struct mod **)depmod->modules.array;
@@ -1566,7 +1567,7 @@ static int depmod_load_dependencies(struct depmod *depmod)
 		depmod_load_module_dependencies(depmod, mod);
 	}
 
-	DBG("loaded dependencies (%zd modules, %zd symbols)\n",
+	DBG("loaded dependencies (%zd modules, %u symbols)\n",
 	    depmod->modules.count, hash_get_count(depmod->symbols));
 
 	return 0;
@@ -1609,7 +1610,7 @@ static int depmod_calculate_dependencies(struct depmod *depmod)
 	roots = users + n_mods;
 	sorted = roots + n_mods;
 
-	DBG("calculate dependencies and ordering (%zd modules)\n", n_mods);
+	DBG("calculate dependencies and ordering (%hu modules)\n", n_mods);
 
 	assert(depmod->modules.count < UINT16_MAX);
 
@@ -1650,7 +1651,7 @@ static int depmod_calculate_dependencies(struct depmod *depmod)
 	}
 
 	if (n_sorted < n_mods) {
-		WRN("found %hu modules in dependency cycles!\n",
+		WRN("found %u modules in dependency cycles!\n",
 		    n_mods - n_sorted);
 		for (i = 0; i < n_mods; i++) {
 			struct mod *m;
@@ -1666,7 +1667,7 @@ static int depmod_calculate_dependencies(struct depmod *depmod)
 
 	depmod_sort_dependencies(depmod);
 
-	DBG("calculated dependencies and ordering (%u loops, %zd modules)\n",
+	DBG("calculated dependencies and ordering (%u loops, %hu modules)\n",
 	    depmod->dep_loops, n_mods);
 
 	free(users);
@@ -2356,7 +2357,7 @@ static int depfile_up_to_date_dir(DIR *d, time_t mtime, size_t baselen, char *pa
 		namelen = strlen(name);
 		if (baselen + namelen + 2 >= PATH_MAX) {
 			path[baselen] = '\0';
-			ERR("path is too long %s%s %zd\n", path, name);
+			ERR("path is too long %s%s\n", path, name);
 			continue;
 		}
 

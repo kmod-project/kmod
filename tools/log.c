@@ -60,6 +60,7 @@ static _always_inline_ const char *prio_to_str(int prio)
 	return prioname;
 }
 
+_printf_format_(6, 0)
 static void log_kmod(void *data, int priority, const char *file, int line,
 		     const char *fn, const char *format, va_list args)
 {

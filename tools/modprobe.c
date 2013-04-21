@@ -142,6 +142,7 @@ static void help(void)
 		program_invocation_short_name, program_invocation_short_name);
 }
 
+_printf_format_(1, 2)
 static inline void _show(const char *fmt, ...)
 {
 	va_list args;

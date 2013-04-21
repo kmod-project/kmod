@@ -26,7 +26,7 @@
 
 void log_open(bool use_syslog);
 void log_close(void);
-void log_printf(int prio, const char *fmt, ...);
+void log_printf(int prio, const char *fmt, ...) _printf_format_(2, 3);
 #define CRIT(...) log_printf(LOG_CRIT, __VA_ARGS__)
 #define ERR(...) log_printf(LOG_ERR, __VA_ARGS__)
 #define WRN(...) log_printf(LOG_WARNING, __VA_ARGS__)

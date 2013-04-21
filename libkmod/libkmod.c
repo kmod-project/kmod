@@ -99,6 +99,7 @@ void kmod_log(const struct kmod_ctx *ctx,
 	va_end(args);
 }
 
+_printf_format_(6, 0)
 static void log_filep(void *data,
 			int priority, const char *file, int line,
 			const char *fn, const char *format, va_list args)
