@@ -15,10 +15,12 @@ them is actually an error.  In certain circumstances one can ignore the 80
 character per line limit.  This is generally only allowed if the alternative
 would make the code even less readable.
 
-Besides the kernel coding style above, kmod coding style is havily based on
+Besides the kernel coding style above, kmod coding style is heavily based on
 oFono's and BlueZ's. Below some basic rules:
 
-1) Wrap line at 80 char limit. There are a few exceptions:
+1) Wrap line at 80 char limit.
+
+There are a few exceptions:
 	- Headers may or may not wrap
 	- If it's a string that is hitting the limit, it's preferred not to break
 	  in order to be able to grep for that string. E.g:
@@ -28,6 +30,9 @@ oFono's and BlueZ's. Below some basic rules:
 	- If code would become unreadable if line is wrapped
 	- If there's only one argument to the function, don't put it alone in a
 	  new line.
+
+Align the wrapped line either with tabs (BlueZ, oFono, etc) or tab + spaces
+(kernel), at your discretion. Kernel's is preferred.
 
 2) It's better to return/exit early in a function than having a really long
    "if (...) { }". Example:

@@ -2100,7 +2100,7 @@ static struct kmod_module_info *kmod_module_info_new(const char *key, size_t key
 		return NULL;
 
 	info->key = (char *)info + sizeof(struct kmod_module_info)
-		+ valuelen + 1;
+		    + valuelen + 1;
 	memcpy(info->key, key, keylen);
 	info->key[keylen] = '\0';
 	memcpy(info->value, value, valuelen);
@@ -2177,6 +2177,7 @@ KMOD_EXPORT int kmod_module_get_info(const struct kmod_module *mod, struct kmod_
 		if (value == NULL) {
 			keylen = strlen(key);
 			valuelen = 0;
+			value = key;
 		} else {
 			keylen = value - key;
 			value++;
