@@ -1839,7 +1839,7 @@ KMOD_EXPORT struct kmod_list *kmod_module_get_holders(const struct kmod_module *
 	struct kmod_list *list = NULL;
 	DIR *d;
 
-	if (mod == NULL)
+	if (mod == NULL || mod->ctx == NULL)
 		return NULL;
 
 	snprintf(dname, sizeof(dname), "/sys/module/%s/holders", mod->name);
