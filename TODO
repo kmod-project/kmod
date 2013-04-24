@@ -1,6 +1,8 @@
 Features:
 =========
 
+* Protect index against OOM
+
 * Implement actions in kmod tool like 'insert', 'remove', 'info', etc
 
 * testsuite:

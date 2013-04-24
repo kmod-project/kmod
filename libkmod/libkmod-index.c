@@ -432,9 +432,12 @@ void index_dump(struct index_file *in, int fd, const char *prefix)
 	struct index_node_f *root;
 	struct buffer buf;
 
+	root = index_readroot(in);
+	if (root == NULL)
+		return;
+
 	buf_init(&buf);
 	buf_pushchars(&buf, prefix);
-	root = index_readroot(in);
 	index_dump_node(root, &buf, fd);
 	buf_release(&buf);
 }
@@ -902,9 +905,12 @@ void index_mm_dump(struct index_mm *idx, int fd, const char *prefix)
 	struct index_mm_node *root;
 	struct buffer buf;
 
+	root = index_mm_readroot(idx);
+	if (root == NULL)
+		return;
+
 	buf_init(&buf);
 	buf_pushchars(&buf, prefix);
-	root = index_mm_readroot(idx);
 	index_mm_dump_node(root, &buf, fd);
 	buf_release(&buf);
 }
