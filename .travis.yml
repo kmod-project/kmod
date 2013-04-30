@@ -1,0 +1,17 @@
+language: c
+compiler:
+  - gcc
+  - clang
+before_install:
+  - sudo apt-get update
+  - sudo apt-get install -qq liblzma-dev
+  - sudo apt-get install -qq zlib1g-dev
+  - sudo apt-get install -qq xsltproc docbook-xsl
+# Change this to your needs
+script: ./bootstrap-configure && make CFLAGS="-Wno-error" && make CFLAGS="-Wno-error" check
+notifications:
+  irc:
+    channels:
+      - "irc.freenode.org#kmod"
+    template:
+      - "%{commit}: %{author} - %{message}"
