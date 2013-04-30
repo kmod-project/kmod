@@ -97,8 +97,8 @@ void kmod_set_modules_visited(struct kmod_ctx *ctx, bool visited) __attribute__(
 char *kmod_search_moddep(struct kmod_ctx *ctx, const char *name) __attribute__((nonnull(1,2)));
 
 struct kmod_module *kmod_pool_get_module(struct kmod_ctx *ctx, const char *key) __attribute__((nonnull(1,2)));
-void kmod_pool_add_module(struct kmod_ctx *ctx, struct kmod_module *mod, const char *key) __attribute__((nonnull(1,2, 3)));
-void kmod_pool_del_module(struct kmod_ctx *ctx, struct kmod_module *mod, const char *key) __attribute__((nonnull(1,2, 3)));
+void kmod_pool_add_module(struct kmod_ctx *ctx, struct kmod_module *mod, const char *key) __attribute__((nonnull(1, 2, 3)));
+void kmod_pool_del_module(struct kmod_ctx *ctx, struct kmod_module *mod, const char *key) __attribute__((nonnull(1, 2, 3)));
 
 const struct kmod_config *kmod_get_config(const struct kmod_ctx *ctx) __attribute__((nonnull(1)));
 
