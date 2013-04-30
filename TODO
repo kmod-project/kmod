@@ -1,6 +1,12 @@
 Features:
 =========
 
+* Add command for signing modules
+   - There is a script to sign modules in kernel tree, but we should be able to
+   sign modules by ourselves
+
+* Stop using NOFAIL() and fatal()
+
 * Protect index against OOM
 
 * Implement actions in kmod tool like 'insert', 'remove', 'info', etc
