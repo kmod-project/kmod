@@ -20,8 +20,15 @@
 #endif
 
 #ifndef HAVE_FINIT_MODULE
+#include <errno.h>
+
 static inline int finit_module(int fd, const char *uargs, int flags)
 {
+	if (__NR_finit_module == -1) {
+		errno = ENOSYS;
+		return -1;
+	}
+
 	return syscall(__NR_finit_module, fd, uargs, flags);
 }
 #endif
