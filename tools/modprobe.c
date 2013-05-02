@@ -386,7 +386,7 @@ static int rmmod_do_module(struct kmod_module *mod, bool do_dependencies)
 			goto error;
 	}
 
-	if (!ignore_loaded) {
+	if (!ignore_loaded && !cmd) {
 		int usage = kmod_module_get_refcnt(mod);
 
 		if (usage > 0) {
