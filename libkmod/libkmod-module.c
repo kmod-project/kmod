@@ -570,8 +570,7 @@ fail:
  * Drop a reference of each kmod module in @list and releases the resources
  * taken by the list itself.
  *
- * Returns: NULL if @mod is NULL or if the module was released. Otherwise it
- * returns the passed @mod with its refcount decremented.
+ * Returns: 0
  */
 KMOD_EXPORT int kmod_module_unref_list(struct kmod_list *list)
 {
@@ -629,9 +628,8 @@ static const struct kmod_list *module_get_dependencies_noref(const struct kmod_m
  * The result is cached in @mod, so subsequent calls to this function will
  * return the already searched list of modules.
  *
- * Returns: NULL on failure or if there are any dependencies. Otherwise it
- * returns a list of kmod modules that can be released by calling
- * kmod_module_unref_list().
+ * Returns: NULL on failure. Otherwise it returns a list of kmod modules
+ * that can be released by calling kmod_module_unref_list().
  */
 KMOD_EXPORT struct kmod_list *kmod_module_get_dependencies(const struct kmod_module *mod)
 {
@@ -1564,7 +1562,7 @@ void kmod_module_set_remove_commands(struct kmod_module *mod, const char *cmd)
  * Create a new list of kmod modules with all modules currently loaded in
  * kernel. It uses /proc/modules to get the names of loaded modules and to
  * create kmod modules by calling kmod_module_new_from_name() in each of them.
- * They are put are put in @list in no particular order.
+ * They are put in @list in no particular order.
  *
  * The initial refcount is 1, and needs to be decremented to release the
  * resources of the kmod_module. The returned @list must be released by
@@ -2381,7 +2379,7 @@ list_error:
 }
 
 /**
- * kmod_module_versions_get_symbol:
+ * kmod_module_version_get_symbol:
  * @entry: a list entry representing a kmod module versions
  *
  * Get the symbol of a kmod module versions.

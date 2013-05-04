@@ -219,8 +219,8 @@ static char *get_kernel_release(const char *dirname)
  * kmod_new:
  * @dirname: what to consider as linux module's directory, if NULL
  *           defaults to /lib/modules/`uname -r`. If it's relative,
- *           it's treated as relative to current the current working
- *           directory. Otherwise, give an absolute dirname.
+ *           it's treated as relative to the current working directory.
+ *           Otherwise, give an absolute dirname.
  * @config_paths: ordered array of paths (directories or files) where
  *                to load from user-defined configuration parameters such as
  *                alias, blacklists, commands (install, remove). If
@@ -307,6 +307,8 @@ KMOD_EXPORT struct kmod_ctx *kmod_ref(struct kmod_ctx *ctx)
  *
  * Drop a reference of the kmod library context. If the refcount
  * reaches zero, the resources of the context will be released.
+ *
+ * Returns: the passed kmod library context or NULL if it's freed
  */
 KMOD_EXPORT struct kmod_ctx *kmod_unref(struct kmod_ctx *ctx)
 {
