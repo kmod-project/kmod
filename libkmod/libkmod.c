@@ -856,7 +856,11 @@ KMOD_EXPORT void kmod_unload_resources(struct kmod_ctx *ctx)
 /**
  * kmod_dump_index:
  * @ctx: kmod library context
- * @type: index to dump
+ * @type: index to dump, valid indexes are
+ * KMOD_INDEX_MODULES_DEP: index of module dependencies;
+ * KMOD_INDEX_MODULES_ALIAS: index of module aliases;
+ * KMOD_INDEX_MODULES_SYMBOL: index of symbol aliases;
+ * KMOD_INDEX_MODULES_BUILTIN: index of builtin module.
  * @fd: file descriptor to dump index to
  *
  * Dump index to file descriptor. Note that this function doesn't use stdio.h
