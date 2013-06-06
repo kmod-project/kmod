@@ -18,6 +18,10 @@ AM_SILENT_RULES([yes])
 LT_INIT([disable-static pic-only])
 AC_PREFIX_DEFAULT([/usr])
 
+AS_IF([test "x$enable_static" = "xyes"],
+      [AC_MSG_ERROR([--enable-static is not supported by kmod])])
+
+
 #####################################################################
 # Program checks and configurations
 #####################################################################
