@@ -136,7 +136,7 @@ static void help(void)
 	       "kmod static-nodes outputs the static-node information of the currently running kernel.\n"
 	       "\n"
 	       "Options:\n"
-	       "\t-f, --format=FORMAT  use a machine-readable format\n"
+	       "\t-f, --format=FORMAT  choose format to use: see \"Formats\"\n"
 	       "\t-o, --output=FILE    write output to file\n"
 	       "\t-h, --help           show this help\n"
 	       "\n"
