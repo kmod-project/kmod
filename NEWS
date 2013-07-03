@@ -1,3 +1,22 @@
+kmod 14
+=======
+
+- Bug fixes:
+	- Fix some format strings
+	- Protect against NULL being passed around to index
+	- Avoid calling syscall() with -1 when finit_module() is not available,
+	  since this doesn't always work
+	- Fix not being able to remove alias due to checking the module's
+	  refcount
+	- Minor fixes and refactors
+
+- New features:
+	- Improve libkmod documentation, particularly on how flags are dealt
+	  with.
+	- Remove ability to build a static libkmod
+	- Add static-nodes command to kmod that parses modules.devname
+	  generating output in useful formats
+
 kmod 13
 =======
 
