@@ -104,8 +104,8 @@ uninstall-hook:
 if BUILD_TOOLS
 bin_PROGRAMS = tools/kmod
 
-noinst_SCRIPTS = tools/insmod tools/rmmod tools/lsmod \
-		 tools/modprobe tools/modinfo tools/depmod
+noinst_SCRIPTS = tools/test/insmod tools/test/rmmod tools/test/lsmod \
+		 tools/test/modprobe tools/test/modinfo tools/test/depmod
 
 tools_kmod_SOURCES = tools/kmod.c tools/kmod.h tools/lsmod.c \
 		     tools/rmmod.c tools/insmod.c \
@@ -115,12 +115,12 @@ tools_kmod_SOURCES = tools/kmod.c tools/kmod.h tools/lsmod.c \
 tools_kmod_LDADD = libkmod/libkmod-util.la \
 		   libkmod/libkmod.la
 
-noinst_PROGRAMS = tools/kmod-nolib
-tools_kmod_nolib_SOURCES = $(tools_kmod_SOURCES)
-tools_kmod_nolib_LDADD = libkmod/libkmod-util.la \
+noinst_PROGRAMS = tools/test/kmod
+tools_test_kmod_SOURCES = $(tools_kmod_SOURCES)
+tools_test_kmod_LDADD = libkmod/libkmod-util.la \
 			 libkmod/libkmod-private.la
 
-${noinst_SCRIPTS}: tools/kmod-nolib
+${noinst_SCRIPTS}: tools/test/kmod
 	$(AM_V_GEN) ($(RM) $@; \
 		$(LN_S) $(notdir $<) $@)
 endif
