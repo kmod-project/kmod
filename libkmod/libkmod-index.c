@@ -27,7 +27,7 @@
 #include <assert.h>
 #include <inttypes.h>
 
-#include "libkmod-private.h"
+#include "libkmod-internal.h"
 #include "libkmod-index.h"
 #include "macro.h"
 

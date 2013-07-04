@@ -40,7 +40,7 @@
 #include <unistd.h>
 
 /* kmod_elf_get_section() is not exported, we need the private header */
-#include <libkmod-private.h>
+#include <libkmod-internal.h>
 
 /* FIXME: hack, change name so we don't clash */
 #undef ERR

@@ -53,7 +53,7 @@ lib_LTLIBRARIES = libkmod/libkmod.la
 
 libkmod_libkmod_la_SOURCES =\
 	libkmod/libkmod.h \
-	libkmod/libkmod-private.h \
+	libkmod/libkmod-internal.h \
 	libkmod/macro.h \
 	libkmod/missing.h \
 	libkmod/libkmod.c \
@@ -77,12 +77,12 @@ libkmod_libkmod_la_DEPENDENCIES = libkmod/libkmod-util.la \
 libkmod_libkmod_la_LIBADD = libkmod/libkmod-util.la \
 			    ${liblzma_LIBS} ${zlib_LIBS}
 
-noinst_LTLIBRARIES += libkmod/libkmod-private.la
-libkmod_libkmod_private_la_SOURCES = $(libkmod_libkmod_la_SOURCES)
-libkmod_libkmod_private_la_LDFLAGS = $(AM_LDFLAGS) \
+noinst_LTLIBRARIES += libkmod/libkmod-internal.la
+libkmod_libkmod_internal_la_SOURCES = $(libkmod_libkmod_la_SOURCES)
+libkmod_libkmod_internal_la_LDFLAGS = $(AM_LDFLAGS) \
 	-Wl,--version-script=$(top_srcdir)/libkmod/libkmod.sym
-libkmod_libkmod_private_la_DEPENDENCIES  = $(libkmod_libkmod_la_DEPENDENCIES)
-libkmod_libkmod_private_la_LIBADD = $(libkmod_libkmod_la_LIBADD)
+libkmod_libkmod_internal_la_DEPENDENCIES  = $(libkmod_libkmod_la_DEPENDENCIES)
+libkmod_libkmod_internal_la_LIBADD = $(libkmod_libkmod_la_LIBADD)
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libkmod/libkmod.pc
@@ -113,7 +113,7 @@ tools_kmod_SOURCES = tools/kmod.c tools/kmod.h tools/lsmod.c \
 		     tools/depmod.c tools/log.h tools/log.c \
 		     tools/static-nodes.c
 tools_kmod_LDADD = libkmod/libkmod-util.la \
-		   libkmod/libkmod-private.la
+		   libkmod/libkmod-internal.la
 
 ${noinst_SCRIPTS}: tools/kmod
 	$(AM_V_GEN) ($(RM) $@; \
@@ -156,12 +156,12 @@ testsuite_init_module_la_LDFLAGS = $(TESTSUITE_OVERRIDE_LIBS_LDFLAGS)
 testsuite_init_module_la_SOURCES = testsuite/init_module.c \
 				   testsuite/mkdir.c testsuite/mkdir.h \
 				   testsuite/stripped-module.h
-testsuite_init_module_la_LIBADD = libkmod/libkmod-private.la
+testsuite_init_module_la_LIBADD = libkmod/libkmod-internal.la
 
 TESTSUITE_CPPFLAGS = $(AM_CPPFLAGS) \
 		     -DTESTSUITE_ROOTFS=\"$(abs_top_builddir)/$(ROOTFS)/\" \
 		     -DABS_TOP_BUILDDIR=\"$(abs_top_builddir)\"
-TESTSUITE_LDADD = testsuite/libtestsuite.la libkmod/libkmod-private.la \
+TESTSUITE_LDADD = testsuite/libtestsuite.la libkmod/libkmod-internal.la \
 		  libkmod/libkmod-util.la
 
 check_LTLIBRARIES += testsuite/libtestsuite.la

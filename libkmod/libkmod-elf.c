@@ -25,7 +25,7 @@
 #include <errno.h>
 
 #include "libkmod.h"
-#include "libkmod-private.h"
+#include "libkmod-internal.h"
 
 enum kmod_elf_class {
 	KMOD_ELF_32 = (1 << 1),

@@ -33,7 +33,7 @@
 #include <sys/stat.h>
 
 #include "libkmod.h"
-#include "libkmod-private.h"
+#include "libkmod-internal.h"
 #include "libkmod-index.h"
 
 #define KMOD_HASH_SIZE (256)

@@ -29,7 +29,7 @@
 #include <ctype.h>
 
 #include "libkmod.h"
-#include "libkmod-private.h"
+#include "libkmod-internal.h"
 
 /*
  * Read one logical line from a configuration file.

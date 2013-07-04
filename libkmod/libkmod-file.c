@@ -29,7 +29,7 @@
 #include <unistd.h>
 
 #include "libkmod.h"
-#include "libkmod-private.h"
+#include "libkmod-internal.h"
 
 #ifdef ENABLE_XZ
 #include <lzma.h>

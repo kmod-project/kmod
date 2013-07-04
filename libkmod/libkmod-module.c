@@ -43,7 +43,7 @@
 #endif
 
 #include "libkmod.h"
-#include "libkmod-private.h"
+#include "libkmod-internal.h"
 
 /**
  * SECTION:libkmod-module

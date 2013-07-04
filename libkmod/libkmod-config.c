@@ -31,7 +31,7 @@
 #include <dirent.h>
 
 #include "libkmod.h"
-#include "libkmod-private.h"
+#include "libkmod-internal.h"
 
 struct kmod_alias {
 	char *name;
