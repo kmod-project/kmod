@@ -31,7 +31,7 @@
 #define MODULES_ORDER_LIB_MODULES MODULES_ORDER_ROOTFS "/lib/modules/" MODULES_ORDER_UNAME
 static __noreturn int depmod_modules_order_for_compressed(const struct test *t)
 {
-	const char *progname = ABS_TOP_BUILDDIR "/tools/test/depmod";
+	const char *progname = ABS_TOP_BUILDDIR "/tools/depmod";
 	const char *const args[] = {
 		progname,
 		NULL,
