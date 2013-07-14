@@ -154,12 +154,11 @@ static void help(void)
 static int do_static_nodes(int argc, char *argv[])
 {
 	struct utsname kernel;
-	char modules[PATH_MAX];
+	char modules[PATH_MAX], buf[4096];
 	const char *output = "/dev/stdout";
 	FILE *in = NULL, *out = NULL;
 	const struct static_nodes_format *format = &static_nodes_format_human;
-	char buf[4096];
-	int ret = EXIT_SUCCESS;
+	int r, ret = EXIT_SUCCESS;
 
 	for (;;) {
 		int c, idx = 0, valid;
@@ -224,6 +223,13 @@ static int do_static_nodes(int argc, char *argv[])
 				kernel.release);
 			ret = EXIT_FAILURE;
 		}
+		goto finish;
+	}
+
+	r = mkdir_parents(output, 0755);
+	if (r < 0) {
+		fprintf(stderr, "Error: could not create parent directory for %s - %m.\n", output);
+		ret = EXIT_FAILURE;
 		goto finish;
 	}
 
