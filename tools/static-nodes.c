@@ -155,7 +155,8 @@ static int do_static_nodes(int argc, char *argv[])
 {
 	struct utsname kernel;
 	char modules[PATH_MAX];
-	FILE *in = NULL, *out = stdout;
+	const char *output = "/dev/stdout";
+	FILE *in = NULL, *out = NULL;
 	const struct static_nodes_format *format = &static_nodes_format_human;
 	char buf[4096];
 	int ret = EXIT_SUCCESS;
@@ -170,13 +171,7 @@ static int do_static_nodes(int argc, char *argv[])
 		}
 		switch (c) {
 		case 'o':
-			out = fopen(optarg, "we");
-			if (out == NULL) {
-				fprintf(stderr, "Error: could not create %s!\n",
-					optarg);
-				ret = EXIT_FAILURE;
-				goto finish;
-			}
+			output = optarg;
 			break;
 		case 'f':
 			valid = 0;
@@ -217,12 +212,24 @@ static int do_static_nodes(int argc, char *argv[])
 		goto finish;
 	}
 
-	snprintf(modules, sizeof(modules), "/lib/modules/%s/modules.devname",
-		 kernel.release);
+	snprintf(modules, sizeof(modules), "/lib/modules/%s/modules.devname", kernel.release);
 	in = fopen(modules, "re");
 	if (in == NULL) {
-		fprintf(stderr, "Error: could not open /lib/modules/%s/modules.devname - %m\n",
-			kernel.release);
+		if (errno == ENOENT) {
+			fprintf(stderr, "Warning: /lib/modules/%s/modules.devname not found - ignoring\n",
+				kernel.release);
+			ret = EXIT_SUCCESS;
+		} else {
+			fprintf(stderr, "Error: could not open /lib/modules/%s/modules.devname - %m\n",
+				kernel.release);
+			ret = EXIT_FAILURE;
+		}
+		goto finish;
+	}
+
+	out = fopen(output, "we");
+	if (out == NULL) {
+		fprintf(stderr, "Error: could not create %s - %m\n", output);
 		ret = EXIT_FAILURE;
 		goto finish;
 	}
