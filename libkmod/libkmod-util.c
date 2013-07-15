@@ -370,6 +370,17 @@ int mkdir_p(const char *path, int len, mode_t mode)
 	return 0;
 }
 
+int mkdir_parents(const char *path, mode_t mode)
+{
+	char *end = strrchr(path, '/');
+
+	/* no parent directories */
+	if (end == NULL)
+		return 0;
+
+	return mkdir_p(path, end - path, mode);
+}
+
 const struct kmod_ext kmod_exts[] = {
 	{".ko", sizeof(".ko") - 1},
 #ifdef ENABLE_ZLIB
