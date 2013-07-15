@@ -320,11 +320,12 @@ static inline int is_dir(const char *path)
 	return -errno;
 }
 
-int mkdir_p(const char *path, mode_t mode)
+int mkdir_p(const char *path, int len, mode_t mode)
 {
-	char *start = strdupa(path);
-	int len = strlen(path);
-	char *end = start + len;
+	char *start, *end;
+
+	start = strndupa(path, len);
+	end = start + len;
 
 	/*
 	 * scan backwards, replacing '/' with '\0' while the component doesn't
