@@ -44,7 +44,6 @@
 
 /* FIXME: hack, change name so we don't clash */
 #undef ERR
-#include "mkdir.h"
 #include "testsuite.h"
 #include "stripped-module.h"
 
