@@ -1,3 +1,13 @@
+kmod 15
+=======
+
+- Bug fixes:
+	- kmod static-nodes doesn't fail if modules.devname isn't available
+
+- New features:
+	- kmod static-nodes creates parent directories if given a -o option
+	- kmod binary doesn't statically link to libkmod
+
 kmod 14
 =======
 
