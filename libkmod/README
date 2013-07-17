@@ -20,7 +20,7 @@ Every user should create and manage it's own library context with:
    kmod_unref(ctx);
 
 
-Modules can be created with by various means:
+Modules can be created by various means:
 
    struct kmod_module *mod;
    int err;
