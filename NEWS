@@ -6,7 +6,7 @@ kmod 15
 
 - New features:
 	- kmod static-nodes creates parent directories if given a -o option
-	- kmod binary doesn't statically link to libkmod
+	- kmod binary statically link to libkmod
 
 kmod 14
 =======
