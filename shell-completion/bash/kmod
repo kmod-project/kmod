@@ -24,6 +24,25 @@ __contains_word () {
         return 1
 }
 
+_kmod_static_nodes () {
+        local OPTS='-o --output -f --format -h --help'
+        local GROUP_FORMAT='human tmpfiles devname'
+
+        case "$prev" in
+        '-o' | '--output')
+                compopt -o filenames
+                COMPREPLY=( $(compgen -f -- "$cur") )
+                return 0
+                ;;
+        '-f' | '--format')
+                COMPREPLY=( $(compgen -W "$GROUP_FORMAT" -- "$cur" ) )
+                return 0
+                ;;
+        esac
+
+        COMPREPLY=( $(compgen -W "$OPTS" -- "$cur") )
+}
+
 _kmod() {
         local cur=${COMP_WORDS[COMP_CWORD]} prev=${COMP_WORDS[COMP_CWORD-1]}
         local VERBS=(help list static-nodes)
@@ -48,6 +67,12 @@ _kmod() {
         if [[ -z $verb ]]; then
                 COMPREPLY=( $(compgen -W '${OPTS[*]} ${VERBS[*]}' -- "$cur") )
                 return 0
+        fi
+
+        local func=${verb//-/_}
+
+        if declare -F _kmod_${func} > /dev/null; then
+                _kmod_${func}
         fi
 
         return 0
