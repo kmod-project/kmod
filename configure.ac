@@ -82,6 +82,15 @@ AS_IF([test "x$with_zlib" != "xno"], [
 	AC_MSG_NOTICE([zlib support not requested])
 ])
 
+AC_ARG_WITH([bashcompletiondir],
+	AS_HELP_STRING([--with-bashcompletiondir=DIR], [Bash completions directory]),
+	[],
+	[AS_IF([$($PKG_CONFIG --exists bash-completion)], [
+		with_bashcompletiondir=$($PKG_CONFIG --variable=completionsdir bash-completion)
+	] , [
+		with_bashcompletiondir=${datadir}/bash-completion/completions
+	])])
+AC_SUBST([bashcompletiondir], [$with_bashcompletiondir])
 
 #####################################################################
 # --enable-
@@ -194,7 +203,7 @@ AC_CONFIG_FILES([
 AC_OUTPUT
 AC_MSG_RESULT([
 	$PACKAGE $VERSION
-	======
+	=======
 
 	prefix:			${prefix}
 	sysconfdir:		${sysconfdir}
@@ -202,6 +211,7 @@ AC_MSG_RESULT([
 	rootlibdir:		${rootlibdir}
 	includedir:		${includedir}
 	bindir:			${bindir}
+	Bash completions dir:   ${with_bashcompletiondir}
 
 	compiler:		${CC}
 	cflags:			${with_cflags} ${CFLAGS}

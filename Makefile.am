@@ -89,6 +89,10 @@ pkgconfig_DATA = libkmod/libkmod.pc
 EXTRA_DIST += libkmod/libkmod.pc.in
 CLEANFILES += libkmod/libkmod.pc
 
+bashcompletiondir=@bashcompletiondir@
+dist_bashcompletion_DATA = \
+	shell-completion/bash/kmod
+
 install-exec-hook:
 	if test "$(libdir)" != "$(rootlibdir)"; then \
 		$(MKDIR_P) $(DESTDIR)$(rootlibdir) && \
@@ -207,7 +211,8 @@ testsuite-distclean:
 DISTCLEAN_LOCAL_HOOKS += testsuite-distclean
 EXTRA_DIST += testsuite/rootfs-pristine
 
-DISTCHECK_CONFIGURE_FLAGS=--enable-gtk-doc --sysconfdir=/etc --with-zlib
+DISTCHECK_CONFIGURE_FLAGS=--enable-gtk-doc --sysconfdir=/etc --with-zlib \
+	--with-bashcompletiondir=$$dc_install_base/$(bashcompletiondir)
 
 distclean-local: $(DISTCLEAN_LOCAL_HOOKS)
 
