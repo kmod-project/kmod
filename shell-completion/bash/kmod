@@ -24,23 +24,39 @@ __contains_word () {
         return 1
 }
 
+__is_opt () {
+        local prevprev=${COMP_WORDS[COMP_CWORD-2]}
+        local short="$1" long="$2"
+
+        if [[ "$prev" = "$short" || "$prev" = "$long" ]]; then
+                declare -g cur=${cur#=}
+                return 0
+        elif [[ "$prev" = "=" && "$prevprev" = "$long" ]]; then
+                return 0
+        fi
+
+        return 1
+}
+
 _kmod_static_nodes () {
-        local OPTS='-o --output -f --format -h --help'
+        local OPTS='-o -f -h --help'
+        local OPTS_EQUAL='--output --format'
         local GROUP_FORMAT='human tmpfiles devname'
 
-        case "$prev" in
-        '-o' | '--output')
+        if __is_opt '-o' '--output'; then
                 compopt -o filenames
                 COMPREPLY=( $(compgen -f -- "$cur") )
                 return 0
-                ;;
-        '-f' | '--format')
+        elif __is_opt '-f' '--format'; then
                 COMPREPLY=( $(compgen -W "$GROUP_FORMAT" -- "$cur" ) )
                 return 0
-                ;;
-        esac
+        fi
 
+        local cur=${COMP_WORDS[COMP_CWORD]}
+
+        compopt -o nospace
         COMPREPLY=( $(compgen -W "$OPTS" -- "$cur") )
+        COMPREPLY+=( $(compgen -W "$OPTS_EQUAL" -S= -- "$cur") )
 }
 
 _kmod() {
@@ -73,6 +89,12 @@ _kmod() {
 
         if declare -F _kmod_${func} > /dev/null; then
                 _kmod_${func}
+        fi
+
+        # allow the space if there's only one completion and it doesn't end with
+        # '='
+        if [[ ${#COMPREPLY[@]} == 1 && ${COMPREPLY[0]} != *"=" ]] ; then
+                compopt +o nospace
         fi
 
         return 0
