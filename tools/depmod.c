@@ -848,7 +848,7 @@ static int cfg_files_list(struct cfg_file ***p_files, size_t *p_n_files,
 	if (S_ISREG(st.st_mode)) {
 		cfg_files_insert_sorted(p_files, p_n_files, path, NULL);
 		return 0;
-	} if (!S_ISDIR(st.st_mode)) {
+	} else if (!S_ISDIR(st.st_mode)) {
 		ERR("unsupported file mode %s: %#x\n", path, st.st_mode);
 		return -EINVAL;
 	}
