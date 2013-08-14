@@ -518,7 +518,7 @@ static void kmod_config_free_softdep(struct kmod_config *config,
 static void kcmdline_parse_result(struct kmod_config *config, char *modname,
 						char *param, char *value)
 {
-	if (modname == NULL || param == NULL || value == NULL)
+	if (modname == NULL || param == NULL)
 		return;
 
 	DBG(config->ctx, "%s %s\n", modname, param);
