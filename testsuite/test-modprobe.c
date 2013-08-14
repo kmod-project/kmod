@@ -158,6 +158,28 @@ static DEFINE_TEST(modprobe_install_cmd_loop,
 		},
 	);
 
+static __noreturn int modprobe_param_kcmdline(const struct test *t)
+{
+	const char *progname = ABS_TOP_BUILDDIR "/tools/modprobe";
+	const char *const args[] = {
+		progname,
+		"--show-depends", "psmouse",
+		NULL,
+	};
+
+	test_spawn_prog(progname, args);
+	exit(EXIT_FAILURE);
+}
+static DEFINE_TEST(modprobe_param_kcmdline,
+	.description = "check if params are parsed correctly from kcmdline",
+	.config = {
+		[TC_UNAME_R] = "4.4.4",
+		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-modprobe/module-param-kcmdline",
+	},
+	.output = {
+		.stdout = TESTSUITE_ROOTFS "test-modprobe/module-param-kcmdline/correct.txt",
+	});
+
 
 static const struct test *tests[] = {
 	&smodprobe_show_depends,
@@ -166,6 +188,7 @@ static const struct test *tests[] = {
 	&smodprobe_builtin,
 	&smodprobe_softdep_loop,
 	&smodprobe_install_cmd_loop,
+	&smodprobe_param_kcmdline,
 	NULL,
 };
 
