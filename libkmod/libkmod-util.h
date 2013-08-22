@@ -51,3 +51,8 @@ do {						\
 	} *__p = (typeof(__p)) (ptr);		\
 	__p->__v = (val);			\
 } while(0)
+
+static _always_inline_ unsigned int ALIGN_POWER2(unsigned int u)
+{
+	return 1 << ((sizeof(u) * 8) - __builtin_clz(u - 1));
+}
