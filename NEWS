@@ -3,10 +3,16 @@ kmod 15
 
 - Bug fixes:
 	- kmod static-nodes doesn't fail if modules.devname isn't available
+	- Fix getting boolean parameter from kernel cmdline in case the value
+	  is omitted
+	- Fix some mkdir_p() corner cases (used in testsuite and static-nodes)
 
 - New features:
 	- kmod static-nodes creates parent directories if given a -o option
-	- kmod binary statically link to libkmod
+	- kmod binary statically links to libkmod - if distro is only interested
+	  in the kmod tool (for example in an initrd) it can refrain from
+	  installing the library
+	- Add shell completion for kmod tool
 
 kmod 14
 =======
