@@ -48,8 +48,11 @@ struct hash {
 struct hash *hash_new(unsigned int n_buckets,
 					void (*free_value)(void *value))
 {
-	struct hash *hash = calloc(1, sizeof(struct hash) +
-				n_buckets * sizeof(struct hash_bucket));
+	struct hash *hash;
+
+	n_buckets = ALIGN_POWER2(n_buckets);
+	hash = calloc(1, sizeof(struct hash) +
+		      n_buckets * sizeof(struct hash_bucket));
 	if (hash == NULL)
 		return NULL;
 	hash->n_buckets = n_buckets;
@@ -145,7 +148,7 @@ int hash_add(struct hash *hash, const char *key, const void *value)
 {
 	unsigned int keylen = strlen(key);
 	unsigned int hashval = hash_superfast(key, keylen);
-	unsigned int pos = hashval % hash->n_buckets;
+	unsigned int pos = hashval & (hash->n_buckets - 1);
 	struct hash_bucket *bucket = hash->buckets + pos;
 	struct hash_entry *entry, *entry_end;
 
@@ -187,7 +190,7 @@ int hash_add_unique(struct hash *hash, const char *key, const void *value)
 {
 	unsigned int keylen = strlen(key);
 	unsigned int hashval = hash_superfast(key, keylen);
-	unsigned int pos = hashval % hash->n_buckets;
+	unsigned int pos = hashval & (hash->n_buckets - 1);
 	struct hash_bucket *bucket = hash->buckets + pos;
 	struct hash_entry *entry, *entry_end;
 
@@ -232,7 +235,7 @@ void *hash_find(const struct hash *hash, const char *key)
 {
 	unsigned int keylen = strlen(key);
 	unsigned int hashval = hash_superfast(key, keylen);
-	unsigned int pos = hashval % hash->n_buckets;
+	unsigned int pos = hashval & (hash->n_buckets - 1);
 	const struct hash_bucket *bucket = hash->buckets + pos;
 	const struct hash_entry se = {
 		.key = key,
@@ -250,7 +253,7 @@ int hash_del(struct hash *hash, const char *key)
 {
 	unsigned int keylen = strlen(key);
 	unsigned int hashval = hash_superfast(key, keylen);
-	unsigned int pos = hashval % hash->n_buckets;
+	unsigned int pos = hashval & (hash->n_buckets - 1);
 	unsigned int steps_used, steps_total;
 	struct hash_bucket *bucket = hash->buckets + pos;
 	struct hash_entry *entry, *entry_end;
