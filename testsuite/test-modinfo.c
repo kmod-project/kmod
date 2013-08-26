@@ -46,7 +46,7 @@ static DEFINE_TEST(modinfo_jonsmodules,
 		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-modinfo/",
 	},
 	.output = {
-		.stdout = TESTSUITE_ROOTFS "test-modinfo/correct.txt",
+		.out = TESTSUITE_ROOTFS "test-modinfo/correct.txt",
 	});
 
 static const struct test *tests[] = {

@@ -85,7 +85,7 @@ static DEFINE_TEST(loaded_1,
 	},
 	.need_spawn = true,
 	.output = {
-		.stdout = TESTSUITE_ROOTFS "test-loaded/correct.txt",
+		.out = TESTSUITE_ROOTFS "test-loaded/correct.txt",
 	});
 
 static const struct test *tests[] = {

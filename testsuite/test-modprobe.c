@@ -45,7 +45,7 @@ static DEFINE_TEST(modprobe_show_depends,
 		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-modprobe/show-depends",
 	},
 	.output = {
-		.stdout = TESTSUITE_ROOTFS "test-modprobe/show-depends/correct.txt",
+		.out = TESTSUITE_ROOTFS "test-modprobe/show-depends/correct.txt",
 	});
 
 static __noreturn int modprobe_show_depends2(const struct test *t)
@@ -67,7 +67,7 @@ static DEFINE_TEST(modprobe_show_depends2,
 		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-modprobe/show-depends",
 	},
 	.output = {
-		.stdout = TESTSUITE_ROOTFS "test-modprobe/show-depends/correct-psmouse.txt",
+		.out = TESTSUITE_ROOTFS "test-modprobe/show-depends/correct-psmouse.txt",
 	});
 
 
@@ -90,7 +90,7 @@ static DEFINE_TEST(modprobe_show_alias_to_none,
 		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-modprobe/alias-to-none",
 	},
 	.output = {
-		.stdout = TESTSUITE_ROOTFS "test-modprobe/show-depends/correct-psmouse.txt",
+		.out = TESTSUITE_ROOTFS "test-modprobe/show-depends/correct-psmouse.txt",
 	});
 
 
@@ -177,7 +177,7 @@ static DEFINE_TEST(modprobe_param_kcmdline,
 		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-modprobe/module-param-kcmdline",
 	},
 	.output = {
-		.stdout = TESTSUITE_ROOTFS "test-modprobe/module-param-kcmdline/correct.txt",
+		.out = TESTSUITE_ROOTFS "test-modprobe/module-param-kcmdline/correct.txt",
 	});
 
 

@@ -82,9 +82,9 @@ struct test {
 	const char *description;
 	struct {
 		/* File with correct stdout */
-		const char *stdout;
+		const char *out;
 		/* File with correct stderr */
-		const char *stderr;
+		const char *err;
 
 		/*
 		 * Vector with pair of files

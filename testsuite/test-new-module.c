@@ -67,7 +67,7 @@ static DEFINE_TEST(from_name,
 	},
 	.need_spawn = true,
 	.output = {
-		.stdout = TESTSUITE_ROOTFS "test-new-module/from_name/correct.txt",
+		.out = TESTSUITE_ROOTFS "test-new-module/from_name/correct.txt",
 	});
 
 static int from_alias(const struct test *t)
@@ -112,7 +112,7 @@ static DEFINE_TEST(from_alias,
 	},
 	.need_spawn = true,
 	.output = {
-		.stdout = TESTSUITE_ROOTFS "test-new-module/from_alias/correct.txt",
+		.out = TESTSUITE_ROOTFS "test-new-module/from_alias/correct.txt",
 	});
 
 static const struct test *tests[] = {

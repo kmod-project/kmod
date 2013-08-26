@@ -223,7 +223,7 @@ static inline int test_run_child(const struct test *t, int fdout[2],
 	test_export_environ(t);
 
 	/* Close read-fds and redirect std{out,err} to the write-fds */
-	if (t->output.stdout != NULL) {
+	if (t->output.out != NULL) {
 		close(fdout[0]);
 		if (dup2(fdout[1], STDOUT_FILENO) < 0) {
 			ERR("could not redirect stdout to pipe: %m\n");
@@ -231,10 +231,10 @@ static inline int test_run_child(const struct test *t, int fdout[2],
 		}
 	}
 
-	if (t->output.stderr != NULL) {
+	if (t->output.err != NULL) {
 		close(fderr[0]);
 		if (dup2(fderr[1], STDERR_FILENO) < 0) {
-			ERR("could not redirect stdout to pipe: %m\n");
+			ERR("could not redirect stderr to pipe: %m\n");
 			exit(EXIT_FAILURE);
 		}
 	}
@@ -282,12 +282,12 @@ static inline bool test_run_parent_check_outputs(const struct test *t,
 		return false;
 	}
 
-	if (t->output.stdout != NULL) {
-		fd_matchout = open(t->output.stdout, O_RDONLY);
+	if (t->output.out != NULL) {
+		fd_matchout = open(t->output.out, O_RDONLY);
 		if (fd_matchout < 0) {
 			err = -errno;
 			ERR("could not open %s for read: %m\n",
-							t->output.stdout);
+							t->output.out);
 			goto out;
 		}
 		memset(&ep_outpipe, 0, sizeof(struct epoll_event));
@@ -301,12 +301,12 @@ static inline bool test_run_parent_check_outputs(const struct test *t,
 	} else
 		fdout = -1;
 
-	if (t->output.stderr != NULL) {
-		fd_matcherr = open(t->output.stderr, O_RDONLY);
+	if (t->output.err != NULL) {
+		fd_matcherr = open(t->output.err, O_RDONLY);
 		if (fd_matcherr < 0) {
 			err = -errno;
 			ERR("could not open %s for read: %m\n",
-					t->output.stderr);
+					t->output.err);
 			goto out;
 
 		}
@@ -536,9 +536,9 @@ static inline int test_run_parent(const struct test *t, int fdout[2],
 	bool matchout;
 
 	/* Close write-fds */
-	if (t->output.stdout != NULL)
+	if (t->output.out != NULL)
 		close(fdout[1]);
-	if (t->output.stderr != NULL)
+	if (t->output.err != NULL)
 		close(fderr[1]);
 	close(fdmonitor[1]);
 
@@ -549,9 +549,9 @@ static inline int test_run_parent(const struct test *t, int fdout[2],
 	 * break pipe on the other end: either child already closed or we want
 	 * to stop it
 	 */
-	if (t->output.stdout != NULL)
+	if (t->output.out != NULL)
 		close(fdout[0]);
-	if (t->output.stderr != NULL)
+	if (t->output.err != NULL)
 		close(fderr[0]);
 	close(fdmonitor[0]);
 
@@ -650,14 +650,14 @@ int test_run(const struct test *t)
 	if (t->need_spawn && oneshot)
 		test_run_spawned(t);
 
-	if (t->output.stdout != NULL) {
+	if (t->output.out != NULL) {
 		if (pipe(fdout) != 0) {
 			ERR("could not create out pipe for %s\n", t->name);
 			return EXIT_FAILURE;
 		}
 	}
 
-	if (t->output.stderr != NULL) {
+	if (t->output.err != NULL) {
 		if (pipe(fderr) != 0) {
 			ERR("could not create err pipe for %s\n", t->name);
 			return EXIT_FAILURE;
