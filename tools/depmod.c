@@ -835,6 +835,7 @@ static int cfg_files_insert_sorted(struct cfg_file ***p_files, size_t *p_n_files
 static int cfg_files_list(struct cfg_file ***p_files, size_t *p_n_files,
 				const char *path)
 {
+	struct dirent *dent;
 	DIR *d;
 	int err = 0;
 	struct stat st;
@@ -859,20 +860,11 @@ static int cfg_files_list(struct cfg_file ***p_files, size_t *p_n_files,
 		return -EINVAL;
 	}
 
-	for (;;) {
-		struct dirent ent, *entp;
-
-		err = readdir_r(d, &ent, &entp);
-		if (err != 0) {
-			ERR("reading entry %s\n", strerror(-err));
-			break;
-		}
-		if (entp == NULL)
-			break;
-		if (cfg_files_filter_out(d, path, entp->d_name))
+	for (dent = readdir(d); dent != NULL; dent = readdir(d)) {
+		if (cfg_files_filter_out(d, path, dent->d_name))
 			continue;
 
-		cfg_files_insert_sorted(p_files, p_n_files, path, entp->d_name);
+		cfg_files_insert_sorted(p_files, p_n_files, path, dent->d_name);
 	}
 
 	closedir(d);

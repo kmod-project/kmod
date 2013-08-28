@@ -1869,6 +1869,7 @@ KMOD_EXPORT struct kmod_list *kmod_module_get_holders(const struct kmod_module *
 {
 	char dname[PATH_MAX];
 	struct kmod_list *list = NULL;
+	struct dirent *dent;
 	DIR *d;
 
 	if (mod == NULL || mod->ctx == NULL)
@@ -1883,32 +1884,22 @@ KMOD_EXPORT struct kmod_list *kmod_module_get_holders(const struct kmod_module *
 		return NULL;
 	}
 
-	for (;;) {
-		struct dirent de, *entp;
+	for (dent = readdir(d); dent != NULL; dent = readdir(d)) {
 		struct kmod_module *holder;
 		struct kmod_list *l;
 		int err;
 
-		err = readdir_r(d, &de, &entp);
-		if (err != 0) {
-			ERR(mod->ctx, "could not iterate for module '%s': %s\n",
-						mod->name, strerror(-err));
-			goto fail;
-		}
-
-		if (entp == NULL)
-			break;
-
-		if (de.d_name[0] == '.') {
-			if (de.d_name[1] == '\0' ||
-			    (de.d_name[1] == '.' && de.d_name[2] == '\0'))
+		if (dent->d_name[0] == '.') {
+			if (dent->d_name[1] == '\0' ||
+			    (dent->d_name[1] == '.' && dent->d_name[2] == '\0'))
 				continue;
 		}
 
-		err = kmod_module_new_from_name(mod->ctx, de.d_name, &holder);
+		err = kmod_module_new_from_name(mod->ctx, dent->d_name,
+						&holder);
 		if (err < 0) {
 			ERR(mod->ctx, "could not create module for '%s': %s\n",
-				de.d_name, strerror(-err));
+				dent->d_name, strerror(-err));
 			goto fail;
 		}
 
@@ -1958,6 +1949,7 @@ KMOD_EXPORT struct kmod_list *kmod_module_get_sections(const struct kmod_module 
 {
 	char dname[PATH_MAX];
 	struct kmod_list *list = NULL;
+	struct dirent *dent;
 	DIR *d;
 	int dfd;
 
@@ -1975,31 +1967,23 @@ KMOD_EXPORT struct kmod_list *kmod_module_get_sections(const struct kmod_module 
 
 	dfd = dirfd(d);
 
-	for (;;) {
-		struct dirent de, *entp;
+	for (dent = readdir(d); dent; dent = readdir(d)) {
 		struct kmod_module_section *section;
 		struct kmod_list *l;
 		unsigned long address;
 		size_t namesz;
 		int fd, err;
 
-		err = readdir_r(d, &de, &entp);
-		if (err != 0) {
-			ERR(mod->ctx, "could not iterate for module '%s': %s\n",
-						mod->name, strerror(-err));
-			goto fail;
-		}
-
-		if (de.d_name[0] == '.') {
-			if (de.d_name[1] == '\0' ||
-			    (de.d_name[1] == '.' && de.d_name[2] == '\0'))
+		if (dent->d_name[0] == '.') {
+			if (dent->d_name[1] == '\0' ||
+			    (dent->d_name[1] == '.' && dent->d_name[2] == '\0'))
 				continue;
 		}
 
-		fd = openat(dfd, de.d_name, O_RDONLY|O_CLOEXEC);
+		fd = openat(dfd, dent->d_name, O_RDONLY|O_CLOEXEC);
 		if (fd < 0) {
 			ERR(mod->ctx, "could not open '%s/%s': %m\n",
-							dname, de.d_name);
+							dname, dent->d_name);
 			goto fail;
 		}
 
@@ -2007,11 +1991,11 @@ KMOD_EXPORT struct kmod_list *kmod_module_get_sections(const struct kmod_module 
 		close(fd);
 		if (err < 0) {
 			ERR(mod->ctx, "could not read long from '%s/%s': %m\n",
-							dname, de.d_name);
+							dname, dent->d_name);
 			goto fail;
 		}
 
-		namesz = strlen(de.d_name) + 1;
+		namesz = strlen(dent->d_name) + 1;
 		section = malloc(sizeof(*section) + namesz);
 
 		if (section == NULL) {
@@ -2020,7 +2004,7 @@ KMOD_EXPORT struct kmod_list *kmod_module_get_sections(const struct kmod_module 
 		}
 
 		section->address = address;
-		memcpy(section->name, de.d_name, namesz);
+		memcpy(section->name, dent->d_name, namesz);
 
 		l = kmod_list_append(list, section);
 		if (l != NULL) {

@@ -821,6 +821,7 @@ static int conf_files_list(struct kmod_ctx *ctx, struct kmod_list **list,
 	DIR *d;
 	int err;
 	struct stat st;
+	struct dirent *dent;
 
 	if (stat(path, &st) != 0) {
 		err = -errno;
@@ -845,30 +846,15 @@ static int conf_files_list(struct kmod_ctx *ctx, struct kmod_list **list,
 		return -EINVAL;
 	}
 
-	for (;;) {
-		struct dirent ent, *entp;
-
-		err = readdir_r(d, &ent, &entp);
-		if (err != 0) {
-			ERR(ctx, "reading entry %s\n", strerror(-err));
-			goto fail_read;
-		}
-
-		if (entp == NULL)
-			break;
-
-		if (conf_files_filter_out(ctx, d, path, entp->d_name))
+	for (dent = readdir(d); dent != NULL; dent = readdir(d)) {
+		if (conf_files_filter_out(ctx, d, path, dent->d_name))
 			continue;
 
-		conf_files_insert_sorted(ctx, list, path, entp->d_name);
+		conf_files_insert_sorted(ctx, list, path, dent->d_name);
 	}
 
 	closedir(d);
 	return 0;
-
-fail_read:
-	closedir(d);
-	return err;
 }
 
 int kmod_config_new(struct kmod_ctx *ctx, struct kmod_config **p_config,
