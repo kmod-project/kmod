@@ -29,14 +29,8 @@
        do { (void) sizeof(char [1 - 2*!(expr)]); } while(0)
 #endif
 
-#if HAVE_TYPEOF
 #define check_types_match(expr1, expr2)		\
 	((typeof(expr1) *)0 != (typeof(expr2) *)0)
-#else
-/* Without typeof, we can only test the sizes. */
-#define check_types_match(expr1, expr2)				\
-	assert_cc(sizeof(expr1) == sizeof(expr2))
-#endif /* HAVE_TYPEOF */
 
 #define container_of(member_ptr, containing_type, member)		\
 	((containing_type *)						\
