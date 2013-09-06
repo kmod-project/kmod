@@ -21,8 +21,13 @@
 
 #include <stddef.h>
 
+#if defined(HAVE_STATIC_ASSERT)
 #define assert_cc(expr) \
 	_Static_assert((expr), #expr)
+#else
+#define assert_cc(expr) \
+       do { (void) sizeof(char [1 - 2*!(expr)]); } while(0)
+#endif
 
 #if HAVE_TYPEOF
 #define check_types_match(expr1, expr2)		\
