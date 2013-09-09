@@ -2112,11 +2112,18 @@ static int output_devname(struct depmod *depmod, FILE *out)
 				minor = min;
 			}
 
-			if (type != '\0' && devname != NULL) {
+			if (type != '\0' && devname != NULL)
+				break;
+		}
+
+		if (devname != NULL) {
+			if (type != '\0')
 				fprintf(out, "%s %s %c%u:%u\n", mod->modname,
 					devname, type, major, minor);
-				break;
-			}
+			else
+				ERR("Module '%s' has devname (%s) but "
+				    "lacks major and minor information. "
+				    "Ignoring.\n", mod->modname, devname);
 		}
 	}
 
