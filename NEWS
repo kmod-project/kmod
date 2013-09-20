@@ -1,10 +1,18 @@
 kmod 16
 =======
 
+- Bug fixes:
+	- Fix usage of readdir_r()
+
 - New features:
 	- Remove option from libkmod to allow waiting on module removal if
 	  the module is being used. It's dangerous since it can block the
 	  caller indefinitely.
+	- Improve compatibility with musl libc
+	- Add fallback implementation for compilers without _Static_assert(),
+	  e.g. gcc < 4.6
+	- Minor optimizations to the hash table
+	- Make depmod warn if a module has incorrect devname specification
 
 kmod 15
 =======
