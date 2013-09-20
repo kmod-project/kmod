@@ -104,7 +104,7 @@ static int do_rmmod(int argc, char *argv[])
 {
 	struct kmod_ctx *ctx;
 	const char *null_config = NULL;
-	int flags = KMOD_REMOVE_NOWAIT;
+	int flags = 0;
 	int i, err, r = 0;
 
 	for (;;) {
@@ -121,11 +121,6 @@ static int do_rmmod(int argc, char *argv[])
 			break;
 		case 'v':
 			verbose++;
-			break;
-		case 'w':
-			ERR("'Wait' behavior is targeted for removal from kernel.\nWe will now sleep for 10s, and then continue.\n");
-			sleep(10);
-			flags &= ~KMOD_REMOVE_NOWAIT;
 			break;
 		case 'h':
 			help();
@@ -173,11 +168,10 @@ static int do_rmmod(int argc, char *argv[])
 			break;
 		}
 
-		if (!(flags & KMOD_REMOVE_FORCE) && (flags & KMOD_REMOVE_NOWAIT))
-			if (check_module_inuse(mod) < 0) {
-				r++;
-				goto next;
-			}
+		if (!(flags & KMOD_REMOVE_FORCE) && check_module_inuse(mod) < 0) {
+			r++;
+			goto next;
+		}
 
 		err = kmod_module_remove_module(mod, flags);
 		if (err < 0) {
