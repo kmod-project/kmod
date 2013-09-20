@@ -140,7 +140,7 @@ struct kmod_module *kmod_module_get_module(const struct kmod_list *entry);
 /* Removal flags */
 enum kmod_remove {
 	KMOD_REMOVE_FORCE = O_TRUNC,
-	KMOD_REMOVE_NOWAIT = O_NONBLOCK,
+	KMOD_REMOVE_NOWAIT = O_NONBLOCK, /* always set */
 };
 
 /* Insertion flags */

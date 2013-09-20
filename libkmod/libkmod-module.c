@@ -738,15 +738,11 @@ extern long delete_module(const char *name, unsigned int flags);
 /**
  * kmod_module_remove_module:
  * @mod: kmod module
- * @flags: flags to pass to Linux kernel when removing the module, valid flags are
+ * @flags: flags to pass to Linux kernel when removing the module. The only valid flag is
  * KMOD_REMOVE_FORCE: force remove module regardless if it's still in
  * use by a kernel subsystem or other process;
- * KMOD_REMOVE_NOWAIT: return immediately. It will fail if the module
- * is in using and KMOD_REMOVE_FORCE is not specified.
- * If this module is in use by any kernel subsystem or process, not using
- * this flag will cause the call to block indefinitely, until the module
- * is not in use anymore. Always use this flag, it's deprecated not using
- * it and the default behavior might change in future to always set it.
+ * KMOD_REMOVE_NOWAIT is always enforced, causing us to pass O_NONBLOCK to
+ * delete_module(2).
  *
  * Remove a module from Linux kernel.
  *
@@ -760,8 +756,9 @@ KMOD_EXPORT int kmod_module_remove_module(struct kmod_module *mod,
 	if (mod == NULL)
 		return -ENOENT;
 
-	/* Filter out other flags */
-	flags &= (KMOD_REMOVE_FORCE | KMOD_REMOVE_NOWAIT);
+	/* Filter out other flags and force ONONBLOCK */
+	flags &= KMOD_REMOVE_FORCE;
+	flags |= KMOD_REMOVE_NOWAIT;
 
 	err = delete_module(mod->name, flags);
 	if (err != 0) {
