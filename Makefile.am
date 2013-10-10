@@ -216,6 +216,9 @@ DISTCHECK_CONFIGURE_FLAGS=--enable-gtk-doc --sysconfdir=/etc --with-zlib \
 
 distclean-local: $(DISTCLEAN_LOCAL_HOOKS)
 
+buildtest-TESTS:
+	$(MAKE) $(AM_MAKEFLAGS) $(check_LTLIBRARIES) $(check_PROGRAMS)
+
 # ------------------------------------------------------------------------------
 # custom release helpers
 # ------------------------------------------------------------------------------
