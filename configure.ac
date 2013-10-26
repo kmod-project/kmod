@@ -179,6 +179,7 @@ CC_CHECK_FLAGS_APPEND(with_cflags, [CFLAGS], [\
 		       -Wuninitialized \
 		       -fno-common \
 		       -fdiagnostics-show-option \
+		       -fdiagnostics-color=auto \
 		       -fvisibility=hidden \
 		       -ffunction-sections \
 		       -fdata-sections])
