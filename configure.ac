@@ -17,6 +17,7 @@ m4_ifndef([AM_SILENT_RULES], [m4_define([AM_SILENT_RULES],[])])
 AM_SILENT_RULES([yes])
 LT_INIT([disable-static pic-only])
 AC_PREFIX_DEFAULT([/usr])
+AM_MAINTAINER_MODE([enable])
 
 AS_IF([test "x$enable_static" = "xyes"],
       [AC_MSG_ERROR([--enable-static is not supported by kmod])])
