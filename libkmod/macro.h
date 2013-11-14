@@ -57,3 +57,4 @@
 #define _printf_format_(a,b) __attribute__((format (printf, a, b)))
 #define _unused_ __attribute__((unused))
 #define _always_inline_ __inline__ __attribute__((always_inline))
+#define _cleanup_(x) __attribute__((cleanup(x)))

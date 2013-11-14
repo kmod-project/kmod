@@ -3,6 +3,7 @@
 
 #include <limits.h>
 #include <stdbool.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -56,3 +57,9 @@ static _always_inline_ unsigned int ALIGN_POWER2(unsigned int u)
 {
 	return 1 << ((sizeof(u) * 8) - __builtin_clz(u - 1));
 }
+
+static inline void freep(void *p) {
+        free(*(void**) p);
+}
+
+#define _cleanup_free_ _cleanup_(freep)
