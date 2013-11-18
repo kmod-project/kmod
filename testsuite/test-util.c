@@ -67,8 +67,39 @@ static DEFINE_TEST(alias_1,
 		.out = TESTSUITE_ROOTFS "test-util/alias-correct.txt",
 	});
 
+static int test_getline_wrapped(const struct test *t)
+{
+	FILE *fp = fopen("/getline_wrapped-input.txt", "re");
+
+	if (!fp)
+		return EXIT_FAILURE;
+
+	while (!feof(fp) && !ferror(fp)) {
+		unsigned int num = 0;
+		char *s = getline_wrapped(fp, &num);
+		if (!s)
+			break;
+		puts(s);
+		free(s);
+		printf("%u\n", num);
+	}
+
+	fclose(fp);
+	return EXIT_SUCCESS;
+}
+static DEFINE_TEST(test_getline_wrapped,
+	.description = "check if getline_wrapped() does the right thing",
+	.config = {
+		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-util/",
+	},
+	.need_spawn = true,
+	.output = {
+		.out = TESTSUITE_ROOTFS "test-util/getline_wrapped-correct.txt",
+	});
+
 static const struct test *tests[] = {
 	&salias_1,
+	&stest_getline_wrapped,
 	NULL,
 };
 
