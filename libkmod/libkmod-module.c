@@ -252,10 +252,8 @@ static int kmod_module_new(struct kmod_ctx *ctx, const char *key,
 		keylen = namelen + aliaslen + 1;
 
 	m = malloc(sizeof(*m) + (alias == NULL ? 1 : 2) * (keylen + 1));
-	if (m == NULL) {
-		free(m);
+	if (m == NULL)
 		return -ENOMEM;
-	}
 
 	memset(m, 0, sizeof(*m));
 
@@ -971,7 +969,8 @@ static int module_do_install_commands(struct kmod_module *mod,
 					struct probe_insert_cb *cb)
 {
 	const char *command = kmod_module_get_install_commands(mod);
-	char *p, *cmd;
+	char *p;
+	_cleanup_free_ char *cmd;
 	int err;
 	size_t cmdlen, options_len, varlen;
 
@@ -994,10 +993,9 @@ static int module_do_install_commands(struct kmod_module *mod,
 		size_t slen = cmdlen - varlen + options_len;
 		char *suffix = p + varlen;
 		char *s = malloc(slen + 1);
-		if (s == NULL) {
-			free(cmd);
+		if (!s)
 			return -ENOMEM;
-		}
+
 		memcpy(s, cmd, p - cmd);
 		memcpy(s + prefixlen, options, options_len);
 		memcpy(s + prefixlen + options_len, suffix, suffixlen);
@@ -1012,8 +1010,6 @@ static int module_do_install_commands(struct kmod_module *mod,
 		err = cb->run_install(mod, cmd, cb->data);
 	else
 		err = command_do(mod, "install", cmd);
-
-	free(cmd);
 
 	return err;
 }
