@@ -46,8 +46,8 @@
 char *getline_wrapped(FILE *fp, unsigned int *linenum)
 {
 	int size = 256;
-	int i = 0;
-	char *buf = malloc(size);
+	int i = 0, n = 0;
+	_cleanup_free_ char *buf = malloc(size);
 
 	if (buf == NULL)
 		return NULL;
@@ -57,26 +57,33 @@ char *getline_wrapped(FILE *fp, unsigned int *linenum)
 
 		switch(ch) {
 		case EOF:
-			if (i == 0) {
-				free(buf);
+			if (i == 0)
 				return NULL;
-			}
 			/* else fall through */
 
 		case '\n':
-			if (linenum)
-				(*linenum)++;
-			if (i == size)
-				buf = realloc(buf, size + 1);
-			buf[i] = '\0';
-			return buf;
+			n++;
+
+			{
+				char *ret;
+				if (i == size) {
+					ret = realloc(buf, size + 1);
+					if (!ret)
+						return NULL;
+				} else
+					ret = buf;
+				ret[i] = '\0';
+				buf = NULL;
+				if (linenum)
+					*linenum += n;
+				return ret;
+			}
 
 		case '\\':
 			ch = getc_unlocked(fp);
 
 			if (ch == '\n') {
-				if (linenum)
-					(*linenum)++;
+				n++;
 				continue;
 			}
 			/* else fall through */
@@ -85,8 +92,12 @@ char *getline_wrapped(FILE *fp, unsigned int *linenum)
 			buf[i++] = ch;
 
 			if (i == size) {
+				char *tmp;
 				size *= 2;
-				buf = realloc(buf, size);
+				tmp = realloc(buf, size);
+				if (!tmp)
+					return NULL;
+				buf = tmp;
 			}
 		}
 	}
