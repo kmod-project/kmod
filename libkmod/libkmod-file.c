@@ -175,13 +175,12 @@ static int load_zlib(struct kmod_file *file)
 {
 	int err = 0;
 	off_t did = 0, total = 0;
-	unsigned char *p = NULL;
+	_cleanup_free_ unsigned char *p = NULL;
 
 	errno = 0;
 	file->gzf = gzdopen(file->fd, "rb");
-	if (file->gzf == NULL) {
+	if (file->gzf == NULL)
 		return -errno;
-	}
 	file->fd = -1; /* now owned by gzf due gzdopen() */
 
 	for (;;) {
@@ -215,9 +214,10 @@ static int load_zlib(struct kmod_file *file)
 
 	file->memory = p;
 	file->size = did;
+	p = NULL;
 	return 0;
+
 error:
-	free(p);
 	gzclose(file->gzf);
 	return err;
 }
