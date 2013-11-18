@@ -176,7 +176,7 @@ testsuite_libtestsuite_la_CPPFLAGS = $(TESTSUITE_CPPFLAGS)
 testsuite_libtestsuite_la_LIBADD = -lrt
 
 TESTSUITE = testsuite/test-init testsuite/test-testsuite testsuite/test-loaded \
-	    testsuite/test-modinfo testsuite/test-alias testsuite/test-new-module \
+	    testsuite/test-modinfo testsuite/test-util testsuite/test-new-module \
 	    testsuite/test-modprobe testsuite/test-blacklist \
 	    testsuite/test-dependencies testsuite/test-depmod
 
@@ -191,8 +191,8 @@ testsuite_test_loaded_LDADD = $(TESTSUITE_LDADD)
 testsuite_test_loaded_CPPFLAGS = $(TESTSUITE_CPPFLAGS)
 testsuite_test_modinfo_LDADD = $(TESTSUITE_LDADD)
 testsuite_test_modinfo_CPPFLAGS = $(TESTSUITE_CPPFLAGS)
-testsuite_test_alias_LDADD = $(TESTSUITE_LDADD)
-testsuite_test_alias_CPPFLAGS = $(TESTSUITE_CPPFLAGS)
+testsuite_test_util_LDADD = $(TESTSUITE_LDADD)
+testsuite_test_util_CPPFLAGS = $(TESTSUITE_CPPFLAGS)
 testsuite_test_new_module_LDADD = $(TESTSUITE_LDADD)
 testsuite_test_new_module_CPPFLAGS = $(TESTSUITE_CPPFLAGS)
 testsuite_test_modprobe_LDADD = $(TESTSUITE_LDADD)

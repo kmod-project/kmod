@@ -60,11 +60,11 @@ static int alias_1(const struct test *t)
 static DEFINE_TEST(alias_1,
 	.description = "check if alias_normalize does the right thing",
 	.config = {
-		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-alias/",
+		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-util/",
 	},
 	.need_spawn = true,
 	.output = {
-		.out = TESTSUITE_ROOTFS "test-alias/correct.txt",
+		.out = TESTSUITE_ROOTFS "test-util/alias-correct.txt",
 	});
 
 static const struct test *tests[] = {

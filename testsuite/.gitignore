@@ -2,7 +2,7 @@
 *.la
 *.so
 /.dirstamp
-/test-alias
+/test-util
 /test-blacklist
 /test-dependencies
 /test-depmod
@@ -14,8 +14,8 @@
 /test-modprobe
 /rootfs
 /stamp-rootfs
-/test-alias.log
-/test-alias.trs
+/test-util.log
+/test-util.trs
 /test-blacklist.log
 /test-blacklist.trs
 /test-dependencies.log
