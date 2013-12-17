@@ -32,7 +32,7 @@
 
 
 #define TEST_UNAME "4.0.20-kmod"
-static __noreturn int testsuite_uname(const struct test *t)
+static noreturn int testsuite_uname(const struct test *t)
 {
 	struct utsname u;
 	int err = uname(&u);

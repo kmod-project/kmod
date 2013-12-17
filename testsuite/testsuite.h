@@ -21,6 +21,8 @@
 #include <stdbool.h>
 #include <stdarg.h>
 
+#include "macro.h"
+
 struct test;
 typedef int (*testfunc)(const struct test *t);
 
@@ -152,4 +154,10 @@ int test_run(const struct test *t);
 		exit(EXIT_SUCCESS);				\
 	}							\
 
-#define __noreturn __attribute__((noreturn))
+#ifdef noreturn
+# define __noreturn noreturn
+#elif __STDC_VERSION__ >= 201112L
+# define __noreturn _Noreturn
+#else
+# define __noreturn __attribute__((noreturn))
+#endif

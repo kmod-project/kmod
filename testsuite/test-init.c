@@ -26,7 +26,7 @@
 
 #include "testsuite.h"
 
-static __noreturn int test_initlib(const struct test *t)
+static noreturn int test_initlib(const struct test *t)
 {
 	struct kmod_ctx *ctx;
 	const char *null_config = NULL;
@@ -42,7 +42,7 @@ static __noreturn int test_initlib(const struct test *t)
 static DEFINE_TEST(test_initlib,
 		.description = "test if libkmod's init function work");
 
-static __noreturn int test_insert(const struct test *t)
+static noreturn int test_insert(const struct test *t)
 {
 	struct kmod_ctx *ctx;
 	struct kmod_module *mod;
@@ -76,7 +76,7 @@ static DEFINE_TEST(test_insert,
 	},
 	.need_spawn = true);
 
-static __noreturn int test_remove(const struct test *t)
+static noreturn int test_remove(const struct test *t)
 {
 	struct kmod_ctx *ctx;
 	struct kmod_module *mod;

@@ -26,7 +26,7 @@
 
 #include "testsuite.h"
 
-static __noreturn int modprobe_show_depends(const struct test *t)
+static noreturn int modprobe_show_depends(const struct test *t)
 {
 	const char *progname = ABS_TOP_BUILDDIR "/tools/modprobe";
 	const char *const args[] = {
@@ -48,7 +48,7 @@ static DEFINE_TEST(modprobe_show_depends,
 		.out = TESTSUITE_ROOTFS "test-modprobe/show-depends/correct.txt",
 	});
 
-static __noreturn int modprobe_show_depends2(const struct test *t)
+static noreturn int modprobe_show_depends2(const struct test *t)
 {
 	const char *progname = ABS_TOP_BUILDDIR "/tools/modprobe";
 	const char *const args[] = {
@@ -71,7 +71,7 @@ static DEFINE_TEST(modprobe_show_depends2,
 	});
 
 
-static __noreturn int modprobe_show_alias_to_none(const struct test *t)
+static noreturn int modprobe_show_alias_to_none(const struct test *t)
 {
 	const char *progname = ABS_TOP_BUILDDIR "/tools/modprobe";
 	const char *const args[] = {
@@ -94,7 +94,7 @@ static DEFINE_TEST(modprobe_show_alias_to_none,
 	});
 
 
-static __noreturn int modprobe_builtin(const struct test *t)
+static noreturn int modprobe_builtin(const struct test *t)
 {
 	const char *progname = ABS_TOP_BUILDDIR "/tools/modprobe";
 	const char *const args[] = {
@@ -113,7 +113,7 @@ static DEFINE_TEST(modprobe_builtin,
 		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-modprobe/builtin",
 	});
 
-static __noreturn int modprobe_softdep_loop(const struct test *t)
+static noreturn int modprobe_softdep_loop(const struct test *t)
 {
 	const char *progname = ABS_TOP_BUILDDIR "/tools/modprobe";
 	const char *const args[] = {
@@ -133,7 +133,7 @@ static DEFINE_TEST(modprobe_softdep_loop,
 		[TC_INIT_MODULE_RETCODES] = "",
 	});
 
-static __noreturn int modprobe_install_cmd_loop(const struct test *t)
+static noreturn int modprobe_install_cmd_loop(const struct test *t)
 {
 	const char *progname = ABS_TOP_BUILDDIR "/tools/modprobe";
 	const char *const args[] = {
@@ -158,7 +158,7 @@ static DEFINE_TEST(modprobe_install_cmd_loop,
 		},
 	);
 
-static __noreturn int modprobe_param_kcmdline(const struct test *t)
+static noreturn int modprobe_param_kcmdline(const struct test *t)
 {
 	const char *progname = ABS_TOP_BUILDDIR "/tools/modprobe";
 	const char *const args[] = {
