@@ -35,7 +35,6 @@
 #include <sys/mman.h>
 #include <sys/syscall.h>
 #include <sys/wait.h>
-#include <string.h>
 #include <fnmatch.h>
 
 #ifdef HAVE_LINUX_MODULE_H
