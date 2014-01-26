@@ -40,7 +40,6 @@ static const struct option cmdopts[] = {
 	{"syslog", no_argument, 0, 's'},
 	{"verbose", no_argument, 0, 'v'},
 	{"version", no_argument, 0, 'V'},
-	{"wait", no_argument, 0, 'w'},
 	{"help", no_argument, 0, 'h'},
 	{NULL, 0, 0, 0}
 };
