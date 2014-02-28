@@ -91,7 +91,9 @@ static DEFINE_TEST(modprobe_show_alias_to_none,
 	},
 	.output = {
 		.out = TESTSUITE_ROOTFS "test-modprobe/show-depends/correct-psmouse.txt",
-	});
+	},
+	.modules_loaded = "",
+	);
 
 
 static noreturn int modprobe_builtin(const struct test *t)
@@ -131,7 +133,9 @@ static DEFINE_TEST(modprobe_softdep_loop,
 		[TC_UNAME_R] = "4.4.4",
 		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-modprobe/softdep-loop",
 		[TC_INIT_MODULE_RETCODES] = "",
-	});
+	},
+	.modules_loaded = "btusb,bluetooth",
+	);
 
 static noreturn int modprobe_install_cmd_loop(const struct test *t)
 {
@@ -156,6 +160,7 @@ static DEFINE_TEST(modprobe_install_cmd_loop,
 		{ "MODPROBE", ABS_TOP_BUILDDIR "/tools/modprobe" },
 		{ }
 		},
+	.modules_loaded = "snd,snd-pcm",
 	);
 
 static noreturn int modprobe_param_kcmdline(const struct test *t)
@@ -178,7 +183,9 @@ static DEFINE_TEST(modprobe_param_kcmdline,
 	},
 	.output = {
 		.out = TESTSUITE_ROOTFS "test-modprobe/module-param-kcmdline/correct.txt",
-	});
+	},
+	.modules_loaded = "",
+	);
 
 
 static const struct test *tests[] = {

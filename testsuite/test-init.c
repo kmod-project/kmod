@@ -74,6 +74,7 @@ static DEFINE_TEST(test_insert,
 		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-init/",
 		[TC_INIT_MODULE_RETCODES] = "bla:1:20",
 	},
+	.modules_loaded = "ext4",
 	.need_spawn = true);
 
 static noreturn int test_remove(const struct test *t)

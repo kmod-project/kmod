@@ -95,6 +95,8 @@ struct test {
 		 */
 		const struct keyval *files;
 	} output;
+	/* comma-separated list of loaded modules at the end of the test */
+	const char *modules_loaded;
 	testfunc func;
 	const char *config[_TC_LAST];
 	const char *path;
