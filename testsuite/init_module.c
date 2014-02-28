@@ -37,6 +37,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/syscall.h>
+#include <sys/utsname.h>
 #include <unistd.h>
 
 /* kmod_elf_get_section() is not exported, we need the private header */
@@ -280,6 +281,25 @@ long init_module(void *mem, unsigned long len, const char *args)
 	return err;
 }
 
+static int check_kernel_version(int major, int minor)
+{
+	struct utsname u;
+	const char *p;
+	int maj = 0, min = 0;
+
+	if (uname(&u) < 0)
+		return false;
+	for (p = u.release; *p >= '0' && *p <= '9'; p++)
+		maj = maj * 10 + *p - '0';
+	if (*p == '.')
+		for (p++; *p >= '0' && *p <= '9'; p++)
+			min = min * 10 + *p - '0';
+	if (maj > major || (maj == major && min >= minor))
+		return true;
+	return false;
+}
+
+
 TS_EXPORT int finit_module(const int fd, const char *args, const int flags);
 
 int finit_module(const int fd, const char *args, const int flags)
@@ -289,6 +309,10 @@ int finit_module(const int fd, const char *args, const int flags)
 	unsigned long len;
 	struct stat st;
 
+	if (!check_kernel_version(3, 8)) {
+		errno = ENOSYS;
+		return -1;
+	}
 	if (fstat(fd, &st) < 0)
 		return -1;
 
