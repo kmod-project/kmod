@@ -187,6 +187,28 @@ static DEFINE_TEST(modprobe_param_kcmdline,
 	.modules_loaded = "",
 	);
 
+static noreturn int modprobe_force(const struct test *t)
+{
+	const char *progname = ABS_TOP_BUILDDIR "/tools/modprobe";
+	const char *const args[] = {
+		progname,
+		"--force", "psmouse",
+		NULL,
+	};
+
+	test_spawn_prog(progname, args);
+	exit(EXIT_FAILURE);
+}
+static DEFINE_TEST(modprobe_force,
+	.description = "check modprobe --force",
+	.config = {
+		[TC_UNAME_R] = "4.4.4",
+		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-modprobe/force",
+		[TC_INIT_MODULE_RETCODES] = "",
+	},
+	.modules_loaded = "psmouse",
+	);
+
 
 static const struct test *tests[] = {
 	&smodprobe_show_depends,
@@ -196,6 +218,7 @@ static const struct test *tests[] = {
 	&smodprobe_softdep_loop,
 	&smodprobe_install_cmd_loop,
 	&smodprobe_param_kcmdline,
+	&smodprobe_force,
 	NULL,
 };
 
