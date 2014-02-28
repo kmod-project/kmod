@@ -209,6 +209,50 @@ static DEFINE_TEST(modprobe_force,
 	.modules_loaded = "psmouse",
 	);
 
+static noreturn int modprobe_oldkernel(const struct test *t)
+{
+	const char *progname = ABS_TOP_BUILDDIR "/tools/modprobe";
+	const char *const args[] = {
+		progname,
+		"psmouse",
+		NULL,
+	};
+
+	test_spawn_prog(progname, args);
+	exit(EXIT_FAILURE);
+}
+static DEFINE_TEST(modprobe_oldkernel,
+	.description = "check modprobe --force",
+	.config = {
+		[TC_UNAME_R] = "3.3.3",
+		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-modprobe/oldkernel",
+		[TC_INIT_MODULE_RETCODES] = "",
+	},
+	.modules_loaded = "psmouse",
+	);
+
+static noreturn int modprobe_oldkernel_force(const struct test *t)
+{
+	const char *progname = ABS_TOP_BUILDDIR "/tools/modprobe";
+	const char *const args[] = {
+		progname,
+		"--force", "psmouse",
+		NULL,
+	};
+
+	test_spawn_prog(progname, args);
+	exit(EXIT_FAILURE);
+}
+static DEFINE_TEST(modprobe_oldkernel_force,
+	.description = "check modprobe --force",
+	.config = {
+		[TC_UNAME_R] = "3.3.3",
+		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-modprobe/oldkernel-force",
+		[TC_INIT_MODULE_RETCODES] = "",
+	},
+	.modules_loaded = "psmouse",
+	);
+
 
 static const struct test *tests[] = {
 	&smodprobe_show_depends,
@@ -219,6 +263,8 @@ static const struct test *tests[] = {
 	&smodprobe_install_cmd_loop,
 	&smodprobe_param_kcmdline,
 	&smodprobe_force,
+	&smodprobe_oldkernel,
+	&smodprobe_oldkernel_force,
 	NULL,
 };
 
