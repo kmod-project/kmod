@@ -813,13 +813,9 @@ static int conf_files_list(struct kmod_ctx *ctx, struct kmod_list **list,
 
 	*path_stamp = stat_mstamp(&st);
 
-	if (S_ISREG(st.st_mode)) {
+	if (!S_ISDIR(st.st_mode)) {
 		conf_files_insert_sorted(ctx, list, path, NULL);
 		return 0;
-	} else if (!S_ISDIR(st.st_mode)) {
-		ERR(ctx, "unsupported file mode %s: %#x\n",
-							path, st.st_mode);
-		return -EINVAL;
 	}
 
 	d = opendir(path);
