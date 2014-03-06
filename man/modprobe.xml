@@ -101,8 +101,7 @@
     </para>
     <para>
       <command>modprobe</command> expects an up-to-date
-      <filename>modules.dep.bin</filename> file (or fallback human
-      readable <filename>modules.dep</filename> file), as generated
+      <filename>modules.dep.bin</filename> file as generated
       by the corresponding <command>depmod</command> utility shipped
       along with <command>modprobe</command> (see
       <citerefentry><refentrytitle>depmod</refentrytitle><manvolnum>8</manvolnum>
