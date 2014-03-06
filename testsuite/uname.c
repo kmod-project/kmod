@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <unistd.h>
 
 #include "testsuite.h"
 
@@ -29,16 +30,9 @@ TS_EXPORT int uname(struct utsname *u)
 {
 	static void *nextlib = NULL;
 	static int (*nextlib_uname)(struct utsname *u);
-	const char *release = getenv(S_TC_UNAME_R);
+	const char *release;
 	int err;
 	size_t sz;
-
-	if (release == NULL) {
-		fprintf(stderr, "TRAP uname(): missing export %s?\n",
-							S_TC_UNAME_R);
-		errno = EFAULT;
-		return -1;
-	}
 
 	if (nextlib == NULL) {
 #ifdef RTLD_NEXT
@@ -52,6 +46,20 @@ TS_EXPORT int uname(struct utsname *u)
 	err = nextlib_uname(u);
 	if (err < 0)
 		return err;
+
+	if (!environ)
+		/*
+		 * probably called from within glibc before main(); unsafe
+		 * to call getenv()
+		 */
+		return 0;
+
+	release = getenv(S_TC_UNAME_R);
+	if (release == NULL) {
+		fprintf(stderr, "TRAP uname(): missing export %s?\n",
+							S_TC_UNAME_R);
+		return 0;
+	}
 
 	sz = strlen(release) + 1;
 	if (sz > sizeof(u->release)) {
