@@ -187,6 +187,30 @@ static DEFINE_TEST(modprobe_param_kcmdline,
 	.modules_loaded = "",
 	);
 
+static noreturn int modprobe_param_kcmdline2(const struct test *t)
+{
+	const char *progname = ABS_TOP_BUILDDIR "/tools/modprobe";
+	const char *const args[] = {
+		progname,
+		"-c",
+		NULL,
+	};
+
+	test_spawn_prog(progname, args);
+	exit(EXIT_FAILURE);
+}
+static DEFINE_TEST(modprobe_param_kcmdline2,
+	.description = "check if params with no value are parsed correctly from kcmdline",
+	.config = {
+		[TC_UNAME_R] = "4.4.4",
+		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-modprobe/module-param-kcmdline2",
+	},
+	.output = {
+		.out = TESTSUITE_ROOTFS "test-modprobe/module-param-kcmdline2/correct.txt",
+	},
+	.modules_loaded = "",
+	);
+
 static noreturn int modprobe_force(const struct test *t)
 {
 	const char *progname = ABS_TOP_BUILDDIR "/tools/modprobe";
@@ -262,6 +286,7 @@ static const struct test *tests[] = {
 	&smodprobe_softdep_loop,
 	&smodprobe_install_cmd_loop,
 	&smodprobe_param_kcmdline,
+	&smodprobe_param_kcmdline2,
 	&smodprobe_force,
 	&smodprobe_oldkernel,
 	&smodprobe_oldkernel_force,
