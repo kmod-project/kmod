@@ -235,6 +235,30 @@ static DEFINE_TEST(modprobe_param_kcmdline3,
 	.modules_loaded = "",
 	);
 
+static noreturn int modprobe_param_kcmdline4(const struct test *t)
+{
+	const char *progname = ABS_TOP_BUILDDIR "/tools/modprobe";
+	const char *const args[] = {
+		progname,
+		"-c",
+		NULL,
+	};
+
+	test_spawn_prog(progname, args);
+	exit(EXIT_FAILURE);
+}
+static DEFINE_TEST(modprobe_param_kcmdline4,
+	.description = "check if unrelated strings in kcmdline are correctly ignored",
+	.config = {
+		[TC_UNAME_R] = "4.4.4",
+		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-modprobe/module-param-kcmdline4",
+	},
+	.output = {
+		.out = TESTSUITE_ROOTFS "test-modprobe/module-param-kcmdline4/correct.txt",
+	},
+	.modules_loaded = "",
+	);
+
 static noreturn int modprobe_force(const struct test *t)
 {
 	const char *progname = ABS_TOP_BUILDDIR "/tools/modprobe";
@@ -312,6 +336,7 @@ static const struct test *tests[] = {
 	&smodprobe_param_kcmdline,
 	&smodprobe_param_kcmdline2,
 	&smodprobe_param_kcmdline3,
+	&smodprobe_param_kcmdline4,
 	&smodprobe_force,
 	&smodprobe_oldkernel,
 	&smodprobe_oldkernel_force,
