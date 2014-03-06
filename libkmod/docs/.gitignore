@@ -10,3 +10,5 @@ version.xml
 xml
 html
 gtk-doc.make
+Makefile
+Makefile.in
