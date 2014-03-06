@@ -93,9 +93,11 @@
       <command>depmod</command> will output a file named
       <filename>modules.devname</filename> if modules supply special device
       names (devname) that should be populated in /dev on boot (by a utility
-      such as udev).  </para> <para> If a <replaceable>version</replaceable> is
-      provided, then that kernel version's module directory is used rather than
-      the current kernel version (as returned by <command>uname -r</command>).
+      such as systemd-tmpfiles).
+    </para>
+    <para> If a <replaceable>version</replaceable> is provided, then that kernel
+      version's module directory is used rather than the current kernel version
+      (as returned by <command>uname -r</command>).
     </para>
   </refsect1>
   <refsect1><title>OPTIONS</title>
