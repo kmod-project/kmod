@@ -516,7 +516,7 @@ int kmod_elf_get_modversions(const struct kmod_elf *elf, struct kmod_modversion 
 	assert_cc(sizeof(struct kmod_modversion64) ==
 					sizeof(struct kmod_modversion32));
 
-	if (elf->class == KMOD_ELF_32)
+	if (elf->class & KMOD_ELF_32)
 		offcrc = sizeof(uint32_t);
 	else
 		offcrc = sizeof(uint64_t);
