@@ -1,0 +1,40 @@
+python-kmod
+===========
+
+Python bindings for kmod/libkmod
+
+kmod is a set of tools to handle common tasks with Linux kernel modules like
+insert, remove, list, check properties, resolve dependencies and aliases.
+
+These tools are designed on top of libkmod, a library that is shipped with
+kmod. It can be found at:
+
+http://git.kernel.org/?p=utils/kernel/kmod/kmod.git;a=summary
+
+python-kmod is a Python wrapper module for libkmod, exposing common
+module operations: listing installed modules, modprobe, and rmmod.
+It is at:
+
+https://github.com/agrover/python-kmod
+
+Example (python invoked as root)
+--------------------------------
+
+::
+
+  >>> import kmod
+  >>> km = kmod.Kmod()
+  >>> [(m.name, m.size) for m in km.loaded()]
+  [(u'nfs', 407706),
+   (u'nfs_acl', 12741)
+   ...
+   (u'virtio_blk', 17549)]
+  >>> km.modprobe("btrfs")
+  >>> km.rmmod("btrfs")
+
+Building
+--------
+
+Ensure Python, Cython, and the kmod headers are installed and run::
+
+  $ python setup.py build
