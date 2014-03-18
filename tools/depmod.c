@@ -1167,7 +1167,7 @@ static int depmod_module_is_higher_priority(const struct depmod *depmod, const s
 		oldprio = bprio;
 
 	DBG("priorities: built-in: %d, old: %d, new: %d\n",
-	    bprio, newprio, oldprio);
+	    bprio, oldprio, newprio);
 
 	return newprio <= oldprio;
 }
