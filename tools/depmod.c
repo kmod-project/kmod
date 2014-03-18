@@ -1153,10 +1153,10 @@ static int depmod_module_is_higher_priority(const struct depmod *depmod, const s
 		DBG("search %s\n", se->builtin ? "built-in" : se->path);
 		if (se->builtin)
 			bprio = i;
-		else if (newlen >= se->len &&
+		else if (newlen > se->len && newpath[se->len] == '/' &&
 			 memcmp(se->path, newpath, se->len) == 0)
 			newprio = i;
-		else if (oldlen >= se->len &&
+		else if (oldlen > se->len && oldpath[se->len] == '/' &&
 			 memcmp(se->path, oldpath, se->len) == 0)
 			oldprio = i;
 	}
