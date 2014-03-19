@@ -80,10 +80,65 @@ static DEFINE_TEST(depmod_search_order_simple,
 		},
 	});
 
+#define SEARCH_ORDER_SAME_PREFIX_ROOTFS TESTSUITE_ROOTFS "test-depmod/search-order-same-prefix"
+static noreturn int depmod_search_order_same_prefix(const struct test *t)
+{
+	const char *progname = ABS_TOP_BUILDDIR "/tools/depmod";
+	const char *const args[] = {
+		progname,
+		NULL,
+	};
+
+	test_spawn_prog(progname, args);
+	exit(EXIT_FAILURE);
+}
+static DEFINE_TEST(depmod_search_order_same_prefix,
+	.description = "check if depmod honor search order in config with same prefix",
+	.config = {
+		[TC_UNAME_R] = "4.4.4",
+		[TC_ROOTFS] = SEARCH_ORDER_SAME_PREFIX_ROOTFS,
+	},
+	.output = {
+		.files = (const struct keyval[]) {
+			{ SEARCH_ORDER_SAME_PREFIX_ROOTFS "/lib/modules/4.4.4/correct-modules.dep",
+			  SEARCH_ORDER_SAME_PREFIX_ROOTFS "/lib/modules/4.4.4/modules.dep" },
+			{ }
+		},
+	});
+
+#define SEARCH_ORDER_SAME_PREFIX2_ROOTFS TESTSUITE_ROOTFS "test-depmod/search-order-same-prefix2"
+static noreturn int depmod_search_order_same_prefix2(const struct test *t)
+{
+	const char *progname = ABS_TOP_BUILDDIR "/tools/depmod";
+	const char *const args[] = {
+		progname,
+		NULL,
+	};
+
+	test_spawn_prog(progname, args);
+	exit(EXIT_FAILURE);
+}
+static DEFINE_TEST(depmod_search_order_same_prefix2,
+	.description = "check if depmod honor search order in config with same prefi: "
+			"the same as depmod_search_order_same_prefix, but in inverse order",
+	.config = {
+		[TC_UNAME_R] = "4.4.4",
+		[TC_ROOTFS] = SEARCH_ORDER_SAME_PREFIX2_ROOTFS,
+	},
+	.output = {
+		.files = (const struct keyval[]) {
+			{ SEARCH_ORDER_SAME_PREFIX2_ROOTFS "/lib/modules/4.4.4/correct-modules.dep",
+			  SEARCH_ORDER_SAME_PREFIX2_ROOTFS "/lib/modules/4.4.4/modules.dep" },
+			{ }
+		},
+	});
+
 
 static const struct test *tests[] = {
 	&sdepmod_modules_order_for_compressed,
 	&sdepmod_search_order_simple,
+	&sdepmod_search_order_same_prefix,
+	&sdepmod_search_order_same_prefix2,
 	NULL,
 };
 
