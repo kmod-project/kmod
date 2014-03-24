@@ -127,6 +127,24 @@ AS_IF([test "x$enable_debug" = "xyes"], [
 	AC_DEFINE(ENABLE_DEBUG, [1], [Debug messages.])
 ])
 
+AC_ARG_ENABLE([python],
+	AS_HELP_STRING([--enable-python], [enable Python libkmod bindings @<:@default=disabled@:>@]),
+	[], [enable_python=no])
+AS_IF([test "x$enable_python" = "xyes"], [
+	AM_PATH_PYTHON(,,[:])
+	AC_PATH_PROG([CYTHON], [cython], [:])
+
+	PKG_CHECK_MODULES([PYTHON], [python-${PYTHON_VERSION}],
+			  [have_python=yes],
+			  [PKG_CHECK_MODULES([PYTHON], [python],
+					     [have_python=yes],
+					     [have_python=no])])
+
+	AS_IF([test "x$have_python" = xno],
+	      [AC_MSG_ERROR([*** python support requested but libraries not found])])
+])
+AM_CONDITIONAL([BUILD_PYTHON], [test "x$enable_python" = "xyes"])
+
 m4_ifdef([GTK_DOC_CHECK], [
 GTK_DOC_CHECK([1.14],[--flavour no-tmpl-flat])
 ], [
@@ -222,6 +240,7 @@ AC_MSG_RESULT([
 	ldflags:		${with_ldflags} ${LDFLAGS}
 
 	tools:			${enable_tools}
+	python bindings:	${enable_python}
 	logging:		${enable_logging}
 	compression:		xz=${with_xz}  zlib=${with_zlib}
 	debug:			${enable_debug}

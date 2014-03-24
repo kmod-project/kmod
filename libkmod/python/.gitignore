@@ -3,3 +3,4 @@ dist
 *.c
 *.pyc
 *.so
+kmod/version.py

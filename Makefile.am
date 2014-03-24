@@ -6,7 +6,8 @@ endif
 
 DISTCLEAN_LOCAL_HOOKS =
 EXTRA_DIST =
-CLEANFILES =
+CLEANFILES = $(BUILT_FILES)
+BUILT_FILES =
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 AM_MAKEFLAGS = --no-print-directory
 
@@ -125,6 +126,70 @@ ${noinst_SCRIPTS}: tools/kmod
 endif
 
 # ------------------------------------------------------------------------------
+# PYTHON BINDINGS
+# ------------------------------------------------------------------------------
+
+CYTHON_FLAGS_VERBOSE_ =
+CYTHON_FLAGS_VERBOSE_0 =
+CYTHON_FLAGS_VERBOSE_1 = -v
+CYTHON_FLAGS = $(CYTHON_FLAGS_VERBOSE_$(V))
+AM_V_CYTHON = $(am__v_CYTHON_$(V))
+am__v_CYTHON_ = $(am__v_CYTHON_$(AM_DEFAULT_VERBOSITY))
+am__v_CYTHON_0 = @echo "  CYTHON " $@;
+
+.pyx.c:
+	$(AM_V_CYTHON)$(CYTHON) -o $@ $<
+
+%.py: %.py.in Makefile
+	$(SED_PROCESS)
+
+# Remove some warnings for generated code
+PYTHON_NOWARN = -Wno-redundant-decls -Wno-shadow -Wno-strict-aliasing
+
+CPYTHON_MODULE_CFLAGS = $(AM_CFLAGS) -DCPYTHON_COMPILING_IN_PYPY=0 \
+			$(PYTHON_NOWARN) $(PYTHON_CFLAGS) \
+			-fvisibility=default
+CPYTHON_MODULE_LDFLAGS = $(AM_LDFLAGS) -module -avoid-version -shared
+
+if BUILD_PYTHON
+pkgpyexec_LTLIBRARIES = libkmod/python/kmod/kmod.la \
+			libkmod/python/kmod/list.la \
+			libkmod/python/kmod/module.la \
+			libkmod/python/kmod/_util.la
+
+libkmod_python_kmod_kmod_la_SOURCES = libkmod/python/kmod/kmod.c
+libkmod_python_kmod_kmod_la_CFLAGS = $(CPYTHON_MODULE_CFLAGS)
+libkmod_python_kmod_kmod_la_LDFLAGS = $(CPYTHON_MODULE_LDFLAGS)
+libkmod_python_kmod_kmod_la_LIBADD = $(PYTHON_LIBS) libkmod/libkmod.la
+
+libkmod_python_kmod_list_la_SOURCES = libkmod/python/kmod/list.c
+libkmod_python_kmod_list_la_CFLAGS = $(CPYTHON_MODULE_CFLAGS)
+libkmod_python_kmod_list_la_LDFLAGS = $(CPYTHON_MODULE_LDFLAGS)
+libkmod_python_kmod_list_la_LIBADD = $(PYTHON_LIBS) libkmod/libkmod.la
+
+libkmod_python_kmod_module_la_SOURCES = libkmod/python/kmod/module.c
+libkmod_python_kmod_module_la_CFLAGS = $(CPYTHON_MODULE_CFLAGS)
+libkmod_python_kmod_module_la_LDFLAGS = $(CPYTHON_MODULE_LDFLAGS)
+libkmod_python_kmod_module_la_LIBADD = $(PYTHON_LIBS) libkmod/libkmod.la
+
+libkmod_python_kmod__util_la_SOURCES = libkmod/python/kmod/_util.c
+libkmod_python_kmod__util_la_CFLAGS = $(CPYTHON_MODULE_CFLAGS)
+libkmod_python_kmod__util_la_LDFLAGS = $(CPYTHON_MODULE_LDFLAGS)
+libkmod_python_kmod__util_la_LIBADD = $(PYTHON_LIBS) libkmod/libkmod.la
+
+BUILT_FILES += $(libkmod_python_kmod_kmod_la_SOURCES) \
+	       $(libkmod_python_kmod_list_la_SOURCES) \
+	       $(libkmod_python_kmod_module_la_SOURCES) \
+	       $(libkmod_python_kmod__util_la_SOURCES)
+
+dist_pkgpyexec_PYTHON = libkmod/python/kmod/error.py \
+			libkmod/python/kmod/__init__.py \
+			libkmod/python/kmod/version.py
+
+BUILT_FILES += libkmod/python/kmod/version.py
+
+endif
+# ------------------------------------------------------------------------------
 # TESTSUITE
 # ------------------------------------------------------------------------------
 
@@ -211,7 +276,8 @@ testsuite-distclean:
 DISTCLEAN_LOCAL_HOOKS += testsuite-distclean
 EXTRA_DIST += testsuite/rootfs-pristine
 
-DISTCHECK_CONFIGURE_FLAGS=--enable-gtk-doc --sysconfdir=/etc --with-zlib \
+DISTCHECK_CONFIGURE_FLAGS=--enable-gtk-doc --enable-python --sysconfdir=/etc \
+	--with-zlib \
 	--with-bashcompletiondir=$$dc_install_base/$(bashcompletiondir)
 
 distclean-local: $(DISTCLEAN_LOCAL_HOOKS)
