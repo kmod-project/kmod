@@ -24,6 +24,6 @@ Initialized build system. For a common configuration please run:
 If you are debugging or hacking on kmod, consider configuring
 like below:
 
-./configure CFLAGS="-g -O2 -Werror" $args $hackargs
+./configure CFLAGS="-g -O2" $args $hackargs
 
 EOC
