@@ -164,7 +164,7 @@ CC_CHECK_FLAGS_APPEND(with_cflags, [CFLAGS], [\
 		       -Wmissing-noreturn \
 		       -Wshadow \
 		       -Wendif-labels \
-		       -Wstrict-aliasing=2 \
+		       -Wstrict-aliasing=3 \
 		       -Wwrite-strings \
 		       -Wno-long-long \
 		       -Wno-overlength-strings \
