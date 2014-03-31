@@ -1952,8 +1952,6 @@ static int output_softdeps(struct depmod *depmod, FILE *out)
 	size_t i;
 
 	fputs("# Soft dependencies extracted from modules themselves.\n", out);
-	fputs("# Copy, with a .conf extension, to /etc/modprobe.d to use "
-	      "it with modprobe.\n", out);
 
 	for (i = 0; i < depmod->modules.count; i++) {
 		const struct mod *mod = depmod->modules.array[i];

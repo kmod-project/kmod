@@ -848,6 +848,8 @@ int kmod_config_new(struct kmod_ctx *ctx, struct kmod_config **p_config,
 	struct kmod_list *path_list = NULL;
 	size_t i;
 
+	conf_files_insert_sorted(ctx, &list, kmod_get_dirname(ctx), "modules.softdep");
+
 	for (i = 0; config_paths[i] != NULL; i++) {
 		const char *path = config_paths[i];
 		unsigned long long path_stamp = 0;
