@@ -87,6 +87,13 @@ struct kmod_module {
 	bool ignorecmd : 1;
 
 	/*
+	 * set by kmod_module_get_probe_list: indicates whether this is the
+	 * module the user asked for or its dependency, or whether this
+	 * is a softdep only
+	 */
+	bool required : 1;
+
+	/*
 	 * if module was created by searching the modules.builtin file, this
 	 * is set. There's nothing much useful one can do with such a
 	 * "module", except knowing it's builtin.
@@ -206,6 +213,11 @@ void kmod_module_set_visited(struct kmod_module *mod, bool visited)
 void kmod_module_set_builtin(struct kmod_module *mod, bool builtin)
 {
 	mod->builtin = builtin;
+}
+
+void kmod_module_set_required(struct kmod_module *mod, bool required)
+{
+	mod->required = required;
 }
 
 /*
@@ -1033,6 +1045,7 @@ static char *module_options_concat(const char *opt, const char *xopt)
 }
 
 static int __kmod_module_get_probe_list(struct kmod_module *mod,
+						bool required,
 						bool ignorecmd,
 						struct kmod_list **list);
 
@@ -1052,7 +1065,7 @@ static int __kmod_module_fill_softdep(struct kmod_module *mod,
 
 	kmod_list_foreach(l, pre) {
 		struct kmod_module *m = l->data;
-		err = __kmod_module_get_probe_list(m, false, list);
+		err = __kmod_module_get_probe_list(m, false, false, list);
 		if (err < 0)
 			goto fail;
 	}
@@ -1068,7 +1081,7 @@ static int __kmod_module_fill_softdep(struct kmod_module *mod,
 
 	kmod_list_foreach(l, post) {
 		struct kmod_module *m = l->data;
-		err = __kmod_module_get_probe_list(m, false, list);
+		err = __kmod_module_get_probe_list(m, false, false, list);
 		if (err < 0)
 			goto fail;
 	}
@@ -1082,6 +1095,7 @@ fail:
 
 /* re-entrant */
 static int __kmod_module_get_probe_list(struct kmod_module *mod,
+						bool required,
 						bool ignorecmd,
 						struct kmod_list **list)
 {
@@ -1096,6 +1110,19 @@ static int __kmod_module_get_probe_list(struct kmod_module *mod,
 	mod->visited = true;
 
 	dep = kmod_module_get_dependencies(mod);
+	if (required) {
+		/*
+		 * Called from kmod_module_probe_insert_module(); set the
+		 * ->required flag on mod and all its dependencies before
+		 * they are possibly visited through some softdeps.
+		 */
+		mod->required = true;
+		kmod_list_foreach(l, dep) {
+			struct kmod_module *m = l->data;
+			m->required = true;
+		}
+	}
+
 	kmod_list_foreach(l, dep) {
 		struct kmod_module *m = l->data;
 		err = __kmod_module_fill_softdep(m, list);
@@ -1133,8 +1160,9 @@ static int kmod_module_get_probe_list(struct kmod_module *mod,
 	 * Make sure we don't get screwed by previous calls to this function
 	 */
 	kmod_set_modules_visited(mod->ctx, false);
+	kmod_set_modules_required(mod->ctx, false);
 
-	err = __kmod_module_get_probe_list(mod, ignorecmd, list);
+	err = __kmod_module_get_probe_list(mod, true, ignorecmd, list);
 	if (err < 0) {
 		kmod_module_unref_list(*list);
 		*list = NULL;
@@ -1295,8 +1323,12 @@ finish_module:
 				(flags & KMOD_PROBE_FAIL_ON_LOADED))
 			break;
 
-		if (err == -EEXIST)
+		/*
+		 * Ignore errors from softdeps
+		 */
+		if (err == -EEXIST || !m->required)
 			err = 0;
+
 		else if (err < 0)
 			break;
 	}
