@@ -50,6 +50,9 @@ AC_CHECK_FUNCS_ONCE([finit_module])
 # dietlibc doesn't have st.st_mtim struct member
 AC_CHECK_MEMBERS([struct stat.st_mtim], [], [], [#include <sys/stat.h>])
 
+# musl 1.0 and bionic 4.4 don't have strndupa
+AC_CHECK_DECLS_ONCE([strndupa])
+
 # Check kernel headers
 AC_CHECK_HEADERS_ONCE([linux/module.h])
 

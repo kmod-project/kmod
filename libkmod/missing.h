@@ -32,3 +32,11 @@ static inline int finit_module(int fd, const char *uargs, int flags)
 	return syscall(__NR_finit_module, fd, uargs, flags);
 }
 #endif
+
+#if !HAVE_DECL_STRNDUPA
+#define strndupa(s, length) \
+	({ \
+		size_t __len = strnlen((s), (length)); \
+		strncpy(alloca(__len + 1), (s), __len);  \
+	 })
+#endif
