@@ -213,7 +213,14 @@ TESTSUITE_OVERRIDE_LIBS = testsuite/uname.la testsuite/path.la \
 TESTSUITE_OVERRIDE_LIBS_LDFLAGS = avoid-version -module -shared -export-dynamic \
 				  -rpath /nowhere -ldl
 
-check-am: rootfs
+check-sysconfdir:
+	$(AM_V_at)if test "$(sysconfdir)" != "/etc" -a "$(sysconfdir)" != "/etc/"; then \
+		echo "warning: Some tests will fail without --sysconfdir=/etc" >&2; \
+	fi
+.PHONY: check-sysconfdir
+
+check-am: rootfs check-sysconfdir
+
 
 check_LTLIBRARIES = $(TESTSUITE_OVERRIDE_LIBS)
 
