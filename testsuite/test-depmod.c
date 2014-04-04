@@ -135,7 +135,9 @@ static DEFINE_TEST(depmod_search_order_same_prefix2,
 
 
 static const struct test *tests[] = {
+#ifdef ENABLE_ZLIB
 	&sdepmod_modules_order_for_compressed,
+#endif
 	&sdepmod_search_order_simple,
 	&sdepmod_search_order_same_prefix,
 	&sdepmod_search_order_same_prefix2,
