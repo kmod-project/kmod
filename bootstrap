@@ -11,7 +11,7 @@ args="--prefix=/usr \
 --sysconfdir=/etc \
 --libdir=$(libdir /usr/lib)"
 
-hackargs="--enable-debug --with-xz --with-zlib"
+hackargs="--enable-debug --enable-python --with-xz --with-zlib"
 
 cat <<EOC
 
