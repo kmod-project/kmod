@@ -7,8 +7,9 @@ before_install:
   - sudo apt-get install -qq liblzma-dev
   - sudo apt-get install -qq zlib1g-dev
   - sudo apt-get install -qq xsltproc docbook-xsl
+  - sudo apt-get install -qq cython
 # Change this to your needs
-script: ./bootstrap-configure && make CFLAGS="-Wno-error" && make CFLAGS="-Wno-error" check
+script: ./bootstrap-configure && make && make check
 notifications:
   irc:
     channels:
