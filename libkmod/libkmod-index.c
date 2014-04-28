@@ -800,7 +800,8 @@ struct index_mm *index_mm_open(struct kmod_ctx *ctx, const char *filename,
 		goto fail_open;
 	}
 
-	fstat(fd, &st);
+	if (fstat(fd, &st) < 0)
+		goto fail_nommap;
 	if ((size_t) st.st_size < sizeof(hdr))
 		goto fail_nommap;
 
