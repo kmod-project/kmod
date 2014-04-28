@@ -126,7 +126,7 @@ static uint32_t read_long(FILE *in)
 	uint32_t l;
 
 	errno = 0;
-	if (fread(&l, sizeof(uint32_t), 1, in) <= 0)
+	if (fread(&l, sizeof(uint32_t), 1, in) != sizeof(uint32_t))
 		read_error();
 	return ntohl(l);
 }
