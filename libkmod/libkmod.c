@@ -459,6 +459,7 @@ static int kmod_lookup_alias_from_alias_bin(struct kmod_ctx *ctx,
 
 fail:
 	*list = kmod_list_remove_n_latest(*list, nmatch);
+	index_values_free(realnames);
 	return err;
 
 }
