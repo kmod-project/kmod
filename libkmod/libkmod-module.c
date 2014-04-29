@@ -1802,6 +1802,7 @@ KMOD_EXPORT long kmod_module_get_size(const struct kmod_module *mod)
 		int err = -errno;
 		ERR(mod->ctx,
 		    "could not open /proc/modules: %s\n", strerror(errno));
+		close(dfd);
 		return err;
 	}
 
