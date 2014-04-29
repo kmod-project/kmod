@@ -420,8 +420,10 @@ KMOD_EXPORT int kmod_module_new_from_path(struct kmod_ctx *ctx,
 	}
 
 	err = kmod_module_new(ctx, name, name, namelen, NULL, 0, &m);
-	if (err < 0)
+	if (err < 0) {
+		free(abspath);
 		return err;
+	}
 
 	m->path = abspath;
 	*mod = m;
