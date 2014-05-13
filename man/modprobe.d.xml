@@ -157,8 +157,8 @@
             This command allows you to add options to the module
             <replaceable>modulename</replaceable> (which might be an
             alias) every time it is inserted into the kernel: whether
-            directly (using <command>modprobe</command>
-            <replaceable>modulename</replaceable> or because the
+            directly (using <command>modprobe </command>
+            <replaceable>modulename</replaceable>) or because the
             module being inserted depends on this module.
           </para>
           <para>
