@@ -169,6 +169,7 @@ int hash_add(struct hash *hash, const char *key, const void *value)
 		if (c == 0) {
 			if (hash->free_value)
 				hash->free_value((void *)entry->value);
+			entry->key = key;
 			entry->value = value;
 			return 0;
 		} else if (c < 0) {
