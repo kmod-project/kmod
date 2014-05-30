@@ -774,10 +774,11 @@ static inline int test_run_parent(const struct test *t, int fdout[2],
 					t->name);
 				err = EXIT_FAILURE;
 			}
-		} else
+		} else {
 			ERR("%sFAILED%s: %s\n",
 					ANSI_HIGHLIGHT_RED_ON, ANSI_HIGHLIGHT_OFF,
 					t->name);
+		}
 	} else {
 		if (err == 0) {
 			if (matchout) {
