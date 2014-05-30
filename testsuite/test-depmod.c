@@ -125,8 +125,9 @@ static DEFINE_TEST(depmod_detect_loop,
 		[TC_ROOTFS] = DETECT_LOOP_ROOTFS,
 	},
 	.expected_fail = true,
-	);
-
+	.output = {
+		.err = DETECT_LOOP_ROOTFS "/correct.txt",
+	});
 
 
 static const struct test *tests[] = {
