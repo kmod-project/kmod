@@ -927,6 +927,7 @@ struct mod {
 	int dep_sort_idx; /* topological sort index */
 	uint16_t idx; /* index in depmod->modules.array */
 	uint16_t users; /* how many modules depend on this one */
+	bool visited; /* helper field to report cycles */
 	char modname[];
 };
 
@@ -1577,6 +1578,96 @@ static void depmod_sort_dependencies(struct depmod *depmod)
 	}
 }
 
+static void depmod_report_cycles(struct depmod *depmod, uint16_t n_mods,
+				 uint16_t n_roots, uint16_t *users,
+				 uint16_t *stack, uint16_t *edges)
+{
+	const char sep[] = " -> ";
+	int ir = 0;
+	ERR("Found %u modules in dependency cycles!\n", n_roots);
+
+	while (n_roots > 0) {
+		int is, ie;
+
+		for (; ir < n_mods; ir++) {
+			if (users[ir] > 0) {
+				break;
+			}
+		}
+
+		if (ir >= n_mods)
+			break;
+
+		/* New DFS with ir as root, no edges */
+		stack[0] = ir;
+		ie = 0;
+
+		/* at least one root less */
+		n_roots--;
+
+		/* skip this root on next iteration */
+		ir++;
+
+		for (is = 1; is > 0;) {
+			uint16_t idx = stack[--is];
+			struct mod *m = depmod->modules.array[idx];
+			const struct mod **itr, **itr_end;
+
+			DBG("Cycle report: Trying %s visited=%d users=%d\n",
+			    m->modname, m->visited, users[idx]);
+
+			if (m->visited) {
+				int i, n = 0, sz = 0;
+				char *buf;
+
+				for (i = ie - 1; i >= 0; i--) {
+					struct mod *loop = depmod->modules.array[edges[i]];
+					sz += loop->modnamesz - 1;
+					n++;
+					if (loop == m) {
+						sz += loop->modnamesz - 1;
+						break;
+					}
+				}
+
+				buf = malloc(sz + n * strlen(sep) + 1);
+				sz = 0;
+				for (i = ie - n; i < ie; i++) {
+					struct mod *loop =
+						depmod->modules.array[edges[i]];
+					memcpy(buf + sz, loop->modname,
+					       loop->modnamesz - 1);
+					sz += loop->modnamesz - 1;
+					memcpy(buf + sz, sep, strlen(sep));
+					sz += strlen(sep);
+				}
+				memcpy(buf + sz, m->modname, m->modnamesz);
+
+				ERR("Cycle detected: %s\n", buf);
+
+				free(buf);
+				continue;
+			}
+
+			m->visited = true;
+
+			if (m->deps.count == 0) {
+				continue;
+			}
+
+			edges[ie++] = idx;
+
+			itr = (const struct mod **) m->deps.array;
+			itr_end = itr + m->deps.count;
+			for (; itr < itr_end; itr++) {
+				const struct mod *dep = *itr;
+				stack[is++] = dep->idx;
+				users[dep->idx]--;
+			}
+		}
+	}
+}
+
 static int depmod_calculate_dependencies(struct depmod *depmod)
 {
 	const struct mod **itrm;
@@ -1631,16 +1722,9 @@ static int depmod_calculate_dependencies(struct depmod *depmod)
 	}
 
 	if (n_sorted < n_mods) {
-		ERR("Found %u modules in dependency cycles!\n",
-		    n_mods - n_sorted);
+		depmod_report_cycles(depmod, n_mods, n_mods - n_sorted,
+				     users, roots, sorted);
 		ret = -EINVAL;
-		for (i = 0; i < n_mods; i++) {
-			struct mod *m;
-			if (users[i] == 0)
-				continue;
-			m = depmod->modules.array[i];
-			ERR("%s in dependency cycle!\n", m->path);
-		}
 		goto exit;
 	}
 
