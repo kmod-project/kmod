@@ -782,19 +782,28 @@ static inline int test_run_parent(const struct test *t, int fdout[2],
 	} else {
 		if (err == 0) {
 			if (matchout) {
-				LOG("%sUNEXPECTED PASS%s: %s\n",
+				ERR("%sUNEXPECTED PASS%s: exit with 0: %s\n",
 					ANSI_HIGHLIGHT_RED_ON, ANSI_HIGHLIGHT_OFF,
 					t->name);
 				err = EXIT_FAILURE;
-			} else
-				LOG("%sEXPECTED FAIL%s: exit ok but outputs do not match: %s\n",
-					ANSI_HIGHLIGHT_GREEN_ON, ANSI_HIGHLIGHT_OFF,
+			} else {
+				ERR("%sUNEXPECTED PASS%s: exit with 0 and outputs do not match: %s\n",
+					ANSI_HIGHLIGHT_RED_ON, ANSI_HIGHLIGHT_OFF,
 					t->name);
+				err = EXIT_FAILURE;
+			}
 		} else {
-			ERR("%sEXPECTED FAIL%s: %s\n",
+			if (matchout) {
+				LOG("%sEXPECTED FAIL%s: %s\n",
 					ANSI_HIGHLIGHT_GREEN_ON, ANSI_HIGHLIGHT_OFF,
 					t->name);
-			err = EXIT_SUCCESS;
+				err = EXIT_SUCCESS;
+			} else {
+				LOG("%sEXPECTED FAIL%s: exit with %d but outputs do not match: %s\n",
+					ANSI_HIGHLIGHT_GREEN_ON, ANSI_HIGHLIGHT_OFF,
+					WEXITSTATUS(err), t->name);
+				err = EXIT_FAILURE;
+			}
 		}
 	}
 
