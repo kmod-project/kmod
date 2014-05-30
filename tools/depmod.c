@@ -922,7 +922,7 @@ struct mod {
 	struct kmod_list *dep_sym_list;
 	struct array deps; /* struct symbol */
 	size_t baselen; /* points to start of basename/filename */
-	size_t modnamelen;
+	size_t modnamesz;
 	int sort_idx; /* sort index using modules.order */
 	int dep_sort_idx; /* topological sort index */
 	uint16_t idx; /* index in depmod->modules.array */
@@ -1044,21 +1044,21 @@ static int depmod_module_add(struct depmod *depmod, struct kmod_module *kmod)
 {
 	const struct cfg *cfg = depmod->cfg;
 	const char *modname, *lastslash;
-	size_t modnamelen;
+	size_t modnamesz;
 	struct mod *mod;
 	int err;
 
 	modname = kmod_module_get_name(kmod);
-	modnamelen = strlen(modname) + 1;
+	modnamesz = strlen(modname) + 1;
 
-	mod = calloc(1, sizeof(struct mod) + modnamelen);
+	mod = calloc(1, sizeof(struct mod) + modnamesz);
 	if (mod == NULL)
 		return -ENOMEM;
 	mod->kmod = kmod;
 	mod->sort_idx = depmod->modules.count + 1;
 	mod->dep_sort_idx = INT32_MAX;
-	memcpy(mod->modname, modname, modnamelen);
-	mod->modnamelen = modnamelen;
+	memcpy(mod->modname, modname, modnamesz);
+	mod->modnamesz = modnamesz;
 
 	array_init(&mod->deps, 4);
 
@@ -1078,7 +1078,7 @@ static int depmod_module_add(struct depmod *depmod, struct kmod_module *kmod)
 	}
 
 	if (mod->relpath != NULL) {
-		size_t uncrelpathlen = lastslash - mod->relpath + modnamelen
+		size_t uncrelpathlen = lastslash - mod->relpath + modnamesz
 				       + kmod_exts[KMOD_EXT_UNC].len;
 		mod->uncrelpath = memdup(mod->relpath, uncrelpathlen + 1);
 		mod->uncrelpath[uncrelpathlen] = '\0';
@@ -1123,8 +1123,12 @@ static int depmod_module_is_higher_priority(const struct depmod *depmod, const s
 	const struct cfg *cfg = depmod->cfg;
 	const struct cfg_override *ov;
 	const struct cfg_search *se;
+
+	/* baselen includes the last '/' and mod->baselen doesn't. So it's
+	 * actually correct to use modnamelen in the first and modnamesz in
+	 * the latter */
 	size_t newlen = baselen + modnamelen;
-	size_t oldlen = mod->baselen + mod->modnamelen;
+	size_t oldlen = mod->baselen + mod->modnamesz;
 	const char *oldpath = mod->path;
 	int i, bprio = -1, oldprio = -1, newprio = -1;
 
