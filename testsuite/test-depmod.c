@@ -106,6 +106,28 @@ static DEFINE_TEST(depmod_search_order_same_prefix,
 		},
 	});
 
+#define DETECT_LOOP_ROOTFS TESTSUITE_ROOTFS "test-depmod/detect-loop"
+static noreturn int depmod_detect_loop(const struct test *t)
+{
+	const char *progname = ABS_TOP_BUILDDIR "/tools/depmod";
+	const char *const args[] = {
+		progname,
+		NULL,
+	};
+
+	test_spawn_prog(progname, args);
+	exit(EXIT_FAILURE);
+}
+static DEFINE_TEST(depmod_detect_loop,
+	.description = "check if depmod detects module loops correctly",
+	.config = {
+		[TC_UNAME_R] = "4.4.4",
+		[TC_ROOTFS] = DETECT_LOOP_ROOTFS,
+	},
+	.expected_fail = true,
+	);
+
+
 
 static const struct test *tests[] = {
 #ifdef ENABLE_ZLIB
@@ -113,6 +135,7 @@ static const struct test *tests[] = {
 #endif
 	&sdepmod_search_order_simple,
 	&sdepmod_search_order_same_prefix,
+	&sdepmod_detect_loop,
 	NULL,
 };
 
