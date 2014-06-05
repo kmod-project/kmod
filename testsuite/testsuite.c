@@ -737,7 +737,8 @@ static inline int test_run_parent(const struct test *t, int fdout[2],
 		pid = wait(&err);
 		if (pid == -1) {
 			ERR("error waitpid(): %m\n");
-			return EXIT_FAILURE;
+			err = EXIT_FAILURE;
+			goto exit;
 		}
 	} while (!WIFEXITED(err) && !WIFSIGNALED(err));
 
@@ -751,7 +752,8 @@ static inline int test_run_parent(const struct test *t, int fdout[2],
 	} else if (WIFSIGNALED(err)) {
 		ERR("'%s' [%u] terminated by signal %d (%s)\n", t->name, pid,
 				WTERMSIG(err), strsignal(WTERMSIG(err)));
-		return t->expected_fail ? EXIT_SUCCESS : EXIT_FAILURE;
+		err = t->expected_fail ? EXIT_SUCCESS : EXIT_FAILURE;
+		goto exit;
 	}
 
 	if (matchout)
@@ -807,6 +809,8 @@ static inline int test_run_parent(const struct test *t, int fdout[2],
 		}
 	}
 
+exit:
+	LOG("------\n");
 	return err;
 }
 
