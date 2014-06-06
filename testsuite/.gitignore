@@ -12,6 +12,7 @@
 /test-new-module
 /test-testsuite
 /test-modprobe
+/test-hash
 /rootfs
 /stamp-rootfs
 /test-util.log
@@ -30,6 +31,8 @@
 /test-modinfo.trs
 /test-modprobe.log
 /test-modprobe.trs
+/test-hash.log
+/test-hash.trs
 /test-new-module.log
 /test-new-module.trs
 /test-testsuite.log

@@ -247,7 +247,8 @@ testsuite_libtestsuite_la_DEPENDENCIES = $(ROOTFS) \
 testsuite_libtestsuite_la_CPPFLAGS = $(TESTSUITE_CPPFLAGS)
 testsuite_libtestsuite_la_LIBADD = -lrt
 
-TESTSUITE = testsuite/test-init testsuite/test-testsuite testsuite/test-loaded \
+TESTSUITE = testsuite/test-hash \
+            testsuite/test-init testsuite/test-testsuite testsuite/test-loaded \
 	    testsuite/test-modinfo testsuite/test-util testsuite/test-new-module \
 	    testsuite/test-modprobe testsuite/test-blacklist \
 	    testsuite/test-dependencies testsuite/test-depmod
@@ -257,6 +258,10 @@ TESTS = $(TESTSUITE)
 
 testsuite_test_testsuite_LDADD = testsuite/libtestsuite.la libkmod/libkmod-util.la
 testsuite_test_testsuite_CPPFLAGS = $(TESTSUITE_CPPFLAGS)
+
+testsuite_test_hash_LDADD = $(TESTSUITE_LDADD)
+testsuite_test_hash_CPPFLAGS = $(TESTSUITE_CPPFLAGS)
+
 testsuite_test_init_LDADD = $(TESTSUITE_LDADD)
 testsuite_test_init_CPPFLAGS = $(TESTSUITE_CPPFLAGS)
 testsuite_test_loaded_LDADD = $(TESTSUITE_LDADD)
