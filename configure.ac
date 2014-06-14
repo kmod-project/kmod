@@ -1,6 +1,6 @@
 AC_PREREQ(2.60)
 AC_INIT([kmod],
-	[17],
+	[18],
 	[linux-modules@vger.kernel.org],
 	[kmod],
 	[http://git.kernel.org/?p=utils/kernel/kmod/kmod.git])
