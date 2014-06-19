@@ -1783,7 +1783,7 @@ KMOD_EXPORT long kmod_module_get_size(const struct kmod_module *mod)
 	 * loaded.
 	 */
 	snprintf(line, sizeof(line), "/sys/module/%s", mod->name);
-	dfd = open(line, O_RDONLY);
+	dfd = open(line, O_RDONLY|O_CLOEXEC);
 	if (dfd < 0)
 		return -errno;
 
