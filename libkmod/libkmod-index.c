@@ -825,7 +825,7 @@ struct index_mm *index_mm_open(struct kmod_ctx *ctx, const char *filename,
 
 	if (hdr.version >> 16 != INDEX_VERSION_MAJOR) {
 		ERR(ctx, "major version check fail: %u instead of %u\n",
-						hdr.version, INDEX_MAGIC);
+					hdr.version >> 16, INDEX_VERSION_MAJOR);
 		goto fail;
 	}
 
