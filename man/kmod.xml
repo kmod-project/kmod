@@ -1,0 +1,120 @@
+<?xml version='1.0'?>
+<!--*-nxml-*-->
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+        "http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
+<refentry id="kmod">
+  <refentryinfo>
+    <title>kmod</title>
+    <productname>kmod</productname>
+
+    <authorgroup>
+      <author>
+        <contrib>Developer</contrib>
+        <firstname>Lucas</firstname>
+        <surname>De Marchi</surname>
+        <email>lucas.de.marchi@gmail.com</email>
+      </author>
+    </authorgroup>
+  </refentryinfo>
+
+  <refmeta>
+    <refentrytitle>kmod</refentrytitle>
+    <manvolnum>8</manvolnum>
+  </refmeta>
+
+  <refnamediv>
+    <refname>kmod</refname>
+    <refpurpose>Program to manage Linux Kernel modules</refpurpose>
+  </refnamediv>
+
+  <refsynopsisdiv>
+    <cmdsynopsis>
+      <command>kmod</command>
+      <arg rep='repeat'><option>OPTIONS</option></arg>
+      <arg><replaceable>COMMAND</replaceable></arg>
+      <arg rep='repeat'><option>COMMAND_OPTIONS</option></arg>
+    </cmdsynopsis>
+  </refsynopsisdiv>
+
+  <refsect1><title>DESCRIPTION</title>
+    <para>
+      <command>kmod</command> is a multi-call binary which implements the
+      programs used to control Linux Kernel modules.  Most users will only
+      run it using its other names.
+    </para>
+  </refsect1>
+
+  <refsect1><title>OPTIONS</title>
+    <variablelist>
+      <varlistentry>
+        <term><option>-V</option> <option>--version</option>
+        </term>
+        <listitem>
+          <para>Show the program version and exit.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-h</option> <option>--help</option>
+        </term>
+        <listitem>
+          <para>Show the help message.</para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+  </refsect1>
+
+  <refsect1><title>COMMANDS</title>
+    <variablelist>
+      <varlistentry>
+        <term><command>help</command></term>
+        <listitem>
+          <para>Show the help message.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><command>list</command></term>
+        <listitem>
+          <para>List the currently loaded modules.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><command>static-nodes</command></term>
+        <listitem>
+          <para>Output the static device nodes information provided by
+           the modules of the currently running kernel version.</para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+  </refsect1>
+
+  <refsect1>
+    <title>COPYRIGHT</title>
+    <para>
+      This manual page originally Copyright 2014, Marco d'Itri.
+      Maintained by Lucas De Marchi and others.
+    </para>
+  </refsect1>
+
+  <refsect1><title>SEE ALSO</title>
+    <para>
+      <citerefentry>
+        <refentrytitle>lsmod</refentrytitle><manvolnum>8</manvolnum>
+      </citerefentry>,
+      <citerefentry>
+        <refentrytitle>rmmod</refentrytitle><manvolnum>8</manvolnum>
+      </citerefentry>,
+      <citerefentry>
+        <refentrytitle>insmod</refentrytitle><manvolnum>8</manvolnum>
+      </citerefentry>,
+      <citerefentry>
+        <refentrytitle>modinfo</refentrytitle><manvolnum>8</manvolnum>
+      </citerefentry>,
+      <citerefentry>
+        <refentrytitle>modprobe</refentrytitle><manvolnum>8</manvolnum>
+      </citerefentry>,
+      <citerefentry>
+        <refentrytitle>depmod</refentrytitle><manvolnum>8</manvolnum>
+      </citerefentry>
+    </para>
+  </refsect1>
+</refentry>

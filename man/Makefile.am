@@ -1,5 +1,5 @@
 MAN5 = depmod.d.5 modprobe.d.5 modules.dep.5
-MAN8 = depmod.8 insmod.8 lsmod.8 rmmod.8 modprobe.8 modinfo.8
+MAN8 = kmod.8 depmod.8 insmod.8 lsmod.8 rmmod.8 modprobe.8 modinfo.8
 MAN_STUB = modules.dep.bin.5
 
 AM_V_XSLT = $(AM_V_XSLT_$(V))
