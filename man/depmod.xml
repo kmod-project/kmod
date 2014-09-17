@@ -236,6 +236,9 @@
           <option>-n</option>
         </term>
         <term>
+          <option>--show</option>
+        </term>
+        <term>
           <option>--dry-run</option>
         </term>
         <listitem>
