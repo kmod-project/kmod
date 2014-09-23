@@ -5,6 +5,12 @@ Features:
    - There is a script to sign modules in kernel tree, but we should be able to
    sign modules by ourselves
 
+* Remove duplicate symbols in libkmod and tools
+   - Some functions were added both in libkmod and tools like depmod since they
+     couldn't be easily exported. Now we could be sharing there more easily
+     through libkmod-internal, or by creating a shared/ dir in which to put
+     these functions
+
 * Stop using NOFAIL() and fatal()
 
 * Protect index against OOM
@@ -34,9 +40,6 @@ Features:
 * index: drop the "open(), seek(), read()" implementation and use another one
   with mmap(). When lookup() is called and the file is not mmaped, mmap it.
 
-* Finish removal of "rmmod -w" when it's gone from kernel.
-
-* Deprecate not using KMOD_REMOVE_NOWAIT on libkmod.
 
 Things to be added/removed in kernel (check what is really needed):
 ===================================================================
