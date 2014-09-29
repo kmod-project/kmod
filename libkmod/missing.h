@@ -43,3 +43,13 @@ static inline int finit_module(int fd, const char *uargs, int flags)
 		memcpy(__new, __old, __len);				\
 	 })
 #endif
+
+#if !HAVE_DECL_BE32TOH
+#include <endian.h>
+#include <byteswap.h>
+#if __BYTE_ORDER == __LITTLE_ENDIAN
+#define be32toh(x) bswap_32 (x)
+#else
+#define be32toh(x) (x)
+#endif
+#endif

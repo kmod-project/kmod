@@ -25,6 +25,7 @@
 #include <stdio.h>
 
 #include "libkmod-internal.h"
+#include "missing.h"
 
 /* These types and tables were copied from the 3.7 kernel sources.
  * As this is just description of the signature format, it should not be

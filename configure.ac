@@ -53,6 +53,9 @@ AC_CHECK_MEMBERS([struct stat.st_mtim], [], [], [#include <sys/stat.h>])
 # musl 1.0 and bionic 4.4 don't have strndupa
 AC_CHECK_DECLS_ONCE([strndupa])
 
+# RHEL 5 and older do not have be32toh
+AC_CHECK_DECLS_ONCE([be32toh])
+
 # Check kernel headers
 AC_CHECK_HEADERS_ONCE([linux/module.h])
 
