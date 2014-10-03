@@ -70,16 +70,16 @@ static DEFINE_TEST(alias_1,
 		.out = TESTSUITE_ROOTFS "test-util/alias-correct.txt",
 	});
 
-static int test_getline_wrapped(const struct test *t)
+static int test_freadline_wrapped(const struct test *t)
 {
-	FILE *fp = fopen("/getline_wrapped-input.txt", "re");
+	FILE *fp = fopen("/freadline_wrapped-input.txt", "re");
 
 	if (!fp)
 		return EXIT_FAILURE;
 
 	while (!feof(fp) && !ferror(fp)) {
 		unsigned int num = 0;
-		char *s = getline_wrapped(fp, &num);
+		char *s = freadline_wrapped(fp, &num);
 		if (!s)
 			break;
 		puts(s);
@@ -90,19 +90,19 @@ static int test_getline_wrapped(const struct test *t)
 	fclose(fp);
 	return EXIT_SUCCESS;
 }
-static DEFINE_TEST(test_getline_wrapped,
-	.description = "check if getline_wrapped() does the right thing",
+static DEFINE_TEST(test_freadline_wrapped,
+	.description = "check if freadline_wrapped() does the right thing",
 	.config = {
 		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-util/",
 	},
 	.need_spawn = true,
 	.output = {
-		.out = TESTSUITE_ROOTFS "test-util/getline_wrapped-correct.txt",
+		.out = TESTSUITE_ROOTFS "test-util/freadline_wrapped-correct.txt",
 	});
 
 static const struct test *tests[] = {
 	&salias_1,
-	&stest_getline_wrapped,
+	&stest_freadline_wrapped,
 	NULL,
 };
 

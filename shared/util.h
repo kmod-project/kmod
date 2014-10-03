@@ -22,7 +22,7 @@ ssize_t read_str_safe(int fd, char *buf, size_t buflen) _must_check_ __attribute
 ssize_t write_str_safe(int fd, const char *buf, size_t buflen) __attribute__((nonnull(2)));
 int read_str_long(int fd, long *value, int base) _must_check_ __attribute__((nonnull(2)));
 int read_str_ulong(int fd, unsigned long *value, int base) _must_check_ __attribute__((nonnull(2)));
-char *getline_wrapped(FILE *fp, unsigned int *linenum) __attribute__((nonnull(1)));
+char *freadline_wrapped(FILE *fp, unsigned int *linenum) __attribute__((nonnull(1)));
 
 /* path handling functions                                                  */
 /* ************************************************************************ */

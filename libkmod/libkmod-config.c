@@ -595,7 +595,7 @@ static int kmod_config_parse(struct kmod_config *config, int fd,
 		return err;
 	}
 
-	while ((line = getline_wrapped(fp, &linenum)) != NULL) {
+	while ((line = freadline_wrapped(fp, &linenum)) != NULL) {
 		char *cmd, *saveptr;
 
 		if (line[0] == '\0' || line[0] == '#')

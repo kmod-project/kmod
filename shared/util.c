@@ -160,7 +160,7 @@ int read_str_ulong(int fd, unsigned long *value, int base)
  * If linenum is not NULL, it is incremented by the number of physical lines
  * which have been read.
  */
-char *getline_wrapped(FILE *fp, unsigned int *linenum)
+char *freadline_wrapped(FILE *fp, unsigned int *linenum)
 {
 	int size = 256;
 	int i = 0, n = 0;
