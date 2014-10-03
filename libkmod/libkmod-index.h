@@ -20,7 +20,7 @@
 
 #pragma once
 
-#include <stdint.h>
+#include <inttypes.h>
 
 /* Integers are stored as 32 bit unsigned in "network" order, i.e. MSB first.
    All files start with a magic number.
