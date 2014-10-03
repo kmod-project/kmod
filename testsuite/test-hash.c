@@ -23,7 +23,8 @@
 #include <errno.h>
 #include <unistd.h>
 
-#include <libkmod-hash.h>
+#include <shared/hash.h>
+
 #include "testsuite.h"
 
 static int freecount;

@@ -17,10 +17,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "libkmod.h"
-#include "libkmod-hash.h"
 #include "libkmod-util.h"
 
 #include <shared/array.h>
+#include <shared/hash.h>
 #include <shared/macro.h>
 #include <shared/util.h>
 

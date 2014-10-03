@@ -48,10 +48,10 @@ libkmod_libkmod_util_la_SOURCES = \
 	shared/missing.h \
 	shared/array.c \
 	shared/array.h \
+	shared/hash.c \
+	shared/hash.h \
 	shared/util.c \
 	shared/util.h \
-	libkmod/libkmod-hash.c \
-	libkmod/libkmod-hash.h \
 	libkmod/libkmod-util.c \
 	libkmod/libkmod-util.h
 

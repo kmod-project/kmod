@@ -32,6 +32,7 @@
 #include <sys/utsname.h>
 #include <sys/stat.h>
 
+#include <shared/hash.h>
 #include <shared/util.h>
 
 #include "libkmod.h"
