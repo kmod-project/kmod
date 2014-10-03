@@ -20,11 +20,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <libkmod.h>
 
 #include <shared/util.h>
 
-#include "libkmod-util.h"
+#include <libkmod.h>
+#include <libkmod-util.h>
+
 #include "testsuite.h"
 
 static int alias_1(const struct test *t)

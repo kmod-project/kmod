@@ -18,14 +18,14 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#include <shared/array.h>
-
-#include "libkmod.h"
-
 #include <assert.h>
+#include <errno.h>
 #include <stdlib.h>
 #include <string.h>
-#include <errno.h>
+
+#include <shared/array.h>
+
+#include <libkmod.h>
 
 /* basic pointer array growing in steps */
 

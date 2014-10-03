@@ -17,18 +17,18 @@
  */
 
 #include <assert.h>
-#include <errno.h>
 #include <dirent.h>
-#include <fcntl.h>
 #include <dlfcn.h>
+#include <errno.h>
+#include <fcntl.h>
 #include <limits.h>
-#include <stdlib.h>
 #include <stdarg.h>
 #include <stddef.h>
-#include <string.h>
 #include <stdio.h>
-#include <sys/types.h>
+#include <stdlib.h>
+#include <string.h>
 #include <sys/stat.h>
+#include <sys/types.h>
 #include <unistd.h>
 
 #include "testsuite.h"

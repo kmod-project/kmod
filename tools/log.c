@@ -22,7 +22,8 @@
 #include <stdlib.h>
 #include <syslog.h>
 
-#include "libkmod.h"
+#include <libkmod.h>
+
 #include "kmod.h"
 
 static bool log_use_syslog;

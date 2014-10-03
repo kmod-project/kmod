@@ -16,27 +16,28 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include "libkmod.h"
-#include "libkmod-util.h"
+
+#include <assert.h>
+#include <ctype.h>
+#include <dirent.h>
+#include <errno.h>
+#include <getopt.h>
+#include <limits.h>
+#include <regex.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/stat.h>
+#include <sys/utsname.h>
 
 #include <shared/array.h>
 #include <shared/hash.h>
 #include <shared/macro.h>
 #include <shared/util.h>
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <getopt.h>
-#include <errno.h>
-#include <string.h>
-#include <limits.h>
-#include <dirent.h>
-#include <sys/utsname.h>
-#include <sys/stat.h>
-#include <regex.h>
-#include <assert.h>
-#include <unistd.h>
-#include <ctype.h>
+#include <libkmod.h>
+#include <libkmod-util.h>
 
 #include "kmod.h"
 

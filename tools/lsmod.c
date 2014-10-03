@@ -17,13 +17,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <errno.h>
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stddef.h>
-#include <errno.h>
-#include <unistd.h>
 #include <string.h>
-#include "libkmod.h"
+#include <unistd.h>
+
+#include <libkmod.h>
 
 #include "kmod.h"
 

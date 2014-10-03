@@ -18,27 +18,26 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
+#include <errno.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <errno.h>
 #include <string.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <sys/mman.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <unistd.h>
-
-#include <shared/util.h>
-
-#include "libkmod.h"
-#include "libkmod-internal.h"
-
 #ifdef ENABLE_XZ
 #include <lzma.h>
 #endif
 #ifdef ENABLE_ZLIB
 #include <zlib.h>
 #endif
+
+#include <shared/util.h>
+
+#include "libkmod.h"
+#include "libkmod-internal.h"
 
 struct kmod_file;
 struct file_ops {

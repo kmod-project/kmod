@@ -16,16 +16,18 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
+#include <errno.h>
+#include <inttypes.h>
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stddef.h>
-#include <errno.h>
-#include <unistd.h>
-#include <inttypes.h>
 #include <string.h>
+#include <unistd.h>
+
 #include <libkmod.h>
 
 #include "testsuite.h"
+
 #define TEST_UNAME "4.0.20-kmod"
 
 static int test_dependencies(const struct test *t)

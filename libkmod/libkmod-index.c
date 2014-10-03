@@ -18,14 +18,14 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#include <arpa/inet.h> /* htonl */
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
+#include <arpa/inet.h>
+#include <assert.h>
 #include <errno.h>
 #include <fnmatch.h>
-#include <assert.h>
 #include <inttypes.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include <shared/macro.h>
 #include <shared/util.h>

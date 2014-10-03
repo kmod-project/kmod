@@ -17,17 +17,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <errno.h>
+#include <getopt.h>
+#include <limits.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
-#include <getopt.h>
-#include <errno.h>
 #include <string.h>
-#include <limits.h>
-#include <sys/utsname.h>
 #include <sys/stat.h>
-#include "libkmod.h"
-#include "libkmod-util.h"
+#include <sys/utsname.h>
+
+#include <libkmod.h>
+#include <libkmod-util.h>
 
 #include "kmod.h"
 

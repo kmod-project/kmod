@@ -19,24 +19,23 @@
  */
 
 #include <assert.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <stddef.h>
-#include <stdarg.h>
-#include <unistd.h>
-#include <errno.h>
-#include <string.h>
 #include <ctype.h>
+#include <dirent.h>
+#include <errno.h>
+#include <fnmatch.h>
 #include <inttypes.h>
 #include <limits.h>
-#include <dirent.h>
-#include <sys/stat.h>
-#include <sys/types.h>
+#include <stdarg.h>
+#include <stddef.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 #include <sys/mman.h>
+#include <sys/stat.h>
 #include <sys/syscall.h>
+#include <sys/types.h>
 #include <sys/wait.h>
-#include <fnmatch.h>
-
 #ifdef HAVE_LINUX_MODULE_H
 #include <linux/module.h>
 #endif

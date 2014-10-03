@@ -18,23 +18,23 @@
  */
 
 #include <assert.h>
+#include <errno.h>
+#include <getopt.h>
+#include <limits.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
-#include <getopt.h>
-#include <errno.h>
 #include <string.h>
-#include <sys/types.h>
+#include <unistd.h>
 #include <sys/stat.h>
+#include <sys/types.h>
 #include <sys/utsname.h>
 #include <sys/wait.h>
-#include <unistd.h>
-#include <limits.h>
-
-#include "libkmod.h"
 
 #include <shared/array.h>
 #include <shared/macro.h>
+
+#include <libkmod.h>
 
 #include "kmod.h"
 
