@@ -22,7 +22,6 @@ CFILE_GLOB = $(top_srcdir)/libkmod/libkmod.c $(top_srcdir)/libkmod/libkmod-modul
 
 IGNORE_HFILES = libkmod-internal.h \
 		libkmod-util.h \
-		libkmod-array.h \
 		libkmod-hash.h \
 		libkmod-index.h
 

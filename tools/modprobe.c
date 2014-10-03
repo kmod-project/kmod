@@ -32,7 +32,8 @@
 #include <limits.h>
 
 #include "libkmod.h"
-#include "libkmod-array.h"
+
+#include <shared/array.h>
 #include <shared/macro.h>
 
 #include "kmod.h"

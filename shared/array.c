@@ -18,8 +18,9 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
+#include <shared/array.h>
+
 #include "libkmod.h"
-#include "libkmod-array.h"
 
 #include <assert.h>
 #include <stdlib.h>

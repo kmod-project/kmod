@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stddef.h>
+
 /*
  * Declaration of struct array is in header because we may want to embed the
  * structure into another, so we need to know its size
