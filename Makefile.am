@@ -43,21 +43,22 @@ LIBKMOD_REVISION=8
 LIBKMOD_AGE=2
 
 noinst_LTLIBRARIES = libkmod/libkmod-util.la
-libkmod_libkmod_util_la_SOURCES = shared/macro.h \
-				  shared/missing.h\
-				  shared/util.c \
-				  shared/util.h \
-				  libkmod/libkmod-hash.c \
-				  libkmod/libkmod-hash.h \
-				  libkmod/libkmod-array.c \
-				  libkmod/libkmod-array.h \
-				  libkmod/libkmod-util.c \
-				  libkmod/libkmod-util.h
+libkmod_libkmod_util_la_SOURCES = \
+	shared/macro.h \
+	shared/missing.h\
+	shared/util.c \
+	shared/util.h \
+	libkmod/libkmod-hash.c \
+	libkmod/libkmod-hash.h \
+	libkmod/libkmod-array.c \
+	libkmod/libkmod-array.h \
+	libkmod/libkmod-util.c \
+	libkmod/libkmod-util.h
 
 include_HEADERS = libkmod/libkmod.h
 lib_LTLIBRARIES = libkmod/libkmod.la
 
-libkmod_libkmod_la_SOURCES =\
+libkmod_libkmod_la_SOURCES = \
 	shared/macro.h \
 	shared/missing.h \
 	libkmod/libkmod.h \
@@ -78,10 +79,12 @@ EXTRA_DIST += libkmod/README libkmod/COPYING testsuite/COPYING COPYING
 libkmod_libkmod_la_LDFLAGS = $(AM_LDFLAGS) \
 	-version-info $(LIBKMOD_CURRENT):$(LIBKMOD_REVISION):$(LIBKMOD_AGE) \
 	-Wl,--version-script=$(top_srcdir)/libkmod/libkmod.sym
-libkmod_libkmod_la_DEPENDENCIES = libkmod/libkmod-util.la \
-				  ${top_srcdir}/libkmod/libkmod.sym
-libkmod_libkmod_la_LIBADD = libkmod/libkmod-util.la \
-			    ${liblzma_LIBS} ${zlib_LIBS}
+libkmod_libkmod_la_DEPENDENCIES = \
+	libkmod/libkmod-util.la \
+	${top_srcdir}/libkmod/libkmod.sym
+libkmod_libkmod_la_LIBADD = \
+	libkmod/libkmod-util.la \
+	${liblzma_LIBS} ${zlib_LIBS}
 
 noinst_LTLIBRARIES += libkmod/libkmod-internal.la
 libkmod_libkmod_internal_la_SOURCES = $(libkmod_libkmod_la_SOURCES)
@@ -114,16 +117,19 @@ uninstall-hook:
 if BUILD_TOOLS
 bin_PROGRAMS = tools/kmod
 
-noinst_SCRIPTS = tools/insmod tools/rmmod tools/lsmod \
-		 tools/modprobe tools/modinfo tools/depmod
+noinst_SCRIPTS = \
+	tools/insmod tools/rmmod tools/lsmod \
+	tools/modprobe tools/modinfo tools/depmod
 
-tools_kmod_SOURCES = tools/kmod.c tools/kmod.h tools/lsmod.c \
-		     tools/rmmod.c tools/insmod.c \
-		     tools/modinfo.c tools/modprobe.c \
-		     tools/depmod.c tools/log.h tools/log.c \
-		     tools/static-nodes.c
-tools_kmod_LDADD = libkmod/libkmod-util.la \
-		   libkmod/libkmod-internal.la
+tools_kmod_SOURCES = \
+	tools/kmod.c tools/kmod.h tools/lsmod.c \
+	tools/rmmod.c tools/insmod.c \
+	tools/modinfo.c tools/modprobe.c \
+	tools/depmod.c tools/log.h tools/log.c \
+	tools/static-nodes.c
+tools_kmod_LDADD = \
+	libkmod/libkmod-util.la \
+	libkmod/libkmod-internal.la
 
 ${noinst_SCRIPTS}: tools/kmod
 	$(AM_V_GEN) ($(RM) $@; \
@@ -151,16 +157,18 @@ am__v_CYTHON_0 = @echo "  CYTHON " $@;
 # Remove some warnings for generated code
 PYTHON_NOWARN = -Wno-redundant-decls -Wno-shadow -Wno-strict-aliasing
 
-CPYTHON_MODULE_CFLAGS = $(AM_CFLAGS) -DCPYTHON_COMPILING_IN_PYPY=0 \
-			$(PYTHON_NOWARN) $(PYTHON_CFLAGS) \
-			-fvisibility=default
+CPYTHON_MODULE_CFLAGS = \
+	$(AM_CFLAGS) -DCPYTHON_COMPILING_IN_PYPY=0 \
+	$(PYTHON_NOWARN) $(PYTHON_CFLAGS) \
+	-fvisibility=default
 CPYTHON_MODULE_LDFLAGS = $(AM_LDFLAGS) -module -avoid-version -shared
 
 if BUILD_PYTHON
-pkgpyexec_LTLIBRARIES = libkmod/python/kmod/kmod.la \
-			libkmod/python/kmod/list.la \
-			libkmod/python/kmod/module.la \
-			libkmod/python/kmod/_util.la
+pkgpyexec_LTLIBRARIES = \
+	libkmod/python/kmod/kmod.la \
+	libkmod/python/kmod/list.la \
+	libkmod/python/kmod/module.la \
+	libkmod/python/kmod/_util.la
 
 libkmod_python_kmod_kmod_la_SOURCES = libkmod/python/kmod/kmod.c
 libkmod_python_kmod_kmod_la_CFLAGS = $(CPYTHON_MODULE_CFLAGS)
@@ -182,14 +190,16 @@ libkmod_python_kmod__util_la_CFLAGS = $(CPYTHON_MODULE_CFLAGS)
 libkmod_python_kmod__util_la_LDFLAGS = $(CPYTHON_MODULE_LDFLAGS)
 libkmod_python_kmod__util_la_LIBADD = $(PYTHON_LIBS) libkmod/libkmod.la
 
-BUILT_FILES += $(libkmod_python_kmod_kmod_la_SOURCES) \
-	       $(libkmod_python_kmod_list_la_SOURCES) \
-	       $(libkmod_python_kmod_module_la_SOURCES) \
-	       $(libkmod_python_kmod__util_la_SOURCES)
+BUILT_FILES += \
+	$(libkmod_python_kmod_kmod_la_SOURCES) \
+	$(libkmod_python_kmod_list_la_SOURCES) \
+	$(libkmod_python_kmod_module_la_SOURCES) \
+	$(libkmod_python_kmod__util_la_SOURCES)
 
-dist_pkgpyexec_PYTHON = libkmod/python/kmod/error.py \
-			libkmod/python/kmod/__init__.py \
-			libkmod/python/kmod/version.py
+dist_pkgpyexec_PYTHON = \
+	libkmod/python/kmod/error.py \
+	libkmod/python/kmod/__init__.py \
+	libkmod/python/kmod/version.py
 
 BUILT_FILES += libkmod/python/kmod/version.py
 
@@ -212,11 +222,12 @@ rootfs:
 $(ROOTFS): $(ROOTFS_PRISTINE)
 	$(CREATE_ROOTFS)
 
-TESTSUITE_OVERRIDE_LIBS = testsuite/uname.la testsuite/path.la \
-			  testsuite/init_module.la \
-			  testsuite/delete_module.la
-TESTSUITE_OVERRIDE_LIBS_LDFLAGS = avoid-version -module -shared -export-dynamic \
-				  -rpath /nowhere -ldl
+TESTSUITE_OVERRIDE_LIBS = \
+	testsuite/uname.la testsuite/path.la \
+	testsuite/init_module.la \
+	testsuite/delete_module.la
+TESTSUITE_OVERRIDE_LIBS_LDFLAGS = \
+	avoid-version -module -shared -export-dynamic -rpath /nowhere -ldl
 
 check-sysconfdir:
 	$(AM_V_at)if test "$(sysconfdir)" != "/etc" -a "$(sysconfdir)" != "/etc/"; then \
@@ -239,29 +250,32 @@ testsuite_init_module_la_SOURCES = testsuite/init_module.c \
 testsuite_init_module_la_LIBADD = libkmod/libkmod-internal.la
 
 TESTSUITE_CPPFLAGS = $(AM_CPPFLAGS) \
-		     -DTESTSUITE_ROOTFS=\"$(abs_top_builddir)/$(ROOTFS)/\" \
-		     -DABS_TOP_BUILDDIR=\"$(abs_top_builddir)\"
-TESTSUITE_LDADD = testsuite/libtestsuite.la libkmod/libkmod-internal.la \
-		  libkmod/libkmod-util.la
+	-DTESTSUITE_ROOTFS=\"$(abs_top_builddir)/$(ROOTFS)/\" \
+	-DABS_TOP_BUILDDIR=\"$(abs_top_builddir)\"
+TESTSUITE_LDADD = \
+	testsuite/libtestsuite.la libkmod/libkmod-internal.la \
+	libkmod/libkmod-util.la
 
 check_LTLIBRARIES += testsuite/libtestsuite.la
-testsuite_libtestsuite_la_SOURCES = testsuite/testsuite.c \
-				    testsuite/testsuite.h
-testsuite_libtestsuite_la_DEPENDENCIES = $(ROOTFS) \
-					 $(TESTSUITE_OVERRIDE_LIBS)
+testsuite_libtestsuite_la_SOURCES = \
+	testsuite/testsuite.c testsuite/testsuite.h
+testsuite_libtestsuite_la_DEPENDENCIES = \
+	$(ROOTFS) $(TESTSUITE_OVERRIDE_LIBS)
 testsuite_libtestsuite_la_CPPFLAGS = $(TESTSUITE_CPPFLAGS)
 testsuite_libtestsuite_la_LIBADD = -lrt
 
-TESTSUITE = testsuite/test-hash \
-            testsuite/test-init testsuite/test-testsuite testsuite/test-loaded \
-	    testsuite/test-modinfo testsuite/test-util testsuite/test-new-module \
-	    testsuite/test-modprobe testsuite/test-blacklist \
-	    testsuite/test-dependencies testsuite/test-depmod
+TESTSUITE = \
+	testsuite/test-hash \
+	testsuite/test-init testsuite/test-testsuite testsuite/test-loaded \
+	testsuite/test-modinfo testsuite/test-util testsuite/test-new-module \
+	testsuite/test-modprobe testsuite/test-blacklist \
+	testsuite/test-dependencies testsuite/test-depmod
 
 check_PROGRAMS = $(TESTSUITE)
 TESTS = $(TESTSUITE)
 
-testsuite_test_testsuite_LDADD = testsuite/libtestsuite.la libkmod/libkmod-util.la
+testsuite_test_testsuite_LDADD = \
+	testsuite/libtestsuite.la libkmod/libkmod-util.la
 testsuite_test_testsuite_CPPFLAGS = $(TESTSUITE_CPPFLAGS)
 
 testsuite_test_hash_LDADD = $(TESTSUITE_LDADD)
