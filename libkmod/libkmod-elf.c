@@ -24,6 +24,8 @@
 #include <assert.h>
 #include <errno.h>
 
+#include <shared/util.h>
+
 #include "libkmod.h"
 #include "libkmod-internal.h"
 

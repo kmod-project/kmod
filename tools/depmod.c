@@ -22,6 +22,7 @@
 #include "libkmod-util.h"
 
 #include <shared/macro.h>
+#include <shared/util.h>
 
 #include <stdio.h>
 #include <stdlib.h>

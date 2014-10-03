@@ -41,6 +41,8 @@
 #include <linux/module.h>
 #endif
 
+#include <shared/util.h>
+
 #include "libkmod.h"
 #include "libkmod-internal.h"
 

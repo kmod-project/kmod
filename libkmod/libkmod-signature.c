@@ -25,6 +25,7 @@
 #include <stdio.h>
 
 #include <shared/missing.h>
+#include <shared/util.h>
 
 #include "libkmod-internal.h"
 

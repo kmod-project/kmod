@@ -30,7 +30,8 @@
 #include <sys/utsname.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include "libkmod-util.h"
+
+#include <shared/util.h>
 
 #include "kmod.h"
 

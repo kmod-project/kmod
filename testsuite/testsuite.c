@@ -32,6 +32,8 @@
 #include <sys/stat.h>
 #include <sys/wait.h>
 
+#include <shared/util.h>
+
 #include "libkmod-util.h"
 #include "testsuite.h"
 

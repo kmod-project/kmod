@@ -43,7 +43,11 @@ LIBKMOD_REVISION=8
 LIBKMOD_AGE=2
 
 noinst_LTLIBRARIES = libkmod/libkmod-util.la
-libkmod_libkmod_util_la_SOURCES = libkmod/libkmod-hash.c \
+libkmod_libkmod_util_la_SOURCES = shared/macro.h \
+				  shared/missing.h\
+				  shared/util.c \
+				  shared/util.h \
+				  libkmod/libkmod-hash.c \
 				  libkmod/libkmod-hash.h \
 				  libkmod/libkmod-array.c \
 				  libkmod/libkmod-array.h \

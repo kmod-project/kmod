@@ -28,6 +28,7 @@
 #include <inttypes.h>
 
 #include <shared/macro.h>
+#include <shared/util.h>
 
 #include "libkmod-internal.h"
 #include "libkmod-index.h"

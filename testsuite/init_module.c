@@ -40,6 +40,8 @@
 #include <sys/utsname.h>
 #include <unistd.h>
 
+#include <shared/util.h>
+
 /* kmod_elf_get_section() is not exported, we need the private header */
 #include <libkmod-internal.h>
 

@@ -31,6 +31,8 @@
 #include <sys/types.h>
 #include <dirent.h>
 
+#include <shared/util.h>
+
 #include "libkmod.h"
 #include "libkmod-internal.h"
 

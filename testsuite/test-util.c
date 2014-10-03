@@ -22,6 +22,8 @@
 #include <string.h>
 #include <libkmod.h>
 
+#include <shared/util.h>
+
 #include "libkmod-util.h"
 #include "testsuite.h"
 

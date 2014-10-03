@@ -18,6 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
+#include <shared/util.h>
+
 #include "libkmod.h"
 #include "libkmod-hash.h"
 
