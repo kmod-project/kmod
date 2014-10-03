@@ -6,8 +6,8 @@
 #include <limits.h>
 
 #include <shared/macro.h>
+#include <shared/missing.h>
 
-#include "missing.h"
 #include "libkmod.h"
 
 static _always_inline_ _printf_format_(2, 3) void

@@ -55,9 +55,9 @@ lib_LTLIBRARIES = libkmod/libkmod.la
 
 libkmod_libkmod_la_SOURCES =\
 	shared/macro.h \
+	shared/missing.h \
 	libkmod/libkmod.h \
 	libkmod/libkmod-internal.h \
-	libkmod/missing.h \
 	libkmod/libkmod.c \
 	libkmod/libkmod-list.c \
 	libkmod/libkmod-config.c \
