@@ -26,7 +26,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include "libkmod.h"
-#include "macro.h"
+#include <shared/macro.h>
 
 #include "kmod.h"
 

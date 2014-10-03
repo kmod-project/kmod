@@ -21,7 +21,7 @@
 #include <stdbool.h>
 #include <stdarg.h>
 
-#include "macro.h"
+#include <shared/macro.h>
 
 struct test;
 typedef int (*testfunc)(const struct test *t);

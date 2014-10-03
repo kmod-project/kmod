@@ -19,7 +19,7 @@
 
 #pragma once
 
-#include "macro.h"
+#include <shared/macro.h>
 
 struct kmod_cmd {
 	const char *name;

@@ -5,8 +5,9 @@
 #include <syslog.h>
 #include <limits.h>
 
+#include <shared/macro.h>
+
 #include "missing.h"
-#include "macro.h"
 #include "libkmod.h"
 
 static _always_inline_ _printf_format_(2, 3) void

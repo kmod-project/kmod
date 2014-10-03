@@ -14,6 +14,7 @@ AM_MAKEFLAGS = --no-print-directory
 AM_CPPFLAGS = \
 	-include $(top_builddir)/config.h \
 	-I$(top_srcdir)/libkmod \
+	-I$(top_srcdir) \
 	-DSYSCONFDIR=\""$(sysconfdir)"\" \
 	-DLIBEXECDIR=\""$(libexecdir)"\" \
 	${zlib_CFLAGS}
@@ -53,9 +54,9 @@ include_HEADERS = libkmod/libkmod.h
 lib_LTLIBRARIES = libkmod/libkmod.la
 
 libkmod_libkmod_la_SOURCES =\
+	shared/macro.h \
 	libkmod/libkmod.h \
 	libkmod/libkmod-internal.h \
-	libkmod/macro.h \
 	libkmod/missing.h \
 	libkmod/libkmod.c \
 	libkmod/libkmod-list.c \

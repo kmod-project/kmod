@@ -27,9 +27,10 @@
 #include <assert.h>
 #include <inttypes.h>
 
+#include <shared/macro.h>
+
 #include "libkmod-internal.h"
 #include "libkmod-index.h"
-#include "macro.h"
 
 /* index.c: module index file shared functions for modprobe and depmod */
 

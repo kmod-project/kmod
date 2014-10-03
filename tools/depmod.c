@@ -21,6 +21,8 @@
 #include "libkmod-hash.h"
 #include "libkmod-util.h"
 
+#include <shared/macro.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <getopt.h>
@@ -119,7 +121,6 @@ static inline void _show(const char *fmt, ...)
 
 /* binary index write *************************************************/
 #include <arpa/inet.h>
-#include "macro.h"
 /* BEGIN: code from module-init-tools/index.c just modified to compile here.
  *
  * Original copyright:

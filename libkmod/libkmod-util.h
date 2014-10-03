@@ -1,5 +1,4 @@
 #pragma once
-#include "macro.h"
 
 #include <limits.h>
 #include <stdbool.h>
@@ -8,6 +7,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#include <shared/macro.h>
 
 char *getline_wrapped(FILE *fp, unsigned int *linenum) __attribute__((nonnull(1)));
 #define streq(a, b) (strcmp((a), (b)) == 0)

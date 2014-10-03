@@ -33,7 +33,7 @@
 
 #include "libkmod.h"
 #include "libkmod-array.h"
-#include "macro.h"
+#include <shared/macro.h>
 
 #include "kmod.h"
 

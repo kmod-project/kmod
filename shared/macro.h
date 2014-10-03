@@ -1,5 +1,5 @@
 /*
- * libkmod - interface to kernel module operations
+ * kmod - interface to kernel module operations
  *
  * Copyright (C) 2011-2013  ProFUSION embedded systems
  *
