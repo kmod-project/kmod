@@ -33,8 +33,11 @@
 #include "libkmod.h"
 #include "libkmod-internal.h"
 
-const struct kmod_ext kmod_exts[] = {
-	{".ko", sizeof(".ko") - 1},
+static const struct kmod_ext {
+	const char *ext;
+	size_t len;
+} kmod_exts[] = {
+	{KMOD_EXTENSION_UNCOMPRESSED, sizeof(KMOD_EXTENSION_UNCOMPRESSED) - 1},
 #ifdef ENABLE_ZLIB
 	{".ko.gz", sizeof(".ko.gz") - 1},
 #endif
