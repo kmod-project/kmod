@@ -74,7 +74,8 @@ libkmod_libkmod_la_SOURCES = \
 	libkmod/libkmod-signature.c
 
 EXTRA_DIST += libkmod/libkmod.sym
-EXTRA_DIST += libkmod/README libkmod/COPYING testsuite/COPYING COPYING
+EXTRA_DIST += libkmod/README \
+	libkmod/COPYING testsuite/COPYING tools/COPYING COPYING
 
 libkmod_libkmod_la_LDFLAGS = $(AM_LDFLAGS) \
 	-version-info $(LIBKMOD_CURRENT):$(LIBKMOD_REVISION):$(LIBKMOD_AGE) \

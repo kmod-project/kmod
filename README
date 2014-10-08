@@ -60,6 +60,10 @@ Gitweb:
 Irc:
 	#kmod on irc.freenode.org
 
+License:
+	LGPLv2.1+ for libkmod, testsuite and helper libraries
+	GPLv2+ for tools/*
+
 Compatibility with module-init-tools
 ====================================
 
