@@ -2,6 +2,7 @@
 *.la
 *.so
 /.dirstamp
+/test-array
 /test-util
 /test-blacklist
 /test-dependencies
@@ -15,6 +16,8 @@
 /test-hash
 /rootfs
 /stamp-rootfs
+/test-array.log
+/test-array.trs
 /test-util.log
 /test-util.trs
 /test-blacklist.log
