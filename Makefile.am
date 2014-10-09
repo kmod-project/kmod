@@ -42,8 +42,8 @@ LIBKMOD_CURRENT=4
 LIBKMOD_REVISION=8
 LIBKMOD_AGE=2
 
-noinst_LTLIBRARIES = libkmod/libkmod-util.la
-libkmod_libkmod_util_la_SOURCES = \
+noinst_LTLIBRARIES = shared/libshared.la
+shared_libshared_la_SOURCES = \
 	shared/macro.h \
 	shared/missing.h \
 	shared/array.c \
@@ -57,8 +57,6 @@ include_HEADERS = libkmod/libkmod.h
 lib_LTLIBRARIES = libkmod/libkmod.la
 
 libkmod_libkmod_la_SOURCES = \
-	shared/macro.h \
-	shared/missing.h \
 	libkmod/libkmod.h \
 	libkmod/libkmod-internal.h \
 	libkmod/libkmod.c \
@@ -79,10 +77,10 @@ libkmod_libkmod_la_LDFLAGS = $(AM_LDFLAGS) \
 	-version-info $(LIBKMOD_CURRENT):$(LIBKMOD_REVISION):$(LIBKMOD_AGE) \
 	-Wl,--version-script=$(top_srcdir)/libkmod/libkmod.sym
 libkmod_libkmod_la_DEPENDENCIES = \
-	libkmod/libkmod-util.la \
+	shared/libshared.la \
 	${top_srcdir}/libkmod/libkmod.sym
 libkmod_libkmod_la_LIBADD = \
-	libkmod/libkmod-util.la \
+	shared/libshared.la \
 	${liblzma_LIBS} ${zlib_LIBS}
 
 noinst_LTLIBRARIES += libkmod/libkmod-internal.la
@@ -127,7 +125,7 @@ tools_kmod_SOURCES = \
 	tools/depmod.c tools/log.h tools/log.c \
 	tools/static-nodes.c
 tools_kmod_LDADD = \
-	libkmod/libkmod-util.la \
+	shared/libshared.la \
 	libkmod/libkmod-internal.la
 
 ${noinst_SCRIPTS}: tools/kmod
@@ -253,7 +251,7 @@ TESTSUITE_CPPFLAGS = $(AM_CPPFLAGS) \
 	-DABS_TOP_BUILDDIR=\"$(abs_top_builddir)\"
 TESTSUITE_LDADD = \
 	testsuite/libtestsuite.la libkmod/libkmod-internal.la \
-	libkmod/libkmod-util.la
+	shared/libshared.la
 
 check_LTLIBRARIES += testsuite/libtestsuite.la
 testsuite_libtestsuite_la_SOURCES = \
@@ -275,7 +273,7 @@ check_PROGRAMS = $(TESTSUITE)
 TESTS = $(TESTSUITE)
 
 testsuite_test_testsuite_LDADD = \
-	testsuite/libtestsuite.la libkmod/libkmod-util.la
+	testsuite/libtestsuite.la shared/libshared.la
 testsuite_test_testsuite_CPPFLAGS = $(TESTSUITE_CPPFLAGS)
 
 testsuite_test_hash_LDADD = $(TESTSUITE_LDADD)
