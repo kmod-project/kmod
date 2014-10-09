@@ -87,9 +87,4 @@ static const struct test stest_dependencies = {
 	.need_spawn = true,
 };
 
-static const struct test *tests[] = {
-	&stest_dependencies,
-	NULL,
-};
-
-TESTSUITE_MAIN(tests);
+TESTSUITE_MAIN();

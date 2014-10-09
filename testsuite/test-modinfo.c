@@ -49,9 +49,4 @@ DEFINE_TEST(modinfo_jonsmodules,
 		.out = TESTSUITE_ROOTFS "test-modinfo/correct.txt",
 	});
 
-static const struct test *tests[] = {
-	&smodinfo_jonsmodules,
-	NULL,
-};
-
-TESTSUITE_MAIN(tests);
+TESTSUITE_MAIN();

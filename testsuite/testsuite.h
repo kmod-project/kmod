@@ -132,14 +132,14 @@ int test_run(const struct test *t);
 
 /* Test definitions */
 #define DEFINE_TEST(_name, ...) \
-	static const struct test s##_name \
+	static const struct test s##_name##UNIQ \
 	__attribute__((used, section("kmod_tests"), aligned(8))) = { \
 		.name = #_name, \
 		.func = _name, \
 		## __VA_ARGS__ \
 	};
 
-#define TESTSUITE_MAIN(_tests) \
+#define TESTSUITE_MAIN() \
 	extern struct test __start_kmod_tests[] __attribute__((weak, visibility("hidden")));	\
 	extern struct test __stop_kmod_tests[] __attribute__((weak, visibility("hidden")));	\
 	int main(int argc, char *argv[])							\

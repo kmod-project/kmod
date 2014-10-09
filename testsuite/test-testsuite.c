@@ -159,13 +159,4 @@ DEFINE_TEST(testsuite_rootfs_opendir,
 	},
 	.need_spawn = true);
 
-static const struct test *tests[] = {
-	&stestsuite_uname,
-	&stestsuite_rootfs_fopen,
-	&stestsuite_rootfs_open,
-	&stestsuite_rootfs_stat_access,
-	&stestsuite_rootfs_opendir,
-	NULL,
-};
-
-TESTSUITE_MAIN(tests);
+TESTSUITE_MAIN();

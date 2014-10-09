@@ -219,16 +219,5 @@ static int test_hash_free(const struct test *t)
 }
 DEFINE_TEST(test_hash_free,
 		.description = "test hash_free calling free function for all values");
-static const struct test *tests[] = {
-	&stest_hash_new,
-	&stest_hash_get_count,
-	&stest_hash_replace,
-	&stest_hash_replace_failing,
-	&stest_hash_iter,
-	&stest_hash_iter_after_del,
-	&stest_hash_free,
-	NULL,
-};
 
-
-TESTSUITE_MAIN(tests);
+TESTSUITE_MAIN();

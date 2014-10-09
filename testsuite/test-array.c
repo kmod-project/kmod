@@ -160,13 +160,4 @@ static int test_array_remove_at(const struct test *t)
 DEFINE_TEST(test_array_remove_at,
 		.description = "test array remove at");
 
-static const struct test *tests[] = {
-	&stest_array_append1,
-	&stest_array_append2,
-	&stest_array_append_unique,
-	&stest_array_sort,
-	&stest_array_remove_at,
-	NULL,
-};
-
-TESTSUITE_MAIN(tests);
+TESTSUITE_MAIN();

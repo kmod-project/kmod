@@ -89,9 +89,4 @@ DEFINE_TEST(loaded_1,
 		.out = TESTSUITE_ROOTFS "test-loaded/correct.txt",
 	});
 
-static const struct test *tests[] = {
-	&sloaded_1,
-	NULL,
-};
-
-TESTSUITE_MAIN(tests);
+TESTSUITE_MAIN();

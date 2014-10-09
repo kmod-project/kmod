@@ -40,6 +40,8 @@ static noreturn int depmod_modules_order_for_compressed(const struct test *t)
 	test_spawn_prog(progname, args);
 	exit(EXIT_FAILURE);
 }
+
+#ifdef ENABLE_ZLIB
 DEFINE_TEST(depmod_modules_order_for_compressed,
 	.description = "check if depmod let aliases in right order when using compressed modules",
 	.config = {
@@ -53,6 +55,7 @@ DEFINE_TEST(depmod_modules_order_for_compressed,
 			{ }
 		},
 	});
+#endif
 
 #define SEARCH_ORDER_SIMPLE_ROOTFS TESTSUITE_ROOTFS "test-depmod/search-order-simple"
 static noreturn int depmod_search_order_simple(const struct test *t)
@@ -129,15 +132,4 @@ DEFINE_TEST(depmod_detect_loop,
 		.err = DETECT_LOOP_ROOTFS "/correct.txt",
 	});
 
-
-static const struct test *tests[] = {
-#ifdef ENABLE_ZLIB
-	&sdepmod_modules_order_for_compressed,
-#endif
-	&sdepmod_search_order_simple,
-	&sdepmod_search_order_same_prefix,
-	&sdepmod_detect_loop,
-	NULL,
-};
-
-TESTSUITE_MAIN(tests);
+TESTSUITE_MAIN();

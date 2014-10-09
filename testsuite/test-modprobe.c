@@ -325,22 +325,4 @@ DEFINE_TEST(modprobe_oldkernel_force,
 	.modules_loaded = "psmouse",
 	);
 
-
-static const struct test *tests[] = {
-	&smodprobe_show_depends,
-	&smodprobe_show_depends2,
-	&smodprobe_show_alias_to_none,
-	&smodprobe_builtin,
-	&smodprobe_softdep_loop,
-	&smodprobe_install_cmd_loop,
-	&smodprobe_param_kcmdline,
-	&smodprobe_param_kcmdline2,
-	&smodprobe_param_kcmdline3,
-	&smodprobe_param_kcmdline4,
-	&smodprobe_force,
-	&smodprobe_oldkernel,
-	&smodprobe_oldkernel_force,
-	NULL,
-};
-
-TESTSUITE_MAIN(tests);
+TESTSUITE_MAIN();

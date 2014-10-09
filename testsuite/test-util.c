@@ -97,10 +97,4 @@ DEFINE_TEST(test_freadline_wrapped,
 		.out = TESTSUITE_ROOTFS "test-util/freadline_wrapped-correct.txt",
 	});
 
-static const struct test *tests[] = {
-	&salias_1,
-	&stest_freadline_wrapped,
-	NULL,
-};
-
-TESTSUITE_MAIN(tests);
+TESTSUITE_MAIN();

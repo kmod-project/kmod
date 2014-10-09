@@ -116,10 +116,4 @@ DEFINE_TEST(from_alias,
 		.out = TESTSUITE_ROOTFS "test-new-module/from_alias/correct.txt",
 	});
 
-static const struct test *tests[] = {
-	&sfrom_name,
-	&sfrom_alias,
-	NULL,
-};
-
-TESTSUITE_MAIN(tests);
+TESTSUITE_MAIN();

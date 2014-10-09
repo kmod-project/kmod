@@ -113,11 +113,4 @@ DEFINE_TEST(test_remove,
 	},
 	.need_spawn = true);
 
-static const struct test *tests[] = {
-	&stest_initlib,
-	&stest_insert,
-	&stest_remove,
-	NULL,
-};
-
-TESTSUITE_MAIN(tests);
+TESTSUITE_MAIN();

@@ -102,9 +102,4 @@ static const struct test sblacklist_1 = {
 	.need_spawn = true,
 };
 
-static const struct test *tests[] = {
-	&sblacklist_1,
-	NULL,
-};
-
-TESTSUITE_MAIN(tests);
+TESTSUITE_MAIN();
