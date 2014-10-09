@@ -13,7 +13,7 @@
 /* ************************************************************************ */
 #define streq(a, b) (strcmp((a), (b)) == 0)
 #define strstartswith(a, b) (strncmp(a, b, strlen(b)) == 0)
-char *strchr_replace(char *s, int c, char r);
+char *strchr_replace(char *s, char c, char r);
 void *memdup(const void *p, size_t n) __attribute__((nonnull(1)));
 
 /* module-related functions                                                 */

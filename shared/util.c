@@ -62,7 +62,7 @@ void *memdup(const void *p, size_t n)
 	return memcpy(r, p, n);
 }
 
-char *strchr_replace(char *s, int c, char r)
+char *strchr_replace(char *s, char c, char r)
 {
 	char *p;
 
