@@ -38,7 +38,7 @@ static noreturn int modprobe_show_depends(const struct test *t)
 	test_spawn_prog(progname, args);
 	exit(EXIT_FAILURE);
 }
-static DEFINE_TEST(modprobe_show_depends,
+DEFINE_TEST(modprobe_show_depends,
 	.description = "check if output for modprobe --show-depends is correct for loaded modules",
 	.config = {
 		[TC_UNAME_R] = "4.4.4",
@@ -60,7 +60,7 @@ static noreturn int modprobe_show_depends2(const struct test *t)
 	test_spawn_prog(progname, args);
 	exit(EXIT_FAILURE);
 }
-static DEFINE_TEST(modprobe_show_depends2,
+DEFINE_TEST(modprobe_show_depends2,
 	.description = "check if output for modprobe --show-depends is correct",
 	.config = {
 		[TC_UNAME_R] = "4.4.4",
@@ -83,7 +83,7 @@ static noreturn int modprobe_show_alias_to_none(const struct test *t)
 	test_spawn_prog(progname, args);
 	exit(EXIT_FAILURE);
 }
-static DEFINE_TEST(modprobe_show_alias_to_none,
+DEFINE_TEST(modprobe_show_alias_to_none,
 	.description = "check if modprobe --show-depends doesn't explode with an alias to nothing",
 	.config = {
 		[TC_UNAME_R] = "4.4.4",
@@ -108,7 +108,7 @@ static noreturn int modprobe_builtin(const struct test *t)
 	test_spawn_prog(progname, args);
 	exit(EXIT_FAILURE);
 }
-static DEFINE_TEST(modprobe_builtin,
+DEFINE_TEST(modprobe_builtin,
 	.description = "check if modprobe return 0 for builtin",
 	.config = {
 		[TC_UNAME_R] = "4.4.4",
@@ -127,7 +127,7 @@ static noreturn int modprobe_softdep_loop(const struct test *t)
 	test_spawn_prog(progname, args);
 	exit(EXIT_FAILURE);
 }
-static DEFINE_TEST(modprobe_softdep_loop,
+DEFINE_TEST(modprobe_softdep_loop,
 	.description = "check if modprobe breaks softdep loop",
 	.config = {
 		[TC_UNAME_R] = "4.4.4",
@@ -149,7 +149,7 @@ static noreturn int modprobe_install_cmd_loop(const struct test *t)
 	test_spawn_prog(progname, args);
 	exit(EXIT_FAILURE);
 }
-static DEFINE_TEST(modprobe_install_cmd_loop,
+DEFINE_TEST(modprobe_install_cmd_loop,
 	.description = "check if modprobe breaks install-commands loop",
 	.config = {
 		[TC_UNAME_R] = "4.4.4",
@@ -175,7 +175,7 @@ static noreturn int modprobe_param_kcmdline(const struct test *t)
 	test_spawn_prog(progname, args);
 	exit(EXIT_FAILURE);
 }
-static DEFINE_TEST(modprobe_param_kcmdline,
+DEFINE_TEST(modprobe_param_kcmdline,
 	.description = "check if params from kcmdline are passed in fact passed to (f)init_module call",
 	.config = {
 		[TC_UNAME_R] = "4.4.4",
@@ -199,7 +199,7 @@ static noreturn int modprobe_param_kcmdline2(const struct test *t)
 	test_spawn_prog(progname, args);
 	exit(EXIT_FAILURE);
 }
-static DEFINE_TEST(modprobe_param_kcmdline2,
+DEFINE_TEST(modprobe_param_kcmdline2,
 	.description = "check if params with no value are parsed correctly from kcmdline",
 	.config = {
 		[TC_UNAME_R] = "4.4.4",
@@ -223,7 +223,7 @@ static noreturn int modprobe_param_kcmdline3(const struct test *t)
 	test_spawn_prog(progname, args);
 	exit(EXIT_FAILURE);
 }
-static DEFINE_TEST(modprobe_param_kcmdline3,
+DEFINE_TEST(modprobe_param_kcmdline3,
 	.description = "check if unrelated strings in kcmdline are correctly ignored",
 	.config = {
 		[TC_UNAME_R] = "4.4.4",
@@ -247,7 +247,7 @@ static noreturn int modprobe_param_kcmdline4(const struct test *t)
 	test_spawn_prog(progname, args);
 	exit(EXIT_FAILURE);
 }
-static DEFINE_TEST(modprobe_param_kcmdline4,
+DEFINE_TEST(modprobe_param_kcmdline4,
 	.description = "check if unrelated strings in kcmdline are correctly ignored",
 	.config = {
 		[TC_UNAME_R] = "4.4.4",
@@ -271,7 +271,7 @@ static noreturn int modprobe_force(const struct test *t)
 	test_spawn_prog(progname, args);
 	exit(EXIT_FAILURE);
 }
-static DEFINE_TEST(modprobe_force,
+DEFINE_TEST(modprobe_force,
 	.description = "check modprobe --force",
 	.config = {
 		[TC_UNAME_R] = "4.4.4",
@@ -293,7 +293,7 @@ static noreturn int modprobe_oldkernel(const struct test *t)
 	test_spawn_prog(progname, args);
 	exit(EXIT_FAILURE);
 }
-static DEFINE_TEST(modprobe_oldkernel,
+DEFINE_TEST(modprobe_oldkernel,
 	.description = "check modprobe --force",
 	.config = {
 		[TC_UNAME_R] = "3.3.3",
@@ -315,7 +315,7 @@ static noreturn int modprobe_oldkernel_force(const struct test *t)
 	test_spawn_prog(progname, args);
 	exit(EXIT_FAILURE);
 }
-static DEFINE_TEST(modprobe_oldkernel_force,
+DEFINE_TEST(modprobe_oldkernel_force,
 	.description = "check modprobe --force",
 	.config = {
 		[TC_UNAME_R] = "3.3.3",

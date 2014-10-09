@@ -57,7 +57,7 @@ static int alias_1(const struct test *t)
 
 	return EXIT_SUCCESS;
 }
-static DEFINE_TEST(alias_1,
+DEFINE_TEST(alias_1,
 	.description = "check if alias_normalize does the right thing",
 	.config = {
 		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-util/",
@@ -87,7 +87,7 @@ static int test_freadline_wrapped(const struct test *t)
 	fclose(fp);
 	return EXIT_SUCCESS;
 }
-static DEFINE_TEST(test_freadline_wrapped,
+DEFINE_TEST(test_freadline_wrapped,
 	.description = "check if freadline_wrapped() does the right thing",
 	.config = {
 		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-util/",

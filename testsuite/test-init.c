@@ -41,7 +41,7 @@ static noreturn int test_initlib(const struct test *t)
 
 	exit(EXIT_SUCCESS);
 }
-static DEFINE_TEST(test_initlib,
+DEFINE_TEST(test_initlib,
 		.description = "test if libkmod's init function work");
 
 static noreturn int test_insert(const struct test *t)
@@ -70,7 +70,7 @@ static noreturn int test_insert(const struct test *t)
 
 	exit(EXIT_SUCCESS);
 }
-static DEFINE_TEST(test_insert,
+DEFINE_TEST(test_insert,
 	.description = "test if libkmod's insert_module returns ok",
 	.config = {
 		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-init/",
@@ -105,7 +105,7 @@ static noreturn int test_remove(const struct test *t)
 
 	exit(EXIT_SUCCESS);
 }
-static DEFINE_TEST(test_remove,
+DEFINE_TEST(test_remove,
 	.description = "test if libkmod's remove_module returns ok",
 	.config = {
 		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-remove/",

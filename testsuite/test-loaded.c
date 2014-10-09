@@ -79,7 +79,7 @@ static int loaded_1(const struct test *t)
 
 	return EXIT_SUCCESS;
 }
-static DEFINE_TEST(loaded_1,
+DEFINE_TEST(loaded_1,
 	.description = "check if list of module is created",
 	.config = {
 		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-loaded/",

@@ -61,7 +61,7 @@ static int from_name(const struct test *t)
 
 	return EXIT_SUCCESS;
 }
-static DEFINE_TEST(from_name,
+DEFINE_TEST(from_name,
 	.description = "check if module names are parsed correctly",
 	.config = {
 		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-new-module/from_name/",
@@ -106,7 +106,7 @@ static int from_alias(const struct test *t)
 
 	return EXIT_SUCCESS;
 }
-static DEFINE_TEST(from_alias,
+DEFINE_TEST(from_alias,
 	.description = "check if aliases are parsed correctly",
 	.config = {
 		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-new-module/from_alias/",

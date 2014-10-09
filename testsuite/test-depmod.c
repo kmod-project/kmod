@@ -40,7 +40,7 @@ static noreturn int depmod_modules_order_for_compressed(const struct test *t)
 	test_spawn_prog(progname, args);
 	exit(EXIT_FAILURE);
 }
-static DEFINE_TEST(depmod_modules_order_for_compressed,
+DEFINE_TEST(depmod_modules_order_for_compressed,
 	.description = "check if depmod let aliases in right order when using compressed modules",
 	.config = {
 		[TC_UNAME_R] = MODULES_ORDER_UNAME,
@@ -66,7 +66,7 @@ static noreturn int depmod_search_order_simple(const struct test *t)
 	test_spawn_prog(progname, args);
 	exit(EXIT_FAILURE);
 }
-static DEFINE_TEST(depmod_search_order_simple,
+DEFINE_TEST(depmod_search_order_simple,
 	.description = "check if depmod honor search order in config",
 	.config = {
 		[TC_UNAME_R] = "4.4.4",
@@ -92,7 +92,7 @@ static noreturn int depmod_search_order_same_prefix(const struct test *t)
 	test_spawn_prog(progname, args);
 	exit(EXIT_FAILURE);
 }
-static DEFINE_TEST(depmod_search_order_same_prefix,
+DEFINE_TEST(depmod_search_order_same_prefix,
 	.description = "check if depmod honor search order in config with same prefix",
 	.config = {
 		[TC_UNAME_R] = "4.4.4",
@@ -118,7 +118,7 @@ static noreturn int depmod_detect_loop(const struct test *t)
 	test_spawn_prog(progname, args);
 	exit(EXIT_FAILURE);
 }
-static DEFINE_TEST(depmod_detect_loop,
+DEFINE_TEST(depmod_detect_loop,
 	.description = "check if depmod detects module loops correctly",
 	.config = {
 		[TC_UNAME_R] = "4.4.4",

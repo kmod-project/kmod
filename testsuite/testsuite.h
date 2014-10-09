@@ -131,7 +131,7 @@ int test_run(const struct test *t);
 
 /* Test definitions */
 #define DEFINE_TEST(_name, ...) \
-	const struct test s##_name = { \
+	static const struct test s##_name = { \
 		.name = #_name, \
 		.func = _name, \
 		## __VA_ARGS__ \

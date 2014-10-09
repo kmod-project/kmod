@@ -41,7 +41,7 @@ static int test_hash_new(const struct test *t)
 	hash_free(h);
 	return 0;
 }
-static DEFINE_TEST(test_hash_new,
+DEFINE_TEST(test_hash_new,
 		.description = "test hash_new");
 
 
@@ -60,7 +60,7 @@ static int test_hash_get_count(const struct test *t)
 	hash_free(h);
 	return 0;
 }
-static DEFINE_TEST(test_hash_get_count,
+DEFINE_TEST(test_hash_get_count,
 		.description = "test hash_add / hash_get_count");
 
 
@@ -90,7 +90,7 @@ static int test_hash_replace(const struct test *t)
 	hash_free(h);
 	return 0;
 }
-static DEFINE_TEST(test_hash_replace,
+DEFINE_TEST(test_hash_replace,
 		.description = "test hash_add replacing existing value");
 
 
@@ -121,7 +121,7 @@ static int test_hash_replace_failing(const struct test *t)
 	hash_free(h);
 	return 0;
 }
-static DEFINE_TEST(test_hash_replace_failing,
+DEFINE_TEST(test_hash_replace_failing,
 		.description = "test hash_add_unique failing to replace existing value");
 
 
@@ -155,7 +155,7 @@ static int test_hash_iter(const struct test *t)
 	hash_free(h2);
 	return 0;
 }
-static DEFINE_TEST(test_hash_iter,
+DEFINE_TEST(test_hash_iter,
 		.description = "test hash_iter");
 
 
@@ -191,7 +191,7 @@ static int test_hash_iter_after_del(const struct test *t)
 	hash_free(h2);
 	return 0;
 }
-static DEFINE_TEST(test_hash_iter_after_del,
+DEFINE_TEST(test_hash_iter_after_del,
 		.description = "test hash_iter, after deleting element");
 
 
@@ -217,7 +217,7 @@ static int test_hash_free(const struct test *t)
 
 	return 0;
 }
-static DEFINE_TEST(test_hash_free,
+DEFINE_TEST(test_hash_free,
 		.description = "test hash_free calling free function for all values");
 static const struct test *tests[] = {
 	&stest_hash_new,

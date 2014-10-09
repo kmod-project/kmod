@@ -40,7 +40,7 @@ static noreturn int modinfo_jonsmodules(const struct test *t)
 	test_spawn_prog(progname, args);
 	exit(EXIT_FAILURE);
 }
-static DEFINE_TEST(modinfo_jonsmodules,
+DEFINE_TEST(modinfo_jonsmodules,
 	.description = "check if output for modinfo is correct for i686, ppc64, s390x and x86_64",
 	.config = {
 		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-modinfo/",
