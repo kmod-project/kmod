@@ -522,41 +522,6 @@ static void index_write(const struct index_node *node, FILE *out)
 /* END: code from module-init-tools/index.c just modified to compile here.
  */
 
-/* utils (variants of libkmod-utils.c) *********************************/
-static const char *underscores2(const char *input, char *output, size_t outputlen)
-{
-	size_t i;
-
-	for (i = 0; input[i] != '\0' && i < outputlen - 1; i++) {
-		switch (input[i]) {
-		case '-':
-			output[i] = '_';
-			break;
-
-		case ']':
-			WRN("Unmatched bracket in %s\n", input);
-			return NULL;
-
-		case '[': {
-			size_t off = strcspn(input + i, "]");
-			if (input[i + off] == '\0') {
-				WRN("Unmatched bracket in %s\n", input);
-				return NULL;
-			}
-			memcpy(output + i, input + i, off + 1);
-			i += off;
-			break;
-		}
-
-		default:
-			output[i] = input[i];
-		}
-	}
-	output[i] = '\0';
-
-	return output;
-}
-
 /* configuration parsing **********************************************/
 struct cfg_override {
 	struct cfg_override *next;
@@ -1959,7 +1924,6 @@ static int output_aliases(struct depmod *depmod, FILE *out)
 
 static int output_aliases_bin(struct depmod *depmod, FILE *out)
 {
-	char buf[1024];
 	struct index_node *idx;
 	size_t i;
 
@@ -1977,15 +1941,18 @@ static int output_aliases_bin(struct depmod *depmod, FILE *out)
 		kmod_list_foreach(l, mod->info_list) {
 			const char *key = kmod_module_info_get_key(l);
 			const char *value = kmod_module_info_get_value(l);
+			char buf[PATH_MAX];
 			const char *alias;
 			int duplicate;
 
 			if (!streq(key, "alias"))
 				continue;
 
-			alias = underscores2(value, buf, sizeof(buf));
-			if (alias == NULL)
+			if (alias_normalize(value, buf, NULL) < 0) {
+				WRN("Unmatched bracket in %s\n", value);
 				continue;
+			}
+			alias = buf;
 
 			duplicate = index_insert(idx, alias, mod->modname,
 						 mod->idx);
