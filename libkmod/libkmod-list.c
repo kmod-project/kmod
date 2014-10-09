@@ -36,22 +36,6 @@ static inline struct list_node *list_node_init(struct list_node *node)
 	return node;
 }
 
-static inline struct list_node *list_node_next(const struct list_node *node)
-{
-	if (node == NULL)
-		return NULL;
-
-	return node->next;
-}
-
-static inline struct list_node *list_node_prev(const struct list_node *node)
-{
-	if (node == NULL)
-		return NULL;
-
-	return node->prev;
-}
-
 static inline void list_node_append(struct list_node *list,
 							struct list_node *node)
 {
