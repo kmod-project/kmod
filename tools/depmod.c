@@ -37,7 +37,6 @@
 #include <shared/util.h>
 
 #include <libkmod.h>
-#include <libkmod-util.h>
 
 #include "kmod.h"
 

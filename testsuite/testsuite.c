@@ -34,8 +34,6 @@
 
 #include <shared/util.h>
 
-#include <libkmod-util.h>
-
 #include "testsuite.h"
 
 static const char *ANSI_HIGHLIGHT_GREEN_ON = "\x1B[1;32m";

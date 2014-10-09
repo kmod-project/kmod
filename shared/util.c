@@ -35,6 +35,20 @@
 #define USEC_PER_SEC  1000000ULL
 #define NSEC_PER_USEC 1000ULL
 
+static const struct kmod_ext {
+	const char *ext;
+	size_t len;
+} kmod_exts[] = {
+	{KMOD_EXTENSION_UNCOMPRESSED, sizeof(KMOD_EXTENSION_UNCOMPRESSED) - 1},
+#ifdef ENABLE_ZLIB
+	{".ko.gz", sizeof(".ko.gz") - 1},
+#endif
+#ifdef ENABLE_XZ
+	{".ko.xz", sizeof(".ko.xz") - 1},
+#endif
+	{ }
+};
+
 /* string handling functions and memory allocations                         */
 /* ************************************************************************ */
 
@@ -98,6 +112,53 @@ finish:
 		*len = i;
 
 	return 0;
+}
+
+char *modname_normalize(const char *modname, char buf[static PATH_MAX], size_t *len)
+{
+	size_t s;
+
+	for (s = 0; s < PATH_MAX - 1; s++) {
+		const char c = modname[s];
+		if (c == '-')
+			buf[s] = '_';
+		else if (c == '\0' || c == '.')
+			break;
+		else
+			buf[s] = c;
+	}
+
+	buf[s] = '\0';
+
+	if (len)
+		*len = s;
+
+	return buf;
+}
+
+char *path_to_modname(const char *path, char buf[static PATH_MAX], size_t *len)
+{
+	char *modname;
+
+	modname = basename(path);
+	if (modname == NULL || modname[0] == '\0')
+		return NULL;
+
+	return modname_normalize(modname, buf, len);
+}
+
+bool path_ends_with_kmod_ext(const char *path, size_t len)
+{
+	const struct kmod_ext *eitr;
+
+	for (eitr = kmod_exts; eitr->ext != NULL; eitr++) {
+		if (len <= eitr->len)
+			continue;
+		if (streq(path + len - eitr->len, eitr->ext))
+			return true;
+	}
+
+	return false;
 }
 
 /* read-like and fread-like functions                                       */

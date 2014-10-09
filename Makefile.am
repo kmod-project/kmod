@@ -51,9 +51,7 @@ libkmod_libkmod_util_la_SOURCES = \
 	shared/hash.c \
 	shared/hash.h \
 	shared/util.c \
-	shared/util.h \
-	libkmod/libkmod-util.c \
-	libkmod/libkmod-util.h
+	shared/util.h
 
 include_HEADERS = libkmod/libkmod.h
 lib_LTLIBRARIES = libkmod/libkmod.la

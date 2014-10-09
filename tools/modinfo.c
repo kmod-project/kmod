@@ -27,8 +27,9 @@
 #include <sys/stat.h>
 #include <sys/utsname.h>
 
+#include <shared/util.h>
+
 #include <libkmod.h>
-#include <libkmod-util.h>
 
 #include "kmod.h"
 
