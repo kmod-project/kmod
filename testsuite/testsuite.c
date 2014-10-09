@@ -88,16 +88,17 @@ static void help(void)
 		printf("\t-%c, --%s\n", *itr_short, itr->name);
 }
 
-static void test_list(const struct test *tests[])
+static void test_list(const struct test *start, const struct test *stop)
 {
-	size_t i;
+	const struct test *t;
 
 	printf("Available tests:\n");
-	for (i = 0; tests[i] != NULL; i++)
-		printf("\t%s, %s\n", tests[i]->name, tests[i]->description);
+	for (t = start; t < stop; t++)
+		printf("\t%s, %s\n", t->name, t->description);
 }
 
-int test_init(int argc, char *const argv[], const struct test *tests[])
+int test_init(const struct test *start, const struct test *stop,
+	      int argc, char *const argv[])
 {
 	progname = argv[0];
 
@@ -108,7 +109,7 @@ int test_init(int argc, char *const argv[], const struct test *tests[])
 			break;
 		switch (c) {
 		case 'l':
-			test_list(tests);
+			test_list(start, stop);
 			return 0;
 		case 'h':
 			help();
@@ -133,13 +134,14 @@ int test_init(int argc, char *const argv[], const struct test *tests[])
 	return optind;
 }
 
-const struct test *test_find(const struct test *tests[], const char *name)
+const struct test *test_find(const struct test *start,
+			     const struct test *stop, const char *name)
 {
-	size_t i;
+	const struct test *t;
 
-	for (i = 0; tests[i] != NULL; i++) {
-		if (strcmp(tests[i]->name, name) == 0)
-			return tests[i];
+	for (t = start; t < stop; t++) {
+		if (strcmp(t->name, name) == 0)
+			return t;
 	}
 
 	return NULL;
