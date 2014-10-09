@@ -114,6 +114,37 @@ finish:
 	return 0;
 }
 
+/*
+ * Replace dashes with underscores.
+ * Dashes inside character range patterns (e.g. [0-9]) are left unchanged.
+ *
+ * For convenience, it returns error if @s is NULL
+ */
+int underscores(char *s)
+{
+	unsigned int i;
+
+	if (!s)
+		return -EINVAL;
+
+	for (i = 0; s[i]; i++) {
+		switch (s[i]) {
+		case '-':
+			s[i] = '_';
+			break;
+		case ']':
+			return -EINVAL;
+		case '[':
+			i += strcspn(&s[i], "]");
+			if (!s[i])
+				return -EINVAL;
+			break;
+		}
+	}
+
+	return 0;
+}
+
 char *modname_normalize(const char *modname, char buf[static PATH_MAX], size_t *len)
 {
 	size_t s;
