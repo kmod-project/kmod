@@ -47,45 +47,6 @@ static const struct kmod_ext {
 	{ }
 };
 
-inline int alias_normalize(const char *alias, char buf[PATH_MAX], size_t *len)
-{
-	size_t s;
-
-	for (s = 0; s < PATH_MAX - 1; s++) {
-		const char c = alias[s];
-		switch (c) {
-		case '-':
-			buf[s] = '_';
-			break;
-		case ']':
-			return -EINVAL;
-		case '[':
-			while (alias[s] != ']' && alias[s] != '\0') {
-				buf[s] = alias[s];
-				s++;
-			}
-
-			if (alias[s] != ']')
-				return -EINVAL;
-
-			buf[s] = alias[s];
-			break;
-		case '\0':
-			goto finish;
-		default:
-			buf[s] = c;
-		}
-	}
-
-finish:
-	buf[s] = '\0';
-
-	if (len)
-		*len = s;
-
-	return 0;
-}
-
 inline char *modname_normalize(const char *modname, char buf[PATH_MAX],
 								size_t *len)
 {

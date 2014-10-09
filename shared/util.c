@@ -60,6 +60,46 @@ char *strchr_replace(char *s, int c, char r)
 	return s;
 }
 
+/* module-related functions                                                 */
+/* ************************************************************************ */
+int alias_normalize(const char *alias, char buf[static PATH_MAX], size_t *len)
+{
+	size_t i;
+
+	for (i = 0; i < PATH_MAX - 1; i++) {
+		const char c = alias[i];
+		switch (c) {
+		case '-':
+			buf[i] = '_';
+			break;
+		case ']':
+			return -EINVAL;
+		case '[':
+			while (alias[i] != ']' && alias[i] != '\0') {
+				buf[i] = alias[i];
+				i++;
+			}
+
+			if (alias[i] != ']')
+				return -EINVAL;
+
+			buf[i] = alias[i];
+			break;
+		case '\0':
+			goto finish;
+		default:
+			buf[i] = c;
+		}
+	}
+
+finish:
+	buf[i] = '\0';
+	if (len)
+		*len = i;
+
+	return 0;
+}
+
 /* read-like and fread-like functions                                       */
 /* ************************************************************************ */
 ssize_t read_str_safe(int fd, char *buf, size_t buflen)

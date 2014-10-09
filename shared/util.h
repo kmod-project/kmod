@@ -16,6 +16,10 @@
 char *strchr_replace(char *s, int c, char r);
 void *memdup(const void *p, size_t n) __attribute__((nonnull(1)));
 
+/* module-related functions                                                 */
+/* ************************************************************************ */
+int alias_normalize(const char *alias, char buf[static PATH_MAX], size_t *len) _must_check_ __attribute__((nonnull(1,2)));
+
 /* read-like and fread-like functions                                       */
 /* ************************************************************************ */
 ssize_t read_str_safe(int fd, char *buf, size_t buflen) _must_check_ __attribute__((nonnull(2)));

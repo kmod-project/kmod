@@ -23,9 +23,6 @@
 
 #include <shared/util.h>
 
-#include <libkmod.h>
-#include <libkmod-util.h>
-
 #include "testsuite.h"
 
 static int alias_1(const struct test *t)
