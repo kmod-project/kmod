@@ -28,7 +28,7 @@
 
 #define BUF_STEP (2048)
 
-static bool buf_grow(struct buffer *buf, size_t newsize)
+static bool buf_grow(struct strbuf *buf, size_t newsize)
 {
 	void *tmp;
 	size_t sz;
@@ -49,19 +49,19 @@ static bool buf_grow(struct buffer *buf, size_t newsize)
 	return true;
 }
 
-void buf_init(struct buffer *buf)
+void strbuf_init(struct strbuf *buf)
 {
 	buf->bytes = NULL;
 	buf->size = 0;
 	buf->used = 0;
 }
 
-void buf_release(struct buffer *buf)
+void strbuf_release(struct strbuf *buf)
 {
 	free(buf->bytes);
 }
 
-char *buf_steal(struct buffer *buf)
+char *strbuf_steal(struct strbuf *buf)
 {
 	char *bytes;
 
@@ -74,7 +74,7 @@ char *buf_steal(struct buffer *buf)
 	return bytes;
 }
 
-const char *buf_str(struct buffer *buf)
+const char *strbuf_str(struct strbuf *buf)
 {
 	if (!buf_grow(buf, buf->used + 1))
 		return NULL;
@@ -82,7 +82,7 @@ const char *buf_str(struct buffer *buf)
 	return buf->bytes;
 }
 
-bool buf_pushchar(struct buffer *buf, char ch)
+bool strbuf_pushchar(struct strbuf *buf, char ch)
 {
 	if (!buf_grow(buf, buf->used + 1))
 		return false;
@@ -91,32 +91,32 @@ bool buf_pushchar(struct buffer *buf, char ch)
 	return true;
 }
 
-unsigned buf_pushchars(struct buffer *buf, const char *str)
+unsigned strbuf_pushchars(struct strbuf *buf, const char *str)
 {
 	unsigned i = 0;
 	int ch;
 
 	while ((ch = str[i])) {
-		buf_pushchar(buf, ch);
+		strbuf_pushchar(buf, ch);
 		i++;
 	}
 
 	return i;
 }
 
-void buf_popchar(struct buffer *buf)
+void strbuf_popchar(struct strbuf *buf)
 {
 	assert(buf->used > 0);
 	buf->used--;
 }
 
-void buf_popchars(struct buffer *buf, unsigned n)
+void strbuf_popchars(struct strbuf *buf, unsigned n)
 {
 	assert(buf->used >= n);
 	buf->used -= n;
 }
 
-void buf_clear(struct buffer *buf)
+void strbuf_clear(struct strbuf *buf)
 {
 	buf->used = 0;
 }
