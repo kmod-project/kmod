@@ -50,6 +50,8 @@ shared_libshared_la_SOURCES = \
 	shared/array.h \
 	shared/hash.c \
 	shared/hash.h \
+	shared/strbuf.c \
+	shared/strbuf.h \
 	shared/util.c \
 	shared/util.h
 

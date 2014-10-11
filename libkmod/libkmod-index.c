@@ -28,6 +28,7 @@
 #include <string.h>
 
 #include <shared/macro.h>
+#include <shared/strbuf.h>
 #include <shared/util.h>
 
 #include "libkmod-internal.h"
@@ -133,100 +134,6 @@ static uint32_t read_long(FILE *in)
 	return ntohl(l);
 }
 
-/*
- * Buffer abstract data type
- *
- * Used internally to store the current path during tree traversal.
- * They help build wildcard key strings to pass to fnmatch(),
- * as well as building values of matching keys.
- */
-struct buffer {
-	char *bytes;
-	unsigned size;
-	unsigned used;
-};
-
-#define BUF_STEP (2048)
-static bool buf_grow(struct buffer *buf, size_t newsize)
-{
-	void *tmp;
-	size_t sz;
-
-	if (newsize % BUF_STEP == 0)
-		sz = newsize;
-	else
-		sz = ((newsize / BUF_STEP) + 1) * BUF_STEP;
-
-	if (buf->size == sz)
-		return true;
-
-	tmp = realloc(buf->bytes, sz);
-	if (sz > 0 && tmp == NULL)
-		return false;
-	buf->bytes = tmp;
-	buf->size = sz;
-	return true;
-}
-
-static void buf_init(struct buffer *buf)
-{
-	buf->bytes = NULL;
-	buf->size = 0;
-	buf->used = 0;
-}
-
-static void buf_release(struct buffer *buf)
-{
-	free(buf->bytes);
-}
-
-/* Destroy buffer and return a copy as a C string */
-static char *buf_steal(struct buffer *buf)
-{
-	char *bytes;
-
-	bytes = realloc(buf->bytes, buf->used + 1);
-	if (!bytes) {
-		free(buf->bytes);
-		return NULL;
-	}
-	bytes[buf->used] = '\0';
-	return bytes;
-}
-
-/* Return a C string owned by the buffer
-   (invalidated if the buffer is changed).
- */
-static const char *buf_str(struct buffer *buf)
-{
-	if (!buf_grow(buf, buf->used + 1))
-		return NULL;
-	buf->bytes[buf->used] = '\0';
-	return buf->bytes;
-}
-
-static bool buf_pushchar(struct buffer *buf, char ch)
-{
-	if (!buf_grow(buf, buf->used + 1))
-		return false;
-	buf->bytes[buf->used] = ch;
-	buf->used++;
-	return true;
-}
-
-static unsigned buf_pushchars(struct buffer *buf, const char *str)
-{
-	unsigned i = 0;
-	int ch;
-
-	while ((ch = str[i])) {
-		buf_pushchar(buf, ch);
-		i++;
-	}
-
-	return i;
-}
-
 static unsigned buf_freadchars(struct buffer *buf, FILE *in)
 {
 	unsigned i = 0;
@@ -239,23 +146,6 @@ static unsigned buf_freadchars(struct buffer *buf, FILE *in)
 	}
 
 	return i;
-}
-
-static void buf_popchar(struct buffer *buf)
-{
-	assert(buf->used > 0);
-	buf->used--;
-}
-
-static void buf_popchars(struct buffer *buf, unsigned n)
-{
-	assert(buf->used >= n);
-	buf->used -= n;
-}
-
-static void buf_clear(struct buffer *buf)
-{
-	buf->used = 0;
 }
 
 /*
