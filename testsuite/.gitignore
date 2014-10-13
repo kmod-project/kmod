@@ -2,6 +2,7 @@
 *.la
 *.so
 /.dirstamp
+/test-strbuf
 /test-array
 /test-util
 /test-blacklist
@@ -16,6 +17,8 @@
 /test-hash
 /rootfs
 /stamp-rootfs
+/test-strbuf.log
+/test-strbuf.trs
 /test-array.log
 /test-array.trs
 /test-util.log

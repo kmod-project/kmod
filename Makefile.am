@@ -266,6 +266,7 @@ testsuite_libtestsuite_la_LIBADD = -lrt
 TESTSUITE = \
 	testsuite/test-hash \
 	testsuite/test-array \
+	testsuite/test-strbuf \
 	testsuite/test-init testsuite/test-testsuite testsuite/test-loaded \
 	testsuite/test-modinfo testsuite/test-util testsuite/test-new-module \
 	testsuite/test-modprobe testsuite/test-blacklist \
@@ -283,6 +284,9 @@ testsuite_test_hash_CPPFLAGS = $(TESTSUITE_CPPFLAGS)
 
 testsuite_test_array_LDADD = $(TESTSUITE_LDADD)
 testsuite_test_array_CPPFLAGS = $(TESTSUITE_CPPFLAGS)
+
+testsuite_test_strbuf_LDADD = $(TESTSUITE_LDADD)
+testsuite_test_strbuf_CPPFLAGS = $(TESTSUITE_CPPFLAGS)
 
 testsuite_test_init_LDADD = $(TESTSUITE_LDADD)
 testsuite_test_init_CPPFLAGS = $(TESTSUITE_CPPFLAGS)
