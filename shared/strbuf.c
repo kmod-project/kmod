@@ -22,6 +22,7 @@
 #include <assert.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "util.h"
 #include "strbuf.h"
@@ -93,15 +94,20 @@ bool strbuf_pushchar(struct strbuf *buf, char ch)
 
 unsigned strbuf_pushchars(struct strbuf *buf, const char *str)
 {
-	unsigned i = 0;
-	int ch;
+	unsigned int len;
 
-	while ((ch = str[i])) {
-		strbuf_pushchar(buf, ch);
-		i++;
-	}
+	assert(str != NULL);
+	assert(buf != NULL);
 
-	return i;
+	len = strlen(str);
+
+	if (!buf_grow(buf, buf->used + len))
+		return 0;
+
+	memcpy(buf->bytes + buf->used, str, len);
+	buf->used += len;
+
+	return len;
 }
 
 void strbuf_popchar(struct strbuf *buf)
