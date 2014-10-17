@@ -26,7 +26,7 @@
 #include "util.h"
 #include "strbuf.h"
 
-#define BUF_STEP (2048)
+#define BUF_STEP 128
 
 static bool buf_grow(struct strbuf *buf, size_t newsize)
 {
