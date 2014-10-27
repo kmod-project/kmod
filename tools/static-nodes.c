@@ -96,7 +96,7 @@ static int write_tmpfiles(FILE *out, char modname[], char devname[], char type, 
 			return EXIT_FAILURE;
 	}
 
-	ret = fprintf(out, "%c /dev/%s 0600 - - - %u:%u\n",
+	ret = fprintf(out, "%c! /dev/%s 0600 - - - %u:%u\n",
 		      type, devname, maj, min);
 	if (ret < 0)
 		return EXIT_FAILURE;
