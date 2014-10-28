@@ -599,17 +599,17 @@ struct index_value *index_searchwild(struct index_file *in, const char *key)
 	return out;
 }
 
+/**************************************************************************/
+/*
+ * Alternative implementation, using mmap to map all the file to memory when
+ * starting
+ */
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
 static const char _idx_empty_str[] = "";
 
-/**************************************************************************/
-/*
- * Alternative implementation, using mmap to map all the file to memory when
- * starting
- */
 struct index_mm {
 	struct kmod_ctx *ctx;
 	void *mm;
