@@ -309,7 +309,6 @@ struct index_file {
 	uint32_t root_offset;
 };
 
-/* Failures are silent; modprobe will fall back to text files */
 struct index_file *index_file_open(const char *filename)
 {
 	FILE *file;
