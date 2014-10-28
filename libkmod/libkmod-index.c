@@ -34,35 +34,109 @@
 #include "libkmod-internal.h"
 #include "libkmod-index.h"
 
-/* index.c: module index file shared functions for modprobe and depmod */
+/* libkmod-index.c: module index file implementation
+ *
+ * Integers are stored as 32 bit unsigned in "network" order, i.e. MSB first.
+ * All files start with a magic number.
+ *
+ * Magic spells "BOOTFAST". Second one used on newer versioned binary files.
+ * #define INDEX_MAGIC_OLD 0xB007FA57
+ *
+ * We use a version string to keep track of changes to the binary format
+ * This is stored in the form: INDEX_MAJOR (hi) INDEX_MINOR (lo) just in
+ * case we ever decide to have minor changes that are not incompatible.
+ */
+#define INDEX_MAGIC 0xB007F457
+#define INDEX_VERSION_MAJOR 0x0002
+#define INDEX_VERSION_MINOR 0x0001
+#define INDEX_VERSION ((INDEX_VERSION_MAJOR<<16)|INDEX_VERSION_MINOR)
 
+/* The index file maps keys to values. Both keys and values are ASCII strings.
+ * Each key can have multiple values. Values are sorted by an integer priority.
+ *
+ * The reader also implements a wildcard search (including range expressions)
+ * where the keys in the index are treated as patterns.
+ * This feature is required for module aliases.
+ */
 #define INDEX_CHILDMAX 128
 
 /* Disk format:
-
-   uint32_t magic = INDEX_MAGIC;
-   uint32_t version = INDEX_VERSION;
-   uint32_t root_offset;
-
-   (node_offset & INDEX_NODE_MASK) specifies the file offset of nodes:
-
-        char[] prefix; // nul terminated
-
-        char first;
-        char last;
-        uint32_t children[last - first + 1];
-
-        uint32_t value_count;
-        struct {
-            uint32_t priority;
-            char[] value; // nul terminated
-        } values[value_count];
-
-   (node_offset & INDEX_NODE_FLAGS) indicates which fields are present.
-   Empty prefixes are omitted, leaf nodes omit the three child-related fields.
-
-   This could be optimised further by adding a sparse child format
-   (indicated using a new flag).
+ *
+ *  uint32_t magic = INDEX_MAGIC;
+ *  uint32_t version = INDEX_VERSION;
+ *  uint32_t root_offset;
+ *
+ *  (node_offset & INDEX_NODE_MASK) specifies the file offset of nodes:
+ *
+ *       char[] prefix; // nul terminated
+ *
+ *       char first;
+ *       char last;
+ *       uint32_t children[last - first + 1];
+ *
+ *       uint32_t value_count;
+ *       struct {
+ *           uint32_t priority;
+ *           char[] value; // nul terminated
+ *       } values[value_count];
+ *
+ *  (node_offset & INDEX_NODE_FLAGS) indicates which fields are present.
+ *  Empty prefixes are omitted, leaf nodes omit the three child-related fields.
+ *
+ *  This could be optimised further by adding a sparse child format
+ *  (indicated using a new flag).
+ *
+ *
+ * Implementation is based on a radix tree, or "trie".
+ * Each arc from parent to child is labelled with a character.
+ * Each path from the root represents a string.
+ *
+ * == Example strings ==
+ *
+ * ask
+ * ate
+ * on
+ * once
+ * one
+ *
+ * == Key ==
+ *  + Normal node
+ *  * Marked node, representing a key and it's values.
+ *
+ * +
+ * |-a-+-s-+-k-*
+ * |   |
+ * |   `-t-+-e-*
+ * |
+ * `-o-+-n-*-c-+-e-*
+ *         |
+ *         `-e-*
+ *
+ * Naive implementations tend to be very space inefficient; child pointers
+ * are stored in arrays indexed by character, but most child pointers are null.
+ *
+ * Our implementation uses a scheme described by Wikipedia as a Patrica trie,
+ *
+ *     "easiest to understand as a space-optimized trie where
+ *      each node with only one child is merged with its child"
+ *
+ * +
+ * |-a-+-sk-*
+ * |   |
+ * |   `-te-*
+ * |
+ * `-on-*-ce-*
+ *      |
+ *      `-e-*
+ *
+ * We still use arrays of child pointers indexed by a single character;
+ * the remaining characters of the label are stored as a "prefix" in the child.
+ *
+ * The paper describing the original Patrica trie works on individiual bits -
+ * each node has a maximum of two children, which increases space efficiency.
+ * However for this application it is simpler to use the ASCII character set.
+ * Since the index file is read-only, it can be compressed by omitting null
+ * child pointers at the start and end of arrays.
  */
 
 /* Format of node offsets within index file */
