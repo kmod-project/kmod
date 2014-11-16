@@ -1,3 +1,26 @@
+kmod 19
+=======
+
+- Bug fixes:
+	- Fix missing CLOEXEC in library
+	- Fix error message while opening kmod's index
+
+- New features:
+	- Add kmod(8) man page
+	- Allow to build with libc's without be32toh()
+	- Move code around separating common code and data structures into a
+	  shared directory. This allows to share more code between library and
+	  tools, making the binary size of tools shorter.
+	- Clarify tools vs library licenses
+	- static-nodes: when writting in tmpfiles format, indicate that
+	  creation of static nodes should only happen at boot. This is used and
+	  required by systemd-217+.
+
+- Improvements to testsuite:
+	- Add tests for newly created shared/ code
+	- Improve how tests are declared so there's less boilerplate code for
+	  each test.
+
 kmod 18
 =======
 
