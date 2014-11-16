@@ -10,9 +10,9 @@ kmod 19
 	- Allow to build with libc's without be32toh()
 	- Move code around separating common code and data structures into a
 	  shared directory. This allows to share more code between library and
-	  tools, making the binary size of tools shorter.
+	  tools, making the binary size of tools smaller.
 	- Clarify tools vs library licenses
-	- static-nodes: when writting in tmpfiles format, indicate that
+	- static-nodes: when writing in tmpfiles format, indicate that
 	  creation of static nodes should only happen at boot. This is used and
 	  required by systemd-217+.
 
