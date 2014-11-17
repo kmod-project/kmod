@@ -30,6 +30,7 @@
 #include <string.h>
 #include <unistd.h>
 
+#include <shared/missing.h>
 #include <shared/util.h>
 
 #define USEC_PER_SEC  1000000ULL
