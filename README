@@ -1,5 +1,30 @@
 kmod - Linux kernel module handling
 
+Information
+===========
+
+Mailing list:
+	linux-modules@vger.kernel.org (no subscription needed)
+
+Signed packages:
+	http://www.kernel.org/pub/linux/utils/kernel/kmod/
+
+Git:
+	git://git.kernel.org/pub/scm/utils/kernel/kmod/kmod.git
+	http://git.kernel.org/pub/scm/utils/kernel/kmod/kmod.git
+	https://git.kernel.org/pub/scm/utils/kernel/kmod/kmod.git
+
+Gitweb:
+	http://git.kernel.org/?p=utils/kernel/kmod/kmod.git
+
+Irc:
+	#kmod on irc.freenode.org
+
+License:
+	LGPLv2.1+ for libkmod, testsuite and helper libraries
+	GPLv2+ for tools/*
+
+
 OVERVIEW
 ========
 
@@ -39,30 +64,6 @@ flags, you just need to run 'bootstrap-configure'.
 
 Make sure to read the CODING-STYLE file and the other READMEs: libkmod/README
 and testsuite/README.
-
-Information
-===========
-
-Signed packages:
-	http://www.kernel.org/pub/linux/utils/kernel/kmod/
-
-Mailing list:
-	linux-modules@vger.kernel.org (no subscription needed)
-
-Git:
-	git://git.kernel.org/pub/scm/utils/kernel/kmod/kmod.git
-	http://git.kernel.org/pub/scm/utils/kernel/kmod/kmod.git
-	https://git.kernel.org/pub/scm/utils/kernel/kmod/kmod.git
-
-Gitweb:
-	http://git.kernel.org/?p=utils/kernel/kmod/kmod.git
-
-Irc:
-	#kmod on irc.freenode.org
-
-License:
-	LGPLv2.1+ for libkmod, testsuite and helper libraries
-	GPLv2+ for tools/*
 
 Compatibility with module-init-tools
 ====================================
