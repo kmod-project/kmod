@@ -18,7 +18,6 @@ AM_CPPFLAGS = \
 	-include $(top_builddir)/config.h \
 	-I$(top_srcdir) \
 	-DSYSCONFDIR=\""$(sysconfdir)"\" \
-	-DLIBEXECDIR=\""$(libexecdir)"\" \
 	${zlib_CFLAGS}
 
 AM_CFLAGS = $(WARNINGFLAGS)
