@@ -28,7 +28,7 @@
 
 /* good luck bulding a kmod_list outside of the library... makes this blacklist
  * function rather pointless */
-#include <libkmod-internal.h>
+#include <libkmod/libkmod-internal.h>
 
 /* FIXME: hack, change name so we don't clash */
 #undef ERR

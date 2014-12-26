@@ -43,7 +43,7 @@
 #include <shared/util.h>
 
 /* kmod_elf_get_section() is not exported, we need the private header */
-#include <libkmod-internal.h>
+#include <libkmod/libkmod-internal.h>
 
 /* FIXME: hack, change name so we don't clash */
 #undef ERR
