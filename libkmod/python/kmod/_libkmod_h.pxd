@@ -28,7 +28,7 @@ cdef extern from 'stdbool.h':
         pass
 
 
-cdef extern from 'libkmod.h':
+cdef extern from 'libkmod/libkmod.h':
     # library user context - reads the config and system
     # environment, user variables, allows custom logging
     cdef struct kmod_ctx:
