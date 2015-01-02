@@ -23,7 +23,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#include <libkmod.h>
+#include <libkmod/libkmod.h>
 
 #include "testsuite.h"
 

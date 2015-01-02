@@ -34,7 +34,7 @@
 #include <shared/array.h>
 #include <shared/macro.h>
 
-#include <libkmod.h>
+#include <libkmod/libkmod.h>
 
 #include "kmod.h"
 

@@ -24,8 +24,6 @@
 
 #include <shared/array.h>
 
-#include <libkmod.h>
-
 /* basic pointer array growing in steps */
 
 

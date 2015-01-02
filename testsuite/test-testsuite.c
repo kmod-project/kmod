@@ -26,7 +26,7 @@
 #include <sys/types.h>
 #include <sys/utsname.h>
 
-#include <libkmod.h>
+#include <libkmod/libkmod.h>
 
 #include "testsuite.h"
 

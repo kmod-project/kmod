@@ -29,7 +29,7 @@
 
 #include <shared/util.h>
 
-#include <libkmod.h>
+#include <libkmod/libkmod.h>
 
 #include "kmod.h"
 

@@ -23,7 +23,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <libkmod.h>
+#include <libkmod/libkmod.h>
 
 #include "kmod.h"
 

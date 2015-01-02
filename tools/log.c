@@ -22,7 +22,7 @@
 #include <stdlib.h>
 #include <syslog.h>
 
-#include <libkmod.h>
+#include <libkmod/libkmod.h>
 
 #include "kmod.h"
 
