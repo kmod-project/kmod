@@ -46,12 +46,6 @@ struct kmod_modversion64 {
 	char name[64 - sizeof(uint64_t)];
 };
 
-#ifdef WORDS_BIGENDIAN
-static const enum kmod_elf_class native_endianess = KMOD_ELF_MSB;
-#else
-static const enum kmod_elf_class native_endianess = KMOD_ELF_LSB;
-#endif
-
 struct kmod_elf {
 	const uint8_t *memory;
 	uint8_t *changed;
