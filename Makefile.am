@@ -20,8 +20,8 @@ AM_CPPFLAGS = \
 	-DSYSCONFDIR=\""$(sysconfdir)"\" \
 	${zlib_CFLAGS}
 
-AM_CFLAGS = $(WARNINGFLAGS)
-AM_LDFLAGS = $(GCLDFLAGS)
+AM_CFLAGS = $(OUR_CFLAGS)
+AM_LDFLAGS = $(OUR_LDFLAGS)
 
 SED_PROCESS = \
 	$(AM_V_GEN)$(MKDIR_P) $(dir $@) && $(SED) \

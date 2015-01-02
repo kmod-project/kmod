@@ -204,13 +204,13 @@ CC_CHECK_FLAGS_APPEND(with_cflags, [CFLAGS], [\
 		       -fvisibility=hidden \
 		       -ffunction-sections \
 		       -fdata-sections])
-AC_SUBST([WARNINGFLAGS], $with_cflags)
+AC_SUBST([OUR_CFLAGS], $with_cflags)
 
 
 CC_CHECK_FLAGS_APPEND([with_ldflags], [LDFLAGS], [ \
 		       -Wl,--as-needed \
 		       -Wl,--gc-sections])
-AC_SUBST([GCLDFLAGS], $with_ldflags)
+AC_SUBST([OUR_LDFLAGS], $with_ldflags)
 
 #####################################################################
 # Generate files from *.in
