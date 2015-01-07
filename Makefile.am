@@ -241,6 +241,8 @@ check-am: rootfs check-sysconfdir
 check_LTLIBRARIES = $(TESTSUITE_OVERRIDE_LIBS)
 
 testsuite_uname_la_LDFLAGS = $(TESTSUITE_OVERRIDE_LIBS_LDFLAGS)
+testsuite_path_la_CPPFLAGS = $(AM_CPPFLAGS) \
+	-DABS_TOP_BUILDDIR=\"$(abs_top_builddir)\"
 testsuite_path_la_LDFLAGS = $(TESTSUITE_OVERRIDE_LIBS_LDFLAGS)
 
 testsuite_delete_module_la_LDFLAGS = $(TESTSUITE_OVERRIDE_LIBS_LDFLAGS)
