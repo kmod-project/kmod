@@ -151,6 +151,28 @@ AS_IF([test "x$enable_python" = "xyes"], [
 ])
 AM_CONDITIONAL([BUILD_PYTHON], [test "x$enable_python" = "xyes"])
 
+AC_ARG_ENABLE([coverage],
+	AS_HELP_STRING([--enable-coverage], [enable test coverage @<:@default=disabled@:>@]),
+	[], [enable_coverage=no])
+AS_IF([test "x$enable_coverage" = "xyes"], [
+	AC_CHECK_PROG(have_coverage, [lcov], [yes], [no])
+	AS_IF([test "x$have_coverage" = xno],[
+		AC_MSG_ERROR([*** lcov support requested but the program was not found])
+	], [
+		lcov_version_major="`lcov --version | cut -d ' ' -f 4 | cut -d '.' -f 1`"
+		lcov_version_minor="`lcov --version | cut -d ' ' -f 4 | cut -d '.' -f 2`"
+		AS_IF([test "$lcov_version_major" -lt 1 -o "$lcov_version_minor" -lt 10], [
+			AC_MSG_ERROR([*** lcov version is too old. 1.10 required])
+		], [
+			have_coverage=yes
+                        CC_CHECK_FLAGS_APPEND([with_coverage_cflags], [CFLAGS], [\
+                        -fprofile-arcs \
+                        -ftest-coverage])
+		])
+        ])
+])
+AM_CONDITIONAL([ENABLE_COVERAGE], [test "x$enable_coverage" = "xyes"])
+
 m4_ifdef([GTK_DOC_CHECK], [
 GTK_DOC_CHECK([1.14],[--flavour no-tmpl-flat])
 ], [
@@ -204,7 +226,7 @@ CC_CHECK_FLAGS_APPEND(with_cflags, [CFLAGS], [\
 		       -fvisibility=hidden \
 		       -ffunction-sections \
 		       -fdata-sections])
-AC_SUBST([OUR_CFLAGS], $with_cflags)
+AC_SUBST([OUR_CFLAGS], "$with_cflags $with_coverage_cflags")
 
 
 CC_CHECK_FLAGS_APPEND([with_ldflags], [LDFLAGS], [ \
@@ -249,6 +271,7 @@ AC_MSG_RESULT([
 	logging:		${enable_logging}
 	compression:		xz=${with_xz}  zlib=${with_zlib}
 	debug:			${enable_debug}
+	coverage:		${enable_coverage}
 	doc:			${enable_gtk_doc}
 	man:			${enable_manpages}
 ])

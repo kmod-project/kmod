@@ -327,6 +327,45 @@ buildtest-TESTS:
 	$(MAKE) $(AM_MAKEFLAGS) $(check_LTLIBRARIES) $(check_PROGRAMS)
 
 # ------------------------------------------------------------------------------
+# coverage
+# ------------------------------------------------------------------------------
+
+# .PHONY so it always rebuilds it
+.PHONY: coverage lcov-run lcov-report coverage-sync
+
+# run lcov from scratch, always
+coverage: all
+	$(MAKE) lcov-run
+	$(MAKE) lcov-report
+
+coverage_dir = coverage
+coverage_opts = --base-directory $(srcdir) --directory $(builddir) \
+		--rc 'geninfo_adjust_src_path=$(abspath $(srcdir))=>$(abspath $(builddir))'
+
+if ENABLE_COVERAGE
+# reset run coverage tests
+lcov-run:
+	@rm -rf $(coverage_dir)
+	lcov $(coverage_opts) --zerocounters
+	-$(MAKE) check
+
+# generate report based on current coverage data
+lcov-report:
+	$(MKDIR_P) $(coverage_dir)
+	lcov $(coverage_opts) --capture --no-external --ignore-errors graph \
+		| sed 's|$(abspath $(builddir))|$(abspath $(srcdir))|' > $(coverage_dir)/.lcov.info
+	lcov --remove $(coverage_dir)/.lcov.info --output-file $(coverage_dir)/.lcov-clean.info 'test-*'
+	genhtml -t "kmod test coverage" -o $(coverage_dir) $(coverage_dir)/.lcov-clean.info
+	@echo "Coverage report generated in $(abs_builddir)/$(coverage_dir)/index.html"
+
+else
+
+lcov-run lcov-report:
+	echo "Need to reconfigure with --enable-coverage"
+
+endif
+
+# ------------------------------------------------------------------------------
 # custom release helpers
 # ------------------------------------------------------------------------------
 
