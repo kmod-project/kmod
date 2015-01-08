@@ -159,4 +159,36 @@ static int test_array_remove_at(const struct test *t)
 DEFINE_TEST(test_array_remove_at,
 		.description = "test array remove at");
 
+static int test_array_pop(const struct test *t)
+{
+	struct array array;
+	const char *c1 = "test1";
+	const char *c2 = "test2";
+	const char *c3 = "test3";
+
+	array_init(&array, 2);
+	array_append(&array, c1);
+	array_append(&array, c2);
+	array_append(&array, c3);
+
+
+	array_pop(&array);
+
+	assert_return(array.count == 2, EXIT_FAILURE);
+	assert_return(array.array[0] == c1, EXIT_FAILURE);
+	assert_return(array.array[1] == c2, EXIT_FAILURE);
+
+	array_pop(&array);
+	array_pop(&array);
+
+	assert_return(array.count == 0, EXIT_FAILURE);
+
+	array_free_array(&array);
+
+	return 0;
+}
+
+DEFINE_TEST(test_array_pop,
+		.description = "test array pop");
+
 TESTSUITE_MAIN();
