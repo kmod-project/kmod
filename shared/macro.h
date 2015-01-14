@@ -45,6 +45,8 @@
 	})
 
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]) + _array_size_chk(arr))
+#define XSTRINGIFY(x) #x
+#define STRINGIFY(x) XSTRINGIFY(x)
 
 /* Temporaries for importing index handling */
 #define NOFAIL(x) (x)
