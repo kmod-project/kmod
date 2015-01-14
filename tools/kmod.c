@@ -23,6 +23,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <shared/util.h>
+
 #include <libkmod/libkmod.h>
 
 #include "kmod.h"
@@ -124,7 +126,7 @@ static int handle_kmod_commands(int argc, char *argv[])
 	cmd = argv[optind];
 
 	for (i = 0, err = -EINVAL; i < ARRAY_SIZE(kmod_cmds); i++) {
-		if (strcmp(kmod_cmds[i]->name, cmd) == 0) {
+		if (streq(kmod_cmds[i]->name, cmd)) {
 			err = kmod_cmds[i]->cmd(--argc, ++argv);
 			break;
 		}
@@ -151,7 +153,7 @@ static int handle_kmod_compat_commands(int argc, char *argv[])
 	cmd = basename(argv[0]);
 
 	for (i = 0; i < ARRAY_SIZE(kmod_compat_cmds); i++) {
-		if (strcmp(kmod_compat_cmds[i]->name, cmd) == 0)
+		if (streq(kmod_compat_cmds[i]->name, cmd))
 			return kmod_compat_cmds[i]->cmd(argc, argv);
 	}
 
@@ -162,7 +164,7 @@ int main(int argc, char *argv[])
 {
 	int err;
 
-	if (strcmp(program_invocation_short_name, "kmod") == 0)
+	if (streq(program_invocation_short_name, "kmod"))
 		err = handle_kmod_commands(argc, argv);
 	else
 		err = handle_kmod_compat_commands(argc, argv);
