@@ -124,10 +124,10 @@ static int handle_kmod_commands(int argc, char *argv[])
 	cmd = argv[optind];
 
 	for (i = 0, err = -EINVAL; i < ARRAY_SIZE(kmod_cmds); i++) {
-		if (strcmp(kmod_cmds[i]->name, cmd) != 0)
-			continue;
-
-		err = kmod_cmds[i]->cmd(--argc, ++argv);
+		if (strcmp(kmod_cmds[i]->name, cmd) == 0) {
+			err = kmod_cmds[i]->cmd(--argc, ++argv);
+			break;
+		}
 	}
 
 	if (err < 0) {
