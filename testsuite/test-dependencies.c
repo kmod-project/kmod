@@ -23,6 +23,8 @@
 #include <string.h>
 #include <unistd.h>
 
+#include <shared/util.h>
+
 #include <libkmod/libkmod.h>
 
 #include "testsuite.h"
@@ -54,11 +56,11 @@ static int test_dependencies(const struct test *t)
 		struct kmod_module *m = kmod_module_get_module(l);
 		const char *name = kmod_module_get_name(m);
 
-		if (strcmp(name, "crc16") == 0)
+		if (streq(name, "crc16"))
 			crc16 = 1;
-		if (strcmp(name, "mbcache") == 0)
+		if (streq(name, "mbcache"))
 			mbcache = 1;
-		else if (strcmp(name, "jbd2") == 0)
+		else if (streq(name, "jbd2"))
 			jbd2 = 1;
 
 		kmod_module_unref(m);

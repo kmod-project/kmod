@@ -23,6 +23,8 @@
 #include <string.h>
 #include <unistd.h>
 
+#include <shared/util.h>
+
 #include <libkmod/libkmod.h>
 
 /* good luck bulding a kmod_list outside of the library... makes this blacklist
@@ -70,7 +72,7 @@ static int blacklist_1(const struct test *t)
 		const char *modname;
 		mod = kmod_module_get_module(l);
 		modname = kmod_module_get_name(mod);
-		if (strcmp("pcspkr", modname) == 0 || strcmp("floppy", modname) == 0)
+		if (streq("pcspkr", modname) || streq("floppy", modname))
 			goto fail;
 		len++;
 		kmod_module_unref(mod);

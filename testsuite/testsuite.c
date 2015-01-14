@@ -139,7 +139,7 @@ const struct test *test_find(const struct test *start,
 	const struct test *t;
 
 	for (t = start; t < stop; t++) {
-		if (strcmp(t->name, name) == 0)
+		if (streq(t->name, name))
 			return t;
 	}
 
@@ -402,7 +402,7 @@ static inline bool test_run_parent_check_outputs(const struct test *t,
 
 				buf[r] = '\0';
 				bufmatch[r] = '\0';
-				if (strcmp(buf, bufmatch) != 0) {
+				if (!streq(buf, bufmatch)) {
 					ERR("Outputs do not match on %s:\n",
 						fd_match == fd_matchout ? "stdout" : "stderr");
 					ERR("correct:\n%s\n", bufmatch);

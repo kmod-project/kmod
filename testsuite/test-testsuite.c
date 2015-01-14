@@ -26,6 +26,8 @@
 #include <sys/types.h>
 #include <sys/utsname.h>
 
+#include <shared/util.h>
+
 #include <libkmod/libkmod.h>
 
 #include "testsuite.h"
@@ -40,7 +42,7 @@ static noreturn int testsuite_uname(const struct test *t)
 	if (err < 0)
 		exit(EXIT_FAILURE);
 
-	if (strcmp(u.release, TEST_UNAME) != 0) {
+	if (!streq(u.release, TEST_UNAME)) {
 		char *ldpreload = getenv("LD_PRELOAD");
 		ERR("u.release=%s should be %s\n", u.release, TEST_UNAME);
 		ERR("LD_PRELOAD=%s\n", ldpreload);
@@ -70,7 +72,7 @@ static int testsuite_rootfs_fopen(const struct test *t)
 	if (n != 1)
 		return EXIT_FAILURE;
 
-	if (strcmp(s, "kmod-test-chroot-works") != 0)
+	if (!streq(s, "kmod-test-chroot-works"))
 		return EXIT_FAILURE;
 
 	return EXIT_SUCCESS;
@@ -103,7 +105,7 @@ static int testsuite_rootfs_open(const struct test *t)
 
 	buf[done] = '\0';
 
-	if (strcmp(buf, "kmod-test-chroot-works\n") != 0)
+	if (!streq(buf, "kmod-test-chroot-works\n"))
 		return EXIT_FAILURE;
 
 	return EXIT_SUCCESS;

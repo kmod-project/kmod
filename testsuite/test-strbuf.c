@@ -23,6 +23,7 @@
 #include <unistd.h>
 
 #include <shared/strbuf.h>
+#include <shared/util.h>
 
 #include "testsuite.h"
 
@@ -42,11 +43,11 @@ static int test_strbuf_pushchar(const struct test *t)
 
 	result1 = (char *) strbuf_str(&buf);
 	assert_return(result1 == buf.bytes, EXIT_FAILURE);
-	assert_return(strcmp(result1, TEXT) == 0, EXIT_FAILURE);
+	assert_return(streq(result1, TEXT), EXIT_FAILURE);
 	result1 = strdup(result1);
 
 	result2 = strbuf_steal(&buf);
-	assert_return(strcmp(result1, result2) == 0, EXIT_FAILURE);
+	assert_return(streq(result1, result2), EXIT_FAILURE);
 
 	free(result1);
 	free(result2);
@@ -75,11 +76,11 @@ static int test_strbuf_pushchars(const struct test *t)
 	strbuf_popchar(&buf);
 	result1 = (char *) strbuf_str(&buf);
 	assert_return(result1 == buf.bytes, EXIT_FAILURE);
-	assert_return(strcmp(result1, TEXT) == 0, EXIT_FAILURE);
+	assert_return(streq(result1, TEXT), EXIT_FAILURE);
 
 	strbuf_popchars(&buf, lastwordlen);
 	result2 = strbuf_steal(&buf);
-	assert_return(strcmp(TEXT, result2) != 0, EXIT_FAILURE);
+	assert_return(!streq(TEXT, result2), EXIT_FAILURE);
 	assert_return(strncmp(TEXT, result2, strlen(TEXT) - lastwordlen) == 0,
 		      EXIT_FAILURE);
 	assert_return(result2[strlen(TEXT) - lastwordlen] == '\0',

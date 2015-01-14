@@ -23,6 +23,7 @@
 #include <unistd.h>
 
 #include <shared/hash.h>
+#include <shared/util.h>
 
 #include "testsuite.h"
 
@@ -82,7 +83,7 @@ static int test_hash_replace(const struct test *t)
 	assert_return(hash_get_count(h) == 3, EXIT_FAILURE);
 
 	v = hash_find(h, "k1");
-	assert_return(strcmp(v, v4) == 0, EXIT_FAILURE);
+	assert_return(streq(v, v4), EXIT_FAILURE);
 
 	assert_return(freecount == 1, EXIT_FAILURE);
 
@@ -113,7 +114,7 @@ static int test_hash_replace_failing(const struct test *t)
 	assert_return(hash_get_count(h) == 3, EXIT_FAILURE);
 
 	v = hash_find(h, "k1");
-	assert_return(strcmp(v, v1) == 0, EXIT_FAILURE);
+	assert_return(streq(v, v1), EXIT_FAILURE);
 
 	assert_return(freecount == 0, EXIT_FAILURE);
 
