@@ -5,12 +5,6 @@ Features:
    - There is a script to sign modules in kernel tree, but we should be able to
    sign modules by ourselves
 
-* Remove duplicate symbols in libkmod and tools
-   - Some functions were added both in libkmod and tools like depmod since they
-     couldn't be easily exported. Now we could be sharing there more easily
-     through libkmod-internal, or by creating a shared/ dir in which to put
-     these functions
-
 * Stop using NOFAIL() and fatal()
 
 * Protect index against OOM
@@ -19,12 +13,16 @@ Features:
 
 * testsuite:
    - when fake delete_module() succeeds, remove its entry from /sys/module
+   - improve coverage (use --enable-coverage to check the current state)
 
 * Stop using system() inside the library and use fork + exec instead
 
 * config: configs that do not need to be matched by fnmatch() could be using a
   vector instead of a list. This way we could search in it by calling
   bsearch().
+
+* config: implement the config handling in shared/ and use it in both depmod
+and libkmod
 
 * review API, maybe unify all of these getters:
    - kmod_module_version_get_symbol()
@@ -39,6 +37,9 @@ Features:
 
 * index: drop the "open(), seek(), read()" implementation and use another one
   with mmap(). When lookup() is called and the file is not mmaped, mmap it.
+  Another possibility is to drop the mmap implementation relying on VFS to have
+  the pages cached. This would simplify the interface exported by libkmod.
+  Measure performance before deciding.
 
 
 Things to be added/removed in kernel (check what is really needed):
