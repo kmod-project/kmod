@@ -122,7 +122,7 @@ int test_run(const struct test *t);
 #define assert_return(expr, r)						\
 	do {								\
 		if ((!(expr))) {					\
-			ERR("Failed assertion: " #expr "%s:%d %s",	\
+			ERR("Failed assertion: " #expr " %s:%d %s\n",	\
 			    __FILE__, __LINE__, __PRETTY_FUNCTION__);	\
 			return (r);					\
 		}							\
