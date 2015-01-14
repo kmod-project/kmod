@@ -60,3 +60,10 @@ int i = 1;  // wrong
 
 for (i = 0; i < 3; i++) {
 }
+
+4) Let the includes in the following order, separated by a new line:
+	< system headers >
+	< shared/* >
+	< libkmod >
+	< tool >
+	"local headers"
