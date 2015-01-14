@@ -23,6 +23,8 @@
 #include <string.h>
 #include <unistd.h>
 
+#include <shared/macro.h>
+
 #include <libkmod/libkmod.h>
 
 #include "testsuite.h"
@@ -81,7 +83,7 @@ DEFINE_TEST(test_insert,
 static noreturn int test_remove(const struct test *t)
 {
 	struct kmod_ctx *ctx;
-	struct kmod_module *mod;
+	struct kmod_module *mod_ext4, *mod_bla;
 	const char *null_config = NULL;
 	int err;
 
@@ -89,17 +91,30 @@ static noreturn int test_remove(const struct test *t)
 	if (ctx == NULL)
 		exit(EXIT_FAILURE);
 
-	err = kmod_module_new_from_name(ctx, "ext4", &mod);
+	err = kmod_module_new_from_name(ctx, "ext4", &mod_ext4);
 	if (err != 0) {
-		ERR("could not create module from name: %m\n");
+		ERR("could not create module from name: %s\n", strerror(-err));
 		exit(EXIT_FAILURE);
 	}
 
-	err = kmod_module_remove_module(mod, 0);
+	err = kmod_module_new_from_name(ctx, "bla", &mod_bla);
 	if (err != 0) {
-		ERR("could not remove module: %m\n");
+		ERR("could not create module from name: %s\n", strerror(-err));
 		exit(EXIT_FAILURE);
 	}
+
+	err = kmod_module_remove_module(mod_ext4, 0);
+	if (err != 0) {
+		ERR("could not remove module: %s\n", strerror(-err));
+		exit(EXIT_FAILURE);
+	}
+
+	err = kmod_module_remove_module(mod_bla, 0);
+	if (err != -ENOENT) {
+		ERR("wrong return code for failure test: %d\n", err);
+		exit(EXIT_FAILURE);
+	}
+
 	kmod_unref(ctx);
 
 	exit(EXIT_SUCCESS);
@@ -108,7 +123,8 @@ DEFINE_TEST(test_remove,
 	.description = "test if libkmod's remove_module returns ok",
 	.config = {
 		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-remove/",
-		[TC_DELETE_MODULE_RETCODES] = "bla:1:20",
+		[TC_DELETE_MODULE_RETCODES] =
+			"ext4:0:0:bla:-1:" STRINGIFY(ENOENT),
 	},
 	.need_spawn = true);
 
