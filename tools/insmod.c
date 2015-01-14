@@ -23,6 +23,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <shared/util.h>
+
 #include <libkmod/libkmod.h>
 
 #include "kmod.h"
@@ -102,7 +104,7 @@ static int do_insmod(int argc, char *argv[])
 	}
 
 	filename = argv[optind];
-	if (strcmp(filename, "-") == 0) {
+	if (streq(filename, "-")) {
 		ERR("this tool does not support loading from stdin!\n");
 		return EXIT_FAILURE;
 	}

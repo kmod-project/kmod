@@ -97,7 +97,7 @@ static int process_parm(const char *key, const char *value, struct param **param
 
 	name = value;
 	namelen = colon - value;
-	if (strcmp(key, "parm") == 0) {
+	if (streq(key, "parm")) {
 		param = colon + 1;
 		paramlen = strlen(param);
 		type = NULL;
@@ -127,8 +127,7 @@ static int modinfo_params_do(const struct kmod_list *list)
 	kmod_list_foreach(l, list) {
 		const char *key = kmod_module_info_get_key(l);
 		const char *value = kmod_module_info_get_value(l);
-		if (strcmp(key, "parm") != 0 &&
-		    strcmp(key, "parmtype") != 0)
+		if (!streq(key, "parm") && !streq(key, "parmtype"))
 			continue;
 
 		err = process_parm(key, value, &params);
@@ -175,7 +174,7 @@ static int modinfo_do(struct kmod_module *mod)
 	struct param *params = NULL;
 	int err;
 
-	if (field != NULL && strcmp(field, "filename") == 0) {
+	if (field != NULL && streq(field, "filename")) {
 		printf("%s%c", kmod_module_get_path(mod), separator);
 		return 0;
 	} else if (field == NULL) {
@@ -190,7 +189,7 @@ static int modinfo_do(struct kmod_module *mod)
 		return err;
 	}
 
-	if (field != NULL && strcmp(field, "parm") == 0) {
+	if (field != NULL && streq(field, "parm")) {
 		err = modinfo_params_do(list);
 		goto end;
 	}
@@ -201,14 +200,14 @@ static int modinfo_do(struct kmod_module *mod)
 		int keylen;
 
 		if (field != NULL) {
-			if (strcmp(field, key) != 0)
+			if (!streq(field, key))
 				continue;
 			/* filtered output contains no key, just value */
 			printf("%s%c", value, separator);
 			continue;
 		}
 
-		if (strcmp(key, "parm") == 0 || strcmp(key, "parmtype") == 0) {
+		if (streq(key, "parm") || streq(key, "parmtype")) {
 			err = process_parm(key, value, &params);
 			if (err < 0)
 				goto end;
