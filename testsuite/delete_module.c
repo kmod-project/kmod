@@ -30,6 +30,8 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include <shared/util.h>
+
 #include "testsuite.h"
 
 struct mod {
@@ -42,7 +44,7 @@ struct mod {
 static struct mod *modules;
 static bool need_init = true;
 
-static void parse_retcodes(struct mod *_modules, const char *s)
+static void parse_retcodes(struct mod **_modules, const char *s)
 {
 	const char *p;
 
@@ -61,7 +63,7 @@ static void parse_retcodes(struct mod *_modules, const char *s)
 		if (modname == NULL || modname[0] == '\0')
 			break;
 
-		modnamelen = strcspn(s, ":");
+		modnamelen = strcspn(p, ":");
 		if (modname[modnamelen] != ':')
 			break;
 
@@ -72,6 +74,7 @@ static void parse_retcodes(struct mod *_modules, const char *s)
 		l = strtol(p, &end, 0);
 		if (end == p || *end != ':')
 			break;
+
 		ret = (int) l;
 		p = end + 1;
 
@@ -91,8 +94,8 @@ static void parse_retcodes(struct mod *_modules, const char *s)
 		mod->name[modnamelen] = '\0';
 		mod->ret = ret;
 		mod->errcode = errcode;
-		mod->next = _modules;
-		_modules = mod;
+		mod->next = *_modules;
+		*_modules = mod;
 	}
 }
 
@@ -101,7 +104,7 @@ static struct mod *find_module(struct mod *_modules, const char *modname)
 	struct mod *mod;
 
 	for (mod = _modules; mod != NULL; mod = mod->next) {
-		if (strcmp(mod->name, modname))
+		if (streq(mod->name, modname))
 			return mod;
 	}
 
@@ -111,6 +114,7 @@ static struct mod *find_module(struct mod *_modules, const char *modname)
 static void init_retcodes(void)
 {
 	const char *s;
+	struct mod *mod;
 
 	if (!need_init)
 		return;
@@ -118,11 +122,17 @@ static void init_retcodes(void)
 	need_init = false;
 	s = getenv(S_TC_DELETE_MODULE_RETCODES);
 	if (s == NULL) {
-		fprintf(stderr, "TRAP delete_module(): missing export %s?\n",
+		ERR("TRAP delete_module(): missing export %s?\n",
 						S_TC_DELETE_MODULE_RETCODES);
 	}
 
-	parse_retcodes(modules, s);
+	parse_retcodes(&modules, s);
+
+	for (mod = modules; mod != NULL; mod = mod->next) {
+		LOG("Added module to test delete_module:\n");
+		LOG("\tname=%s ret=%d errcode=%d\n",
+		    mod->name, mod->ret, mod->errcode);
+	}
 }
 
 TS_EXPORT long delete_module(const char *name, unsigned int flags);
