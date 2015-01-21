@@ -314,13 +314,7 @@ char *freadline_wrapped(FILE *fp, unsigned int *linenum)
 			n++;
 
 			{
-				char *ret;
-				if (i == size) {
-					ret = realloc(buf, size + 1);
-					if (!ret)
-						return NULL;
-				} else
-					ret = buf;
+				char *ret = buf;
 				ret[i] = '\0';
 				buf = NULL;
 				if (linenum)
