@@ -246,4 +246,37 @@ static int test_hash_add_unique(const struct test *t)
 DEFINE_TEST(test_hash_add_unique,
 		.description = "test hash_add_unique with different key orders")
 
+
+static int test_hash_massive_add_del(const struct test *t)
+{
+	char buf[1024 * 8];
+	char *k;
+	struct hash *h;
+	unsigned int i, N = 1024;
+
+	h = hash_new(8, NULL);
+
+	k = &buf[0];
+	for (i = 0; i < N; i++) {
+		snprintf(k, 8, "k%d", i);
+		hash_add(h, k, k);
+		k += 8;
+	}
+
+	assert_return(hash_get_count(h) == N, EXIT_FAILURE);
+
+	k = &buf[0];
+	for (i = 0; i < N; i++) {
+		hash_del(h, k);
+		k += 8;
+	}
+
+	assert_return(hash_get_count(h) == 0, EXIT_FAILURE);
+
+	hash_free(h);
+	return 0;
+}
+DEFINE_TEST(test_hash_massive_add_del,
+		.description = "test multiple adds followed by multiple dels")
+
 TESTSUITE_MAIN();
