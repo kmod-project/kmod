@@ -220,4 +220,30 @@ static int test_hash_free(const struct test *t)
 DEFINE_TEST(test_hash_free,
 		.description = "test hash_free calling free function for all values");
 
+
+static int test_hash_add_unique(const struct test *t)
+{
+	const char *k[] = { "k1", "k2", "k3", "k4", "k5" };
+	const char *v[] = { "v1", "v2", "v3", "v4", "v5" };
+	unsigned int i, j, N;
+
+	N = ARRAY_SIZE(k);
+	for (i = 0; i < N; i++) {
+		/* With N - 1 buckets, there'll be a bucket with more than one key. */
+		struct hash *h = hash_new(N - 1, NULL);
+
+		/* Add the keys in different orders. */
+		for (j = 0; j < N; j++) {
+			unsigned int idx = (j + i) % N;
+			hash_add_unique(h, k[idx], v[idx]);
+		}
+
+		assert_return(hash_get_count(h) == N, EXIT_FAILURE);
+		hash_free(h);
+	}
+	return 0;
+}
+DEFINE_TEST(test_hash_add_unique,
+		.description = "test hash_add_unique with different key orders")
+
 TESTSUITE_MAIN();
