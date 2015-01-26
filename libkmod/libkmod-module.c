@@ -170,7 +170,7 @@ int kmod_module_parse_depline(struct kmod_module *mod, char *line)
 	p++;
 	for (p = strtok_r(p, " \t", &saveptr); p != NULL;
 					p = strtok_r(NULL, " \t", &saveptr)) {
-		struct kmod_module *depmod;
+		struct kmod_module *depmod = NULL;
 		const char *path;
 
 		path = path_join(p, dirnamelen, buf);
