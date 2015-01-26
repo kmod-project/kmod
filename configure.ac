@@ -241,6 +241,7 @@ AC_SUBST([OUR_CFLAGS], "$with_cflags $with_coverage_cflags")
 
 CC_CHECK_FLAGS_APPEND([with_ldflags], [LDFLAGS], [ \
 		       -Wl,--as-needed \
+		       -Wl,--no-undefined \
 		       -Wl,--gc-sections])
 AC_SUBST([OUR_LDFLAGS], $with_ldflags)
 
