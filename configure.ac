@@ -226,18 +226,8 @@ CC_CHECK_FLAGS_APPEND(with_cflags, [CFLAGS], [\
 		       -fvisibility=hidden \
 		       -ffunction-sections \
 		       -fdata-sections])
-
-AS_CASE([$CFLAGS], [*-O[[12345\ ]]*],
-	[CC_CHECK_FLAGS_APPEND([with_cflags], [CFLAGS], [\
-	 -flto -ffat-lto-objects])],
-	[AC_MSG_RESULT([skipping -flto, optimization not enabled])])
-
-AS_CASE([$CFLAGS], [*-O[[12345\ ]]*],
-        [CC_CHECK_FLAGS_APPEND([with_cppflags], [CPPFLAGS], [\
-               -Wp,-D_FORTIFY_SOURCE=2])],
-        [AC_MSG_RESULT([skipping -D_FORTIFY_SOURCE, optimization not enabled])])
-
 AC_SUBST([OUR_CFLAGS], "$with_cflags $with_coverage_cflags")
+
 
 CC_CHECK_FLAGS_APPEND([with_ldflags], [LDFLAGS], [ \
 		       -Wl,--as-needed \
