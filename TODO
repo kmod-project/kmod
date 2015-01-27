@@ -1,6 +1,9 @@
 Features:
 =========
 
+* Improve module-playground to contain the actual code from modules in the
+  testsuite
+
 * Add command for signing modules
    - There is a script to sign modules in kernel tree, but we should be able to
    sign modules by ourselves
