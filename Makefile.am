@@ -208,16 +208,30 @@ endif
 # TESTSUITE
 # ------------------------------------------------------------------------------
 
+EXTRA_DIST += testsuite/populate-modules.sh
+
+MODULE_PLAYGROUND = testsuite/module-playground
 ROOTFS = testsuite/rootfs
 ROOTFS_PRISTINE = $(top_srcdir)/testsuite/rootfs-pristine
 CREATE_ROOTFS = $(AM_V_GEN) ( $(RM) -rf $(ROOTFS) && mkdir -p $(dir $(ROOTFS)) && \
 				cp -r $(ROOTFS_PRISTINE) $(ROOTFS) && \
 				touch testsuite/stamp-rootfs && \
-				find $(ROOTFS) -type d -exec chmod +w {} \; )
+				find $(ROOTFS) -type d -exec chmod +w {} \; && \
+				$(top_srcdir)/testsuite/populate-modules.sh \
+					$(MODULE_PLAYGROUND) $(ROOTFS) )
 
-rootfs:
+build-module-playground:
+	$(AM_V_GEN)if test "$(top_srcdir)" != "$(top_builddir)"; then \
+		$(RM) -rf testsuite/module-playground && \
+		cp -r $(top_srcdir)/$(MODULE_PLAYGROUND) $(top_builddir)/$(MODULE_PLAYGROUND) && \
+		find $(top_builddir)/$(MODULE_PLAYGROUND) -type d -exec chmod +w {} \; ; \
+		fi
+	$(MAKE) -C $(MODULE_PLAYGROUND)
+
+rootfs: build-module-playground
 	$(CREATE_ROOTFS)
-.PHONY: rootfs
+
+.PHONY: rootfs build-playground
 
 $(ROOTFS): $(ROOTFS_PRISTINE)
 	$(CREATE_ROOTFS)
@@ -236,6 +250,10 @@ check-sysconfdir:
 .PHONY: check-sysconfdir
 
 check-am: rootfs check-sysconfdir
+
+
+EXTRA_DIST += testsuite/module-playground/Makefile \
+	      testsuite/module-playground/mod-simple.c
 
 
 check_LTLIBRARIES = $(TESTSUITE_OVERRIDE_LIBS)
@@ -316,6 +334,10 @@ testsuite_test_list_CPPFLAGS = $(TESTSUITE_CPPFLAGS)
 testsuite-distclean:
 	$(RM) -r $(ROOTFS)
 	$(RM) testsuite/stamp-rootfs
+	$(MAKE) -C testsuite/module-playground/ clean
+	if test "$(top_srcdir)" != "$(top_builddir)"; then \
+		$(RM) -rf testsuite/module-playground; \
+	fi
 
 DISTCLEAN_LOCAL_HOOKS += testsuite-distclean
 EXTRA_DIST += testsuite/rootfs-pristine
