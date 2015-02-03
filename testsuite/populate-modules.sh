@@ -9,6 +9,8 @@ declare -A map
 map=(
     ["test-depmod/search-order-simple/lib/modules/4.4.4/kernel/crypto/"]="mod-simple.ko"
     ["test-depmod/search-order-simple/lib/modules/4.4.4/updates/"]="mod-simple.ko"
+    ["test-depmod/search-order-same-prefix/lib/modules/4.4.4/foo/"]="mod-simple.ko"
+    ["test-depmod/search-order-same-prefix/lib/modules/4.4.4/foobar/"]="mod-simple.ko"
 )
 
 for k in ${!map[@]}; do
