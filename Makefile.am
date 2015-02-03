@@ -253,6 +253,10 @@ check-am: rootfs check-sysconfdir
 
 
 EXTRA_DIST += testsuite/module-playground/Makefile \
+	      testsuite/module-playground/mod-foo.c \
+	      testsuite/module-playground/mod-foo-a.c \
+	      testsuite/module-playground/mod-foo-b.c \
+	      testsuite/module-playground/mod-foo-c.c \
 	      testsuite/module-playground/mod-simple.c
 
 
