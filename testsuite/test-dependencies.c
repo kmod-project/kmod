@@ -34,7 +34,7 @@
 static int test_dependencies(const struct test *t)
 {
 	struct kmod_ctx *ctx;
-	struct kmod_module *mod;
+	struct kmod_module *mod = NULL;
 	struct kmod_list *list, *l;
 	int err;
 	size_t len = 0;
@@ -45,7 +45,7 @@ static int test_dependencies(const struct test *t)
 		return EXIT_FAILURE;
 
 	err = kmod_module_new_from_name(ctx, "ext4", &mod);
-	if (err < 0) {
+	if (err < 0 || mod == NULL) {
 		kmod_unref(ctx);
 		return EXIT_FAILURE;
 	}
@@ -77,15 +77,11 @@ static int test_dependencies(const struct test *t)
 
 	return EXIT_SUCCESS;
 }
-static const struct test stest_dependencies = {
-	.name = "test_dependencies",
+DEFINE_TEST(test_dependencies,
 	.description = "test if kmod_module_get_dependencies works",
-	.func = test_dependencies,
 	.config = {
 		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-dependencies/",
 		[TC_UNAME_R] = TEST_UNAME,
-	},
-	.need_spawn = true,
-};
+	});
 
 TESTSUITE_MAIN();
