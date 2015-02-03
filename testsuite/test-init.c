@@ -56,7 +56,7 @@ static noreturn int test_insert(const struct test *t)
 	if (ctx == NULL)
 		exit(EXIT_FAILURE);
 
-	err = kmod_module_new_from_path(ctx, "/ext4-x86_64.ko", &mod);
+	err = kmod_module_new_from_path(ctx, "/mod-simple.ko", &mod);
 	if (err != 0) {
 		ERR("could not create module from path: %m\n");
 		exit(EXIT_FAILURE);
@@ -77,13 +77,13 @@ DEFINE_TEST(test_insert,
 		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-init/",
 		[TC_INIT_MODULE_RETCODES] = "bla:1:20",
 	},
-	.modules_loaded = "ext4",
+	.modules_loaded = "mod_simple",
 	.need_spawn = true);
 
 static noreturn int test_remove(const struct test *t)
 {
 	struct kmod_ctx *ctx;
-	struct kmod_module *mod_ext4, *mod_bla;
+	struct kmod_module *mod_simple, *mod_bla;
 	const char *null_config = NULL;
 	int err;
 
@@ -91,7 +91,7 @@ static noreturn int test_remove(const struct test *t)
 	if (ctx == NULL)
 		exit(EXIT_FAILURE);
 
-	err = kmod_module_new_from_name(ctx, "ext4", &mod_ext4);
+	err = kmod_module_new_from_name(ctx, "mod-simple", &mod_simple);
 	if (err != 0) {
 		ERR("could not create module from name: %s\n", strerror(-err));
 		exit(EXIT_FAILURE);
@@ -103,7 +103,7 @@ static noreturn int test_remove(const struct test *t)
 		exit(EXIT_FAILURE);
 	}
 
-	err = kmod_module_remove_module(mod_ext4, 0);
+	err = kmod_module_remove_module(mod_simple, 0);
 	if (err != 0) {
 		ERR("could not remove module: %s\n", strerror(-err));
 		exit(EXIT_FAILURE);
@@ -124,7 +124,7 @@ DEFINE_TEST(test_remove,
 	.config = {
 		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-remove/",
 		[TC_DELETE_MODULE_RETCODES] =
-			"ext4:0:0:bla:-1:" STRINGIFY(ENOENT),
+			"mod-simple:0:0:bla:-1:" STRINGIFY(ENOENT),
 	},
 	.need_spawn = true);
 

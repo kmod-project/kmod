@@ -15,6 +15,8 @@ map=(
     ["test-dependencies/lib/modules/4.0.20-kmod/kernel/"]="mod-foo-c.ko"
     ["test-dependencies/lib/modules/4.0.20-kmod/kernel/lib/"]="mod-foo-a.ko"
     ["test-dependencies/lib/modules/4.0.20-kmod/kernel/fs/"]="mod-foo.ko"
+    ["test-init/"]="mod-simple.ko"
+    ["test-remove/"]="mod-simple.ko"
 )
 
 for k in ${!map[@]}; do
