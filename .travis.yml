@@ -2,12 +2,15 @@ language: c
 compiler:
   - gcc
   - clang
+before_script:
+  - export KDIR="$(find  /lib/modules/* -maxdepth  1 -name build | sort -n --reverse | head -1)"
 before_install:
   - sudo apt-get update
   - sudo apt-get install -qq liblzma-dev
   - sudo apt-get install -qq zlib1g-dev
   - sudo apt-get install -qq xsltproc docbook-xsl
   - sudo apt-get install -qq cython
+  - sudo apt-get install -qq linux-headers-generic
 # Change this to your needs
 script: ./bootstrap-configure && make && make check
 notifications:
