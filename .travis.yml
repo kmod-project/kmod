@@ -1,18 +1,27 @@
 language: c
-compiler:
-  - gcc
-  - clang
-before_script:
-  - export KDIR="$(find  /lib/modules/* -maxdepth  1 -name build | sort -n --reverse | head -1)"
 before_install:
-  - sudo apt-get update
+  - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+  - sudo apt-get update -qq
   - sudo apt-get install -qq liblzma-dev
   - sudo apt-get install -qq zlib1g-dev
   - sudo apt-get install -qq xsltproc docbook-xsl
   - sudo apt-get install -qq cython
   - sudo apt-get install -qq linux-headers-generic
-# Change this to your needs
-script: ./bootstrap-configure && make && make check
+  - if [ "$MYCC" = "gcc-4.8" ]; then sudo apt-get install -qq gcc-4.8; sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.8 90; gcc --version; fi
+  - if [ "$MYCC" = "gcc-4.9" ]; then sudo apt-get install -qq gcc-4.9; sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 90; gcc --version; fi
+before_script:
+  - export KDIR="$(find  /lib/modules/* -maxdepth  1 -name build | sort -n --reverse | head -1)"
+matrix:
+  include:
+    - compiler: gcc
+      env: MYCC=gcc
+    - compiler: gcc
+      env: MYCC=gcc-4.8
+    - compiler: gcc
+      env: MYCC=gcc-4.9
+    - compiler: clang
+      env: MYCC=clang
+script: ./bootstrap-configure && make -j && make -j check
 notifications:
   irc:
     channels:
