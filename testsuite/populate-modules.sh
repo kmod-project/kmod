@@ -11,6 +11,11 @@ map=(
     ["test-depmod/search-order-simple/lib/modules/4.4.4/updates/"]="mod-simple.ko"
     ["test-depmod/search-order-same-prefix/lib/modules/4.4.4/foo/"]="mod-simple.ko"
     ["test-depmod/search-order-same-prefix/lib/modules/4.4.4/foobar/"]="mod-simple.ko"
+    ["test-depmod/detect-loop/lib/modules/4.4.4/kernel/mod-loop-a.ko"]="mod-loop-a.ko"
+    ["test-depmod/detect-loop/lib/modules/4.4.4/kernel/mod-loop-b.ko"]="mod-loop-b.ko"
+    ["test-depmod/detect-loop/lib/modules/4.4.4/kernel/mod-loop-c.ko"]="mod-loop-c.ko"
+    ["test-depmod/detect-loop/lib/modules/4.4.4/kernel/mod-loop-d.ko"]="mod-loop-d.ko"
+    ["test-depmod/detect-loop/lib/modules/4.4.4/kernel/mod-loop-e.ko"]="mod-loop-e.ko"
     ["test-dependencies/lib/modules/4.0.20-kmod/kernel/fs/foo/"]="mod-foo-b.ko"
     ["test-dependencies/lib/modules/4.0.20-kmod/kernel/"]="mod-foo-c.ko"
     ["test-dependencies/lib/modules/4.0.20-kmod/kernel/lib/"]="mod-foo-a.ko"
@@ -23,6 +28,10 @@ for k in ${!map[@]}; do
     dst=${ROOTFS}/$k
     src=${MODULE_PLAYGROUND}/${map[$k]}
 
-    install -d $dst
-    install -t $dst $src
+    if test "${dst: -1}" = "/"; then
+        install -d $dst
+        install -t $dst $src
+    else
+        install -D $src $dst
+    fi
 done
