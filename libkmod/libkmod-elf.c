@@ -251,7 +251,7 @@ static inline int elf_get_section_info(const struct kmod_elf *elf, uint16_t idx,
 #undef READV
 
 	min_size = *offset + *size;
-	if (min_size > elf->size) {
+	if (ULLONG_MAX - *offset < *size || min_size > elf->size) {
 		ELFDBG(elf, "out-of-bounds: %"PRIu64" >= %"PRIu64" (ELF size)\n",
 		       min_size, elf->size);
 		return -EINVAL;
