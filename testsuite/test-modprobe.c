@@ -119,7 +119,7 @@ static noreturn int modprobe_softdep_loop(const struct test *t)
 	const char *progname = ABS_TOP_BUILDDIR "/tools/modprobe";
 	const char *const args[] = {
 		progname,
-		"bluetooth",
+		"mod-loop-b",
 		NULL,
 	};
 
@@ -133,7 +133,7 @@ DEFINE_TEST(modprobe_softdep_loop,
 		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-modprobe/softdep-loop",
 		[TC_INIT_MODULE_RETCODES] = "",
 	},
-	.modules_loaded = "btusb,bluetooth",
+	.modules_loaded = "mod-loop-a,mod-loop-b",
 	);
 
 static noreturn int modprobe_install_cmd_loop(const struct test *t)

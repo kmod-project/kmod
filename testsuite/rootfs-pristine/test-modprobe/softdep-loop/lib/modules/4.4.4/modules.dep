@@ -1,3 +1,2 @@
-kernel/drivers/bluetooth/btusb.ko: kernel/net/bluetooth/bluetooth.ko
-kernel/drivers/input/mouse/psmouse.ko:
-kernel/net/bluetooth/bluetooth.ko:
+kernel/mod-loop-b.ko:
+kernel/mod-loop-a.ko: kernel/mod-loop-b.ko
