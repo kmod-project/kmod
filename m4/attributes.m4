@@ -256,7 +256,7 @@ AC_DEFUN([CC_FLAG_VISIBILITY], [
 
 AC_DEFUN([CC_CHECK_FUNC_BUILTIN], [
   m4_pushdef([UPNAME], m4_translit([$1], [-a-z], [_A-Z]))
-  AC_CACHE_CHECK([if compiler has $1 function],
+  AC_CACHE_CHECK([if compiler has $1 builtin function],
     [cc_cv_have_$1],
     [AC_LINK_IFELSE([AC_LANG_PROGRAM([], [
        m4_case([$1],
@@ -268,9 +268,11 @@ AC_DEFUN([CC_CHECK_FUNC_BUILTIN], [
        [cc_cv_have_$1=no])])
 
   AS_IF([test "x$cc_cv_have_$1" = "xyes"],
-    [AC_DEFINE([HAVE_]m4_defn([UPNAME]), 1, [Define this if the compiler supports $1() function])
+    [AC_DEFINE([HAVE_]m4_defn([UPNAME]), 1, [Define to 1 if compiler has $1() builtin function])
      $2],
-     [AS_IF([test "x$3" = "x"], [AC_MSG_ERROR([*** builtin function not found: $1()])], [$3])]
+    [AS_IF([test "x$3" = "x"], [AC_MSG_ERROR([*** builtin function not found: $1()])],
+           [AC_DEFINE([HAVE_]m4_defn([UPNAME]), 0)
+	    $3])]
   )
   m4_popdef([UPNAME])
 ])
