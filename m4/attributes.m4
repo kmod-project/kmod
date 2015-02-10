@@ -260,6 +260,8 @@ AC_DEFUN([CC_CHECK_FUNC_BUILTIN], [
     [cc_cv_have_$1],
     [AC_LINK_IFELSE([AC_LANG_PROGRAM([], [
        m4_case([$1],
+         [__builtin_clz], [$1(0)],
+         [__builtin_types_compatible_p], [$1(int, int)],
          [__builtin_expect], [$1(0, 0)]
        )])],
        [cc_cv_have_$1=yes],
@@ -267,7 +269,9 @@ AC_DEFUN([CC_CHECK_FUNC_BUILTIN], [
 
   AS_IF([test "x$cc_cv_have_$1" = "xyes"],
     [AC_DEFINE([HAVE_]m4_defn([UPNAME]), 1, [Define this if the compiler supports $1() function])
-     $2], [$3])
+     $2],
+     [AS_IF([test "x$3" = "x"], [AC_MSG_ERROR([*** builtin function not found: $1()])], [$3])]
+  )
   m4_popdef([UPNAME])
 ])
 

@@ -47,6 +47,9 @@ AC_CHECK_FUNCS_ONCE(__xstat)
 AC_CHECK_FUNCS_ONCE([__secure_getenv secure_getenv])
 AC_CHECK_FUNCS_ONCE([finit_module])
 
+CC_CHECK_FUNC_BUILTIN([__builtin_clz])
+CC_CHECK_FUNC_BUILTIN([__builtin_types_compatible_p])
+
 # dietlibc doesn't have st.st_mtim struct member
 AC_CHECK_MEMBERS([struct stat.st_mtim], [], [], [#include <sys/stat.h>])
 
