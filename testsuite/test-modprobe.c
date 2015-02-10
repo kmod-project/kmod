@@ -30,7 +30,7 @@ static noreturn int modprobe_show_depends(const struct test *t)
 	const char *progname = ABS_TOP_BUILDDIR "/tools/modprobe";
 	const char *const args[] = {
 		progname,
-		"--show-depends", "btusb",
+		"--show-depends", "mod-loop-a",
 		NULL,
 	};
 
@@ -52,7 +52,7 @@ static noreturn int modprobe_show_depends2(const struct test *t)
 	const char *progname = ABS_TOP_BUILDDIR "/tools/modprobe";
 	const char *const args[] = {
 		progname,
-		"--show-depends", "psmouse",
+		"--show-depends", "mod-simple",
 		NULL,
 	};
 
@@ -66,7 +66,7 @@ DEFINE_TEST(modprobe_show_depends2,
 		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-modprobe/show-depends",
 	},
 	.output = {
-		.out = TESTSUITE_ROOTFS "test-modprobe/show-depends/correct-psmouse.txt",
+		.out = TESTSUITE_ROOTFS "test-modprobe/show-depends/correct-mod-simple.txt",
 	});
 
 
@@ -89,7 +89,7 @@ DEFINE_TEST(modprobe_show_alias_to_none,
 		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-modprobe/alias-to-none",
 	},
 	.output = {
-		.out = TESTSUITE_ROOTFS "test-modprobe/show-depends/correct-psmouse.txt",
+		.out = TESTSUITE_ROOTFS "test-modprobe/alias-to-none/correct-psmouse.txt",
 	},
 	.modules_loaded = "",
 	);
