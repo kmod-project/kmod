@@ -1,5 +1,6 @@
 #pragma once
 
+#include <inttypes.h>
 #include <limits.h>
 #include <stdbool.h>
 #include <stdlib.h>
@@ -72,3 +73,18 @@ static inline void freep(void *p) {
         free(*(void**) p);
 }
 #define _cleanup_free_ _cleanup_(freep)
+
+static inline bool addu64_overflow(uint64_t a, uint64_t b, uint64_t *res)
+{
+#if (HAVE___BUILTIN_UADDL_OVERFLOW && HAVE___BUILTIN_UADDLL_OVERFLOW)
+#if __SIZEOF_LONG__ == 8
+	return __builtin_uaddl_overflow(a, b, res);
+#elif __SIZEOF_LONG_LONG__ == 8
+	return __builtin_uaddll_overflow(a, b, res);
+#else
+#error "sizeof(long long) != 8"
+#endif
+#endif
+	*res = a + b;
+	return ULLONG_MAX - a < b;
+}

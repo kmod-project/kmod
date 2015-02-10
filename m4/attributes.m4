@@ -262,6 +262,8 @@ AC_DEFUN([CC_CHECK_FUNC_BUILTIN], [
        m4_case([$1],
          [__builtin_clz], [$1(0)],
          [__builtin_types_compatible_p], [$1(int, int)],
+         [__builtin_uaddl_overflow], [$1(0UL, 0UL, (void*)0)],
+         [__builtin_uaddll_overflow], [$1(0ULL, 0ULL, (void*)0)],
          [__builtin_expect], [$1(0, 0)]
        )])],
        [cc_cv_have_$1=yes],
