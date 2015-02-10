@@ -272,7 +272,8 @@ static const char *elf_get_strings_section(const struct kmod_elf *elf, uint64_t 
 struct kmod_elf *kmod_elf_new(const void *memory, off_t size)
 {
 	struct kmod_elf *elf;
-	size_t hdr_size, shdr_size, min_size;
+	uint64_t min_size;
+	size_t shdrs_size, shdr_size;
 	int class;
 
 	assert_cc(sizeof(uint16_t) == sizeof(Elf32_Half));
@@ -308,12 +309,10 @@ struct kmod_elf *kmod_elf_new(const void *memory, off_t size)
 	if (elf->class & KMOD_ELF_32) {
 		const Elf32_Ehdr *hdr _unused_ = elf_get_mem(elf, 0);
 		LOAD_HEADER;
-		hdr_size = sizeof(Elf32_Ehdr);
 		shdr_size = sizeof(Elf32_Shdr);
 	} else {
 		const Elf64_Ehdr *hdr _unused_ = elf_get_mem(elf, 0);
 		LOAD_HEADER;
-		hdr_size = sizeof(Elf64_Ehdr);
 		shdr_size = sizeof(Elf64_Shdr);
 	}
 #undef LOAD_HEADER
@@ -330,8 +329,9 @@ struct kmod_elf *kmod_elf_new(const void *memory, off_t size)
 		       elf->header.section.entry_size, shdr_size);
 		goto invalid;
 	}
-	min_size = hdr_size + shdr_size * elf->header.section.count;
-	if (min_size >= elf->size) {
+	shdrs_size = shdr_size * elf->header.section.count;
+	if (addu64_overflow(shdrs_size, elf->header.section.offset, &min_size)
+	    || min_size > elf->size) {
 		ELFDBG(elf, "file is too short to hold sections\n");
 		goto invalid;
 	}
