@@ -254,27 +254,21 @@ AC_DEFUN([CC_FLAG_VISIBILITY], [
     [$2])
 ])
 
-AC_DEFUN([CC_FUNC_EXPECT], [
-  AC_REQUIRE([CC_CHECK_WERROR])
-  AC_CACHE_CHECK([if compiler has __builtin_expect function],
-    [cc_cv_func_expect],
-    [ac_save_CFLAGS="$CFLAGS"
-     CFLAGS="$CFLAGS $cc_cv_werror"
-     AC_COMPILE_IFELSE([AC_LANG_SOURCE(
-       [int some_function() {
-        int a = 3;
-        return (int)__builtin_expect(a, 3);
-	}])],
-       [cc_cv_func_expect=yes],
-       [cc_cv_func_expect=no])
-     CFLAGS="$ac_save_CFLAGS"
-    ])
+AC_DEFUN([CC_CHECK_FUNC_BUILTIN], [
+  m4_pushdef([UPNAME], m4_translit([$1], [-a-z], [_A-Z]))
+  AC_CACHE_CHECK([if compiler has $1 function],
+    [cc_cv_have_$1],
+    [AC_LINK_IFELSE([AC_LANG_PROGRAM([], [
+       m4_case([$1],
+         [__builtin_expect], [$1(0, 0)]
+       )])],
+       [cc_cv_have_$1=yes],
+       [cc_cv_have_$1=no])])
 
-  AS_IF([test "x$cc_cv_func_expect" = "xyes"],
-    [AC_DEFINE([SUPPORT__BUILTIN_EXPECT], 1,
-     [Define this if the compiler supports __builtin_expect() function])
-     $1],
-    [$2])
+  AS_IF([test "x$cc_cv_have_$1" = "xyes"],
+    [AC_DEFINE([HAVE_]m4_defn([UPNAME]), 1, [Define this if the compiler supports $1() function])
+     $2], [$3])
+  m4_popdef([UPNAME])
 ])
 
 AC_DEFUN([CC_ATTRIBUTE_ALIGNED], [
