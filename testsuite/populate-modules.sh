@@ -33,6 +33,7 @@ map=(
     ["test-modprobe/oldkernel/lib/modules/3.3.3/kernel/"]="mod-simple.ko"
     ["test-modprobe/oldkernel-force/lib/modules/3.3.3/kernel/"]="mod-simple.ko"
     ["test-modprobe/alias-to-none/lib/modules/4.4.4/kernel/"]="mod-simple.ko"
+    ["test-modprobe/module-param-kcmdline/lib/modules/4.4.4/kernel/"]="mod-simple.ko"
 )
 
 for k in ${!map[@]}; do

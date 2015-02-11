@@ -167,7 +167,7 @@ static noreturn int modprobe_param_kcmdline(const struct test *t)
 	const char *progname = ABS_TOP_BUILDDIR "/tools/modprobe";
 	const char *const args[] = {
 		progname,
-		"--show-depends", "psmouse",
+		"--show-depends", "mod-simple",
 		NULL,
 	};
 

@@ -1,1 +1,1 @@
-initrd=\initramfs-linux.img psmouse.foo psmouse.bar=1 root=/dev/sda2 rootfstype=ext4 add_efi_memmap quiet rw
+initrd=\initramfs-linux.img mod_simple.foo mod_simple.bar=1 root=/dev/sda2 rootfstype=ext4 add_efi_memmap quiet rw

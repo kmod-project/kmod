@@ -1,1 +1,1 @@
-kernel/drivers/input/mouse/psmouse.ko:
+kernel/mod-simple.ko:
