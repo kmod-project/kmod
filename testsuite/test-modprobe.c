@@ -141,7 +141,7 @@ static noreturn int modprobe_install_cmd_loop(const struct test *t)
 	const char *progname = ABS_TOP_BUILDDIR "/tools/modprobe";
 	const char *const args[] = {
 		progname,
-		"snd-pcm",
+		"mod-loop-a",
 		NULL,
 	};
 
@@ -159,7 +159,7 @@ DEFINE_TEST(modprobe_install_cmd_loop,
 		{ "MODPROBE", ABS_TOP_BUILDDIR "/tools/modprobe" },
 		{ }
 		},
-	.modules_loaded = "snd,snd-pcm",
+	.modules_loaded = "mod-loop-b,mod-loop-a",
 	);
 
 static noreturn int modprobe_param_kcmdline(const struct test *t)

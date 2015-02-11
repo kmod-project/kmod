@@ -1,2 +1,2 @@
-kernel/sound/core/snd.ko:
-kernel/sound/core/snd-pcm.ko: kernel/sound/core/snd.ko
+kernel/mod-loop-b.ko:
+kernel/mod-loop-a.ko: kernel/mod-loop-b.ko
