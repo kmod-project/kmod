@@ -75,7 +75,7 @@ static noreturn int modprobe_show_alias_to_none(const struct test *t)
 	const char *progname = ABS_TOP_BUILDDIR "/tools/modprobe";
 	const char *const args[] = {
 		progname,
-		"--show-depends", "--ignore-install", "--quiet", "psmouse",
+		"--show-depends", "--ignore-install", "--quiet", "mod-simple",
 		NULL,
 	};
 
@@ -89,7 +89,7 @@ DEFINE_TEST(modprobe_show_alias_to_none,
 		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-modprobe/alias-to-none",
 	},
 	.output = {
-		.out = TESTSUITE_ROOTFS "test-modprobe/alias-to-none/correct-psmouse.txt",
+		.out = TESTSUITE_ROOTFS "test-modprobe/alias-to-none/correct.txt",
 	},
 	.modules_loaded = "",
 	);
