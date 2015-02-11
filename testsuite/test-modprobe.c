@@ -263,7 +263,7 @@ static noreturn int modprobe_force(const struct test *t)
 	const char *progname = ABS_TOP_BUILDDIR "/tools/modprobe";
 	const char *const args[] = {
 		progname,
-		"--force", "psmouse",
+		"--force", "mod-simple",
 		NULL,
 	};
 
@@ -277,7 +277,7 @@ DEFINE_TEST(modprobe_force,
 		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-modprobe/force",
 		[TC_INIT_MODULE_RETCODES] = "",
 	},
-	.modules_loaded = "psmouse",
+	.modules_loaded = "mod-simple",
 	);
 
 static noreturn int modprobe_oldkernel(const struct test *t)
