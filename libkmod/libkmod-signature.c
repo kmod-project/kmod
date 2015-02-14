@@ -124,7 +124,7 @@ bool kmod_module_signature_info(const struct kmod_file *file, struct kmod_signat
 			modsig->id_type >= PKEY_ID_TYPE__LAST)
 		return false;
 	sig_len = be32toh(get_unaligned(&modsig->sig_len));
-	if (size < (off_t)(modsig->signer_len + modsig->key_id_len + sig_len))
+	if (size < (int64_t)(modsig->signer_len + modsig->key_id_len + sig_len))
 		return false;
 
 	size -= modsig->key_id_len + sig_len;
