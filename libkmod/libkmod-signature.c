@@ -79,13 +79,6 @@ const char *const pkey_id_type[PKEY_ID_TYPE__LAST] = {
 
 /*
  * Module signature information block.
- *
- * The constituents of the signature section are, in order:
- *
- *	- Signer's name
- *	- Key identifier
- *	- Signature data
- *	- Information block
  */
 struct module_signature {
 	uint8_t algo;        /* Public-key crypto algorithm [enum pkey_algo] */
@@ -98,6 +91,17 @@ struct module_signature {
 };
 
 #define SIG_MAGIC "~Module signature appended~\n"
+
+/*
+ * A signed module has the following layout:
+ *
+ * [ module                  ]
+ * [ signer's name           ]
+ * [ key identifier          ]
+ * [ signature data          ]
+ * [ struct module_signature ]
+ * [ SIG_MAGIC               ]
+ */
 
 bool kmod_module_signature_info(const struct kmod_file *file, struct kmod_signature_info *sig_info)
 {
