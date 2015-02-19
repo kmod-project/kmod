@@ -25,7 +25,7 @@
 
 #include "testsuite.h"
 
-#define MODULES_ORDER_UNAME "3.5.4-1-ARCH"
+#define MODULES_ORDER_UNAME "4.4.4"
 #define MODULES_ORDER_ROOTFS TESTSUITE_ROOTFS "test-depmod/modules-order-compressed"
 #define MODULES_ORDER_LIB_MODULES MODULES_ORDER_ROOTFS "/lib/modules/" MODULES_ORDER_UNAME
 static noreturn int depmod_modules_order_for_compressed(const struct test *t)

@@ -18,6 +18,12 @@ obj-m += mod-loop-c.o
 obj-m += mod-loop-d.o
 obj-m += mod-loop-e.o
 
+# mod-fake-*: fake the respective modules in kernel with these aliases. Aliases
+# list was taken from 3.5.4
+obj-m += mod-fake-hpsa.o
+obj-m += mod-fake-scsi-mod.o
+obj-m += mod-fake-cciss.o
+
 else
 # normal makefile
 KDIR ?= /lib/modules/`uname -r`/build
