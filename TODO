@@ -44,6 +44,9 @@ and libkmod
   the pages cached. This would simplify the interface exported by libkmod.
   Measure performance before deciding.
 
+* depmod:
+   - join functions for text/binary outputs
+   - use new O_TMPFILE for tmp file creation
 
 Things to be added/removed in kernel (check what is really needed):
 ===================================================================
