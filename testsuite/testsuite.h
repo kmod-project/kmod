@@ -102,6 +102,7 @@ struct test {
 	const struct keyval *env_vars;
 	bool need_spawn;
 	bool expected_fail;
+	bool print_outputs;
 } __attribute__((aligned(8)));
 
 

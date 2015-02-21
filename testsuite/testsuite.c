@@ -423,6 +423,12 @@ static inline bool test_run_parent_check_outputs(const struct test *t,
 
 				buf[r] = '\0';
 				bufmatch[r] = '\0';
+
+				if (t->print_outputs)
+					printf("%s: %s\n",
+					       fd_match == fd_matchout ? "STDOUT:" : "STDERR:",
+					       buf);
+
 				if (!streq(buf, bufmatch)) {
 					ERR("Outputs do not match on %s:\n",
 						fd_match == fd_matchout ? "STDOUT" : "STDERR");
