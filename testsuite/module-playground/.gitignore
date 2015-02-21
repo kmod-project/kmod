@@ -4,3 +4,7 @@
 .tmp_versions
 modules.order
 Module.symvers
+
+mod-simple-x86_64.c
+mod-simple-i386.c
+mod-simple-sparc64.c

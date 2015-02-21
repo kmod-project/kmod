@@ -1,0 +1,14 @@
+ifeq ($(ARCH),)
+    $(error ARCH must be set to a valid architecture)
+endif
+
+default:
+	@cmp --quiet mod-simple.c mod-simple-$(ARCH).c || (	\
+		ln -sf mod-simple.c mod-simple-$(ARCH).c;	\
+		/bin/false					\
+	)
+	$(MAKE) -C $(KDIR_$(ARCH)) CROSS_COMPILE=$(CROSS_COMPILE_$(ARCH)) M=$$PWD KMOD_TESTSUITE_ARCH_BUILD=1
+
+clean:
+	$(MAKE) -C $(KDIR_$(ARCH)) CROSS_COMPILE=$(CROSS_COMPILE_$(ARCH)) M=$$PWD KMOD_TESTSUITE_ARCH_BUILD=1  clean
+	rm -f mod-simple-$(ARCH).c
