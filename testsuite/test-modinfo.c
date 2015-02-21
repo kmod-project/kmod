@@ -27,12 +27,12 @@
 
 static const char *progname = ABS_TOP_BUILDDIR "/tools/modinfo";
 
-#define DEFINE_MODINFO_TEST(_field) \
+#define DEFINE_MODINFO_TEST(_field, ...) \
 static noreturn int test_modinfo_##_field(const struct test *t) \
 { \
 	const char *const args[] = { \
 		progname, "-F", #_field ,\
-		"/mod-simple-i386.ko", "/mod-simple-x86_64.ko", "/mod-simple-sparc64.ko", \
+		__VA_ARGS__ , \
 		NULL, \
 	}; \
 	test_spawn_prog(progname, args); \
@@ -47,18 +47,33 @@ DEFINE_TEST(test_modinfo_##_field, \
 		.out = TESTSUITE_ROOTFS "test-modinfo/correct-" #_field ".txt", \
 	})
 
-DEFINE_MODINFO_TEST(filename);
-DEFINE_MODINFO_TEST(author);
-DEFINE_MODINFO_TEST(license);
-DEFINE_MODINFO_TEST(description);
-DEFINE_MODINFO_TEST(parm);
-DEFINE_MODINFO_TEST(depends);
+#define DEFINE_MODINFO_GENERIC_TEST(_field) \
+	DEFINE_MODINFO_TEST(_field, \
+			    "/mod-simple-i386.ko", \
+			    "/mod-simple-x86_64.ko", \
+			    "/mod-simple-sparc64.ko")
 
+#define DEFINE_MODINFO_SIGN_TEST(_field) \
+	DEFINE_MODINFO_TEST(_field, \
+			    "/mod-simple-sha1.ko", \
+			    "/mod-simple-sha256.ko")
+
+DEFINE_MODINFO_GENERIC_TEST(filename);
+DEFINE_MODINFO_GENERIC_TEST(author);
+DEFINE_MODINFO_GENERIC_TEST(license);
+DEFINE_MODINFO_GENERIC_TEST(description);
+DEFINE_MODINFO_GENERIC_TEST(parm);
+DEFINE_MODINFO_GENERIC_TEST(depends);
+
+DEFINE_MODINFO_SIGN_TEST(signer);
+DEFINE_MODINFO_SIGN_TEST(sig_key);
+DEFINE_MODINFO_SIGN_TEST(sig_hashalgo);
+
+#if 0
 static noreturn int test_modinfo_signature(const struct test *t)
 {
 	const char *const args[] = {
 		progname,
-		"/ext4-x86_64-sha1.ko", "/ext4-x86_64-sha256.ko",
 		NULL,
 	};
 
@@ -66,12 +81,12 @@ static noreturn int test_modinfo_signature(const struct test *t)
 	exit(EXIT_FAILURE);
 }
 DEFINE_TEST(test_modinfo_signature,
-	.description = "check if output for modinfo is correct for i686, ppc64, s390x and x86_64",
+	.description = "check signatures are correct for modinfo is correct for i686, ppc64, s390x and x86_64",
 	.config = {
 		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-modinfo/",
 	},
 	.output = {
 		.out = TESTSUITE_ROOTFS "test-modinfo/correct.txt",
 	});
-
+#endif
 TESTSUITE_MAIN();

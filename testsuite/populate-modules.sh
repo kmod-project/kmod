@@ -40,12 +40,22 @@ map=(
     ["test-modinfo/mod-simple-i386.ko"]="mod-simple-i386.ko"
     ["test-modinfo/mod-simple-x86_64.ko"]="mod-simple-x86_64.ko"
     ["test-modinfo/mod-simple-sparc64.ko"]="mod-simple-sparc64.ko"
+    ["test-modinfo/mod-simple-sha1.ko"]="mod-simple.ko"
+    ["test-modinfo/mod-simple-sha256.ko"]="mod-simple.ko"
 )
 
 gzip_array=(
     "test-depmod/modules-order-compressed/lib/modules/4.4.4/kernel/drivers/block/cciss.ko"
     "test-depmod/modules-order-compressed/lib/modules/4.4.4/kernel/drivers/scsi/hpsa.ko"
     "test-depmod/modules-order-compressed/lib/modules/4.4.4/kernel/drivers/scsi/scsi_mod.ko"
+    )
+
+attach_sha256_array=(
+    "test-modinfo/mod-simple-sha256.ko"
+    )
+
+attach_sha1_array=(
+    "test-modinfo/mod-simple-sha1.ko"
     )
 
 for k in ${!map[@]}; do
@@ -65,4 +75,12 @@ done
 # gzip these modules
 for m in "${gzip_array[@]}"; do
     gzip $ROOTFS/$m
+done
+
+for m in "${attach_sha1_array[@]}"; do
+    cat ${MODULE_PLAYGROUND}/dummy.sha1 >> ${ROOTFS}/$m
+done
+
+for m in "${attach_sha256_array[@]}"; do
+    cat ${MODULE_PLAYGROUND}/dummy.sha256 >> ${ROOTFS}/$m
 done
