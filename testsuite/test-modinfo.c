@@ -25,21 +25,47 @@
 
 #include "testsuite.h"
 
-static noreturn int modinfo_jonsmodules(const struct test *t)
+static const char *progname = ABS_TOP_BUILDDIR "/tools/modinfo";
+
+#define DEFINE_MODINFO_TEST(_field) \
+static noreturn int test_modinfo_##_field(const struct test *t) \
+{ \
+	const char *const args[] = { \
+		progname, "-F", #_field ,\
+		"/mod-simple-i386.ko", "/mod-simple-x86_64.ko", "/mod-simple-sparc64.ko", \
+		NULL, \
+	}; \
+	test_spawn_prog(progname, args); \
+	exit(EXIT_FAILURE); \
+} \
+DEFINE_TEST(test_modinfo_##_field, \
+	.description = "check " #_field " output of modinfo for different architectures", \
+	.config = { \
+		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-modinfo/", \
+	}, \
+	.output = { \
+		.out = TESTSUITE_ROOTFS "test-modinfo/correct-" #_field ".txt", \
+	})
+
+DEFINE_MODINFO_TEST(filename);
+DEFINE_MODINFO_TEST(author);
+DEFINE_MODINFO_TEST(license);
+DEFINE_MODINFO_TEST(description);
+DEFINE_MODINFO_TEST(parm);
+DEFINE_MODINFO_TEST(depends);
+
+static noreturn int test_modinfo_signature(const struct test *t)
 {
-	const char *progname = ABS_TOP_BUILDDIR "/tools/modinfo";
 	const char *const args[] = {
 		progname,
-		"/ext4-i686.ko", "/ext4-ppc64.ko", "/ext4-s390x.ko",
-		"/ext4-x86_64.ko", "/ext4-x86_64-sha1.ko",
-		"/ext4-x86_64-sha256.ko",
+		"/ext4-x86_64-sha1.ko", "/ext4-x86_64-sha256.ko",
 		NULL,
 	};
 
 	test_spawn_prog(progname, args);
 	exit(EXIT_FAILURE);
 }
-DEFINE_TEST(modinfo_jonsmodules,
+DEFINE_TEST(test_modinfo_signature,
 	.description = "check if output for modinfo is correct for i686, ppc64, s390x and x86_64",
 	.config = {
 		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-modinfo/",

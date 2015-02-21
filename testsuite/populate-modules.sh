@@ -37,6 +37,9 @@ map=(
     ["test-depmod/modules-order-compressed/lib/modules/4.4.4/kernel/drivers/block/cciss.ko"]="mod-fake-cciss.ko"
     ["test-depmod/modules-order-compressed/lib/modules/4.4.4/kernel/drivers/scsi/hpsa.ko"]="mod-fake-hpsa.ko"
     ["test-depmod/modules-order-compressed/lib/modules/4.4.4/kernel/drivers/scsi/scsi_mod.ko"]="mod-fake-scsi-mod.ko"
+    ["test-modinfo/mod-simple-i386.ko"]="mod-simple-i386.ko"
+    ["test-modinfo/mod-simple-x86_64.ko"]="mod-simple-x86_64.ko"
+    ["test-modinfo/mod-simple-sparc64.ko"]="mod-simple-sparc64.ko"
 )
 
 gzip_array=(
