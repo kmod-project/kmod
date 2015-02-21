@@ -272,11 +272,30 @@ static inline int test_run_child(const struct test *t, int fdout[2],
 		return test_run_spawned(t);
 }
 
+static int check_activity(int fd, bool activity,  const char *path,
+			  const char *stream)
+{
+	struct stat st;
+
+	/* not monitoring or monitoring and it has activity */
+	if (fd < 0 || activity)
+		return 0;
+
+	/* monitoring, there was no activity and size matches */
+	if (stat(path, &st) == 0 && st.st_size == 0)
+		return 0;
+
+	ERR("Expecting output on %s, but test didn't produce any\n", stream);
+
+	return -1;
+}
+
 static inline bool test_run_parent_check_outputs(const struct test *t,
 			int fdout, int fderr, int fdmonitor, pid_t child)
 {
 	struct epoll_event ep_outpipe, ep_errpipe, ep_monitor;
 	int err, fd_ep, fd_matchout = -1, fd_matcherr = -1;
+	bool fd_activityout = false, fd_activityerr = false;
 	unsigned long long end_usec, start_usec;
 
 	fd_ep = epoll_create1(EPOLL_CLOEXEC);
@@ -372,11 +391,13 @@ static inline bool test_run_parent_check_outputs(const struct test *t,
 				if (r <= 0)
 					continue;
 
-				if (*fd == fdout)
+				if (*fd == fdout) {
 					fd_match = fd_matchout;
-				else if (*fd == fderr)
+					fd_activityout = true;
+				} else if (*fd == fderr) {
 					fd_match = fd_matcherr;
-				else {
+					fd_activityerr = true;
+				} else {
 					ERR("Unexpected activity on monitor pipe\n");
 					err = -EINVAL;
 					goto out;
@@ -404,7 +425,7 @@ static inline bool test_run_parent_check_outputs(const struct test *t,
 				bufmatch[r] = '\0';
 				if (!streq(buf, bufmatch)) {
 					ERR("Outputs do not match on %s:\n",
-						fd_match == fd_matchout ? "stdout" : "stderr");
+						fd_match == fd_matchout ? "STDOUT" : "STDERR");
 					ERR("correct:\n%s\n", bufmatch);
 					ERR("wrong:\n%s\n", buf);
 					err = -1;
@@ -420,6 +441,9 @@ static inline bool test_run_parent_check_outputs(const struct test *t,
 			}
 		}
 	}
+
+	err = check_activity(fd_matchout, fd_activityout, t->output.out, "stdout");
+	err |= check_activity(fd_matcherr, fd_activityerr, t->output.err, "stderr");
 
 	if (err == 0 && fdmonitor >= 0) {
 		err = -EINVAL;
