@@ -1,5 +1,6 @@
 *o.cmd
 *.ko
+!mod-simple-*.ko
 *.mod.c
 .tmp_versions
 modules.order

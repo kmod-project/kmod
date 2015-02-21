@@ -1,0 +1,26 @@
+Pre-compiled modules
+====================
+
+Some modules are pre-compiled due to needing cross-compilers present on the
+build/dev machine which is inconvenient. Makefile is ready to compile them again
+in case they are missing:
+
+1) Prepare the linux kernel trees to build external modules, i.e.:
+
+   kernel $ make ARCH=<arch> CROSS_COMPILER=<cross-compiler-prefix> defconfig
+   kernel $ make ARCH=<arch> CROSS_COMPILER=<cross-compiler-prefix> modules_prepare
+
+   For each architecture. See the Makefile to check which are the supported architectures.
+
+2) Export the variables below to point to the right place:
+
+   KDIR_<arch>:                for each architecture it needs to point to a
+                               kernel tree configured as in (1)
+
+   CROSS_COMPILER_<arch:       for each architecture it needs to point to the
+			       correct toolchain prefix. Leave it blank if a
+			       cross-compiler is not needed (example: you are
+			       building a 32b module with a multilib compiler).
+
+
+3) Remove every %-<arch>.ko. After this the build system will recreate them.
