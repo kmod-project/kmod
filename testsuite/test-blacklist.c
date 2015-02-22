@@ -93,14 +93,13 @@ fail_lookup:
 	kmod_unref(ctx);
 	return EXIT_FAILURE;
 }
-static const struct test sblacklist_1 = {
-	.name = "blacklist_1",
+
+DEFINE_TEST(blacklist_1,
 	.description = "check if modules are correctly blacklisted",
-	.func = blacklist_1,
 	.config = {
 		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-blacklist/",
 	},
 	.need_spawn = true,
-};
+);
 
 TESTSUITE_MAIN();
