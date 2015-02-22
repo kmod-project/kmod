@@ -49,6 +49,12 @@
  * @short_description: operate on kernel modules
  */
 
+enum kmod_module_builtin {
+    KMOD_MODULE_BUILTIN_UNKNOWN,
+    KMOD_MODULE_BUILTIN_NO,
+    KMOD_MODULE_BUILTIN_YES,
+};
+
 /**
  * kmod_module:
  *
@@ -75,6 +81,13 @@ struct kmod_module {
 	} init;
 
 	/*
+	 * mark if module is builtin, i.e. it's present on modules.builtin
+	 * file. This is set as soon as it is needed or as soon as we know
+	 * about it, i.e. the module was created from builtin lookup.
+	 */
+	enum kmod_module_builtin builtin;
+
+	/*
 	 * private field used by kmod_module_get_probe_list() to detect
 	 * dependency loops
 	 */
@@ -92,13 +105,6 @@ struct kmod_module {
 	 * is a softdep only
 	 */
 	bool required : 1;
-
-	/*
-	 * if module was created by searching the modules.builtin file, this
-	 * is set. There's nothing much useful one can do with such a
-	 * "module", except knowing it's builtin.
-	 */
-	bool builtin : 1;
 };
 
 static inline const char *path_join(const char *path, size_t prefixlen,
@@ -212,7 +218,8 @@ void kmod_module_set_visited(struct kmod_module *mod, bool visited)
 
 void kmod_module_set_builtin(struct kmod_module *mod, bool builtin)
 {
-	mod->builtin = builtin;
+	mod->builtin =
+		builtin ? KMOD_MODULE_BUILTIN_YES : KMOD_MODULE_BUILTIN_NO;
 }
 
 void kmod_module_set_required(struct kmod_module *mod, bool required)
@@ -220,6 +227,15 @@ void kmod_module_set_required(struct kmod_module *mod, bool required)
 	mod->required = required;
 }
 
+bool kmod_module_is_builtin(struct kmod_module *mod)
+{
+	if (mod->builtin == KMOD_MODULE_BUILTIN_UNKNOWN) {
+		kmod_module_set_builtin(mod,
+					kmod_lookup_alias_is_builtin(mod->ctx, mod->name));
+	}
+
+	return mod->builtin == KMOD_MODULE_BUILTIN_YES;
+}
 /*
  * Memory layout with alias:
  *
@@ -924,7 +940,8 @@ KMOD_EXPORT int kmod_module_apply_filter(const struct kmod_ctx *ctx,
 				module_is_blacklisted(mod))
 			continue;
 
-		if ((filter_type & KMOD_FILTER_BUILTIN) && mod->builtin)
+		if ((filter_type & KMOD_FILTER_BUILTIN)
+		    && kmod_module_is_builtin(mod))
 			continue;
 
 		node = kmod_list_append(*output, mod);
@@ -1713,7 +1730,8 @@ KMOD_EXPORT int kmod_module_get_initstate(const struct kmod_module *mod)
 	if (mod == NULL)
 		return -ENOENT;
 
-	if (mod->builtin)
+	/* remove const: this can only change internal state */
+	if (kmod_module_is_builtin((struct kmod_module *)mod))
 		return KMOD_MODULE_BUILTIN;
 
 	pathlen = snprintf(path, sizeof(path),
@@ -1729,7 +1747,7 @@ KMOD_EXPORT int kmod_module_get_initstate(const struct kmod_module *mod)
 			struct stat st;
 			path[pathlen - (sizeof("/initstate") - 1)] = '\0';
 			if (stat(path, &st) == 0 && S_ISDIR(st.st_mode))
-				return KMOD_MODULE_BUILTIN;
+				return KMOD_MODULE_COMING;
 		}
 
 		DBG(mod->ctx, "could not open '%s': %s\n",
