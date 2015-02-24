@@ -252,13 +252,29 @@ check-sysconfdir:
 check-am: rootfs check-sysconfdir
 
 
-EXTRA_DIST += testsuite/module-playground/Makefile \
-	      testsuite/module-playground/mod-foo.c \
-	      testsuite/module-playground/mod-foo-a.c \
-	      testsuite/module-playground/mod-foo-b.c \
-	      testsuite/module-playground/mod-foo-c.c \
-	      testsuite/module-playground/mod-simple.c
-
+EXTRA_DIST += \
+	testsuite/module-playground/dummy.sha1 \
+	testsuite/module-playground/dummy.sha256 \
+	testsuite/module-playground/Makefile \
+	testsuite/module-playground/Makefile.arch \
+	testsuite/module-playground/mod-fake-cciss.c \
+	testsuite/module-playground/mod-fake-hpsa.c \
+	testsuite/module-playground/mod-fake-scsi-mod.c \
+	testsuite/module-playground/mod-foo-a.c \
+	testsuite/module-playground/mod-foo-b.c \
+	testsuite/module-playground/mod-foo.c \
+	testsuite/module-playground/mod-foo-c.c \
+	testsuite/module-playground/mod-loop-a.c \
+	testsuite/module-playground/mod-loop-b.c \
+	testsuite/module-playground/mod-loop-c.c \
+	testsuite/module-playground/mod-loop-d.c \
+	testsuite/module-playground/mod-loop-e.c \
+	testsuite/module-playground/mod-loop.h \
+	testsuite/module-playground/mod-simple.c \
+	testsuite/module-playground/mod-simple-i386.ko \
+	testsuite/module-playground/mod-simple-sparc64.ko \
+	testsuite/module-playground/mod-simple-x86_64.ko \
+	testsuite/module-playground/README
 
 check_LTLIBRARIES = $(TESTSUITE_OVERRIDE_LIBS)
 
