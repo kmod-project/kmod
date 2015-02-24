@@ -40,6 +40,7 @@ KDIR ?= /lib/modules/`uname -r`/build
 KVER ?= `uname -r`
 
 ARCH_SPECIFIC_MODULES := mod-simple-x86_64.ko mod-simple-i386.ko mod-simple-sparc64.ko
+MY_MODULES := $(filter-out $(ARCH_SPECIFIC_MODULES),$(wildcard *.ko))
 
 default: modules arch-modules
 
@@ -53,9 +54,10 @@ modules:
 arch-modules: $(ARCH_SPECIFIC_MODULES)
 
 clean:
-	$(MAKE) -C $(KDIR) M=$$PWD clean
-	$(MAKE) KDIR=$(KDIR_x86_64) ARCH=x86_64 CROSS_COMPILE=$(CROSS_COMPILE_x86_64) -f Makefile.arch clean
-	$(MAKE) KDIR=$(KDIR_i386) ARCH=i386 CROSS_COMPILE=$(CROSS_COMPILE_i386) -f Makefile.arch clean
-	$(MAKE) KDIR=$(KDIR_sparc64) ARCH=sparc64 CROSS_COMPILE=$(CROSS_COMPILE_sparc64) -f Makefile.arch clean
+	test -z "$(MY_MODULES)" || rm -rf $(MY_MODULES) || true
+	rm -rf .tmp_versions || true
+	rm -rf .*.cmd *.mod.c || true
+	rm -rf *.o || true
+	rm -rf Module.symvers modules.order
 
 endif
