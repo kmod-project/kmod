@@ -2484,7 +2484,7 @@ static int do_depmod(int argc, char *argv[])
 	}
 
 	if (root)
-		root = path_make_absolute_cwd(optarg);
+		root = path_make_absolute_cwd(root);
 
 	cfg.dirnamelen = snprintf(cfg.dirname, PATH_MAX,
 				  "%s/lib/modules/%s",
