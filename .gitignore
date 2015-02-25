@@ -17,6 +17,7 @@
 /config.status
 /configure
 /coverage
+/cov-int
 /libtool
 /stamp-h1
 /test-suite.log

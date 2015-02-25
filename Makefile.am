@@ -411,6 +411,31 @@ lcov-run lcov-report:
 endif
 
 # ------------------------------------------------------------------------------
+# coverity
+# ------------------------------------------------------------------------------
+
+kmod-coverity-%.tar.xz:
+	rm -rf $< cov-int
+	./bootstrap-configure --disable-python --disable-manpages
+	make clean
+	cov-build --dir cov-int make -j 4
+	tar caf $@ cov-int
+
+coverity-tar: kmod-coverity-$(shell git describe).tar.xz
+
+coverity-sync: kmod-coverity-$(shell git describe).tar.xz
+	@echo "uploading coverity tarball"
+	@curl --form token=$(COVERITY_KMOD_TOKEN) \
+		--form email=lucas.de.marchi@gmail.com \
+		--form file=@$< \
+		--form version="$(shell git describe)" \
+		--form description="" \
+		https://scan.coverity.com/builds?project=kmod
+
+coverity-clean:
+	rm -rf kmod-coverity-*.tar.xz cov-int
+
+# ------------------------------------------------------------------------------
 # custom release helpers
 # ------------------------------------------------------------------------------
 
