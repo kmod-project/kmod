@@ -2404,7 +2404,7 @@ static int do_depmod(int argc, char *argv[])
 			maybe_all = 1;
 			break;
 		case 'b':
-			root = path_make_absolute_cwd(optarg);
+			root = optarg;
 			break;
 		case 'C': {
 			size_t bytes = sizeof(char *) * (n_config_paths + 2);
@@ -2482,6 +2482,9 @@ static int do_depmod(int argc, char *argv[])
 		}
 		cfg.kversion = un.release;
 	}
+
+	if (root)
+		root = path_make_absolute_cwd(optarg);
 
 	cfg.dirnamelen = snprintf(cfg.dirname, PATH_MAX,
 				  "%s/lib/modules/%s",
@@ -2594,6 +2597,7 @@ done:
 	depmod_shutdown(&depmod);
 	cfg_free(&cfg);
 	free(config_paths);
+	free(root);
 	return err >= 0 ? EXIT_SUCCESS : EXIT_FAILURE;
 
 cmdline_modules_failed:
