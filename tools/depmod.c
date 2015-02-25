@@ -2378,8 +2378,8 @@ static int do_depmod(int argc, char *argv[])
 {
 	FILE *out = NULL;
 	int err = 0, all = 0, maybe_all = 0, n_config_paths = 0;
-	char *root = NULL;
-	const char **config_paths = NULL;
+	_cleanup_free_ char *root = NULL;
+	_cleanup_free_ const char **config_paths = NULL;
 	const char *system_map = NULL;
 	const char *module_symvers = NULL;
 	const char *null_kmod_config = NULL;
@@ -2404,7 +2404,9 @@ static int do_depmod(int argc, char *argv[])
 			maybe_all = 1;
 			break;
 		case 'b':
-			root = optarg;
+			if (root)
+				free(root);
+			root = path_make_absolute_cwd(optarg);
 			break;
 		case 'C': {
 			size_t bytes = sizeof(char *) * (n_config_paths + 2);
@@ -2458,11 +2460,9 @@ static int do_depmod(int argc, char *argv[])
 			break;
 		case 'h':
 			help();
-			free(config_paths);
 			return EXIT_SUCCESS;
 		case 'V':
 			puts(PACKAGE " version " VERSION);
-			free(config_paths);
 			return EXIT_SUCCESS;
 		case '?':
 			goto cmdline_failed;
@@ -2482,9 +2482,6 @@ static int do_depmod(int argc, char *argv[])
 		}
 		cfg.kversion = un.release;
 	}
-
-	if (root)
-		root = path_make_absolute_cwd(root);
 
 	cfg.dirnamelen = snprintf(cfg.dirname, PATH_MAX,
 				  "%s/lib/modules/%s",
@@ -2596,8 +2593,6 @@ static int do_depmod(int argc, char *argv[])
 done:
 	depmod_shutdown(&depmod);
 	cfg_free(&cfg);
-	free(config_paths);
-	free(root);
 	return err >= 0 ? EXIT_SUCCESS : EXIT_FAILURE;
 
 cmdline_modules_failed:
@@ -2607,8 +2602,6 @@ depmod_init_failed:
 		kmod_unref(ctx);
 cmdline_failed:
 	cfg_free(&cfg);
-	free(config_paths);
-	free(root);
 	return EXIT_FAILURE;
 }
 
