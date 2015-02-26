@@ -63,7 +63,7 @@
 /* Define C11 noreturn without <stdnoreturn.h> and even on older gcc
  * compiler versions */
 #ifndef noreturn
-#if __STDC_VERSION__ >= 201112L
+#if defined(HAVE_NORETURN)
 #define noreturn _Noreturn
 #else
 #define noreturn __attribute__((noreturn))
