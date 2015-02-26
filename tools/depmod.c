@@ -367,9 +367,10 @@ static uint32_t index_write__node(const struct index_node *node, FILE *out)
 		fputc(node->first, out);
 		fputc(node->last, out);
 		fwrite(child_offs, sizeof(uint32_t), child_count, out);
-		free(child_offs);
 		offset |= INDEX_NODE_CHILDS;
 	}
+
+	free(child_offs);
 
 	if (node->values) {
 		const struct index_value *v;
