@@ -1,4 +1,4 @@
-AC_PREREQ(2.60)
+AC_PREREQ(2.64)
 AC_INIT([kmod],
 	[19],
 	[linux-modules@vger.kernel.org],
@@ -6,38 +6,32 @@ AC_INIT([kmod],
 	[http://git.kernel.org/?p=utils/kernel/kmod/kmod.git])
 
 AC_CONFIG_SRCDIR([libkmod/libkmod.c])
+AC_CONFIG_MACRO_DIR([m4])
+AC_CONFIG_HEADERS(config.h)
 AC_CONFIG_AUX_DIR([build-aux])
-AM_INIT_AUTOMAKE([check-news foreign 1.11 silent-rules
-	tar-pax no-dist-gzip dist-xz subdir-objects color-tests parallel-tests])
-AC_PROG_CC_STDC
+
 AC_USE_SYSTEM_EXTENSIONS
 AC_SYS_LARGEFILE
-AC_CONFIG_MACRO_DIR([m4])
-m4_ifndef([AM_SILENT_RULES], [m4_define([AM_SILENT_RULES],[])])
-AM_SILENT_RULES([yes])
-LT_INIT([disable-static pic-only])
 AC_PREFIX_DEFAULT([/usr])
 AM_MAINTAINER_MODE([enable])
+AM_INIT_AUTOMAKE([check-news foreign 1.11 silent-rules tar-pax no-dist-gzip dist-xz subdir-objects color-tests parallel-tests])
+AM_SILENT_RULES([yes])
+LT_INIT([disable-static pic-only])
 
-AS_IF([test "x$enable_static" = "xyes"],
-      [AC_MSG_ERROR([--enable-static is not supported by kmod])])
-
+AS_IF([test "x$enable_static" = "xyes"], [AC_MSG_ERROR([--enable-static is not supported by systemd])])
+AS_IF([test "x$enable_largefile" = "xno"], [AC_MSG_ERROR([--disable-largefile is not supported by systemd])])
 
 #####################################################################
 # Program checks and configurations
 #####################################################################
 
-AC_PROG_CC
-AC_PROG_CC_C99
-AM_PROG_CC_C_O
-AC_PROG_GCC_TRADITIONAL
-AC_C_BIGENDIAN
-
 AC_PROG_SED
 AC_PROG_MKDIR_P
+AC_PROG_LN_S
 PKG_PROG_PKG_CONFIG
 AC_PATH_PROG([XSLTPROC], [xsltproc])
 
+AC_PROG_CC_C99
 
 #####################################################################
 # Function and structure checks
@@ -244,7 +238,6 @@ AC_SUBST([OUR_LDFLAGS], $with_ldflags)
 # Generate files from *.in
 #####################################################################
 
-AC_CONFIG_HEADERS(config.h)
 AC_CONFIG_FILES([
 	Makefile
 	man/Makefile
