@@ -114,6 +114,28 @@ DEFINE_TEST(modprobe_builtin,
 		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-modprobe/builtin",
 	});
 
+static noreturn int modprobe_builtin_lookup_only(const struct test *t)
+{
+	const char *progname = ABS_TOP_BUILDDIR "/tools/modprobe";
+	const char *const args[] = {
+		progname,
+		"-R", "unix",
+		NULL,
+	};
+
+	test_spawn_prog(progname, args);
+	exit(EXIT_FAILURE);
+}
+DEFINE_TEST(modprobe_builtin_lookup_only,
+	.description = "check if modprobe -R correctly returns the builtin module",
+	.config = {
+		[TC_UNAME_R] = "4.4.4",
+		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-modprobe/builtin",
+	},
+	.output = {
+		.out = TESTSUITE_ROOTFS "test-modprobe/builtin/correct.txt",
+	});
+
 static noreturn int modprobe_softdep_loop(const struct test *t)
 {
 	const char *progname = ABS_TOP_BUILDDIR "/tools/modprobe";
