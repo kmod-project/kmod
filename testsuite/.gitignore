@@ -9,6 +9,7 @@
 /test-dependencies
 /test-depmod
 /test-init
+/test-initstate
 /test-loaded
 /test-modinfo
 /test-new-module
@@ -32,6 +33,8 @@
 /test-depmod.trs
 /test-init.log
 /test-init.trs
+/test-initstate.log
+/test-initstate.trs
 /test-loaded.log
 /test-loaded.trs
 /test-modinfo.log
