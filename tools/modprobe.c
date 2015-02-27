@@ -455,34 +455,6 @@ static int rmmod_all(struct kmod_ctx *ctx, char **args, int nargs)
 	return err;
 }
 
-static int handle_failed_lookup(struct kmod_ctx *ctx, const char *alias)
-{
-	struct kmod_module *mod;
-	int state, err;
-
-	DBG("lookup failed - trying to check if it's builtin\n");
-
-	err = kmod_module_new_from_name(ctx, alias, &mod);
-	if (err < 0)
-		return err;
-
-	state = kmod_module_get_initstate(mod);
-	kmod_module_unref(mod);
-
-	if (state != KMOD_MODULE_BUILTIN) {
-		LOG("Module %s not found.\n", alias);
-		return -ENOENT;
-	}
-
-	if (first_time) {
-		LOG("Module %s already in kernel (builtin).\n", alias);
-		return -ENOENT;
-	}
-
-	SHOW("builtin %s\n", alias);
-	return 0;
-}
-
 static void print_action(struct kmod_module *m, bool install,
 							const char *options)
 {
@@ -520,8 +492,10 @@ static int insmod(struct kmod_ctx *ctx, const char *alias,
 	if (err < 0)
 		return err;
 
-	if (list == NULL)
-		return handle_failed_lookup(ctx, alias);
+	if (list == NULL) {
+		LOG("Module %s not found.\n", alias);
+		return -ENOENT;
+	}
 
 	if (strip_modversion || force)
 		flags |= KMOD_PROBE_FORCE_MODVERSION;
