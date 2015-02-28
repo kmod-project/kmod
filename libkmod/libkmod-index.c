@@ -242,7 +242,8 @@ static struct index_node_f *index_read(FILE *in, uint32_t offset)
 	if ((offset & INDEX_NODE_MASK) == 0)
 		return NULL;
 
-	fseek(in, offset & INDEX_NODE_MASK, SEEK_SET);
+	if (fseek(in, offset & INDEX_NODE_MASK, SEEK_SET) < 0)
+		return NULL;
 
 	if (offset & INDEX_NODE_PREFIX) {
 		struct strbuf buf;
