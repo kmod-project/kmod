@@ -407,6 +407,7 @@ static void index_write(const struct index_node *node, FILE *out)
 
 	/* Second word is reserved for the offset of the root node */
 	initial_offset = ftell(out);
+	assert(initial_offset >= 0);
 	u = 0;
 	fwrite(&u, sizeof(uint32_t), 1, out);
 
@@ -415,9 +416,10 @@ static void index_write(const struct index_node *node, FILE *out)
 
 	/* Update first word */
 	final_offset = ftell(out);
-	fseek(out, initial_offset, SEEK_SET);
+	assert(final_offset >= 0);
+	(void)fseek(out, initial_offset, SEEK_SET);
 	fwrite(&u, sizeof(uint32_t), 1, out);
-	fseek(out, final_offset, SEEK_SET);
+	(void)fseek(out, final_offset, SEEK_SET);
 }
 
 /* END: code from module-init-tools/index.c just modified to compile here.
