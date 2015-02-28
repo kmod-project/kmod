@@ -218,7 +218,7 @@ static inline const void *elf_get_section_header(const struct kmod_elf *elf, uin
 		return NULL;
 	}
 	return elf_get_mem(elf, elf->header.section.offset +
-			   idx * elf->header.section.entry_size);
+			   (uint64_t)(idx * elf->header.section.entry_size));
 }
 
 static inline int elf_get_section_info(const struct kmod_elf *elf, uint16_t idx, uint64_t *offset, uint64_t *size, uint32_t *nameoff)
