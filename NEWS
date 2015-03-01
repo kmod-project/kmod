@@ -1,3 +1,43 @@
+kmod 20
+=======
+- Bug fixes:
+	- Handle bogus values from ELF, making sure they don't overflow while
+	  parsing the file
+	- Fix leak in depmod when -b flag is passed multiple times
+	- Multiple minor fixes from static analysis by coverity and
+	  clang-analyze
+	- Fix race between loading modules and checking if it's loaded in the
+	  kernel
+
+- New features:
+	- There's a change in behavior regarding builtin modules: we now only
+	  consider as builtin those that are present in modules.builtin index.
+	  Previously we were also checking the presence of
+	  /sys/module/<module-name>, but this is racy and only modules that
+	  contain parameters are the ones creating a directory in sysfs.
+
+	  Now some commands will start to fail, e.g. "modprobe vt". Since vt
+	  can't be compiled as a module it's not present in modules.builtin
+	  index. Previously we would report at as builtin, but now we fail
+	  because we couldn't find the module.
+
+- Improvements:
+	- Integration of gcov into the build. Currently libkmod is at ~70%
+	  covered and tools at ~50% by tests in the testsuite. Utility
+	  functions and structures in shared have more than 90% of coverage.
+	- Upload build to coverity
+
+- Improvements to testsuite:
+	- Fix parsing return codes of init_module() calls
+	- Add tests for utility functions in shared/
+	- Add tests for kmod_module_remove_module()
+	- Add playground, in which our own modules are compiled
+	- Port all tests to use modules from module-playground instead of
+	  copying prebuilt modules to the repository
+	- Properly handle binaries that exit with no output
+	- Besides comparing the output of commands, allow to copy to
+	  stdout/stderr
+
 kmod 19
 =======
 
