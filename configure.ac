@@ -17,6 +17,7 @@ AM_MAINTAINER_MODE([enable])
 AM_INIT_AUTOMAKE([check-news foreign 1.11 silent-rules tar-pax no-dist-gzip dist-xz subdir-objects color-tests parallel-tests])
 AM_SILENT_RULES([yes])
 LT_INIT([disable-static pic-only])
+DOLT
 
 AS_IF([test "x$enable_static" = "xyes"], [AC_MSG_ERROR([--enable-static is not supported by kmod])])
 AS_IF([test "x$enable_largefile" = "xno"], [AC_MSG_ERROR([--disable-largefile is not supported by kmod])])

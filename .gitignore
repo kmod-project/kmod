@@ -18,6 +18,8 @@
 /configure
 /coverage
 /cov-int
+/doltcompile
+/doltlibtool
 /libtool
 /stamp-h1
 /test-suite.log
