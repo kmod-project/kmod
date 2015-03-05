@@ -33,7 +33,7 @@ pay attention when writing a test:
 
 3 - If you want testsuite to compare the stdout/stderr of your tests in order
     to check if it worked or not, fill in output.{stderr,stdout} the file with
-    the expected output. Bare in mind the same file is used for all
+    the expected output. Bear in mind the same file is used for all
     architectures, so don't print arch-dependent content if you are comparing
     the output.
 
@@ -49,8 +49,10 @@ pay attention when writing a test:
 6 - expected_fail: if that test is expected to fail, i.e. the return code is
     expected not to be 0.
 
-7 - If you added files to the rootfs, be sure to compact it back to
-    rootfs.tar.xz before sending patches: use 'make testsuite-pack-rootfs'
+7 - The rootfs is populated by copying the entire contents of rootfs-pristine
+    then running populate-modules.sh to copy generated modules from
+    module-playground. Update the latter script to include any modules your
+    test need.
 
 8 - Tests can be run individually, outside of 'make check'. strace and gdb work
     too, as long as you tell them to operate on child process.
