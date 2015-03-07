@@ -42,6 +42,8 @@ map=(
     ["test-modinfo/mod-simple-sparc64.ko"]="mod-simple-sparc64.ko"
     ["test-modinfo/mod-simple-sha1.ko"]="mod-simple.ko"
     ["test-modinfo/mod-simple-sha256.ko"]="mod-simple.ko"
+    ["test-tools/insert/lib/modules/4.4.4/kernel/"]="mod-simple.ko"
+    ["test-tools/remove/lib/modules/4.4.4/kernel/"]="mod-simple.ko"
 )
 
 gzip_array=(
