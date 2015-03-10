@@ -7,6 +7,7 @@ endif
 DISTCLEAN_LOCAL_HOOKS =
 EXTRA_DIST =
 CLEANFILES = $(BUILT_FILES)
+DISTCLEANFILES =
 BUILT_FILES =
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 AM_MAKEFLAGS = --no-print-directory
@@ -380,6 +381,8 @@ distclean-local: $(DISTCLEAN_LOCAL_HOOKS)
 
 buildtest-TESTS:
 	$(MAKE) $(AM_MAKEFLAGS) $(check_LTLIBRARIES) $(check_PROGRAMS)
+
+DISTCLEANFILES += $(DOLT_CLEANFILES)
 
 # ------------------------------------------------------------------------------
 # coverage
