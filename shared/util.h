@@ -86,5 +86,5 @@ static inline bool addu64_overflow(uint64_t a, uint64_t b, uint64_t *res)
 #endif
 #endif
 	*res = a + b;
-	return ULLONG_MAX - a < b;
+	return UINT64_MAX - a < b;
 }
