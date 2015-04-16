@@ -64,15 +64,17 @@ static int do_lsmod(int argc, char *argv[])
 		struct kmod_list *holders, *hitr;
 		int first = 1;
 
-		printf("%-19s %8ld  %d ", name, size, use_count);
+		printf("%-19s %8ld  %d", name, size, use_count);
 		holders = kmod_module_get_holders(mod);
 		kmod_list_foreach(hitr, holders) {
 			struct kmod_module *hm = kmod_module_get_module(hitr);
 
-			if (!first)
+			if (!first) {
 				putchar(',');
-			else
+			} else {
+				putchar(' ');
 				first = 0;
+			}
 
 			fputs(kmod_module_get_name(hm), stdout);
 			kmod_module_unref(hm);
