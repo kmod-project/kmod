@@ -38,6 +38,9 @@ else
 # normal makefile
 KDIR ?= /lib/modules/`uname -r`/build
 KVER ?= `uname -r`
+ifeq ($(FAKE_BUILD),)
+    FAKE_BUILD=0
+endif
 
 ARCH_SPECIFIC_MODULES := mod-simple-x86_64.ko mod-simple-i386.ko mod-simple-sparc64.ko
 MY_MODULES := $(filter-out $(ARCH_SPECIFIC_MODULES),$(wildcard *.ko))
@@ -48,8 +51,14 @@ mod-simple-%.ko: mod-simple-%.c Makefile.arch
 	$(eval arch=$(patsubst mod-simple-%.ko,%,$@))
 	$(MAKE) KDIR=$(KDIR_$(arch)) ARCH=$(arch) CROSS_COMPILE=$(CROSS_COMPILE_$(arch)) -f Makefile.arch
 
+ifeq ($(FAKE_BUILD),0)
 modules:
 	$(MAKE) -C $(KDIR) M=$$PWD
+else
+modules:
+	@echo "  CP       cache/*.ko"
+	@cp cache/*.ko .
+endif
 
 arch-modules: $(ARCH_SPECIFIC_MODULES)
 

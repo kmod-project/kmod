@@ -127,6 +127,11 @@ AC_ARG_ENABLE([manpages],
 	[], enable_manpages=yes)
 AM_CONDITIONAL([BUILD_MANPAGES], [test "x$enable_manpages" = "xyes"])
 
+AC_ARG_ENABLE([test-modules],
+        AS_HELP_STRING([--disable-test-modules], [disable building test modules during make check: cached modules will be used @<:@default=enabled@:>@]),
+	[], enable_test_modules=yes)
+AM_CONDITIONAL([BUILD_MODULES], [test "x$enable_test_modules" = "xyes"])
+
 AC_ARG_ENABLE([logging],
 	AS_HELP_STRING([--disable-logging], [disable system logging @<:@default=enabled@:>@]),
 	[], enable_logging=yes)
@@ -282,4 +287,5 @@ AC_MSG_RESULT([
 	coverage:		${enable_coverage}
 	doc:			${enable_gtk_doc}
 	man:			${enable_manpages}
+	test-modules:           ${enable_test_modules}
 ])

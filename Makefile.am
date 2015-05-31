@@ -230,7 +230,12 @@ build-module-playground:
 		cp -r $(top_srcdir)/$(MODULE_PLAYGROUND) $(top_builddir)/$(MODULE_PLAYGROUND) && \
 		find $(top_builddir)/$(MODULE_PLAYGROUND) -type d -exec chmod +w {} \; ; \
 		fi
+if BUILD_MODULES
 	$(MAKE) -C $(MODULE_PLAYGROUND)
+else
+	$(MAKE) -C $(MODULE_PLAYGROUND) FAKE_BUILD=1
+endif
+
 
 rootfs: build-module-playground
 	$(CREATE_ROOTFS)
