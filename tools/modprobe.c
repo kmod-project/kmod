@@ -824,6 +824,7 @@ static int do_modprobe(int argc, char **orig_argv)
 			break;
 		case 'V':
 			puts(PACKAGE " version " VERSION);
+			puts(KMOD_FEATURES);
 			err = 0;
 			goto done;
 		case 'h':

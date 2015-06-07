@@ -88,6 +88,7 @@ static int do_insmod(int argc, char *argv[])
 			return EXIT_SUCCESS;
 		case 'V':
 			puts(PACKAGE " version " VERSION);
+			puts(KMOD_FEATURES);
 			return EXIT_SUCCESS;
 		case '?':
 			return EXIT_FAILURE;
