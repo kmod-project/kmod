@@ -117,6 +117,14 @@ AC_SUBST([bashcompletiondir], [$with_bashcompletiondir])
 # --enable-
 #####################################################################
 
+AC_ARG_ENABLE([experimental],
+        AS_HELP_STRING([--enable-experimental], [enable experimental tools and features. Do not enable it unless you know what you are doing. @<:@default=disabled@:>@]),
+        [], enable_experimental=no)
+AM_CONDITIONAL([BUILD_EXPERIMENTAL], [test "x$enable_experimental" = "xyes"])
+AS_IF([test "x$enable_experimental" = "xyes"], [
+	AC_DEFINE(ENABLE_EXPERIMENTAL, [1], [Experimental features.])
+])
+
 AC_ARG_ENABLE([tools],
         AS_HELP_STRING([--disable-tools], [disable building tools that provide same functionality as module-init-tools @<:@default=enabled@:>@]),
 	[], enable_tools=yes)
@@ -279,6 +287,7 @@ AC_MSG_RESULT([
 	cflags:			${with_cflags} ${CFLAGS}
 	ldflags:		${with_ldflags} ${LDFLAGS}
 
+	experimental features:  ${enable_experimental}
 	tools:			${enable_tools}
 	python bindings:	${enable_python}
 	logging:		${enable_logging}

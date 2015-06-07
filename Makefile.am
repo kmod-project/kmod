@@ -127,9 +127,14 @@ tools_kmod_SOURCES = \
 	tools/rmmod.c tools/insmod.c \
 	tools/modinfo.c tools/modprobe.c \
 	tools/depmod.c tools/log.h tools/log.c \
-	tools/insert.c \
-	tools/remove.c \
 	tools/static-nodes.c
+
+if BUILD_EXPERIMENTAL
+tools_kmod_SOURCES += \
+	tools/insert.c \
+	tools/remove.c
+endif
+
 tools_kmod_LDADD = \
 	shared/libshared.la \
 	libkmod/libkmod-internal.la
@@ -323,8 +328,12 @@ TESTSUITE = \
 	testsuite/test-modinfo testsuite/test-util testsuite/test-new-module \
 	testsuite/test-modprobe testsuite/test-blacklist \
 	testsuite/test-dependencies testsuite/test-depmod \
-	testsuite/test-list \
+	testsuite/test-list
+
+if BUILD_EXPERIMENTAL
+TESTSUITE += \
 	testsuite/test-tools
+endif
 
 check_PROGRAMS = $(TESTSUITE)
 TESTS = $(TESTSUITE)
@@ -364,8 +373,11 @@ testsuite_test_depmod_LDADD = $(TESTSUITE_LDADD)
 testsuite_test_depmod_CPPFLAGS = $(TESTSUITE_CPPFLAGS)
 testsuite_test_list_LDADD = $(TESTSUITE_LDADD)
 testsuite_test_list_CPPFLAGS = $(TESTSUITE_CPPFLAGS)
+
+if BUILD_EXPERIMENTAL
 testsuite_test_tools_LDADD = $(TESTSUITE_LDADD)
 testsuite_test_tools_CPPFLAGS = $(TESTSUITE_CPPFLAGS)
+endif
 
 testsuite-distclean:
 	$(RM) -r $(ROOTFS)
