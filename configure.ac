@@ -92,6 +92,7 @@ AS_IF([test "x$with_xz" != "xno"], [
 ], [
 	AC_MSG_NOTICE([Xz support not requested])
 ])
+CC_FEATURE_APPEND([with_features], [with_xz], [XZ])
 
 AC_ARG_WITH([zlib],
 	AS_HELP_STRING([--with-zlib], [handle gzipped modules @<:@default=disabled@:>@]),
@@ -102,6 +103,7 @@ AS_IF([test "x$with_zlib" != "xno"], [
 ], [
 	AC_MSG_NOTICE([zlib support not requested])
 ])
+CC_FEATURE_APPEND([with_features], [with_zlib], [ZLIB])
 
 AC_ARG_WITH([bashcompletiondir],
 	AS_HELP_STRING([--with-bashcompletiondir=DIR], [Bash completions directory]),
@@ -124,6 +126,7 @@ AM_CONDITIONAL([BUILD_EXPERIMENTAL], [test "x$enable_experimental" = "xyes"])
 AS_IF([test "x$enable_experimental" = "xyes"], [
 	AC_DEFINE(ENABLE_EXPERIMENTAL, [1], [Experimental features.])
 ])
+CC_FEATURE_APPEND([with_features], [enable_experimental], [EXPERIMENTAL])
 
 AC_ARG_ENABLE([tools],
         AS_HELP_STRING([--disable-tools], [disable building tools that provide same functionality as module-init-tools @<:@default=enabled@:>@]),
@@ -256,6 +259,8 @@ CC_CHECK_FLAGS_APPEND([with_ldflags], [LDFLAGS], [ \
 		       -Wl,--gc-sections])
 AC_SUBST([OUR_LDFLAGS], $with_ldflags)
 
+AC_DEFINE_UNQUOTED(KMOD_FEATURES, ["$with_features"], [Features in this build])
+
 #####################################################################
 # Generate files from *.in
 #####################################################################
@@ -297,4 +302,6 @@ AC_MSG_RESULT([
 	doc:			${enable_gtk_doc}
 	man:			${enable_manpages}
 	test-modules:           ${enable_test_modules}
+
+	features:               ${with_features}
 ])
