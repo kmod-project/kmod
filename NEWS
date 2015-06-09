@@ -1,3 +1,24 @@
+kmod 21
+=======
+
+- New features:
+	- kmod tool started to learn the "insert" and "remove" commands that
+	  are the simplified versions of the older modprobe tool.  These
+	  commands are still work in progress so they are hidden behind a
+	  --enable-experimental flag during build.  It should not be enabled
+	  unless you know what you're doing.
+	- kmod tool now prints the relevant configuration options it was built
+	  with when the "--version" argument is passed. This helps to mitigate
+	  problems for example when the user is trying to load a compressed
+	  module but kmod was built without support for the compression method.
+
+- Improvements to testsuite:
+	- Cache built modules so it is easier to run "make check" on build
+	  servers by distro maintainers. If kmod is configured with
+	  --disable-test-modules the modules from cache will be used by
+	  "make check". No changes to the tests are needed and all of them
+	  can run fine.
+
 kmod 20
 =======
 - Bug fixes:
