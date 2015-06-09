@@ -267,6 +267,7 @@ check-am: rootfs check-sysconfdir
 
 
 EXTRA_DIST += \
+	testsuite/module-playground/cache \
 	testsuite/module-playground/dummy.sha1 \
 	testsuite/module-playground/dummy.sha256 \
 	testsuite/module-playground/Makefile \
