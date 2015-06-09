@@ -113,7 +113,7 @@ static int handle_kmod_commands(int argc, char *argv[])
 			kmod_help(argc, argv);
 			return EXIT_SUCCESS;
 		case 'V':
-			puts("kmod version " VERSION);
+			puts(PACKAGE " version " VERSION);
 			return EXIT_SUCCESS;
 		case '?':
 			return EXIT_FAILURE;
