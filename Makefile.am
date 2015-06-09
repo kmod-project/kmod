@@ -451,9 +451,9 @@ kmod-coverity-%.tar.xz:
 	cov-build --dir cov-int make -j 4
 	tar caf $@ cov-int
 
-coverity-tar: kmod-coverity-$(shell git describe).tar.xz
+coverity-tar: kmod-coverity-$(shell git describe  2>/dev/null).tar.xz
 
-coverity-sync: kmod-coverity-$(shell git describe).tar.xz
+coverity-sync: kmod-coverity-$(shell git describe 2>/dev/null).tar.xz
 	@echo "uploading coverity tarball"
 	@curl --form token=$(COVERITY_KMOD_TOKEN) \
 		--form email=lucas.de.marchi@gmail.com \
