@@ -3,6 +3,9 @@ kmod - Linux kernel module handling
 Information
 ===========
 
+Build status:
+	[![Build Status](https://semaphoreci.com/api/v1/projects/29d989ba-0f70-4006-be21-550f6692b73b/449920/shields_badge.svg)](https://semaphoreci.com/lucasdemarchi/kmod)
+
 Mailing list:
 	linux-modules@vger.kernel.org (no subscription needed)
 
