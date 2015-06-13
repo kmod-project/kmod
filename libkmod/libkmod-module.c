@@ -830,7 +830,7 @@ KMOD_EXPORT int kmod_module_insert_module(struct kmod_module *mod,
 	path = kmod_module_get_path(mod);
 	if (path == NULL) {
 		ERR(mod->ctx, "could not find module by name='%s'\n", mod->name);
-		return -ENOSYS;
+		return -ENOENT;
 	}
 
 	mod->file = kmod_file_open(mod->ctx, path);
