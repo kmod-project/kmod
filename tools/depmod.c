@@ -2498,11 +2498,8 @@ static int do_depmod(int argc, char *argv[])
 		if (out == stdout)
 			goto done;
 		/* ignore up-to-date errors (< 0) */
-		if (depfile_up_to_date(cfg.dirname) == 1) {
-			DBG("%s/modules.dep is up to date!\n", cfg.dirname);
+		if (depfile_up_to_date(cfg.dirname) == 1)
 			goto done;
-		}
-		DBG("%s/modules.dep is outdated, do -a\n", cfg.dirname);
 		all = 1;
 	}
 
