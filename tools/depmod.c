@@ -2476,7 +2476,11 @@ static int do_depmod(int argc, char *argv[])
 		}
 	}
 
-	if (optind < argc && is_version_number(argv[optind])) {
+	if (optind < argc) {
+		if (!is_version_number(argv[optind])) {
+			ERR("Bad version passed %s\n", argv[optind]);
+			goto cmdline_failed;
+		}
 		cfg.kversion = argv[optind];
 		optind++;
 	} else {
