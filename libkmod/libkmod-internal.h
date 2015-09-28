@@ -85,8 +85,6 @@ struct kmod_list *kmod_list_append_list(struct kmod_list *list1, struct kmod_lis
 		container_of(list_entry->node.prev, struct kmod_list, node)))
 
 /* libkmod.c */
-const char *kmod_get_dirname(const struct kmod_ctx *ctx) __attribute__((nonnull(1)));
-
 int kmod_lookup_alias_from_config(struct kmod_ctx *ctx, const char *name, struct kmod_list **list) __attribute__((nonnull(1, 2, 3)));
 int kmod_lookup_alias_from_symbols_file(struct kmod_ctx *ctx, const char *name, struct kmod_list **list) __attribute__((nonnull(1, 2, 3)));
 int kmod_lookup_alias_from_aliases_file(struct kmod_ctx *ctx, const char *name, struct kmod_list **list) __attribute__((nonnull(1, 2, 3)));

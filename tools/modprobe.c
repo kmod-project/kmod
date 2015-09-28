@@ -489,11 +489,10 @@ static int insmod(struct kmod_ctx *ctx, const char *alias,
 						const char *options) = NULL;
 
 	err = kmod_module_new_from_lookup(ctx, alias, &list);
-	if (err < 0)
-		return err;
 
-	if (list == NULL) {
-		LOG("Module %s not found.\n", alias);
+	if (list == NULL || err < 0) {
+		LOG("Module %s not found in directory %s\n", alias,
+			ctx ? kmod_get_dirname(ctx) : "(missing)");
 		return -ENOENT;
 	}
 

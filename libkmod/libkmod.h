@@ -51,6 +51,7 @@ void kmod_set_log_priority(struct kmod_ctx *ctx, int priority);
 void *kmod_get_userdata(const struct kmod_ctx *ctx);
 void kmod_set_userdata(struct kmod_ctx *ctx, const void *userdata);
 
+const char *kmod_get_dirname(const struct kmod_ctx *ctx);
 
 /*
  * Management of libkmod's resources
