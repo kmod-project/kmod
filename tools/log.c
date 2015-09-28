@@ -29,7 +29,7 @@
 #define PRIO_MAX_SIZE 32
 
 static bool log_use_syslog;
-static int log_priority = LOG_ERR;
+static int log_priority = LOG_WARNING;
 
 static const char *prio_to_str(char buf[static PRIO_MAX_SIZE], int prio)
 {
