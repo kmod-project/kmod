@@ -146,7 +146,15 @@ static void log_filep(void *data,
 	vfprintf(fp, format, args);
 }
 
-const char *kmod_get_dirname(const struct kmod_ctx *ctx)
+
+/**
+ * kmod_get_dirname:
+ * @ctx: kmod library context
+ *
+ * Retrieve the absolute path used for linux modules in this context. The path
+ * is computed from the arguments to kmod_new().
+ */
+KMOD_EXPORT const char *kmod_get_dirname(const struct kmod_ctx *ctx)
 {
 	return ctx->dirname;
 }

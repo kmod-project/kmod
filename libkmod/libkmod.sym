@@ -86,3 +86,8 @@ LIBKMOD_6 {
 global:
 	kmod_module_apply_filter;
 } LIBKMOD_5;
+
+LIBKMOD_22 {
+global:
+	kmod_get_dirname;
+} LIBKMOD_6;
