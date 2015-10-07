@@ -71,6 +71,7 @@ static int do_insmod(int argc, char *argv[])
 	size_t optslen = 0;
 	int i, err;
 	const char *null_config = NULL;
+	unsigned int flags = 0;
 
 	for (;;) {
 		int c, idx = 0;
@@ -81,7 +82,8 @@ static int do_insmod(int argc, char *argv[])
 		case 'p':
 		case 's':
 		case 'f':
-			/* ignored, for compatibility only */
+			flags |= KMOD_PROBE_FORCE_MODVERSION;
+			flags |= KMOD_PROBE_FORCE_VERMAGIC;
 			break;
 		case 'h':
 			help();
@@ -142,7 +144,7 @@ static int do_insmod(int argc, char *argv[])
 		goto end;
 	}
 
-	err = kmod_module_insert_module(mod, 0, opts);
+	err = kmod_module_insert_module(mod, flags, opts);
 	if (err < 0) {
 		ERR("could not insert module %s: %s\n", filename,
 		    mod_strerror(-err));
