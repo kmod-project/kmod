@@ -1,3 +1,24 @@
+kmod 22
+=======
+
+- Tools:
+	- Change defaul log level for tools to WARNING rather than ERROR and update
+	  some log levels for current messages
+
+	- depmod doesn't fallback to uname if a bad version is passed in the command
+	  line anymore. We just exit with an error.
+
+	- insmod was taught the -f flag, just like in modprobe. It was previously
+	  silently ignoring it.
+
+- libkmod
+	- New kmod_get_dirname() API to get the module directory set in the
+	  context
+
+- Bug fixes:
+	- Fix return code in error path of kmod_module_insert_module(). We were
+	  previously returning ENOSYS rather than ENOENT.
+
 kmod 21
 =======
 

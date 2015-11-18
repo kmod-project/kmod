@@ -40,9 +40,9 @@ SED_PROCESS = \
 %.pc: %.pc.in Makefile
 	$(SED_PROCESS)
 
-LIBKMOD_CURRENT=4
-LIBKMOD_REVISION=11
-LIBKMOD_AGE=2
+LIBKMOD_CURRENT=5
+LIBKMOD_REVISION=0
+LIBKMOD_AGE=3
 
 noinst_LTLIBRARIES = shared/libshared.la
 shared_libshared_la_SOURCES = \
