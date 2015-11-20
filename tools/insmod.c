@@ -81,6 +81,8 @@ static int do_insmod(int argc, char *argv[])
 		switch (c) {
 		case 'p':
 		case 's':
+			/* ignored, for compatibility only */
+			break;
 		case 'f':
 			flags |= KMOD_PROBE_FORCE_MODVERSION;
 			flags |= KMOD_PROBE_FORCE_VERMAGIC;
