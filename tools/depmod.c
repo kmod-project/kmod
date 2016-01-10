@@ -1999,8 +1999,7 @@ static int output_builtin_bin(struct depmod *depmod, FILE *out)
 static int output_devname(struct depmod *depmod, FILE *out)
 {
 	size_t i;
-
-	fputs("# Device nodes to trigger on-demand module loading.\n", out);
+	bool empty = true;
 
 	for (i = 0; i < depmod->modules.count; i++) {
 		const struct mod *mod = depmod->modules.array[i];
@@ -2036,10 +2035,15 @@ static int output_devname(struct depmod *depmod, FILE *out)
 		}
 
 		if (devname != NULL) {
-			if (type != '\0')
+			if (type != '\0') {
+				if (empty) {
+					fputs("# Device nodes to trigger on-demand module loading.\n",
+					      out);
+					empty = false;
+				}
 				fprintf(out, "%s %s %c%u:%u\n", mod->modname,
 					devname, type, major, minor);
-			else
+                        } else
 				ERR("Module '%s' has devname (%s) but "
 				    "lacks major and minor information. "
 				    "Ignoring.\n", mod->modname, devname);
