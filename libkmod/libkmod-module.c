@@ -1863,7 +1863,7 @@ done:
  * Get the ref count of this @mod, as returned by Linux Kernel, by reading
  * /sys filesystem.
  *
- * Returns: 0 on success or < 0 on failure.
+ * Returns: the reference count on success or < 0 on failure.
  */
 KMOD_EXPORT int kmod_module_get_refcnt(const struct kmod_module *mod)
 {
