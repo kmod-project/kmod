@@ -9,6 +9,9 @@ Build status:
 Mailing list:
 	linux-modules@vger.kernel.org (no subscription needed)
 
+Patchwork:
+	https://patchwork.kernel.org/project/linux-modules/
+
 Signed packages:
 	http://www.kernel.org/pub/linux/utils/kernel/kmod/
 
