@@ -2261,22 +2261,30 @@ KMOD_EXPORT int kmod_module_get_info(const struct kmod_module *mod, struct kmod_
 			goto list_error;
 		count++;
 
-		/* Display the key id as 01:12:DE:AD:BE:EF:... */
-		key_hex = malloc(sig_info.key_id_len * 3);
-		if (key_hex == NULL)
-			goto list_error;
-		for (i = 0; i < (int)sig_info.key_id_len; i++) {
-			sprintf(key_hex + i * 3, "%02X",
-					(unsigned char)sig_info.key_id[i]);
-			if (i < (int)sig_info.key_id_len - 1)
-				key_hex[i * 3 + 2] = ':';
+		if (sig_info.key_id_len) {
+			/* Display the key id as 01:12:DE:AD:BE:EF:... */
+			key_hex = malloc(sig_info.key_id_len * 3);
+			if (key_hex == NULL)
+				goto list_error;
+			for (i = 0; i < (int)sig_info.key_id_len; i++) {
+				sprintf(key_hex + i * 3, "%02X",
+						(unsigned char)sig_info.key_id[i]);
+				if (i < (int)sig_info.key_id_len - 1)
+					key_hex[i * 3 + 2] = ':';
+			}
+			n = kmod_module_info_append(list, "sig_key", strlen("sig_key"),
+					key_hex, sig_info.key_id_len * 3 - 1);
+			free(key_hex);
+			if (n == NULL)
+				goto list_error;
+			count++;
+		} else {
+			n = kmod_module_info_append(list, "sig_key", strlen("sig_key"),
+					NULL, 0);
+			if (n == NULL)
+				goto list_error;
+			count++;
 		}
-		n = kmod_module_info_append(list, "sig_key", strlen("sig_key"),
-				key_hex, sig_info.key_id_len * 3 - 1);
-		free(key_hex);
-		if (n == NULL)
-			goto list_error;
-		count++;
 
 		n = kmod_module_info_append(list,
 				"sig_hashalgo", strlen("sig_hashalgo"),
