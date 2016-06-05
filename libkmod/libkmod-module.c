@@ -2255,6 +2255,12 @@ KMOD_EXPORT int kmod_module_get_info(const struct kmod_module *mod, struct kmod_
 		struct kmod_list *n;
 		char *key_hex;
 
+		n = kmod_module_info_append(list, "signature", strlen("sig_id"),
+				sig_info.id_type, strlen(sig_info.id_type));
+		if (n == NULL)
+			goto list_error;
+		count++;
+
 		n = kmod_module_info_append(list, "signer", strlen("signer"),
 				sig_info.signer, sig_info.signer_len);
 		if (n == NULL)
@@ -2294,7 +2300,7 @@ KMOD_EXPORT int kmod_module_get_info(const struct kmod_module *mod, struct kmod_
 		count++;
 
 		/*
-		 * Omit sig_info.id_type and sig_info.algo for now, as these
+		 * Omit sig_info.algo for now, as these
 		 * are currently constant.
 		 */
 	}
