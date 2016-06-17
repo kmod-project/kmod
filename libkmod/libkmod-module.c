@@ -1660,13 +1660,14 @@ KMOD_EXPORT int kmod_module_new_from_loaded(struct kmod_ctx *ctx,
 		struct kmod_module *m;
 		struct kmod_list *node;
 		int err;
+		size_t len = strlen(line);
 		char *saveptr, *name = strtok_r(line, " \t", &saveptr);
 
 		err = kmod_module_new_from_name(ctx, name, &m);
 		if (err < 0) {
 			ERR(ctx, "could not get module from name '%s': %s\n",
 				name, strerror(-err));
-			continue;
+			goto eat_line;
 		}
 
 		node = kmod_list_append(l, m);
@@ -1676,6 +1677,9 @@ KMOD_EXPORT int kmod_module_new_from_loaded(struct kmod_ctx *ctx,
 			ERR(ctx, "out of memory\n");
 			kmod_module_unref(m);
 		}
+eat_line:
+		while (line[len - 1] != '\n' && fgets(line, sizeof(line), fp))
+			len = strlen(line);
 	}
 
 	fclose(fp);
@@ -1825,12 +1829,13 @@ KMOD_EXPORT long kmod_module_get_size(const struct kmod_module *mod)
 	}
 
 	while (fgets(line, sizeof(line), fp)) {
+		size_t len = strlen(line);
 		char *saveptr, *endptr, *tok = strtok_r(line, " \t", &saveptr);
 		long value;
 
 		lineno++;
 		if (tok == NULL || !streq(tok, mod->name))
-			continue;
+			goto eat_line;
 
 		tok = strtok_r(NULL, " \t", &saveptr);
 		if (tok == NULL) {
@@ -1848,6 +1853,9 @@ KMOD_EXPORT long kmod_module_get_size(const struct kmod_module *mod)
 
 		size = value;
 		break;
+eat_line:
+		while (line[len - 1] != '\n' && fgets(line, sizeof(line), fp))
+			len = strlen(line);
 	}
 	fclose(fp);
 
