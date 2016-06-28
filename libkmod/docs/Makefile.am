@@ -25,8 +25,10 @@ IGNORE_HFILES = libkmod-internal.h \
 
 content_files = version.xml
 
+EXTRA_DIST =
+
 if ENABLE_GTK_DOC
 include $(top_srcdir)/libkmod/docs/gtk-doc.make
 else
-EXTRA_DIST = libkmod-docs.xml libkmod-sections.txt
+EXTRA_DIST += libkmod-docs.xml libkmod-sections.txt
 endif
