@@ -1,3 +1,32 @@
+kmod 23
+=======
+
+- Improvements:
+	- Don't add comment to modules.devname if it would otherwise be empty
+	  to play nice with tools detecting empty files
+
+	- Allow building with BSD sed, that doesn't have -E flag
+
+	- Ignore .TOC. symbols in depmod parsing as it's for PPC64 the
+	  equivalent of _GLOBAL_OFFSET_TABLE_
+
+	- Teach modinfo about PKCS#7 module signatures: it doesn't add any
+	  other info besides telling the user the module is signed since
+	  kernel doesn't add other info on the module section
+
+- Bug fixes
+
+	- Fix -s and -p compat options to insmod triggering force flag
+
+	- Fix long lines from /proc/modules not being handled correctly by
+	  kmod_module_new_from_loaded() and kmod_module_get_size() and several
+	  other library functions that use them
+
+	- Fix crash on modinfo while checking for available signature of
+	  unknown type
+
+	- Fix documentation generation with gtk-doc
+
 kmod 22
 =======
 
