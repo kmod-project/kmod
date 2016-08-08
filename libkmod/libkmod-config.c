@@ -844,15 +844,20 @@ int kmod_config_new(struct kmod_ctx *ctx, struct kmod_config **p_config,
 	config->ctx = ctx;
 
 	for (; list != NULL; list = kmod_list_remove(list)) {
-		char fn[PATH_MAX];
+		char buf[PATH_MAX];
+		const char *fn = buf;
 		struct conf_file *cf = list->data;
 		int fd;
 
-		if (cf->is_single)
-			strcpy(fn, cf->path);
-		else
-			snprintf(fn, sizeof(fn),"%s/%s", cf->path,
-					cf->name);
+		if (cf->is_single) {
+			fn = cf->path;
+		} else if (snprintf(buf, sizeof(buf), "%s/%s",
+				    cf->path, cf->name) >= (int)sizeof(buf)) {
+			ERR(ctx, "Error parsing %s/%s: path too long\n",
+			    cf->path, cf->name);
+			free(cf);
+			continue;
+		}
 
 		fd = open(fn, O_RDONLY|O_CLOEXEC);
 		DBG(ctx, "parsing file '%s' fd=%d\n", fn, fd);
