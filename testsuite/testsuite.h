@@ -19,6 +19,7 @@
 
 #include <stdbool.h>
 #include <stdarg.h>
+#include <stdio.h>
 
 #include <shared/macro.h>
 
