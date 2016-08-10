@@ -52,6 +52,7 @@ shared_libshared_la_SOURCES = \
 	shared/array.h \
 	shared/hash.c \
 	shared/hash.h \
+	shared/scratchbuf.c \
 	shared/strbuf.c \
 	shared/strbuf.h \
 	shared/util.c \
@@ -322,6 +323,7 @@ testsuite_libtestsuite_la_LIBADD = -lrt
 TESTSUITE = \
 	testsuite/test-hash \
 	testsuite/test-array \
+	testsuite/test-scratchbuf \
 	testsuite/test-strbuf \
 	testsuite/test-init \
 	testsuite/test-initstate \
@@ -348,6 +350,9 @@ testsuite_test_hash_CPPFLAGS = $(TESTSUITE_CPPFLAGS)
 
 testsuite_test_array_LDADD = $(TESTSUITE_LDADD)
 testsuite_test_array_CPPFLAGS = $(TESTSUITE_CPPFLAGS)
+
+testsuite_test_scratchbuf_LDADD = $(TESTSUITE_LDADD)
+testsuite_test_scratchbuf_CPPFLAGS = $(TESTSUITE_CPPFLAGS)
 
 testsuite_test_strbuf_LDADD = $(TESTSUITE_LDADD)
 testsuite_test_strbuf_CPPFLAGS = $(TESTSUITE_CPPFLAGS)
