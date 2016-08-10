@@ -35,6 +35,7 @@
 #include <shared/hash.h>
 #include <shared/macro.h>
 #include <shared/util.h>
+#include <shared/scratchbuf.h>
 
 #include <libkmod/libkmod.h>
 
@@ -1920,9 +1921,12 @@ static int output_symbols_bin(struct depmod *depmod, FILE *out)
 {
 	struct index_node *idx;
 	char alias[1024];
+	_cleanup_(scratchbuf_release) struct scratchbuf salias =
+		SCRATCHBUF_INITIALIZER(alias);
 	size_t baselen = sizeof("symbol:") - 1;
 	struct hash_iter iter;
 	const void *v;
+	int ret = 0;
 
 	if (out == stdout)
 		return 0;
@@ -1932,16 +1936,24 @@ static int output_symbols_bin(struct depmod *depmod, FILE *out)
 		return -ENOMEM;
 
 	memcpy(alias, "symbol:", baselen);
+
 	hash_iter_init(depmod->symbols, &iter);
 
 	while (hash_iter_next(&iter, NULL, &v)) {
 		int duplicate;
 		const struct symbol *sym = v;
+		size_t len;
 
 		if (sym->owner == NULL)
 			continue;
 
-		strcpy(alias + baselen, sym->name);
+		len = strlen(sym->name);
+
+		if (scratchbuf_alloc(&salias, baselen + len + 1) < 0) {
+			ret = -ENOMEM;
+			goto err_scratchbuf;
+		}
+		memcpy(scratchbuf_str(&salias) + baselen, sym->name, len + 1);
 		duplicate = index_insert(idx, alias, sym->owner->modname,
 							sym->owner->idx);
 
@@ -1951,9 +1963,14 @@ static int output_symbols_bin(struct depmod *depmod, FILE *out)
 	}
 
 	index_write(idx, out);
+
+err_scratchbuf:
 	index_destroy(idx);
 
-	return 0;
+	if (ret < 0)
+		ERR("output symbols: %s\n", strerror(-ret));
+
+	return ret;
 }
 
 static int output_builtin_bin(struct depmod *depmod, FILE *out)
