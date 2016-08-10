@@ -97,7 +97,7 @@ static int testsuite_rootfs_open(const struct test *t)
 		int r = read(fd, buf + done, sizeof(buf) - 1 - done);
 		if (r == 0)
 			break;
-		if (r == -EWOULDBLOCK || r == -EAGAIN)
+		if (r == -EAGAIN)
 			continue;
 
 		done += r;

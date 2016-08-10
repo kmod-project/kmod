@@ -49,6 +49,8 @@ static const struct kmod_ext {
 	{ }
 };
 
+assert_cc(EAGAIN == EWOULDBLOCK);
+
 /* string handling functions and memory allocations                         */
 /* ************************************************************************ */
 
@@ -208,8 +210,7 @@ ssize_t read_str_safe(int fd, char *buf, size_t buflen)
 			todo -= r;
 			done += r;
 		} else {
-			if (errno == EAGAIN || errno == EWOULDBLOCK ||
-								errno == EINTR)
+			if (errno == EAGAIN || errno == EINTR)
 				continue;
 			else
 				return -errno;
@@ -234,8 +235,7 @@ ssize_t write_str_safe(int fd, const char *buf, size_t buflen)
 			todo -= r;
 			done += r;
 		} else {
-			if (errno == EAGAIN || errno == EWOULDBLOCK ||
-								errno == EINTR)
+			if (errno == EAGAIN || errno == EINTR)
 				continue;
 			else
 				return -errno;
