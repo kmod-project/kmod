@@ -90,6 +90,13 @@ static int test_array_append_unique(const struct test *t)
 DEFINE_TEST(test_array_append_unique,
 		.description = "test array append unique");
 
+static int strptrcmp(const void *pa, const void *pb) {
+	const char *a = *(const char **)pa;
+	const char *b = *(const char **)pb;
+
+	return strcmp(a, b);
+}
+
 static int test_array_sort(const struct test *t)
 {
 	struct array array;
@@ -104,7 +111,7 @@ static int test_array_sort(const struct test *t)
 	array_append(&array, c2);
 	array_append(&array, c3);
 	array_append(&array, c1);
-	array_sort(&array, (int (*)(const void *a, const void *b)) strcmp);
+	array_sort(&array, strptrcmp);
 	assert_return(array.count == 6, EXIT_FAILURE);
 	assert_return(array.array[0] == c1, EXIT_FAILURE);
 	assert_return(array.array[1] == c1, EXIT_FAILURE);
