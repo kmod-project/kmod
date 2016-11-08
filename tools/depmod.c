@@ -1456,7 +1456,7 @@ static void depmod_report_cycles(struct depmod *depmod, uint16_t n_mods,
 {
 	const char sep[] = " -> ";
 	int ir = 0;
-	ERR("Found %u modules in dependency cycles!\n", n_roots);
+	int num_cyclic = 0;
 
 	while (n_roots > 0) {
 		int is, ie;
@@ -1491,6 +1491,7 @@ static void depmod_report_cycles(struct depmod *depmod, uint16_t n_mods,
 			if (m->visited) {
 				int i, n = 0, sz = 0;
 				char *buf;
+				bool is_cyclic = false;
 
 				for (i = ie - 1; i >= 0; i--) {
 					struct mod *loop = depmod->modules.array[edges[i]];
@@ -1498,9 +1499,17 @@ static void depmod_report_cycles(struct depmod *depmod, uint16_t n_mods,
 					n++;
 					if (loop == m) {
 						sz += loop->modnamesz - 1;
+						is_cyclic = true;
 						break;
 					}
 				}
+				/* Current module not found in dependency list.
+				 * Must be a related module. Ignore it.
+				 */
+				if (!is_cyclic)
+					continue;
+
+				num_cyclic += n;
 
 				buf = malloc(sz + n * strlen(sep) + 1);
 				sz = 0;
@@ -1538,6 +1547,8 @@ static void depmod_report_cycles(struct depmod *depmod, uint16_t n_mods,
 			}
 		}
 	}
+
+	ERR("Found %d modules in dependency cycles!\n", num_cyclic);
 }
 
 static int depmod_calculate_dependencies(struct depmod *depmod)
