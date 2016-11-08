@@ -8,20 +8,17 @@
 
 static int __init test_module_init(void)
 {
-	printB();
-	printC();
-	printF();
 	printG();
 
 	return 0;
 }
 module_init(test_module_init);
 
-void printB(void)
+void printG(void)
 {
-	pr_warn("Hello, world B\n");
+	pr_warn("Hello, world G\n");
 }
-EXPORT_SYMBOL(printB);
+EXPORT_SYMBOL(printG);
 
 MODULE_AUTHOR("Lucas De Marchi <lucas.demarchi@intel.com>");
 MODULE_LICENSE("LGPL");

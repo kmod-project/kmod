@@ -5,3 +5,5 @@ void printB(void);
 void printC(void);
 void printD(void);
 void printE(void);
+void printF(void);
+void printG(void);
