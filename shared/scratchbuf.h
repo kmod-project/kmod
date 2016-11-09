@@ -19,7 +19,7 @@ int scratchbuf_alloc(struct scratchbuf *buf, size_t sz);
 void scratchbuf_release(struct scratchbuf *buf);
 
 /* Return a C string */
-inline char *scratchbuf_str(struct scratchbuf *buf)
+static inline char *scratchbuf_str(struct scratchbuf *buf)
 {
 	return buf->bytes;
 }
