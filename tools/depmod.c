@@ -455,10 +455,11 @@ struct cfg {
 	struct cfg_search *searches;
 };
 
-static int cfg_search_add(struct cfg *cfg, const char *path, uint8_t builtin)
+static int cfg_search_add(struct cfg *cfg, const char *path)
 {
 	struct cfg_search *s;
 	size_t len;
+	uint8_t builtin = streq(path, CFG_BUILTIN_KEY);
 
 	if (builtin)
 		len = 0;
@@ -571,8 +572,7 @@ static int cfg_file_parse(struct cfg *cfg, const char *filename)
 		if (streq(cmd, "search")) {
 			const char *sp;
 			while ((sp = strtok_r(NULL, "\t ", &saveptr)) != NULL) {
-				uint8_t builtin = streq(sp, CFG_BUILTIN_KEY);
-				cfg_search_add(cfg, sp, builtin);
+				cfg_search_add(cfg, sp);
 			}
 		} else if (streq(cmd, "override")) {
 			const char *modname = strtok_r(NULL, "\t ", &saveptr);
@@ -766,7 +766,7 @@ static int cfg_load(struct cfg *cfg, const char * const *cfg_paths)
 	 * list here. But only if there was no "search" option specified.
 	 */
 	if (cfg->searches == NULL)
-		cfg_search_add(cfg, "updates", 0);
+		cfg_search_add(cfg, "updates");
 
 	return 0;
 }
