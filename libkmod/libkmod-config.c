@@ -497,6 +497,7 @@ static int kmod_config_parse_kcmdline(struct kmod_config *config)
 	char buf[KCMD_LINE_SIZE];
 	int fd, err;
 	char *p, *modname,  *param = NULL, *value = NULL, is_module = 1;
+	bool is_quoted = false;
 
 	fd = open("/proc/cmdline", O_RDONLY|O_CLOEXEC);
 	if (fd < 0) {
@@ -514,6 +515,12 @@ static int kmod_config_parse_kcmdline(struct kmod_config *config)
 	}
 
 	for (p = buf, modname = buf; *p != '\0' && *p != '\n'; p++) {
+		if (*p == '"') {
+			is_quoted = !is_quoted;
+			continue;
+		}
+		if (is_quoted)
+			continue;
 		switch (*p) {
 		case ' ':
 			*p = '\0';
