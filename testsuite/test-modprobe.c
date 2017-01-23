@@ -197,7 +197,7 @@ static noreturn int modprobe_param_kcmdline(const struct test *t)
 	exit(EXIT_FAILURE);
 }
 DEFINE_TEST(modprobe_param_kcmdline,
-	.description = "check if params from kcmdline are passed in fact passed to (f)init_module call",
+	.description = "check if params from kcmdline are passed to (f)init_module call",
 	.config = {
 		[TC_UNAME_R] = "4.4.4",
 		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-modprobe/module-param-kcmdline",
