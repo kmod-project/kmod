@@ -280,6 +280,31 @@ DEFINE_TEST(modprobe_param_kcmdline4,
 	.modules_loaded = "",
 	);
 
+static noreturn int modprobe_param_kcmdline5(const struct test *t)
+{
+	const char *progname = ABS_TOP_BUILDDIR "/tools/modprobe";
+	const char *const args[] = {
+		progname,
+		"-c",
+		NULL,
+	};
+
+	test_spawn_prog(progname, args);
+	exit(EXIT_FAILURE);
+}
+DEFINE_TEST(modprobe_param_kcmdline5,
+	.description = "check if params with spaces are parsed correctly from kcmdline",
+	.config = {
+		[TC_UNAME_R] = "4.4.4",
+		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-modprobe/module-param-kcmdline5",
+	},
+	.output = {
+		.out = TESTSUITE_ROOTFS "test-modprobe/module-param-kcmdline5/correct.txt",
+	},
+	.modules_loaded = "",
+	);
+
+
 static noreturn int modprobe_force(const struct test *t)
 {
 	const char *progname = ABS_TOP_BUILDDIR "/tools/modprobe";
