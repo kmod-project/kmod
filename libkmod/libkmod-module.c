@@ -833,10 +833,12 @@ KMOD_EXPORT int kmod_module_insert_module(struct kmod_module *mod,
 		return -ENOENT;
 	}
 
-	mod->file = kmod_file_open(mod->ctx, path);
-	if (mod->file == NULL) {
-		err = -errno;
-		return err;
+	if (!mod->file) {
+		mod->file = kmod_file_open(mod->ctx, path);
+		if (mod->file == NULL) {
+			err = -errno;
+			return err;
+		}
 	}
 
 	if (kmod_file_get_direct(mod->file)) {
