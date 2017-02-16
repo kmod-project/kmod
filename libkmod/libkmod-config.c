@@ -496,8 +496,8 @@ static int kmod_config_parse_kcmdline(struct kmod_config *config)
 {
 	char buf[KCMD_LINE_SIZE];
 	int fd, err;
-	char *p, *modname,  *param = NULL, *value = NULL, is_module = 1;
-	bool is_quoted = false;
+	char *p, *modname,  *param = NULL, *value = NULL;
+	bool is_quoted = false, is_module = true;
 
 	fd = open("/proc/cmdline", O_RDONLY|O_CLOEXEC);
 	if (fd < 0) {
@@ -528,7 +528,7 @@ static int kmod_config_parse_kcmdline(struct kmod_config *config)
 				kcmdline_parse_result(config, modname, param, value);
 			param = value = NULL;
 			modname = p + 1;
-			is_module = 1;
+			is_module = true;
 			break;
 		case '.':
 			if (param == NULL) {
@@ -540,7 +540,7 @@ static int kmod_config_parse_kcmdline(struct kmod_config *config)
 			if (param != NULL)
 				value = p + 1;
 			else
-				is_module = 0;
+				is_module = false;
 			break;
 		}
 	}
