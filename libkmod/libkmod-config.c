@@ -517,10 +517,24 @@ static int kmod_config_parse_kcmdline(struct kmod_config *config)
 	for (p = buf, modname = buf; *p != '\0' && *p != '\n'; p++) {
 		if (*p == '"') {
 			is_quoted = !is_quoted;
+
+			if (is_quoted) {
+				/* don't consider a module until closing quotes */
+				is_module = false;
+			} else if (param != NULL && value != NULL) {
+				/*
+				 * If we are indeed expecting a value and
+				 * closing quotes, then this can be considered
+				 * a valid option for a module
+				 */
+				is_module = true;
+			}
+
 			continue;
 		}
 		if (is_quoted)
 			continue;
+
 		switch (*p) {
 		case ' ':
 			*p = '\0';

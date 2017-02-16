@@ -1,1 +1,1 @@
-psmouse.foo psmouse.bar=1 psmouse.foobar="test 1" " notamodule" "noteamodule2 " notamodule3 " quiet rw
+psmouse.foo psmouse.bar=1 psmouse.foobar="test 1" psmouse."invalid option" " notamodule" "noteamodule2 " notamodule3 quiet rw
