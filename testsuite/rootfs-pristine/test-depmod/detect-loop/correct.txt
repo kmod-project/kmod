@@ -1,3 +1,5 @@
 depmod: ERROR: Cycle detected: mod_loop_d -> mod_loop_e -> mod_loop_d
-depmod: ERROR: Cycle detected: mod_loop_b -> mod_loop_c -> mod_loop_a -> mod_loop_b
-depmod: ERROR: Found 5 modules in dependency cycles!
+depmod: ERROR: Cycle detected: mod_loop_i -> mod_loop_j -> mod_loop_k -> mod_loop_h -> mod_loop_i
+depmod: ERROR: Cycle detected: mod_loop_i -> mod_loop_j -> mod_loop_h -> mod_loop_i
+depmod: ERROR: Cycle detected: mod_loop_c -> mod_loop_a -> mod_loop_b -> mod_loop_c
+depmod: ERROR: Found 9 modules in dependency cycles!

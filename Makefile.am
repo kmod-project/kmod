@@ -287,6 +287,10 @@ EXTRA_DIST += \
 	testsuite/module-playground/mod-loop-e.c \
 	testsuite/module-playground/mod-loop-f.c \
 	testsuite/module-playground/mod-loop-g.c \
+	testsuite/module-playground/mod-loop-h.c \
+	testsuite/module-playground/mod-loop-i.c \
+	testsuite/module-playground/mod-loop-j.c \
+	testsuite/module-playground/mod-loop-k.c \
 	testsuite/module-playground/mod-loop.h \
 	testsuite/module-playground/mod-simple.c \
 	testsuite/module-playground/mod-simple-i386.ko \

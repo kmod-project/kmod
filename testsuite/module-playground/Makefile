@@ -16,6 +16,9 @@ obj-m += mod-foo.o
 #     |-> mod-loop-f    |-> mod-loop-f
 #     \-> mod-loop-g    \-> mod-loop-g
 # 2) mod-loop-d -> mod-loop-e -> mod-loop-d
+# 3.1) mod-loop-h -> mod-loop-i -> mod-loop-j -> mod-loop-h
+# 3.2) mod-loop-h -> mod-loop-i -> mod-loop-j -> mod-loop-k -> mod-loop-h
+
 obj-m += mod-loop-a.o
 obj-m += mod-loop-b.o
 obj-m += mod-loop-c.o
@@ -23,6 +26,10 @@ obj-m += mod-loop-d.o
 obj-m += mod-loop-e.o
 obj-m += mod-loop-f.o
 obj-m += mod-loop-g.o
+obj-m += mod-loop-h.o
+obj-m += mod-loop-i.o
+obj-m += mod-loop-j.o
+obj-m += mod-loop-k.o
 
 # mod-fake-*: fake the respective modules in kernel with these aliases. Aliases
 # list was taken from 3.5.4
