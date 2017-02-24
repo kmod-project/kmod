@@ -53,6 +53,7 @@ shared_libshared_la_SOURCES = \
 	shared/hash.c \
 	shared/hash.h \
 	shared/scratchbuf.c \
+	shared/scratchbuf.h \
 	shared/strbuf.c \
 	shared/strbuf.h \
 	shared/util.c \
