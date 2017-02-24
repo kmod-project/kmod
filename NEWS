@@ -1,3 +1,21 @@
+kmod 24
+=======
+
+- Improvements:
+	- Add more information on dependency loop
+
+	- Sanitize use of strcpy and allow to grow from small strings on stack
+	  (common case) to bigger strings on heap when needed
+
+- Bug fixes
+	- Fix wrong dependency loops being reported by depmod
+
+	- Fix crashes when reporting dependency loops
+
+	- Fix parsing kernel command line containing quotes
+
+	- Fix leaks on error paths
+
 kmod 23
 =======
 
