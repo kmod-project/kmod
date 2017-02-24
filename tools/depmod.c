@@ -1631,7 +1631,7 @@ static void depmod_report_cycles(struct depmod *depmod, uint16_t n_mods,
 	size_t n_r; /* local n_roots */
 	int i;
 	int err;
-	void **stack;
+	_cleanup_free_ void **stack = NULL;
 	struct mod *m;
 	struct mod *root;
 	struct hash *loop_set;
@@ -1675,6 +1675,7 @@ static void depmod_report_cycles(struct depmod *depmod, uint16_t n_mods,
 
 	num_cyclic = hash_get_count(loop_set);
 	ERR("Found %d modules in dependency cycles!\n", num_cyclic);
+
 err:
 	hash_free(loop_set);
 }
