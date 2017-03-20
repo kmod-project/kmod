@@ -1481,10 +1481,10 @@ static void depmod_list_remove_data(struct kmod_list **list, void *data)
 	*list = l;
 }
 
-static void depmod_report_one_cycle(struct depmod *depmod,
-				    struct vertex *vertex,
-				    struct kmod_list **roots,
-				    struct hash *loop_set)
+static int depmod_report_one_cycle(struct depmod *depmod,
+				   struct vertex *vertex,
+				   struct kmod_list **roots,
+				   struct hash *loop_set)
 {
 	const char sep[] = " -> ";
 	size_t sz;
@@ -1493,6 +1493,7 @@ static void depmod_report_one_cycle(struct depmod *depmod,
 	int i;
 	int n;
 	struct vertex *v;
+	int rc;
 
 	array_init(&reverse, 3);
 
@@ -1503,7 +1504,10 @@ static void depmod_report_one_cycle(struct depmod *depmod,
 
 		sz += v->mod->modnamesz - 1;
 		array_append(&reverse, v);
-		hash_add(loop_set, v->mod->modname, NULL);
+		rc = hash_add(loop_set, v->mod->modname, NULL);
+		if (rc != 0)
+			return rc;
+		/* the hash will be freed where created */
 	}
 	sz += vertex->mod->modnamesz - 1;
 
@@ -1528,6 +1532,8 @@ static void depmod_report_one_cycle(struct depmod *depmod,
 
 	free(buf);
 	array_free_array(&reverse);
+
+	return 0;
 }
 
 static int depmod_report_cycles_from_root(struct depmod *depmod,
@@ -1545,17 +1551,18 @@ static int depmod_report_cycles_from_root(struct depmod *depmod,
 	struct mod *m;
 	struct mod **itr, **itr_end;
 	size_t is;
+	int ret = -ENOMEM;
 
 	root = vertex_new(root_mod, NULL);
 	if (root == NULL) {
 		ERR("No memory to report cycles\n");
-		return -ENOMEM;
+		goto out;
 	}
 
 	l = kmod_list_append(free_list, root);
 	if (l == NULL) {
 		ERR("No memory to report cycles\n");
-		return -ENOMEM;
+		goto out;
 	}
 	free_list = l;
 
@@ -1570,8 +1577,13 @@ static int depmod_report_cycles_from_root(struct depmod *depmod,
 		 * from part of a loop or from a branch after a loop
 		 */
 		if (m->visited && m == root->mod) {
-			depmod_report_one_cycle(depmod, vertex,
-						roots, loop_set);
+			int rc;
+			rc = depmod_report_one_cycle(depmod, vertex,
+						     roots, loop_set);
+			if (rc != 0) {
+				ret = rc;
+				goto out;
+			}
 			continue;
 		}
 
@@ -1598,7 +1610,7 @@ static int depmod_report_cycles_from_root(struct depmod *depmod,
 			v = vertex_new(dep, vertex);
 			if (v == NULL) {
 				ERR("No memory to report cycles\n");
-				return -ENOMEM;
+				goto out;
 			}
 			assert(is < stack_size);
 			stack[is++] = v;
@@ -1606,12 +1618,15 @@ static int depmod_report_cycles_from_root(struct depmod *depmod,
 			l = kmod_list_append(free_list, v);
 			if (l == NULL) {
 				ERR("No memory to report cycles\n");
-				return -ENOMEM;
+				goto out;
 			}
 			free_list = l;
 
 		}
 	}
+	ret = 0;
+
+out:
 	while (free_list) {
 		v = free_list->data;
 		l = kmod_list_remove(free_list);
@@ -1619,7 +1634,7 @@ static int depmod_report_cycles_from_root(struct depmod *depmod,
 		free(v);
 	}
 
-	return 0;
+	return ret;
 }
 
 static void depmod_report_cycles(struct depmod *depmod, uint16_t n_mods,
@@ -1643,7 +1658,7 @@ static void depmod_report_cycles(struct depmod *depmod, uint16_t n_mods,
 		l = kmod_list_append(roots, m);
 		if (l == NULL) {
 			ERR("No memory to report cycles\n");
-			return;
+			goto out_list;
 		}
 		roots = l;
 		n_r++;
@@ -1652,13 +1667,13 @@ static void depmod_report_cycles(struct depmod *depmod, uint16_t n_mods,
 	stack = malloc(n_r * sizeof(void *));
 	if (stack == NULL) {
 		ERR("No memory to report cycles\n");
-		return;
+		goto out_list;
 	}
 
 	loop_set = hash_new(16, NULL);
 	if (loop_set == NULL) {
 		ERR("No memory to report cycles\n");
-		return;
+		goto out_list;
 	}
 
 	while (roots != NULL) {
@@ -1670,14 +1685,19 @@ static void depmod_report_cycles(struct depmod *depmod, uint16_t n_mods,
 						     &roots,
 						     stack, n_r, loop_set);
 		if (err < 0)
-			goto err;
+			goto out_hash;
 	}
 
 	num_cyclic = hash_get_count(loop_set);
 	ERR("Found %d modules in dependency cycles!\n", num_cyclic);
 
-err:
+out_hash:
 	hash_free(loop_set);
+out_list:
+	while (roots != NULL) {
+		/* no need to free data, come from outside */
+		roots = kmod_list_remove(roots);
+	}
 }
 
 static int depmod_calculate_dependencies(struct depmod *depmod)
