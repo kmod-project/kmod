@@ -2344,6 +2344,15 @@ KMOD_EXPORT int kmod_module_get_info(const struct kmod_module *mod, struct kmod_
 		 * Omit sig_info.algo for now, as these
 		 * are currently constant.
 		 */
+		n = kmod_module_info_append_hex(list, "signature",
+						strlen("signature"),
+						sig_info.sig,
+						sig_info.sig_len);
+
+		if (n == NULL)
+			goto list_error;
+		count++;
+
 	}
 	ret = count;
 

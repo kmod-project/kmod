@@ -134,7 +134,11 @@ bool kmod_module_signature_info(const struct kmod_file *file, struct kmod_signat
 	    size < (int64_t)(modsig->signer_len + modsig->key_id_len + sig_len))
 		return false;
 
-	size -= modsig->key_id_len + sig_len;
+	size -= sig_len;
+	sig_info->sig = mem + size;
+	sig_info->sig_len = sig_len;
+
+	size -= modsig->key_id_len;
 	sig_info->key_id = mem + size;
 	sig_info->key_id_len = modsig->key_id_len;
 
