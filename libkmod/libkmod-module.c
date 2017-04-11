@@ -2197,15 +2197,25 @@ static char *kmod_module_hex_to_str(const char *hex, size_t len)
 {
 	char *str;
 	int i;
+	int j;
+	const size_t line_limit = 20;
+	size_t str_len;
 
-	str = malloc(len * 3);
+	str_len = len * 3; /* XX: or XX\0 */
+	str_len += ((str_len + line_limit - 1) / line_limit - 1) * 3; /* \n\t\t */
+
+	str = malloc(str_len);
 	if (str == NULL)
 		return NULL;
 
-	for (i = 0; i < (int)len; i++) {
-		sprintf(str + i * 3, "%02X", (unsigned char)hex[i]);
-		if (i < (int)len - 1)
-			str[i * 3 + 2] = ':';
+	for (i = 0, j = 0; i < (int)len; i++) {
+		j += sprintf(str + j, "%02X", (unsigned char)hex[i]);
+		if (i < (int)len - 1) {
+			str[j++] = ':';
+
+			if ((i + 1) % line_limit == 0)
+				j += sprintf(str + j, "\n\t\t");
+		}
 	}
 	return str;
 }
