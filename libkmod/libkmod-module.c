@@ -2257,7 +2257,7 @@ KMOD_EXPORT int kmod_module_get_info(const struct kmod_module *mod, struct kmod_
 		struct kmod_list *n;
 		char *key_hex;
 
-		n = kmod_module_info_append(list, "signature", strlen("sig_id"),
+		n = kmod_module_info_append(list, "sig_id", strlen("sig_id"),
 				sig_info.id_type, strlen(sig_info.id_type));
 		if (n == NULL)
 			goto list_error;
