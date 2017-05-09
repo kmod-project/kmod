@@ -1191,27 +1191,40 @@ static int depmod_modules_search_dir(struct depmod *depmod, DIR *d, size_t basel
 	return err;
 }
 
-static int depmod_modules_search(struct depmod *depmod)
+static int depmod_modules_search_path(struct depmod *depmod,
+				      const char *path)
 {
-	char path[PATH_MAX];
-	DIR *d = opendir(depmod->cfg->dirname);
+	char path_buf[PATH_MAX];
+	DIR *d;
 	size_t baselen;
 	int err;
+
+	d = opendir(path);
 	if (d == NULL) {
 		err = -errno;
-		ERR("could not open directory %s: %m\n", depmod->cfg->dirname);
+		ERR("could not open directory %s: %m\n", path);
 		return err;
 	}
 
-	baselen = depmod->cfg->dirnamelen;
-	memcpy(path, depmod->cfg->dirname, baselen);
-	path[baselen] = '/';
+	baselen = strlen(path);
+	memcpy(path_buf, path, baselen);
+	path_buf[baselen] = '/';
 	baselen++;
-	path[baselen] = '\0';
+	path_buf[baselen] = '\0';
 
-	err = depmod_modules_search_dir(depmod, d, baselen, path);
+	err = depmod_modules_search_dir(depmod, d, baselen, path_buf);
 	closedir(d);
 	return err;
+}
+
+static int depmod_modules_search(struct depmod *depmod)
+{
+	int err;
+
+	err = depmod_modules_search_path(depmod, depmod->cfg->dirname);
+	if (err < 0)
+		return err;
+	return 0;
 }
 
 static int mod_cmp(const void *pa, const void *pb) {
