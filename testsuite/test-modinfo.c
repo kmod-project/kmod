@@ -89,4 +89,25 @@ DEFINE_TEST(test_modinfo_signature,
 		.out = TESTSUITE_ROOTFS "test-modinfo/correct.txt",
 	});
 #endif
+
+static noreturn int test_modinfo_external(const struct test *t)
+{
+	const char *const args[] = {
+		progname, "-F", "filename",
+		"mod-simple",
+		NULL,
+	};
+	test_spawn_prog(progname, args);
+	exit(EXIT_FAILURE);
+}
+DEFINE_TEST(test_modinfo_external,
+	.description = "check if modinfo finds external module",
+	.config = {
+		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-modinfo/external",
+		[TC_UNAME_R] = "4.4.4",
+	},
+	.output = {
+		.out = TESTSUITE_ROOTFS "test-modinfo/correct-external.txt",
+	})
+
 TESTSUITE_MAIN();
