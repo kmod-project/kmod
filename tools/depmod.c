@@ -1108,10 +1108,11 @@ add:
 	return 0;
 }
 
-static int depmod_modules_search_dir(struct depmod *depmod, DIR *d, size_t baselen, char *path)
+static int depmod_modules_search_dir(struct depmod *depmod, DIR *d, size_t baselen, struct scratchbuf *s_path)
 {
 	struct dirent *de;
 	int err = 0, dfd = dirfd(d);
+	char *path;
 
 	while ((de = readdir(d)) != NULL) {
 		const char *name = de->d_name;
@@ -1124,11 +1125,13 @@ static int depmod_modules_search_dir(struct depmod *depmod, DIR *d, size_t basel
 		if (streq(name, "build") || streq(name, "source"))
 			continue;
 		namelen = strlen(name);
-		if (baselen + namelen + 2 >= PATH_MAX) {
-			path[baselen] = '\0';
-			ERR("path is too long %s%s\n", path, name);
+		if (scratchbuf_alloc(s_path, baselen + namelen + 2) < 0) {
+			err = -ENOMEM;
+			ERR("No memory\n");
 			continue;
 		}
+
+		path = scratchbuf_str(s_path);
 		memcpy(path + baselen, name, namelen + 1);
 
 		if (de->d_type == DT_REG)
@@ -1154,10 +1157,6 @@ static int depmod_modules_search_dir(struct depmod *depmod, DIR *d, size_t basel
 		if (is_dir) {
 			int fd;
 			DIR *subdir;
-			if (baselen + namelen + 2 + NAME_MAX >= PATH_MAX) {
-				ERR("directory path is too long %s\n", path);
-				continue;
-			}
 			fd = openat(dfd, name, O_RDONLY);
 			if (fd < 0) {
 				ERR("openat(%d, %s, O_RDONLY): %m\n",
@@ -1174,7 +1173,7 @@ static int depmod_modules_search_dir(struct depmod *depmod, DIR *d, size_t basel
 			path[baselen + namelen + 1] = '\0';
 			err = depmod_modules_search_dir(depmod, subdir,
 							baselen + namelen + 1,
-							path);
+							s_path);
 			closedir(subdir);
 		} else {
 			err = depmod_modules_search_file(depmod, baselen,
@@ -1187,14 +1186,16 @@ static int depmod_modules_search_dir(struct depmod *depmod, DIR *d, size_t basel
 			err = 0; /* ignore errors */
 		}
 	}
-
 	return err;
 }
 
 static int depmod_modules_search_path(struct depmod *depmod,
 				      const char *path)
 {
-	char path_buf[PATH_MAX];
+	char buf[256];
+	_cleanup_(scratchbuf_release) struct scratchbuf s_path_buf =
+		SCRATCHBUF_INITIALIZER(buf);
+	char *path_buf;
 	DIR *d;
 	size_t baselen;
 	int err;
@@ -1207,12 +1208,20 @@ static int depmod_modules_search_path(struct depmod *depmod,
 	}
 
 	baselen = strlen(path);
+
+	if (scratchbuf_alloc(&s_path_buf, baselen + 2) < 0) {
+		err = -ENOMEM;
+		goto out;
+	}
+	path_buf = scratchbuf_str(&s_path_buf);
+
 	memcpy(path_buf, path, baselen);
 	path_buf[baselen] = '/';
 	baselen++;
 	path_buf[baselen] = '\0';
 
-	err = depmod_modules_search_dir(depmod, d, baselen, path_buf);
+	err = depmod_modules_search_dir(depmod, d, baselen, &s_path_buf);
+out:
 	closedir(d);
 	return err;
 }
