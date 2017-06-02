@@ -25,6 +25,7 @@
 
 #include "testsuite.h"
 
+#ifdef ENABLE_ZLIB
 #define MODULES_ORDER_UNAME "4.4.4"
 #define MODULES_ORDER_ROOTFS TESTSUITE_ROOTFS "test-depmod/modules-order-compressed"
 #define MODULES_ORDER_LIB_MODULES MODULES_ORDER_ROOTFS "/lib/modules/" MODULES_ORDER_UNAME
@@ -40,7 +41,6 @@ static noreturn int depmod_modules_order_for_compressed(const struct test *t)
 	exit(EXIT_FAILURE);
 }
 
-#ifdef ENABLE_ZLIB
 DEFINE_TEST(depmod_modules_order_for_compressed,
 	.description = "check if depmod let aliases in right order when using compressed modules",
 	.config = {
