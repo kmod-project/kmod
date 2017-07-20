@@ -75,6 +75,9 @@
             first listed directory and the lowest priority given to the last
             directory listed. The special keyword <command>built-in</command> 
             refers to the standard module directories installed by the kernel.
+            Another special keyword <command>external</command> refers to the
+            list of external directories, defined by the
+            <command>external</command> command.
           </para>
           <para>
             By default, depmod will give a higher priority to 
@@ -107,6 +110,23 @@
             under the <command>extra</command> subdirectory within
             /lib/modules (or other module location) will take priority
             over any likenamed module already provided by the kernel.
+          </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>external <replaceable>kernelversion</replaceable>
+        <replaceable>absolutemodulesdirectory...</replaceable>
+        </term>
+        <listitem>
+          <para>
+            This specifies a list of directories, which will be checked
+            according to the priorities in the <command>search</command>
+            command. The order matters also, the first directory has the higher
+            priority.
+          </para>
+          <para>
+            The <replaceable>kernelversion</replaceable> is a POSIX regular
+            expression or * wildcard, like in the <command>override</command>.
           </para>
         </listitem>
       </varlistentry>
