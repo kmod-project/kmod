@@ -139,6 +139,9 @@
       <citerefentry>
         <refentrytitle>modinfo</refentrytitle><manvolnum>8</manvolnum>
       </citerefentry>
+      <citerefentry>
+        <refentrytitle>depmod</refentrytitle><manvolnum>8</manvolnum>
+      </citerefentry>
     </para>
   </refsect1>
 </refentry>
