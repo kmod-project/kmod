@@ -1118,11 +1118,11 @@ static int depmod_module_is_higher_priority(const struct depmod *depmod, const s
 
 	if (strncmp(newpath, cfg->dirname, cfg->dirnamelen) == 0) {
 		relnewpath = newpath + cfg->dirnamelen + 1;
-		relnewlen = newlen - cfg->dirnamelen + 1;
+		relnewlen = newlen - (cfg->dirnamelen + 1);
 	}
 	if (strncmp(oldpath, cfg->dirname, cfg->dirnamelen) == 0) {
 		reloldpath = oldpath + cfg->dirnamelen + 1;
-		reloldlen = oldlen - cfg->dirnamelen + 1;
+		reloldlen = oldlen - (cfg->dirnamelen + 1);
 	}
 
 	for (ov = cfg->overrides; ov != NULL; ov = ov->next) {
