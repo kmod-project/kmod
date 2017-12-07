@@ -183,4 +183,30 @@ DEFINE_TEST(depmod_search_order_external_last,
 		},
 	});
 
+#define SEARCH_ORDER_OVERRIDE_ROOTFS TESTSUITE_ROOTFS "test-depmod/search-order-override"
+static noreturn int depmod_search_order_override(const struct test *t)
+{
+	const char *progname = ABS_TOP_BUILDDIR "/tools/depmod";
+	const char *const args[] = {
+		progname,
+		NULL,
+	};
+
+	test_spawn_prog(progname, args);
+	exit(EXIT_FAILURE);
+}
+DEFINE_TEST(depmod_search_order_override,
+	.description = "check if depmod honor override keyword",
+	.config = {
+		[TC_UNAME_R] = "4.4.4",
+		[TC_ROOTFS] = SEARCH_ORDER_OVERRIDE_ROOTFS,
+	},
+	.output = {
+		.files = (const struct keyval[]) {
+			{ SEARCH_ORDER_OVERRIDE_ROOTFS "/lib/modules/4.4.4/correct-modules.dep",
+			  SEARCH_ORDER_OVERRIDE_ROOTFS "/lib/modules/4.4.4/modules.dep" },
+			{ }
+		},
+	});
+
 TESTSUITE_MAIN();
