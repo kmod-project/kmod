@@ -498,3 +498,11 @@ tar: kmod-$(VERSION).tar.xz kmod-$(VERSION).tar.sign
 
 tar-sync: kmod-$(VERSION).tar.xz kmod-$(VERSION).tar.sign
 	kup put kmod-$(VERSION).tar.xz  kmod-$(VERSION).tar.sign /pub/linux/utils/kernel/kmod/
+
+# ------------------------------------------------------------------------------
+# mkosi
+# ------------------------------------------------------------------------------
+
+mkosi:
+	-mkdir $(top_srcdir)/testsuite/mkosi/mkosi.cache
+	mkosi -C $(top_srcdir)/testsuite/mkosi --build-sources ../../ -fi

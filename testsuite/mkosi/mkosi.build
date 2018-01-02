@@ -1,0 +1,23 @@
+#!/bin/bash -ex
+
+if [ -f configure ]; then
+    make distclean
+fi
+
+rm -rf build
+mkdir build
+cd build
+
+kdirs=(/usr/lib/modules/*/build/Makefile)
+if [[ ! -f ${kdirs[0]} ]]; then
+  printf '==> Unable to find kernel headers to build modules for tests\n' >&2
+  return 1
+fi
+
+kdir=${kdirs[0]%/Makefile}
+IFS=/ read _ _ _ kver _ <<<"$kdir"
+
+../autogen.sh c
+make -j
+make check KDIR="$kdir" KVER="$kver"
+make install

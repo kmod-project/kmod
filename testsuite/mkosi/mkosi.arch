@@ -1,0 +1,22 @@
+[Distribution]
+Distribution=arch
+Release=(rolling)
+
+[Packages]
+Packages = valgrind
+BuildPackages =
+	automake
+	gcc
+	git
+	make
+	pkg-config
+	python2
+	python2-future
+	autoconf
+	gtk-doc
+	docbook-xml
+	docbook-xsl
+	linux-headers
+
+[Partitions]
+RootSize = 4G

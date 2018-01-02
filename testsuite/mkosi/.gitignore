@@ -1,0 +1,4 @@
+/image.raw*
+/.mkosi-*
+/mkosi.cache
+/rootfs
