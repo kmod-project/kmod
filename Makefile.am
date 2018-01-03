@@ -504,5 +504,5 @@ tar-sync: kmod-$(VERSION).tar.xz kmod-$(VERSION).tar.sign
 # ------------------------------------------------------------------------------
 
 mkosi:
-	-mkdir $(top_srcdir)/testsuite/mkosi/mkosi.cache
-	mkosi -C $(top_srcdir)/testsuite/mkosi --build-sources ../../ -fi
+	-$(MKDIR_P) $(top_srcdir)/testsuite/mkosi/mkosi.cache
+	$(MKOSI) -C $(top_srcdir)/testsuite/mkosi --build-sources ../../ -fi
