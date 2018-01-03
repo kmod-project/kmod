@@ -2,6 +2,9 @@
 Distribution=arch
 Release=(rolling)
 
+[Output]
+Output = arch-image.raw
+
 [Packages]
 Packages = valgrind
 BuildPackages =

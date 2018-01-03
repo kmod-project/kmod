@@ -1,5 +1,26 @@
 #!/bin/bash -ex
 
+function find_kdir() {
+    local kdirs=(/usr/lib/modules/*/build/Makefile /usr/src/kernels/*/Makefile)
+    local kdir=""
+
+    for f in "${kdirs[@]}"; do
+        if [ -f "$f" ]; then
+            kdir=$f
+            break
+        fi
+    done
+
+    if [ -z "$kdir" ]; then
+        printf '==> Unable to find kernel headers to build modules for tests\n' >&2
+        exit 1
+    fi
+
+    kdir=${kdir%/Makefile}
+
+    echo $kdir
+}
+
 if [ -f configure ]; then
     make distclean
 fi
@@ -8,13 +29,7 @@ rm -rf build
 mkdir build
 cd build
 
-kdirs=(/usr/lib/modules/*/build/Makefile)
-if [[ ! -f ${kdirs[0]} ]]; then
-  printf '==> Unable to find kernel headers to build modules for tests\n' >&2
-  return 1
-fi
-
-kdir=${kdirs[0]%/Makefile}
+kdir=$(find_kdir)
 IFS=/ read _ _ _ kver _ <<<"$kdir"
 
 ../autogen.sh c

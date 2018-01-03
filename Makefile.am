@@ -503,6 +503,8 @@ tar-sync: kmod-$(VERSION).tar.xz kmod-$(VERSION).tar.sign
 # mkosi
 # ------------------------------------------------------------------------------
 
+DISTRO ?= "arch"
+
 mkosi:
 	-$(MKDIR_P) $(top_srcdir)/testsuite/mkosi/mkosi.cache
-	$(MKOSI) -C $(top_srcdir)/testsuite/mkosi --build-sources ../../ -fi
+	$(MKOSI) -C $(top_srcdir)/testsuite/mkosi --build-sources ../../ --default mkosi.${DISTRO} -fi
