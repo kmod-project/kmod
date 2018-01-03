@@ -356,9 +356,14 @@ TS_EXPORT long int syscall(long int __sysno, ...)
 	}
 
 	/*
-	 * FIXME: no way to call the libc function - let's hope there are no
-	 * other users.
+	 * FIXME: no way to call the libc function due since this is a
+	 * variadic argument function and we don't have a vsyscall() variant
+	 * this may fail if a library or process is trying to call syscall()
+	 * directly, for example to implement gettid().
 	 */
+	fprintf(stderr, "FIXME FIXME FIXME: could not wrap call to syscall(%ld), this should not happen\n",
+		__sysno);
+
 	abort();
 }
 
