@@ -1,0 +1,26 @@
+[Distribution]
+Distribution=fedora
+Release=27
+
+[Output]
+Output = fedora-image.raw
+
+[Packages]
+Packages = valgrind
+BuildPackages =
+	autoconf
+	automake
+	gcc
+	git
+	gtk-doc
+	kernel-devel
+	libtool
+	libxslt
+	make
+	pkgconf-pkg-config
+	xml-common
+	xz-devel
+	zlib-devel
+
+[Partitions]
+RootSize = 2G
