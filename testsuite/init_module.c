@@ -355,6 +355,27 @@ TS_EXPORT long int syscall(long int __sysno, ...)
 		return ret;
 	}
 
+	if (__sysno == __NR_gettid) {
+		static void *nextlib = NULL;
+		static long (*nextlib_syscall)(long number, ...);
+
+		if (nextlib_syscall == NULL) {
+#ifdef RTLD_NEXT
+			nextlib = RTLD_NEXT;
+#else
+			nextlib = dlopen("libc.so.6", RTLD_LAZY);
+#endif
+			nextlib_syscall = dlsym(nextlib, "syscall");
+			if (nextlib_syscall == NULL) {
+				fprintf(stderr, "FIXME FIXME FIXME: could not load syscall symbol: %s\n",
+					dlerror());
+				abort();
+			}
+		}
+
+		return nextlib_syscall(__NR_gettid);
+	}
+
 	/*
 	 * FIXME: no way to call the libc function due since this is a
 	 * variadic argument function and we don't have a vsyscall() variant
