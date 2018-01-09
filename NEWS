@@ -1,3 +1,26 @@
+kmod 25
+=======
+
+- Improvements
+	- Add module signature to modinfo output
+
+	- Add support for external directories in depmod: now there's a new
+	  "external" keyword parsed by depmod when calculating the dependencies.
+	  It allows to add modules to other directories which are not relative
+	  to where the modules are commonly installed.  This results in
+	  modules.dep and friends now understanding absolute paths rather than
+	  relative paths only. For more information see depmod.d(1).
+
+	- Add support for CONFIG_MODULE_REL_CRCS
+
+	- Add missing documentation references in man pages
+
+	- Handle the case in which module has a .TOC symbol already while
+	  calculating dependencies
+
+	- Improve testsuite and allow to use mkosi to run testsuite in different
+	  distros
+
 kmod 24
 =======
 
