@@ -29,8 +29,13 @@ rm -rf build
 mkdir build
 cd build
 
-kdir=$(find_kdir)
-IFS=/ read _ _ _ kver _ <<<"$kdir"
+if grep clear-linux-os /usr/lib/os-release; then
+    # Clear Linux doesn't have the dependencies for those yet.
+    echo "--disable-test-modules" > ../../.config.args
+else
+    kdir=$(find_kdir)
+    IFS=/ read _ _ _ kver _ <<<"$kdir"
+fi
 
 ../autogen.sh c
 make -j
