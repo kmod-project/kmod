@@ -22,4 +22,4 @@ BuildPackages =
 	linux-headers
 
 [Partitions]
-RootSize = 2G
+RootSize = 3G
