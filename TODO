@@ -35,6 +35,11 @@ and libkmod
    - kmod_module_symbols_free_list()
    - kmod_module_dependency_symbols_free_list()
 
+* libkmod API breaking changes:
+   - dedicated error value for all kmod_*_get_crc() functions. Currently there
+     is no way for callers to distinguish between a valid CRC=0 and the error
+     code 0.
+
 * index: drop the "open(), seek(), read()" implementation and use another one
   with mmap(). When lookup() is called and the file is not mmaped, mmap it.
   Another possibility is to drop the mmap implementation relying on VFS to have
