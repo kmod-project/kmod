@@ -232,7 +232,7 @@
             information, such as the kernel and compiler versions.  If a module
             fails to load and the kernel complains that the "version magic"
             doesn't match, you can use this option to remove it.  Naturally,
-            this check is there for your protection, so this using option is
+            this check is there for your protection, so using this option is
             dangerous unless you know what you're doing.
           </para>
           <para>
