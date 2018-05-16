@@ -60,5 +60,5 @@ else
         echo If you are debugging or hacking on kmod, consider configuring
         echo like below:
         echo 
-        echo "$topdir/configure CFLAGS="-g -O2" $args $hackargs"
+        echo "$topdir/configure CFLAGS='-g -O2' $args $hackargs"
 fi
