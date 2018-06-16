@@ -72,7 +72,7 @@ enum kmod_index {
 	KMOD_INDEX_MODULES_SYMBOL,
 	KMOD_INDEX_MODULES_BUILTIN,
 	/* Padding to make sure enum is not mapped to char */
-	_KMOD_INDEX_PAD = (1 << 31),
+	_KMOD_INDEX_PAD = 1U << 31,
 };
 int kmod_dump_index(struct kmod_ctx *ctx, enum kmod_index type, int fd);
 
@@ -211,7 +211,7 @@ enum kmod_module_initstate {
 	KMOD_MODULE_COMING,
 	KMOD_MODULE_GOING,
 	/* Padding to make sure enum is not mapped to char */
-	_KMOD_MODULE_PAD = (1 << 31),
+	_KMOD_MODULE_PAD = 1U << 31,
 };
 const char *kmod_module_initstate_str(enum kmod_module_initstate state);
 int kmod_module_get_initstate(const struct kmod_module *mod);
