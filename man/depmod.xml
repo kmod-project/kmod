@@ -61,7 +61,6 @@
       <arg><option>-e</option></arg>
       <arg><option>-E <replaceable>Module.symvers</replaceable></option></arg>
       <arg><option>-F <replaceable>System.map</replaceable></option></arg>
-      <arg><option>-m</option></arg>
       <arg><option>-n</option></arg>
       <arg><option>-v</option></arg>
       <arg><option>-P <replaceable>prefix</replaceable></option></arg>
