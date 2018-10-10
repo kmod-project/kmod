@@ -10,6 +10,7 @@ Packages=
 	os-core-update
 BuildPackages=
 	os-core-dev
+	linux-dev
 
 [Partitions]
 RootSize = 5G
