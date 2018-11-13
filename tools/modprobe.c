@@ -76,6 +76,7 @@ static const struct option cmdopts[] = {
 	{"show-config", no_argument, 0, 'c'},
 	{"show-modversions", no_argument, 0, 4},
 	{"dump-modversions", no_argument, 0, 4},
+	{"show-exports", no_argument, 0, 6},
 
 	{"dry-run", no_argument, 0, 'n'},
 	{"show", no_argument, 0, 'n'},
@@ -124,6 +125,7 @@ static void help(void)
 		"\t-c, --show-config           Same as --showconfig\n"
 		"\t    --show-modversions      Dump module symbol version and exit\n"
 		"\t    --dump-modversions      Same as --show-modversions\n"
+		"\t    --show-exports          Only print module exported symbol versions and exit\n"
 		"\n"
 		"General Options:\n"
 		"\t-n, --dry-run               Do not execute operations, just print out\n"
@@ -228,6 +230,34 @@ static int show_modversions(struct kmod_ctx *ctx, const char *filename)
 		printf("0x%08"PRIx64"\t%s\n", crc, symbol);
 	}
 	kmod_module_versions_free_list(list);
+	kmod_module_unref(mod);
+	return 0;
+}
+
+static int show_exports(struct kmod_ctx *ctx, const char *filename)
+{
+	struct kmod_list *l, *list = NULL;
+	struct kmod_module *mod;
+	int err = kmod_module_new_from_path(ctx, filename, &mod);
+	if (err < 0) {
+		LOG("Module %s not found.\n", filename);
+		return err;
+	}
+
+	err = kmod_module_get_symbols(mod, &list);
+	if (err < 0) {
+		LOG("could not get symbols of %s: %s\n",
+			filename, strerror(-err));
+		kmod_module_unref(mod);
+		return err;
+	}
+
+	kmod_list_foreach(l, list) {
+		const char *symbol = kmod_module_symbol_get_symbol(l);
+		uint64_t crc = kmod_module_symbol_get_crc(l);
+		printf("0x%08"PRIx64"\t%s\n", crc, symbol);
+	}
+	kmod_module_symbols_free_list(list);
 	kmod_module_unref(mod);
 	return 0;
 }
@@ -727,6 +757,7 @@ static int do_modprobe(int argc, char **orig_argv)
 	int do_remove = 0;
 	int do_show_config = 0;
 	int do_show_modversions = 0;
+	int do_show_exports = 0;
 	int err;
 
 	argv = prepend_options_from_env(&argc, orig_argv);
@@ -782,6 +813,9 @@ static int do_modprobe(int argc, char **orig_argv)
 			break;
 		case 4:
 			do_show_modversions = 1;
+			break;
+		case 6:
+			do_show_exports = 1;
 			break;
 		case 'n':
 			dry_run = 1;
@@ -886,6 +920,8 @@ static int do_modprobe(int argc, char **orig_argv)
 		err = show_config(ctx);
 	else if (do_show_modversions)
 		err = show_modversions(ctx, args[0]);
+	else if (do_show_exports)
+		err = show_exports(ctx, args[0]);
 	else if (do_remove)
 		err = rmmod_all(ctx, args, nargs);
 	else if (use_all)
