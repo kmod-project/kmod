@@ -95,6 +95,28 @@ DEFINE_TEST(modprobe_show_alias_to_none,
 	);
 
 
+static noreturn int modprobe_show_exports(const struct test *t)
+{
+	const char *progname = ABS_TOP_BUILDDIR "/tools/modprobe";
+	const char *const args[] = {
+		progname,
+		"--show-exports", "--quiet", "/mod-loop-a.ko",
+		NULL,
+	};
+
+	test_spawn_prog(progname, args);
+	exit(EXIT_FAILURE);
+}
+DEFINE_TEST(modprobe_show_exports,
+	.description = "check if modprobe --show-depends doesn't explode with an alias to nothing",
+	.config = {
+		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-modprobe/show-exports",
+	},
+	.output = {
+		.out = TESTSUITE_ROOTFS "test-modprobe/show-exports/correct.txt",
+	});
+
+
 static noreturn int modprobe_builtin(const struct test *t)
 {
 	const char *progname = ABS_TOP_BUILDDIR "/tools/modprobe";
