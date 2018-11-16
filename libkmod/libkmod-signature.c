@@ -92,6 +92,38 @@ struct module_signature {
 	uint32_t sig_len;    /* Length of signature data (big endian) */
 };
 
+static bool fill_default(const char *mem, off_t size,
+			 const struct module_signature *modsig, size_t sig_len,
+			 struct kmod_signature_info *sig_info)
+{
+	size -= sig_len;
+	sig_info->sig = mem + size;
+	sig_info->sig_len = sig_len;
+
+	size -= modsig->key_id_len;
+	sig_info->key_id = mem + size;
+	sig_info->key_id_len = modsig->key_id_len;
+
+	size -= modsig->signer_len;
+	sig_info->signer = mem + size;
+	sig_info->signer_len = modsig->signer_len;
+
+	sig_info->algo = pkey_algo[modsig->algo];
+	sig_info->hash_algo = pkey_hash_algo[modsig->hash];
+	sig_info->id_type = pkey_id_type[modsig->id_type];
+
+	return true;
+}
+
+static bool fill_unknown(const char *mem, off_t size,
+			 const struct module_signature *modsig, size_t sig_len,
+			 struct kmod_signature_info *sig_info)
+{
+	sig_info->hash_algo = "unknown";
+	sig_info->id_type = pkey_id_type[modsig->id_type];
+	return true;
+}
+
 #define SIG_MAGIC "~Module signature appended~\n"
 
 /*
@@ -111,7 +143,6 @@ bool kmod_module_signature_info(const struct kmod_file *file, struct kmod_signat
 	off_t size;
 	const struct module_signature *modsig;
 	size_t sig_len;
-
 
 	size = kmod_file_get_size(file);
 	mem = kmod_file_get_contents(file);
@@ -134,21 +165,10 @@ bool kmod_module_signature_info(const struct kmod_file *file, struct kmod_signat
 	    size < (int64_t)(modsig->signer_len + modsig->key_id_len + sig_len))
 		return false;
 
-	size -= sig_len;
-	sig_info->sig = mem + size;
-	sig_info->sig_len = sig_len;
-
-	size -= modsig->key_id_len;
-	sig_info->key_id = mem + size;
-	sig_info->key_id_len = modsig->key_id_len;
-
-	size -= modsig->signer_len;
-	sig_info->signer = mem + size;
-	sig_info->signer_len = modsig->signer_len;
-
-	sig_info->algo = pkey_algo[modsig->algo];
-	sig_info->hash_algo = pkey_hash_algo[modsig->hash];
-	sig_info->id_type = pkey_id_type[modsig->id_type];
-
-	return true;
+	switch (modsig->id_type) {
+	case PKEY_ID_PKCS7:
+		return fill_unknown(mem, size, modsig, sig_len, sig_info);
+	default:
+		return fill_default(mem, size, modsig, sig_len, sig_info);
+	}
 }

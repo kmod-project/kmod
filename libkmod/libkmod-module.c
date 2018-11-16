@@ -2273,7 +2273,7 @@ KMOD_EXPORT int kmod_module_get_info(const struct kmod_module *mod, struct kmod_
 	struct kmod_elf *elf;
 	char **strings;
 	int i, count, ret = -ENOMEM;
-	struct kmod_signature_info sig_info;
+	struct kmod_signature_info sig_info = {};
 
 	if (mod == NULL || list == NULL)
 		return -ENOENT;
