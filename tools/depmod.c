@@ -2451,7 +2451,6 @@ static int depmod_output(struct depmod *depmod, FILE *out)
 			break;
 		}
 
-		unlinkat(dfd, itr->name, 0);
 		if (renameat(dfd, tmp, dfd, itr->name) != 0) {
 			err = -errno;
 			CRIT("renameat(%s, %s, %s, %s): %m\n",
