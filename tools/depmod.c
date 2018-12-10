@@ -1389,19 +1389,45 @@ static int depmod_modules_build_array(struct depmod *depmod)
 	return 0;
 }
 
+static FILE *dfdopen(const char *dname, const char *filename, int flags,
+		     const char *mode)
+{
+	int fd, dfd;
+	FILE *ret;
+
+	dfd = open(dname, O_RDONLY);
+	if (dfd < 0) {
+		WRN("could not open directory %s: %m\n", dname);
+		return NULL;
+	}
+
+	fd = openat(dfd, filename, flags);
+	if (fd < 0) {
+		WRN("could not open %s at %s: %m\n", filename, dname);
+		ret = NULL;
+	} else {
+		ret = fdopen(fd, mode);
+		if (!ret) {
+			WRN("could not associate stream with %s: %m\n", filename);
+			close(fd);
+		}
+	}
+	close(dfd);
+	return ret;
+}
+
+
+
 static void depmod_modules_sort(struct depmod *depmod)
 {
-	char order_file[PATH_MAX], line[PATH_MAX];
+	char line[PATH_MAX];
+	const char *order_file = "modules.order";
 	FILE *fp;
 	unsigned idx = 0, total = 0;
 
-	snprintf(order_file, sizeof(order_file), "%s/modules.order",
-		 depmod->cfg->dirname);
-	fp = fopen(order_file, "r");
-	if (fp == NULL) {
-		WRN("could not open %s: %m\n", order_file);
+	fp = dfdopen(depmod->cfg->dirname, order_file, O_RDONLY, "r");
+	if (fp == NULL)
 		return;
-	}
 
 	while (fgets(line, sizeof(line), fp) != NULL) {
 		size_t len = strlen(line);
@@ -1409,8 +1435,8 @@ static void depmod_modules_sort(struct depmod *depmod)
 		if (len == 0)
 			continue;
 		if (line[len - 1] != '\n') {
-			ERR("%s:%u corrupted line misses '\\n'\n",
-				order_file, idx);
+			ERR("%s/%s:%u corrupted line misses '\\n'\n",
+				depmod->cfg->dirname, order_file, idx);
 			goto corrupted;
 		}
 	}
@@ -2287,18 +2313,14 @@ static int output_builtin_bin(struct depmod *depmod, FILE *out)
 {
 	FILE *in;
 	struct index_node *idx;
-	char infile[PATH_MAX], line[PATH_MAX], modname[PATH_MAX];
+	char line[PATH_MAX], modname[PATH_MAX];
 
 	if (out == stdout)
 		return 0;
 
-	snprintf(infile, sizeof(infile), "%s/modules.builtin",
-							depmod->cfg->dirname);
-	in = fopen(infile, "r");
-	if (in == NULL) {
-		WRN("could not open %s: %m\n", infile);
+	in = dfdopen(depmod->cfg->dirname, "modules.builtin", O_RDONLY, "r");
+	if (in == NULL)
 		return 0;
-	}
 
 	idx = index_create();
 	if (idx == NULL) {
