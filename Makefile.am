@@ -459,7 +459,7 @@ endif
 
 kmod-coverity-%.tar.xz:
 	rm -rf $< cov-int
-	./bootstrap-configure --disable-python --disable-manpages
+	./autogen.sh c --disable-python --disable-manpages
 	make clean
 	cov-build --dir cov-int make -j 4
 	tar caf $@ cov-int

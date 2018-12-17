@@ -22,7 +22,7 @@ matrix:
       env: MYCC=gcc-4.9
     - compiler: clang
       env: MYCC=clang
-script: ./bootstrap-configure && make -j && make -j check
+script: ./autogen.sh c && make -j && make -j check
 notifications:
   irc:
     channels:

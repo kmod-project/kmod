@@ -66,8 +66,8 @@ To compile and install run:
 Hacking
 =======
 
-Run 'bootstrap' script before configure. If you want to accept the recommended
-flags, you just need to run 'bootstrap-configure'. Note that the recommended
+Run 'autogen.sh' script before configure. If you want to accept the recommended
+flags, you just need to run 'autogen.sh c'. Note that the recommended
 flags require cython be installed to compile successfully.
 
 Make sure to read the CODING-STYLE file and the other READMEs: libkmod/README

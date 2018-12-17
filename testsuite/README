@@ -58,4 +58,4 @@ pay attention when writing a test:
     too, as long as you tell them to operate on child process.
 
 9 - Make sure test passes when using "default" build flags, i.e. by running
-    bootstrap-configure instead of simpler bootstrap/autogen.sh
+    'autogen.sh c'
