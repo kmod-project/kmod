@@ -29,6 +29,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/stat.h>
+#include <sys/time.h>
 #include <sys/utsname.h>
 
 #include <shared/array.h>
@@ -2398,6 +2399,9 @@ static int depmod_output(struct depmod *depmod, FILE *out)
 	};
 	const char *dname = depmod->cfg->dirname;
 	int dfd, err = 0;
+	struct timeval tv;
+
+	gettimeofday(&tv, NULL);
 
 	if (out != NULL)
 		dfd = -1;
@@ -2416,11 +2420,12 @@ static int depmod_output(struct depmod *depmod, FILE *out)
 		int r, ferr;
 
 		if (fp == NULL) {
-			int flags = O_CREAT | O_TRUNC | O_WRONLY;
+			int flags = O_CREAT | O_EXCL | O_WRONLY;
 			int mode = 0644;
 			int fd;
 
-			snprintf(tmp, sizeof(tmp), "%s.tmp", itr->name);
+			snprintf(tmp, sizeof(tmp), "%s.%i.%li.%li", itr->name, getpid(),
+					tv.tv_usec, tv.tv_sec);
 			fd = openat(dfd, tmp, flags, mode);
 			if (fd < 0) {
 				ERR("openat(%s, %s, %o, %o): %m\n",
