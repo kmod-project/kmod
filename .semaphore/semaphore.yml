@@ -1,0 +1,44 @@
+version: v1.0
+name: Build and Check
+agent:
+  machine:
+    type: e1-standard-2
+    os_image: ubuntu1804
+
+blocks:
+  - name: "Build"
+    task:
+      jobs:
+        - name: Build gcc-8
+          commands:
+            - sem-version c 8
+        - name: Build gcc-7
+          commands:
+            - sem-version c 7
+        - name: Build gcc-6
+          commands:
+            - sem-version c 6
+
+      prologue:
+        commands:
+          - sudo apt --yes install docbook-xsl liblzma-dev zlib1g-dev cython linux-headers-generic
+          - checkout
+
+      epilogue:
+        commands:
+          - ./autogen.sh c
+          - make
+
+  - name: "Unit tests"
+    task:
+      jobs:
+        - name: check
+          commands:
+            - sem-version c 8
+            - ./autogen.sh c
+            - make check
+
+      prologue:
+        commands:
+          - sudo apt --yes install docbook-xsl liblzma-dev zlib1g-dev cython linux-headers-generic
+          - checkout
