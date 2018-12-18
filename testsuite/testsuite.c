@@ -20,6 +20,7 @@
 #include <fcntl.h>
 #include <getopt.h>
 #include <limits.h>
+#include <regex.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -293,7 +294,108 @@ static int check_activity(int fd, bool activity,  const char *path,
 #define BUFSZ 4096
 struct buffer {
 	char buf[BUFSZ];
+	unsigned int head;
 };
+
+
+static bool cmpbuf_regex_one(const char *pattern, const char *s)
+{
+	_cleanup_(regfree) regex_t re = { };
+
+	return !regcomp(&re, pattern, REG_EXTENDED|REG_NOSUB) &&
+	       !regexec(&re, s, 0, NULL, 0);
+}
+
+/*
+ * read fd and fd_match, checking the first matches the regex of the second,
+ * line by line
+ */
+static bool cmpbuf_regex(const struct test *t, const char *prefix,
+			 int fd, int fd_match, struct buffer *buf,
+			 struct buffer *buf_match)
+{
+	char *p, *p_match;
+	int done = 0, done_match = 0, r;
+
+	if (buf->head >= sizeof(buf->buf)) {
+		ERR("Read %zu bytes without a newline\n", sizeof(buf->buf));
+		ERR("output: %.*s", (int)sizeof(buf->buf), buf->buf);
+		return false;
+	}
+
+	r = read(fd, buf->buf + buf->head, sizeof(buf->buf) - buf->head);
+	if (r <= 0)
+		return true;
+
+	buf->head += r;
+
+	/*
+	 * Process as many lines as read from fd and that fits in the buffer -
+	 * it's assumed that if we get N lines from fd, we should be able to
+	 * get the same amount from fd_match
+	 */
+	for (;;) {
+		p = memchr(buf->buf + done, '\n', buf->head - done);
+		if (!p)
+			break;
+		*p = '\0';
+
+		p_match = memchr(buf_match->buf + done_match, '\n',
+				 buf_match->head - done_match);
+		if (!p_match) {
+			if (buf_match->head >= sizeof(buf_match->buf)) {
+				ERR("Read %zu bytes without a match\n", sizeof(buf_match->buf));
+				ERR("output: %.*s", (int)sizeof(buf_match->buf), buf_match->buf);
+				return false;
+			}
+
+			/* pump more data from file */
+			r = read(fd_match, buf_match->buf + buf_match->head,
+				 sizeof(buf_match->buf) - buf_match->head);
+			if (r <= 0) {
+				ERR("could not read match fd %d\n", fd_match);
+				return false;
+			}
+			buf_match->head += r;
+			p_match = memchr(buf_match->buf + done_match, '\n',
+					 buf_match->head - done_match);
+			if (!p_match) {
+				ERR("could not find match line from fd %d\n", fd_match);
+				return false;
+			}
+		}
+		*p_match = '\0';
+
+		if (!cmpbuf_regex_one(buf_match->buf + done_match, buf->buf + done)) {
+			ERR("Output does not match pattern on %s:\n", prefix);
+			ERR("pattern: %s\n", buf_match->buf + done_match);
+			ERR("output : %s\n", buf->buf + done);
+			return false;
+		}
+
+		done = p - buf->buf + 1;
+		done_match = p_match - buf_match->buf + 1;
+	}
+
+	/*
+	 * Prepare for the next call: anything we processed we remove from the
+	 * buffer by memmoving the remaining bytes up to the beginning
+	 */
+	if (done) {
+		if (buf->head - done)
+			memmove(buf->buf, buf->buf + done, buf->head - done);
+		buf->head -= done;
+	}
+
+	if (done_match) {
+		if (buf_match->head - done_match)
+			memmove(buf_match->buf, buf_match->buf + done_match,
+				buf_match->head - done_match);
+		buf_match->head -= done_match;
+	}
+
+	return true;
+}
 
 /* read fd and fd_match, checking they match exactly */
 static bool cmpbuf_exact(const struct test *t, const char *prefix,
@@ -428,6 +530,7 @@ static bool test_run_parent_check_outputs(const struct test *t,
 
 		for (i = 0;  i < fdcount; i++) {
 			int fd = *(int *)ev[i].data.ptr;
+			bool ret;
 
 			if (ev[i].events & EPOLLIN) {
 				int fd_match;
@@ -452,9 +555,17 @@ static bool test_run_parent_check_outputs(const struct test *t,
 
 				buf_match = buf + 1;
 
-				if (!cmpbuf_exact(t, prefix,  fd, fd_match,
-						  buf, buf_match))
+				if (t->output.regex)
+					ret = cmpbuf_regex(t, prefix, fd, fd_match,
+							   buf, buf_match);
+				else
+					ret = cmpbuf_exact(t, prefix,  fd, fd_match,
+							   buf, buf_match);
+
+				if (!ret) {
+					err = -1;
 					goto out;
+				}
 			} else if (ev[i].events & EPOLLHUP) {
 				if (epoll_ctl(fd_ep, EPOLL_CTL_DEL, fd, NULL) < 0) {
 					ERR("could not remove fd %d from epoll: %m\n", fd);

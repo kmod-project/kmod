@@ -89,6 +89,12 @@ struct test {
 		const char *err;
 
 		/*
+		 * whether to treat the correct files as regex to the real
+		 * output
+		 */
+		bool regex;
+
+		/*
 		 * Vector with pair of files
 		 * key = correct file
 		 * val = file to check
