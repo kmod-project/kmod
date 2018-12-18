@@ -114,6 +114,7 @@ DEFINE_TEST(modprobe_show_exports,
 	},
 	.output = {
 		.out = TESTSUITE_ROOTFS "test-modprobe/show-exports/correct.txt",
+		.regex = true,
 	});
 
 

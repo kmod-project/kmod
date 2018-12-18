@@ -1,1 +1,1 @@
-0x00000000	printA
+0x[0-9a-fA-F]+	printA
