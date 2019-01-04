@@ -450,6 +450,7 @@ static bool test_run_parent_check_outputs(const struct test *t,
 	bool fd_activityout = false, fd_activityerr = false;
 	unsigned long long end_usec, start_usec;
 	_cleanup_free_ struct buffer *buf_out = NULL, *buf_err = NULL;
+	int n_fd = 0;
 
 	fd_ep = epoll_create1(EPOLL_CLOEXEC);
 	if (fd_ep < 0) {
@@ -474,6 +475,7 @@ static bool test_run_parent_check_outputs(const struct test *t,
 			goto out;
 		}
 		buf_out = calloc(2, sizeof(*buf_out));
+		n_fd++;
 	} else
 		fdout = -1;
 
@@ -495,6 +497,7 @@ static bool test_run_parent_check_outputs(const struct test *t,
 			goto out;
 		}
 		buf_err = calloc(2, sizeof(*buf_err));
+		n_fd++;
 	} else
 		fderr = -1;
 
@@ -506,11 +509,12 @@ static bool test_run_parent_check_outputs(const struct test *t,
 		ERR("could not add monitor fd to epoll: %m\n");
 		goto out;
 	}
+	n_fd++;
 
 	start_usec = now_usec();
 	end_usec = start_usec + TEST_TIMEOUT_USEC;
 
-	for (err = 0; fdmonitor >= 0 || fdout >= 0 || fderr >= 0;) {
+	for (err = 0; n_fd > 0;) {
 		int fdcount, i, timeout;
 		struct epoll_event ev[4];
 		unsigned long long curr_usec = now_usec();
@@ -571,6 +575,7 @@ static bool test_run_parent_check_outputs(const struct test *t,
 					ERR("could not remove fd %d from epoll: %m\n", fd);
 				}
 				*(int *)ev[i].data.ptr = -1;
+				n_fd--;
 			}
 		}
 	}
