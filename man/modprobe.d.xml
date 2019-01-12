@@ -63,7 +63,7 @@
       module commands as underscore conversion happens automatically.
     </para>
     <para>
-      The format of and files under <filename>modprobe.d</filename> is
+      The format of files under <filename>modprobe.d</filename> is
       simple: one command per line, with blank lines and lines starting
       with '#' ignored (useful for adding comments).  A '\' at the end
       of a line causes it to continue on the next line, which makes the
