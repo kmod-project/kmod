@@ -58,6 +58,7 @@ map=(
     ["test-modinfo/mod-simple-sparc64.ko"]="mod-simple-sparc64.ko"
     ["test-modinfo/mod-simple-sha1.ko"]="mod-simple.ko"
     ["test-modinfo/mod-simple-sha256.ko"]="mod-simple.ko"
+    ["test-modinfo/mod-simple-pkcs7.ko"]="mod-simple.ko"
     ["test-modinfo/external/lib/modules/external/mod-simple.ko"]="mod-simple.ko"
     ["test-tools/insert/lib/modules/4.4.4/kernel/"]="mod-simple.ko"
     ["test-tools/remove/lib/modules/4.4.4/kernel/"]="mod-simple.ko"
@@ -75,6 +76,10 @@ attach_sha256_array=(
 
 attach_sha1_array=(
     "test-modinfo/mod-simple-sha1.ko"
+    )
+
+attach_pkcs7_array=(
+    "test-modinfo/mod-simple-pkcs7.ko"
     )
 
 for k in ${!map[@]}; do
@@ -102,4 +107,8 @@ done
 
 for m in "${attach_sha256_array[@]}"; do
     cat ${MODULE_PLAYGROUND}/dummy.sha256 >> ${ROOTFS}/$m
+done
+
+for m in "${attach_pkcs7_array[@]}"; do
+    cat ${MODULE_PLAYGROUND}/dummy.pkcs7 >> ${ROOTFS}/$m
 done

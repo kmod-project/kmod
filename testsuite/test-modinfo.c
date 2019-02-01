@@ -56,7 +56,8 @@ DEFINE_TEST(test_modinfo_##_field, \
 #define DEFINE_MODINFO_SIGN_TEST(_field) \
 	DEFINE_MODINFO_TEST(_field, \
 			    "/mod-simple-sha1.ko", \
-			    "/mod-simple-sha256.ko")
+			    "/mod-simple-sha256.ko",	\
+			    "/mod-simple-pkcs7.ko")
 
 DEFINE_MODINFO_GENERIC_TEST(filename);
 DEFINE_MODINFO_GENERIC_TEST(author);
