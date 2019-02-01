@@ -188,5 +188,8 @@ struct kmod_signature_info {
 	const char *algo, *hash_algo, *id_type;
 	const char *sig;
 	size_t sig_len;
+	void (*free)(void *);
+	void *private;
 };
 bool kmod_module_signature_info(const struct kmod_file *file, struct kmod_signature_info *sig_info) _must_check_ __attribute__((nonnull(1, 2)));
+void kmod_module_signature_info_free(struct kmod_signature_info *sig_info) __attribute__((nonnull));

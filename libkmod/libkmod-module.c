@@ -2357,6 +2357,9 @@ KMOD_EXPORT int kmod_module_get_info(const struct kmod_module *mod, struct kmod_
 	ret = count;
 
 list_error:
+	/* aux structures freed in normal case also */
+	kmod_module_signature_info_free(&sig_info);
+
 	if (ret < 0) {
 		kmod_module_info_free_list(*list);
 		*list = NULL;

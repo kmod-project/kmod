@@ -35,6 +35,8 @@ SED_PROCESS = \
 	-e 's,@liblzma_LIBS\@,${liblzma_LIBS},g' \
 	-e 's,@zlib_CFLAGS\@,${zlib_CFLAGS},g' \
 	-e 's,@zlib_LIBS\@,${zlib_LIBS},g' \
+	-e 's,@openssl_CFLAGS\@,${openssl_CFLAGS},g' \
+	-e 's,@openssl_LIBS\@,${openssl_LIBS},g' \
 	< $< > $@ || rm $@
 
 %.pc: %.pc.in Makefile
@@ -87,7 +89,7 @@ libkmod_libkmod_la_DEPENDENCIES = \
 	${top_srcdir}/libkmod/libkmod.sym
 libkmod_libkmod_la_LIBADD = \
 	shared/libshared.la \
-	${liblzma_LIBS} ${zlib_LIBS}
+	${liblzma_LIBS} ${zlib_LIBS} ${openssl_LIBS}
 
 noinst_LTLIBRARIES += libkmod/libkmod-internal.la
 libkmod_libkmod_internal_la_SOURCES = $(libkmod_libkmod_la_SOURCES)

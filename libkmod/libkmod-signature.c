@@ -19,6 +19,10 @@
 
 #include <endian.h>
 #include <inttypes.h>
+#ifdef ENABLE_OPENSSL
+#include <openssl/cms.h>
+#include <openssl/ssl.h>
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -115,14 +119,193 @@ static bool fill_default(const char *mem, off_t size,
 	return true;
 }
 
-static bool fill_unknown(const char *mem, off_t size,
-			 const struct module_signature *modsig, size_t sig_len,
-			 struct kmod_signature_info *sig_info)
+#ifdef ENABLE_OPENSSL
+
+struct pkcs7_private {
+	CMS_ContentInfo *cms;
+	unsigned char *key_id;
+	BIGNUM *sno;
+};
+
+static void pkcs7_free(void *s)
+{
+	struct kmod_signature_info *si = s;
+	struct pkcs7_private *pvt = si->private;
+
+	CMS_ContentInfo_free(pvt->cms);
+	BN_free(pvt->sno);
+	free(pvt->key_id);
+	free(pvt);
+	si->private = NULL;
+}
+
+static int obj_to_hash_algo(const ASN1_OBJECT *o)
+{
+	int nid;
+
+	nid = OBJ_obj2nid(o);
+	switch (nid) {
+	case NID_md4:
+		return PKEY_HASH_MD4;
+	case NID_md5:
+		return PKEY_HASH_MD5;
+	case NID_sha1:
+		return PKEY_HASH_SHA1;
+	case NID_ripemd160:
+		return PKEY_HASH_RIPE_MD_160;
+	case NID_sha256:
+		return PKEY_HASH_SHA256;
+	case NID_sha384:
+		return PKEY_HASH_SHA384;
+	case NID_sha512:
+		return PKEY_HASH_SHA512;
+	case NID_sha224:
+		return PKEY_HASH_SHA224;
+	default:
+		return -1;
+	}
+	return -1;
+}
+
+static const char *x509_name_to_str(X509_NAME *name)
+{
+	int i;
+	X509_NAME_ENTRY *e;
+	ASN1_STRING *d;
+	ASN1_OBJECT *o;
+	int nid = -1;
+	const char *str;
+
+	for (i = 0; i < X509_NAME_entry_count(name); i++) {
+		e = X509_NAME_get_entry(name, i);
+		o = X509_NAME_ENTRY_get_object(e);
+		nid = OBJ_obj2nid(o);
+		if (nid == NID_commonName)
+			break;
+	}
+	if (nid == -1)
+		return NULL;
+
+	d = X509_NAME_ENTRY_get_data(e);
+	str = (const char *)ASN1_STRING_get0_data(d);
+
+	return str;
+}
+
+static bool fill_pkcs7(const char *mem, off_t size,
+		       const struct module_signature *modsig, size_t sig_len,
+		       struct kmod_signature_info *sig_info)
+{
+	const char *pkcs7_raw;
+	CMS_ContentInfo *cms;
+	STACK_OF(CMS_SignerInfo) *sis;
+	CMS_SignerInfo *si;
+	int rc;
+	ASN1_OCTET_STRING *key_id;
+	X509_NAME *issuer;
+	ASN1_INTEGER *sno;
+	ASN1_OCTET_STRING *sig;
+	BIGNUM *sno_bn;
+	X509_ALGOR *dig_alg;
+	X509_ALGOR *sig_alg;
+	const ASN1_OBJECT *o;
+	BIO *in;
+	int len;
+	unsigned char *key_id_str;
+	struct pkcs7_private *pvt;
+	const char *issuer_str;
+
+	size -= sig_len;
+	pkcs7_raw = mem + size;
+
+	in = BIO_new_mem_buf(pkcs7_raw, sig_len);
+
+	cms = d2i_CMS_bio(in, NULL);
+	if (cms == NULL) {
+		BIO_free(in);
+		return false;
+	}
+
+	BIO_free(in);
+
+	sis = CMS_get0_SignerInfos(cms);
+	if (sis == NULL)
+		goto err;
+
+	si = sk_CMS_SignerInfo_value(sis, 0);
+	if (si == NULL)
+		goto err;
+
+	rc = CMS_SignerInfo_get0_signer_id(si, &key_id, &issuer, &sno);
+	if (rc == 0)
+		goto err;
+
+	sig = CMS_SignerInfo_get0_signature(si);
+	if (sig == NULL)
+		goto err;
+
+	CMS_SignerInfo_get0_algs(si, NULL, NULL, &dig_alg, &sig_alg);
+
+	sig_info->sig = (const char *)ASN1_STRING_get0_data(sig);
+	sig_info->sig_len = ASN1_STRING_length(sig);
+
+	sno_bn = ASN1_INTEGER_to_BN(sno, NULL);
+	if (sno_bn == NULL)
+		goto err;
+
+	len = BN_num_bytes(sno_bn);
+	key_id_str = malloc(len);
+	if (key_id_str == NULL)
+		goto err2;
+	BN_bn2bin(sno_bn, key_id_str);
+
+	sig_info->key_id = (const char *)key_id_str;
+	sig_info->key_id_len = len;
+
+	issuer_str = x509_name_to_str(issuer);
+	if (issuer_str != NULL) {
+		sig_info->signer = issuer_str;
+		sig_info->signer_len = strlen(issuer_str);
+	}
+
+	X509_ALGOR_get0(&o, NULL, NULL, dig_alg);
+
+	sig_info->hash_algo = pkey_hash_algo[obj_to_hash_algo(o)];
+	sig_info->id_type = pkey_id_type[modsig->id_type];
+
+	pvt = malloc(sizeof(*pvt));
+	if (pvt == NULL)
+		goto err3;
+
+	pvt->cms = cms;
+	pvt->key_id = key_id_str;
+	pvt->sno = sno_bn;
+	sig_info->private = pvt;
+
+	sig_info->free = pkcs7_free;
+
+	return true;
+err3:
+	free(key_id_str);
+err2:
+	BN_free(sno_bn);
+err:
+	CMS_ContentInfo_free(cms);
+	return false;
+}
+
+#else /* ENABLE OPENSSL */
+
+static bool fill_pkcs7(const char *mem, off_t size,
+		       const struct module_signature *modsig, size_t sig_len,
+		       struct kmod_signature_info *sig_info)
 {
 	sig_info->hash_algo = "unknown";
 	sig_info->id_type = pkey_id_type[modsig->id_type];
 	return true;
 }
+
+#endif /* ENABLE OPENSSL */
 
 #define SIG_MAGIC "~Module signature appended~\n"
 
@@ -167,8 +350,14 @@ bool kmod_module_signature_info(const struct kmod_file *file, struct kmod_signat
 
 	switch (modsig->id_type) {
 	case PKEY_ID_PKCS7:
-		return fill_unknown(mem, size, modsig, sig_len, sig_info);
+		return fill_pkcs7(mem, size, modsig, sig_len, sig_info);
 	default:
 		return fill_default(mem, size, modsig, sig_len, sig_info);
 	}
+}
+
+void kmod_module_signature_info_free(struct kmod_signature_info *sig_info)
+{
+	if (sig_info->free)
+		sig_info->free(sig_info);
 }
