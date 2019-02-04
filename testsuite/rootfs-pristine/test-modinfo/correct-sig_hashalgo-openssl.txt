@@ -1,4 +1,3 @@
 sha1
 sha256
-unknown
-
+sha256

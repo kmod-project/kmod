@@ -27,7 +27,7 @@
 
 static const char *progname = ABS_TOP_BUILDDIR "/tools/modinfo";
 
-#define DEFINE_MODINFO_TEST(_field, ...) \
+#define DEFINE_MODINFO_TEST(_field, _flavor, ...) \
 static noreturn int test_modinfo_##_field(const struct test *t) \
 { \
 	const char *const args[] = { \
@@ -44,20 +44,28 @@ DEFINE_TEST(test_modinfo_##_field, \
 		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-modinfo/", \
 	}, \
 	.output = { \
-		.out = TESTSUITE_ROOTFS "test-modinfo/correct-" #_field ".txt", \
+		.out = TESTSUITE_ROOTFS "test-modinfo/correct-" #_field #_flavor ".txt", \
 	})
 
 #define DEFINE_MODINFO_GENERIC_TEST(_field) \
-	DEFINE_MODINFO_TEST(_field, \
+	DEFINE_MODINFO_TEST(_field, , \
 			    "/mod-simple-i386.ko", \
 			    "/mod-simple-x86_64.ko", \
 			    "/mod-simple-sparc64.ko")
 
+#ifdef ENABLE_OPENSSL
 #define DEFINE_MODINFO_SIGN_TEST(_field) \
-	DEFINE_MODINFO_TEST(_field, \
+	DEFINE_MODINFO_TEST(_field, -openssl, \
 			    "/mod-simple-sha1.ko", \
 			    "/mod-simple-sha256.ko",	\
 			    "/mod-simple-pkcs7.ko")
+#else
+#define DEFINE_MODINFO_SIGN_TEST(_field) \
+	DEFINE_MODINFO_TEST(_field, , \
+			    "/mod-simple-sha1.ko", \
+			    "/mod-simple-sha256.ko",	\
+			    "/mod-simple-pkcs7.ko")
+#endif
 
 DEFINE_MODINFO_GENERIC_TEST(filename);
 DEFINE_MODINFO_GENERIC_TEST(author);
