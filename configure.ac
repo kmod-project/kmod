@@ -110,7 +110,7 @@ AC_ARG_WITH([openssl],
 	AS_HELP_STRING([--with-openssl], [handle PKCS7 signatures @<:@default=disabled@:>@]),
 	[], [with_openssl=no])
 AS_IF([test "x$with_openssl" != "xno"], [
-	PKG_CHECK_MODULES([openssl], [openssl])
+	PKG_CHECK_MODULES([openssl], [openssl >= 1.1.0])
 	AC_DEFINE([ENABLE_OPENSSL], [1], [Enable openssl for modinfo.])
 ], [
 	AC_MSG_NOTICE([openssl support not requested])
