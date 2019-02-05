@@ -1,6 +1,6 @@
 [Distribution]
 Distribution=fedora
-Release=27
+Release=29
 
 [Output]
 Output = fedora-image.raw
@@ -21,6 +21,7 @@ BuildPackages =
 	xml-common
 	xz-devel
 	zlib-devel
+	openssl-devel
 
 [Partitions]
 RootSize = 2G

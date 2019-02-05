@@ -32,7 +32,7 @@ cd build
 kdir=$(find_kdir)
 IFS=/ read _ _ _ kver _ <<<"$kdir"
 
-../autogen.sh c
+../autogen.sh c --disable-python
 make -j
 make check KDIR="$kdir" KVER="$kver"
 make install
