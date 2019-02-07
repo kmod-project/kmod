@@ -1,3 +1,50 @@
+kmod 26
+=======
+
+- Improvements
+	- Add more error-checking in library functions and remove warnings on newer
+	  toolchains
+
+	- Depmod now handles parallel invoctions better by protecting the temporary
+	  files being used
+
+	- Improvements to testsuite and added tests to check the our behavior
+	  regardless of the features enabled in the kernel, or libraries we link to
+
+	- Teach the --show-exports option to modprobe. This works similarly to
+	  --show-modversions, but it reports the exported symbols from that module.
+	  Under the hood this reads the .symtab and .strtab section rather than
+	  __versions so it shows useful data even if kernel is configured without
+	  modversions (CONFIG_MODVERSIONS)
+
+	- Teach pkcs7 parsing to modinfo by using openssl. This allows modinfo to
+	  correctly parse the signature appended to a module by the kernel build
+	  system when configured with CONFIG_MODULE_SIG_ALL, or when externally
+	  signed by the distro. Traditionally modules were signed and a struct
+	  was appended together with the signature to the end of the module.
+	  This has changed on the kernel for pkcs#7 and now the structure isn't
+	  filled out with useful information.  So we have to parse the signature
+	  block in order to return useful data to the user.
+
+	  If kmod is linked with openssl we parse the signature and return the
+	  fields as we do for other signatures. An example of the relevant part
+	  on the output of modinfo is below:
+
+	  Before:
+		  sig_id:         PKCS#7
+		  signer:
+		  sig_key:
+		  sig_hashalgo:   md4
+	  After:
+		  sig_id:         PKCS#7
+		  signer:         Fedora kernel signing key
+		  sig_key:        51:C4:0C:6D:7E:A5:6C:D8:8F:B4:3A:DF:91:78:4F:18:BC:D5:E4:C5
+		  sig_hashalgo:   sha256
+
+	  If kmod is not linked to openssl we just start printing "unknonwn" in the
+	  sig_hashalgo field rather than the bogus value.
+
+
 kmod 25
 =======
 
