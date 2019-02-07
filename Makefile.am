@@ -272,6 +272,7 @@ check-am: rootfs check-sysconfdir
 
 EXTRA_DIST += \
 	testsuite/module-playground/cache \
+	testsuite/module-playground/dummy.pkcs7 \
 	testsuite/module-playground/dummy.sha1 \
 	testsuite/module-playground/dummy.sha256 \
 	testsuite/module-playground/Makefile \
@@ -406,7 +407,7 @@ DISTCLEAN_LOCAL_HOOKS += testsuite-distclean
 EXTRA_DIST += testsuite/rootfs-pristine
 
 DISTCHECK_CONFIGURE_FLAGS=--enable-gtk-doc --enable-python --sysconfdir=/etc \
-	--with-zlib \
+	--with-zlib --with-openssl \
 	--with-bashcompletiondir=$$dc_install_base/$(bashcompletiondir)
 
 distclean-local: $(DISTCLEAN_LOCAL_HOOKS)
