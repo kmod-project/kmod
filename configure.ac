@@ -110,12 +110,12 @@ AC_ARG_WITH([openssl],
 	AS_HELP_STRING([--with-openssl], [handle PKCS7 signatures @<:@default=disabled@:>@]),
 	[], [with_openssl=no])
 AS_IF([test "x$with_openssl" != "xno"], [
-	PKG_CHECK_MODULES([openssl], [openssl >= 1.1.0])
+	PKG_CHECK_MODULES([libcrypto], [libcrypto >= 1.1.0])
 	AC_DEFINE([ENABLE_OPENSSL], [1], [Enable openssl for modinfo.])
 ], [
 	AC_MSG_NOTICE([openssl support not requested])
 ])
-CC_FEATURE_APPEND([with_features], [with_openssl], [OPENSSL])
+CC_FEATURE_APPEND([with_features], [with_openssl], [LIBCRYPTO])
 
 AC_ARG_WITH([bashcompletiondir],
 	AS_HELP_STRING([--with-bashcompletiondir=DIR], [Bash completions directory]),
