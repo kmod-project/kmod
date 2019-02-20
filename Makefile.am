@@ -415,8 +415,6 @@ distclean-local: $(DISTCLEAN_LOCAL_HOOKS)
 buildtest-TESTS:
 	$(MAKE) $(AM_MAKEFLAGS) $(check_LTLIBRARIES) $(check_PROGRAMS)
 
-DISTCLEANFILES += $(DOLT_CLEANFILES)
-
 # ------------------------------------------------------------------------------
 # coverage
 # ------------------------------------------------------------------------------
