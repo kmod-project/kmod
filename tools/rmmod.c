@@ -63,7 +63,7 @@ static void help(void)
 
 static int check_module_inuse(struct kmod_module *mod) {
 	struct kmod_list *holders;
-	int state;
+	int state, ret;
 
 	state = kmod_module_get_initstate(mod);
 
@@ -93,12 +93,15 @@ static int check_module_inuse(struct kmod_module *mod) {
 		return -EBUSY;
 	}
 
-	if (kmod_module_get_refcnt(mod) != 0) {
+	ret = kmod_module_get_refcnt(mod);
+	if (ret > 0) {
 		ERR("Module %s is in use\n", kmod_module_get_name(mod));
 		return -EBUSY;
+	} else if (ret == -ENOENT) {
+		ERR("Module unloading is not supported\n");
 	}
 
-	return 0;
+	return ret;
 }
 
 static int do_rmmod(int argc, char *argv[])
