@@ -20,7 +20,7 @@
 #include <endian.h>
 #include <inttypes.h>
 #ifdef ENABLE_OPENSSL
-#include <openssl/cms.h>
+#include <openssl/pkcs7.h>
 #include <openssl/ssl.h>
 #endif
 #include <stdio.h>
@@ -122,7 +122,7 @@ static bool fill_default(const char *mem, off_t size,
 #ifdef ENABLE_OPENSSL
 
 struct pkcs7_private {
-	CMS_ContentInfo *cms;
+	PKCS7 *pkcs7;
 	unsigned char *key_id;
 	BIGNUM *sno;
 };
@@ -132,7 +132,7 @@ static void pkcs7_free(void *s)
 	struct kmod_signature_info *si = s;
 	struct pkcs7_private *pvt = si->private;
 
-	CMS_ContentInfo_free(pvt->cms);
+	PKCS7_free(pvt->pkcs7);
 	BN_free(pvt->sno);
 	free(pvt->key_id);
 	free(pvt);
@@ -197,11 +197,10 @@ static bool fill_pkcs7(const char *mem, off_t size,
 		       struct kmod_signature_info *sig_info)
 {
 	const char *pkcs7_raw;
-	CMS_ContentInfo *cms;
-	STACK_OF(CMS_SignerInfo) *sis;
-	CMS_SignerInfo *si;
-	int rc;
-	ASN1_OCTET_STRING *key_id;
+	PKCS7 *pkcs7;
+	STACK_OF(PKCS7_SIGNER_INFO) *sis;
+	PKCS7_SIGNER_INFO *si;
+	PKCS7_ISSUER_AND_SERIAL *is;
 	X509_NAME *issuer;
 	ASN1_INTEGER *sno;
 	ASN1_OCTET_STRING *sig;
@@ -220,31 +219,33 @@ static bool fill_pkcs7(const char *mem, off_t size,
 
 	in = BIO_new_mem_buf(pkcs7_raw, sig_len);
 
-	cms = d2i_CMS_bio(in, NULL);
-	if (cms == NULL) {
+	pkcs7 = d2i_PKCS7_bio(in, NULL);
+	if (pkcs7 == NULL) {
 		BIO_free(in);
 		return false;
 	}
 
 	BIO_free(in);
 
-	sis = CMS_get0_SignerInfos(cms);
+	sis = PKCS7_get_signer_info(pkcs7);
 	if (sis == NULL)
 		goto err;
 
-	si = sk_CMS_SignerInfo_value(sis, 0);
+	si = sk_PKCS7_SIGNER_INFO_value(sis, 0);
 	if (si == NULL)
 		goto err;
 
-	rc = CMS_SignerInfo_get0_signer_id(si, &key_id, &issuer, &sno);
-	if (rc == 0)
+	is = si->issuer_and_serial;
+	if (is == NULL)
 		goto err;
+	issuer = is->issuer;
+	sno = is->serial;
 
-	sig = CMS_SignerInfo_get0_signature(si);
+	sig = si->enc_digest;
 	if (sig == NULL)
 		goto err;
 
-	CMS_SignerInfo_get0_algs(si, NULL, NULL, &dig_alg, &sig_alg);
+	PKCS7_SIGNER_INFO_get0_algs(si, NULL, &dig_alg, &sig_alg);
 
 	sig_info->sig = (const char *)ASN1_STRING_get0_data(sig);
 	sig_info->sig_len = ASN1_STRING_length(sig);
@@ -277,7 +278,7 @@ static bool fill_pkcs7(const char *mem, off_t size,
 	if (pvt == NULL)
 		goto err3;
 
-	pvt->cms = cms;
+	pvt->pkcs7 = pkcs7;
 	pvt->key_id = key_id_str;
 	pvt->sno = sno_bn;
 	sig_info->private = pvt;
@@ -290,7 +291,7 @@ err3:
 err2:
 	BN_free(sno_bn);
 err:
-	CMS_ContentInfo_free(cms);
+	PKCS7_free(pkcs7);
 	return false;
 }
 
