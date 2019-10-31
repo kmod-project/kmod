@@ -353,7 +353,8 @@ static int rmmod_do_remove_module(struct kmod_module *mod)
 	return err;
 }
 
-static int rmmod_do_module(struct kmod_module *mod, bool do_dependencies);
+static int rmmod_do_module(struct kmod_module *mod, bool do_dependencies,
+			   bool ignore_builtin);
 
 static int rmmod_do_deps_list(struct kmod_list *list, bool stop_on_errors)
 {
@@ -361,7 +362,7 @@ static int rmmod_do_deps_list(struct kmod_list *list, bool stop_on_errors)
 
 	kmod_list_foreach_reverse(l, list) {
 		struct kmod_module *m = kmod_module_get_module(l);
-		int r = rmmod_do_module(m, false);
+		int r = rmmod_do_module(m, false, true);
 		kmod_module_unref(m);
 
 		if (r < 0 && stop_on_errors)
@@ -371,7 +372,8 @@ static int rmmod_do_deps_list(struct kmod_list *list, bool stop_on_errors)
 	return 0;
 }
 
-static int rmmod_do_module(struct kmod_module *mod, bool do_dependencies)
+static int rmmod_do_module(struct kmod_module *mod, bool do_dependencies,
+			   bool ignore_builtin)
 {
 	const char *modname = kmod_module_get_name(mod);
 	struct kmod_list *pre = NULL, *post = NULL;
@@ -401,8 +403,12 @@ static int rmmod_do_module(struct kmod_module *mod, bool do_dependencies)
 			}
 			goto error;
 		} else if (state == KMOD_MODULE_BUILTIN) {
-			LOG("Module %s is builtin.\n", modname);
-			err = -ENOENT;
+			if (ignore_builtin) {
+				err = 0;
+			} else {
+				LOG("Module %s is builtin.\n", modname);
+				err = -ENOENT;
+			}
 			goto error;
 		}
 	}
@@ -462,7 +468,7 @@ static int rmmod(struct kmod_ctx *ctx, const char *alias)
 
 	kmod_list_foreach(l, list) {
 		struct kmod_module *mod = kmod_module_get_module(l);
-		err = rmmod_do_module(mod, true);
+		err = rmmod_do_module(mod, true, false);
 		kmod_module_unref(mod);
 		if (err < 0)
 			break;
