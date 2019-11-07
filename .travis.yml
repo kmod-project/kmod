@@ -1,17 +1,5 @@
 language: c
-before_install:
-  - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
-  - sudo apt-get update -qq
-  - sudo apt-get install -qq liblzma-dev
-  - sudo apt-get install -qq zlib1g-dev
-  - sudo apt-get install -qq xsltproc docbook-xsl
-  - sudo apt-get install -qq cython
-  - sudo apt-get install -qq linux-headers-generic
-  - if [ "$MYCC" = "gcc-4.8" ]; then sudo apt-get install -qq gcc-4.8; sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.8 90; gcc --version; fi
-  - if [ "$MYCC" = "gcc-4.9" ]; then sudo apt-get install -qq gcc-4.9; sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 90; gcc --version; fi
-before_script:
-  - unset PYTHON_CFLAGS # hack to broken travis setup
-  - export KDIR="$(find  /lib/modules/* -maxdepth  1 -name build | sort -n --reverse | head -1)"
+
 matrix:
   include:
     - compiler: gcc
@@ -22,7 +10,26 @@ matrix:
       env: MYCC=gcc-4.9
     - compiler: clang
       env: MYCC=clang
-script: ./autogen.sh c --without-openssl && make -j && make -j check
+
+before_install:
+  - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+  - sudo apt-get update -qq
+  - sudo apt-get install -qq liblzma-dev
+  - sudo apt-get install -qq zlib1g-dev
+  - sudo apt-get install -qq xsltproc docbook-xsl
+  - sudo apt-get install -qq cython
+  - sudo apt-get install -qq linux-headers-generic
+  - if [ "$MYCC" = "gcc-4.8" ]; then sudo apt-get install -qq gcc-4.8; sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.8 90; gcc --version; fi
+  - if [ "$MYCC" = "gcc-4.9" ]; then sudo apt-get install -qq gcc-4.9; sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 90; gcc --version; fi
+
+before_script:
+  - unset PYTHON_CFLAGS # hack to broken travis setup
+  - export KDIR="$(find  /lib/modules/* -maxdepth  1 -name build | sort -n --reverse | head -1)"
+
+script:
+  - ./autogen.sh c --without-openssl && make -j
+  - if [ "$MYCC" != "gcc-4.8" ]; then make -j check; fi
+
 notifications:
   irc:
     channels:
