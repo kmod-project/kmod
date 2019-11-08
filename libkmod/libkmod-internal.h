@@ -193,3 +193,11 @@ struct kmod_signature_info {
 };
 bool kmod_module_signature_info(const struct kmod_file *file, struct kmod_signature_info *sig_info) _must_check_ __attribute__((nonnull(1, 2)));
 void kmod_module_signature_info_free(struct kmod_signature_info *sig_info) __attribute__((nonnull));
+
+/* libkmod-builtin.c */
+struct kmod_builtin_iter;
+struct kmod_builtin_iter *kmod_builtin_iter_new(struct kmod_ctx *ctx) __attribute__((nonnull(1)));
+void kmod_builtin_iter_free(struct kmod_builtin_iter *iter) __attribute__((nonnull(1)));
+bool kmod_builtin_iter_next(struct kmod_builtin_iter *iter) __attribute__((nonnull(1)));
+bool kmod_builtin_iter_get_modname(struct kmod_builtin_iter *iter, char modname[static PATH_MAX]) __attribute__((nonnull(1, 2)));
+ssize_t kmod_builtin_get_modinfo(struct kmod_ctx *ctx, const char *modname, char ***modinfo) __attribute__((nonnull(1, 2, 3)));

@@ -68,6 +68,7 @@ libkmod_libkmod_la_SOURCES = \
 	libkmod/libkmod.h \
 	libkmod/libkmod-internal.h \
 	libkmod/libkmod.c \
+	libkmod/libkmod-builtin.c \
 	libkmod/libkmod-list.c \
 	libkmod/libkmod-config.c \
 	libkmod/libkmod-index.c \
