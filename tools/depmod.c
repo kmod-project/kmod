@@ -2402,6 +2402,68 @@ static int output_devname(struct depmod *depmod, FILE *out)
 	return 0;
 }
 
+static int output_builtin_alias_bin(struct depmod *depmod, FILE *out)
+{
+	int ret = 0, count = 0;
+	struct index_node *idx;
+	struct kmod_list *l, *builtin = NULL;
+
+	idx = index_create();
+
+	if (idx == NULL) {
+		ret = -ENOMEM;
+		goto fail;
+	}
+
+	ret = kmod_module_get_builtin(depmod->ctx, &builtin);
+	if (ret < 0) {
+		if (ret == -ENOENT)
+			ret = 0;
+		goto fail;
+	}
+
+	kmod_list_foreach(l, builtin) {
+		struct kmod_list *ll, *info_list = NULL;
+		struct kmod_module *mod = l->data;
+		const char *modname = kmod_module_get_name(mod);
+
+		ret = kmod_module_get_info(mod, &info_list);
+		if (ret < 0)
+			goto fail;
+
+		kmod_list_foreach(ll, info_list) {
+			char alias[PATH_MAX];
+			const char *key = kmod_module_info_get_key(ll);
+			const char *value = kmod_module_info_get_value(ll);
+
+			if (!streq(key, "alias"))
+				continue;
+
+			alias[0] = '\0';
+			if (alias_normalize(value, alias, NULL) < 0) {
+				WRN("Unmatched bracket in %s\n", value);
+				continue;
+			}
+
+			index_insert(idx, alias, modname, 0);
+		}
+
+		kmod_module_info_free_list(info_list);
+
+		index_insert(idx, modname, modname, 0);
+		count++;
+	}
+
+	if (count)
+		index_write(idx, out);
+	index_destroy(idx);
+fail:
+	if (builtin)
+		kmod_module_unref_list(builtin);
+
+	return ret;
+}
+
 static int depmod_output(struct depmod *depmod, FILE *out)
 {
 	static const struct depfile {
@@ -2416,6 +2478,7 @@ static int depmod_output(struct depmod *depmod, FILE *out)
 		{ "modules.symbols", output_symbols },
 		{ "modules.symbols.bin", output_symbols_bin },
 		{ "modules.builtin.bin", output_builtin_bin },
+		{ "modules.builtin.alias.bin", output_builtin_alias_bin },
 		{ "modules.devname", output_devname },
 		{ }
 	};

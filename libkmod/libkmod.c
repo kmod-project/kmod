@@ -57,6 +57,7 @@ static struct _index_files {
 	[KMOD_INDEX_MODULES_DEP] = { .fn = "modules.dep", .prefix = "" },
 	[KMOD_INDEX_MODULES_ALIAS] = { .fn = "modules.alias", .prefix = "alias " },
 	[KMOD_INDEX_MODULES_SYMBOL] = { .fn = "modules.symbols", .prefix = "alias "},
+	[KMOD_INDEX_MODULES_BUILTIN_ALIAS] = { .fn = "modules.builtin.alias", .prefix = "" },
 	[KMOD_INDEX_MODULES_BUILTIN] = { .fn = "modules.builtin", .prefix = ""},
 };
 
@@ -520,6 +521,30 @@ static char *lookup_builtin_file(struct kmod_ctx *ctx, const char *name)
 	}
 
 	return line;
+}
+
+int kmod_lookup_alias_from_kernel_builtin_file(struct kmod_ctx *ctx,
+						const char *name,
+						struct kmod_list **list)
+{
+	struct kmod_list *l;
+	int ret = kmod_lookup_alias_from_alias_bin(ctx,
+						KMOD_INDEX_MODULES_BUILTIN_ALIAS,
+						name, list);
+	if (ret > 0) {
+		kmod_list_foreach(l, *list) {
+			struct kmod_module *mod = l->data;
+			kmod_module_set_builtin(mod, true);
+		}
+	} else if (ret == -ENOSYS) {
+		/*
+		 * If the system does not support this yet, then
+		 * there is no need to return an error.
+		 */
+		ret = 0;
+	}
+
+	return ret;
 }
 
 int kmod_lookup_alias_from_builtin_file(struct kmod_ctx *ctx, const char *name,
