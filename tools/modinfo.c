@@ -172,18 +172,33 @@ static int modinfo_do(struct kmod_module *mod)
 {
 	struct kmod_list *l, *list = NULL;
 	struct param *params = NULL;
-	int err;
+	int err, is_builtin;
+	const char *filename = kmod_module_get_path(mod);
+
+	is_builtin = (filename == NULL);
+
+	if (is_builtin) {
+		printf("%-16s%s%c", "name:", kmod_module_get_name(mod), separator);
+		filename = "(builtin)";
+	}
 
 	if (field != NULL && streq(field, "filename")) {
-		printf("%s%c", kmod_module_get_path(mod), separator);
+		printf("%s%c", filename, separator);
 		return 0;
 	} else if (field == NULL) {
 		printf("%-16s%s%c", "filename:",
-		       kmod_module_get_path(mod), separator);
+		       filename, separator);
 	}
 
 	err = kmod_module_get_info(mod, &list);
 	if (err < 0) {
+		if (is_builtin && err == -ENOENT) {
+			/*
+			 * This is an old kernel that does not have a file
+			 * with information about built-in modules.
+			 */
+			return 0;
+		}
 		ERR("could not get modinfo from '%s': %s\n",
 			kmod_module_get_name(mod), strerror(-err));
 		return err;
@@ -276,7 +291,7 @@ static int modinfo_path_do(struct kmod_ctx *ctx, const char *path)
 
 static int modinfo_alias_do(struct kmod_ctx *ctx, const char *alias)
 {
-	struct kmod_list *l, *filtered, *list = NULL;
+	struct kmod_list *l, *list = NULL;
 	int err = kmod_module_new_from_lookup(ctx, alias, &list);
 	if (err < 0) {
 		ERR("Module alias %s not found.\n", alias);
@@ -288,26 +303,14 @@ static int modinfo_alias_do(struct kmod_ctx *ctx, const char *alias)
 		return -ENOENT;
 	}
 
-	err = kmod_module_apply_filter(ctx, KMOD_FILTER_BUILTIN, list, &filtered);
-	kmod_module_unref_list(list);
-	if (err < 0) {
-		ERR("Failed to filter list: %m\n");
-		return err;
-	}
-
-	if (filtered == NULL) {
-		ERR("Module %s not found.\n", alias);
-		return -ENOENT;
-	}
-
-	kmod_list_foreach(l, filtered) {
+	kmod_list_foreach(l, list) {
 		struct kmod_module *mod = kmod_module_get_module(l);
 		int r = modinfo_do(mod);
 		kmod_module_unref(mod);
 		if (r < 0)
 			err = r;
 	}
-	kmod_module_unref_list(filtered);
+	kmod_module_unref_list(list);
 	return err;
 }
 

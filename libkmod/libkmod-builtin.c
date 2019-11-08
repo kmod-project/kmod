@@ -275,7 +275,7 @@ ssize_t kmod_builtin_get_modinfo(struct kmod_ctx *ctx, const char *modname,
 	struct kmod_builtin_iter *iter = kmod_builtin_iter_new(ctx);
 
 	if (!iter)
-		return -1;
+		return -errno;
 
 	while (!name && kmod_builtin_iter_next(iter)) {
 		if (!kmod_builtin_iter_get_modname(iter, buf)) {

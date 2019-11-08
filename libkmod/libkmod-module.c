@@ -2286,13 +2286,22 @@ KMOD_EXPORT int kmod_module_get_info(const struct kmod_module *mod, struct kmod_
 
 	assert(*list == NULL);
 
-	elf = kmod_module_get_elf(mod);
-	if (elf == NULL)
-		return -errno;
+	/* remove const: this can only change internal state */
+	if (kmod_module_is_builtin((struct kmod_module *)mod)) {
+		count = kmod_builtin_get_modinfo(mod->ctx,
+						kmod_module_get_name(mod),
+						&strings);
+		if (count < 0)
+			return count;
+	} else {
+		elf = kmod_module_get_elf(mod);
+		if (elf == NULL)
+			return -errno;
 
-	count = kmod_elf_get_strings(elf, ".modinfo", &strings);
-	if (count < 0)
-		return count;
+		count = kmod_elf_get_strings(elf, ".modinfo", &strings);
+		if (count < 0)
+			return count;
+	}
 
 	for (i = 0; i < count; i++) {
 		struct kmod_list *n;
@@ -2316,7 +2325,7 @@ KMOD_EXPORT int kmod_module_get_info(const struct kmod_module *mod, struct kmod_
 			goto list_error;
 	}
 
-	if (kmod_module_signature_info(mod->file, &sig_info)) {
+	if (mod->file && kmod_module_signature_info(mod->file, &sig_info)) {
 		struct kmod_list *n;
 
 		n = kmod_module_info_append(list, "sig_id", strlen("sig_id"),
