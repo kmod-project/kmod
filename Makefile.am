@@ -173,7 +173,10 @@ CPYTHON_MODULE_CFLAGS = \
 	$(AM_CFLAGS) -DCPYTHON_COMPILING_IN_PYPY=0 \
 	$(PYTHON_NOWARN) $(PYTHON_CFLAGS) \
 	-fvisibility=default
-CPYTHON_MODULE_LDFLAGS = $(AM_LDFLAGS) -module -avoid-version -shared -Wl,-z,undefs
+# Filter -Wl,--no-undefined to fix build with python 3.8
+comma = ,
+CPYTHON_MODULE_LDFLAGS = $(subst -Wl$(comma)--no-undefined,,$(AM_LDFLAGS))
+CPYTHON_MODULE_LDFLAGS += -module -avoid-version -shared
 
 if BUILD_PYTHON
 pkgpyexec_LTLIBRARIES = \
