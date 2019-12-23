@@ -980,14 +980,19 @@ static int command_do(struct kmod_module *mod, const char *type,
 	err = system(cmd);
 	unsetenv("MODPROBE_MODULE");
 
-	if (err == -1 || WEXITSTATUS(err)) {
-		ERR(mod->ctx, "Error running %s command for %s\n",
-								type, modname);
-		if (err != -1)
-			err = -WEXITSTATUS(err);
+	if (err == -1) {
+		ERR(mod->ctx, "Could not run %s command '%s' for module %s: %m\n",
+		    type, cmd, modname);
+		return -EINVAL;
 	}
 
-	return err;
+	if (WEXITSTATUS(err)) {
+		ERR(mod->ctx, "Error running %s command '%s' for module %s: retcode %d\n",
+		    type, cmd, modname, WEXITSTATUS(err));
+		return -EINVAL;
+	}
+
+	return 0;
 }
 
 struct probe_insert_cb {
