@@ -335,6 +335,7 @@ static int kmod_config_add_softdep(struct kmod_config *config,
 	n_pre = 0;
 	n_post = 0;
 	mode = S_NONE;
+	was_space = false;
 	for (p = s = line; ; s++) {
 		size_t plen;
 
