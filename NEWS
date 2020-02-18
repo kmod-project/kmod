@@ -1,3 +1,52 @@
+kmod 27
+=======
+
+- Improvements
+	- Link to libcrypto rather than requiring openssl
+
+	- Print a better error message when kernel doesn't support module unload
+
+	- Use PKCS#7 instead of CMS for parsing module signature to be
+	  compatible with LibreSSL and OpenSSL < 1.1.0
+
+	- Teach modinfo to parse modules.builtin.modinfo. When using Linux kernel
+	  >= v5.2-rc1 it's possible to get module information from this new file. Now
+	  modinfo is able to show it instead of an error message that the module is
+	  built-in:
+
+	  Before:
+	  $ modinfo ext4
+	  modinfo: ERROR: Module ext4 not found.
+
+	  After:
+	  $ modinfo ext4
+	  name:           ext4
+	  filename:       (builtin)
+	  softdep:        pre: crc32c
+	  license:        GPL
+	  description:    Fourth Extended Filesystem
+	  author:         Remy Card, Stephen Tweedie, Andrew Morton, Andreas Dilger, Theodore Ts'o and others
+	  alias:          fs-ext4
+	  alias:          ext3
+	  alias:          fs-ext3
+	  alias:          ext2
+	  alias:          fs-ext2
+
+- Bug fixes
+	- Do not link python bindings with libpython to be compatible with
+	  python3.8
+
+	- Fix module removal with `modprobe -r` when a dependency is built-in.
+	  Now it properly ignores them and proceed with removal of other
+	  dependencies
+
+	- Fix propagation of return code from install/remove commands to the
+	  the probe function. The return values of kmod_module_probe_insert_module()
+	  have very specific meanings, do not confuse the caller by return codes
+	  from system()
+
+	- Fix softdep config parsing leading to buffer overflow
+
 kmod 26
 =======
 
