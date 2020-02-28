@@ -16,8 +16,9 @@
 /config.log
 /config.status
 /configure
-/coverage
 /cov-int
+/coverage
+/kmod-*.tar.*
 /libtool
 /stamp-h1
 /test-suite.log
