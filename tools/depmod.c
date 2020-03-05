@@ -2408,8 +2408,10 @@ static int output_builtin_alias_bin(struct depmod *depmod, FILE *out)
 	struct index_node *idx;
 	struct kmod_list *l, *builtin = NULL;
 
-	idx = index_create();
+	if (out == stdout)
+		return 0;
 
+	idx = index_create();
 	if (idx == NULL) {
 		ret = -ENOMEM;
 		goto fail;
@@ -2456,7 +2458,9 @@ static int output_builtin_alias_bin(struct depmod *depmod, FILE *out)
 
 	if (count)
 		index_write(idx, out);
+
 	index_destroy(idx);
+
 fail:
 	if (builtin)
 		kmod_module_unref_list(builtin);
