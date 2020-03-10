@@ -328,6 +328,31 @@ DEFINE_TEST(modprobe_param_kcmdline5,
 	);
 
 
+static noreturn int modprobe_param_kcmdline6(const struct test *t)
+{
+	const char *progname = ABS_TOP_BUILDDIR "/tools/modprobe";
+	const char *const args[] = {
+		progname,
+		"-c",
+		NULL,
+	};
+
+	test_spawn_prog(progname, args);
+	exit(EXIT_FAILURE);
+}
+DEFINE_TEST(modprobe_param_kcmdline6,
+	.description = "check if dots on other parts of kcmdline don't confuse our parser",
+	.config = {
+		[TC_UNAME_R] = "4.4.4",
+		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-modprobe/module-param-kcmdline6",
+	},
+	.output = {
+		.out = TESTSUITE_ROOTFS "test-modprobe/module-param-kcmdline6/correct.txt",
+	},
+	.modules_loaded = "",
+	);
+
+
 static noreturn int modprobe_force(const struct test *t)
 {
 	const char *progname = ABS_TOP_BUILDDIR "/tools/modprobe";

@@ -1,0 +1,6 @@
+options psmouse foo=2
+options psmouse bar=1
+options psmouse zinga=test
+
+# End of configuration files. Dumping indexes now:
+
