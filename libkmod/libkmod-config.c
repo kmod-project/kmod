@@ -488,8 +488,9 @@ static void kcmdline_parse_result(struct kmod_config *config, char *modname,
 		if (underscores(modname) < 0) {
 			ERR(config->ctx, "Ignoring bad option on kernel command line while parsing module name: '%s'\n",
 			    modname);
+		} else {
+			kmod_config_add_options(config, modname, param);
 		}
-		kmod_config_add_options(config, modname, param);
 	}
 }
 
