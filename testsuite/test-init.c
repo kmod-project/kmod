@@ -29,6 +29,37 @@
 
 #include "testsuite.h"
 
+static noreturn int test_load_resources(const struct test *t)
+{
+	struct kmod_ctx *ctx;
+	const char *null_config = NULL;
+	int err;
+
+	ctx = kmod_new(NULL, &null_config);
+	if (ctx == NULL)
+		exit(EXIT_FAILURE);
+
+	kmod_set_log_priority(ctx, 7);
+
+	err = kmod_load_resources(ctx);
+	if (err != 0) {
+		ERR("could not load libkmod resources: %s\n", strerror(-err));
+		exit(EXIT_FAILURE);
+	}
+
+	kmod_unref(ctx);
+
+	exit(EXIT_SUCCESS);
+}
+DEFINE_TEST(test_load_resources,
+	    .description = "test if kmod_load_resources works",
+	    .config = {
+		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-init-load-resources/",
+		[TC_UNAME_R] = "5.6.0",
+	    },
+	    .need_spawn = true);
+
+
 static noreturn int test_initlib(const struct test *t)
 {
 	struct kmod_ctx *ctx;
