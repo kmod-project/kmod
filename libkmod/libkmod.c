@@ -856,6 +856,7 @@ KMOD_EXPORT int kmod_validate_resources(struct kmod_ctx *ctx)
 KMOD_EXPORT int kmod_load_resources(struct kmod_ctx *ctx)
 {
 	size_t i;
+	int ret;
 
 	if (ctx == NULL)
 		return -ENOENT;
@@ -871,17 +872,16 @@ KMOD_EXPORT int kmod_load_resources(struct kmod_ctx *ctx)
 
 		snprintf(path, sizeof(path), "%s/%s.bin", ctx->dirname,
 							index_files[i].fn);
-		ctx->indexes[i] = index_mm_open(ctx, path,
-						&ctx->indexes_stamp[i]);
-		if (ctx->indexes[i] == NULL)
-			goto fail;
+		ret = index_mm_open(ctx, path, &ctx->indexes_stamp[i],
+				    &ctx->indexes[i]);
+		if (ret)
+			break;
 	}
 
-	return 0;
+	if (ret)
+		kmod_unload_resources(ctx);
 
-fail:
-	kmod_unload_resources(ctx);
-	return -ENOMEM;
+	return ret;
 }
 
 /**

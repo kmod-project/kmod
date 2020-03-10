@@ -611,7 +611,7 @@ struct index_value *index_searchwild(struct index_file *in, const char *key)
 static const char _idx_empty_str[] = "";
 
 struct index_mm {
-	struct kmod_ctx *ctx;
+	const struct kmod_ctx *ctx;
 	void *mm;
 	uint32_t root_offset;
 	size_t size;
@@ -739,10 +739,10 @@ static void index_mm_free_node(struct index_mm_node *node)
 	free(node);
 }
 
-struct index_mm *index_mm_open(struct kmod_ctx *ctx, const char *filename,
-						unsigned long long *stamp)
+int index_mm_open(const struct kmod_ctx *ctx, const char *filename,
+		  unsigned long long *stamp, struct index_mm **pidx)
 {
-	int fd;
+	int fd, err;
 	struct stat st;
 	struct index_mm *idx;
 	struct {
@@ -752,28 +752,32 @@ struct index_mm *index_mm_open(struct kmod_ctx *ctx, const char *filename,
 	} hdr;
 	void *p;
 
+	assert(pidx != NULL);
+
 	DBG(ctx, "file=%s\n", filename);
 
 	idx = malloc(sizeof(*idx));
 	if (idx == NULL) {
 		ERR(ctx, "malloc: %m\n");
-		return NULL;
+		return -ENOMEM;
 	}
 
 	if ((fd = open(filename, O_RDONLY|O_CLOEXEC)) < 0) {
 		DBG(ctx, "open(%s, O_RDONLY|O_CLOEXEC): %m\n", filename);
+		err = -errno;
 		goto fail_open;
 	}
 
-	if (fstat(fd, &st) < 0)
+	if (fstat(fd, &st) < 0 || (size_t) st.st_size < sizeof(hdr)) {
+		err = -EINVAL;
 		goto fail_nommap;
-	if ((size_t) st.st_size < sizeof(hdr))
-		goto fail_nommap;
+	}
 
-	if ((idx->mm = mmap(NULL, st.st_size, PROT_READ, MAP_PRIVATE, fd, 0))
-							== MAP_FAILED) {
+	idx->mm = mmap(NULL, st.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
+	if (idx->mm == MAP_FAILED) {
 		ERR(ctx, "mmap(NULL, %"PRIu64", PROT_READ, %d, MAP_PRIVATE, 0): %m\n",
 							st.st_size, fd);
+		err = -errno;
 		goto fail_nommap;
 	}
 
@@ -785,12 +789,14 @@ struct index_mm *index_mm_open(struct kmod_ctx *ctx, const char *filename,
 	if (hdr.magic != INDEX_MAGIC) {
 		ERR(ctx, "magic check fail: %x instead of %x\n", hdr.magic,
 								INDEX_MAGIC);
+		err = -EINVAL;
 		goto fail;
 	}
 
 	if (hdr.version >> 16 != INDEX_VERSION_MAJOR) {
 		ERR(ctx, "major version check fail: %u instead of %u\n",
 					hdr.version >> 16, INDEX_VERSION_MAJOR);
+		err = -EINVAL;
 		goto fail;
 	}
 
@@ -800,8 +806,9 @@ struct index_mm *index_mm_open(struct kmod_ctx *ctx, const char *filename,
 	close(fd);
 
 	*stamp = stat_mstamp(&st);
+	*pidx = idx;
 
-	return idx;
+	return 0;
 
 fail:
 	munmap(idx->mm, st.st_size);
@@ -809,7 +816,7 @@ fail_nommap:
 	close(fd);
 fail_open:
 	free(idx);
-	return NULL;
+	return err;
 }
 
 void index_mm_close(struct index_mm *idx)
