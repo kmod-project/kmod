@@ -2,6 +2,7 @@
 *.ko
 !mod-simple-*.ko
 !cache/*.ko
+.cache.mk
 *.mod.c
 .tmp_versions
 *.mod
