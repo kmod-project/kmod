@@ -855,8 +855,8 @@ KMOD_EXPORT int kmod_validate_resources(struct kmod_ctx *ctx)
  */
 KMOD_EXPORT int kmod_load_resources(struct kmod_ctx *ctx)
 {
+	int ret = 0;
 	size_t i;
-	int ret;
 
 	if (ctx == NULL)
 		return -ENOENT;
@@ -874,8 +874,17 @@ KMOD_EXPORT int kmod_load_resources(struct kmod_ctx *ctx)
 							index_files[i].fn);
 		ret = index_mm_open(ctx, path, &ctx->indexes_stamp[i],
 				    &ctx->indexes[i]);
-		if (ret)
-			break;
+
+		/*
+		 * modules.builtin.alias are considered optional since it's
+		 * recently added and older installations may not have it;
+		 * we allow failing for any reason
+		 */
+		if (ret) {
+			if (i != KMOD_INDEX_MODULES_BUILTIN_ALIAS)
+				break;
+			ret = 0;
+		}
 	}
 
 	if (ret)
