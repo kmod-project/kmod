@@ -528,20 +528,17 @@ int kmod_lookup_alias_from_kernel_builtin_file(struct kmod_ctx *ctx,
 						struct kmod_list **list)
 {
 	struct kmod_list *l;
-	int ret = kmod_lookup_alias_from_alias_bin(ctx,
-						KMOD_INDEX_MODULES_BUILTIN_ALIAS,
-						name, list);
-	if (ret > 0) {
-		kmod_list_foreach(l, *list) {
-			struct kmod_module *mod = l->data;
-			kmod_module_set_builtin(mod, true);
-		}
-	} else if (ret == -ENOSYS) {
-		/*
-		 * If the system does not support this yet, then
-		 * there is no need to return an error.
-		 */
-		ret = 0;
+	int ret;
+
+	assert(*list == NULL);
+
+	ret = kmod_lookup_alias_from_alias_bin(ctx,
+					       KMOD_INDEX_MODULES_BUILTIN_ALIAS,
+					       name, list);
+
+	kmod_list_foreach(l, *list) {
+		struct kmod_module *mod = l->data;
+		kmod_module_set_builtin(mod, true);
 	}
 
 	return ret;
