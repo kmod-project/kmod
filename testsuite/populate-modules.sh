@@ -85,15 +85,15 @@ attach_pkcs7_array=(
     "test-modinfo/mod-simple-pkcs7.ko"
     )
 
-for k in ${!map[@]}; do
+for k in "${!map[@]}"; do
     dst=${ROOTFS}/$k
     src=${MODULE_PLAYGROUND}/${map[$k]}
 
-    if test "${dst: -1}" = "/"; then
-        install -d $dst
-        install -t $dst $src
+    if [[ $dst = */ ]]; then
+        install -d "$dst"
+        install -t "$dst" "$src"
     else
-        install -D $src $dst
+        install -D "$src" "$dst"
     fi
 done
 
@@ -101,7 +101,7 @@ done
 
 # gzip these modules
 for m in "${gzip_array[@]}"; do
-    gzip $ROOTFS/$m
+    gzip "$ROOTFS/$m"
 done
 
 # zstd-compress these modules
@@ -110,13 +110,13 @@ for m in "${zstd_array[@]}"; do
 done
 
 for m in "${attach_sha1_array[@]}"; do
-    cat ${MODULE_PLAYGROUND}/dummy.sha1 >> ${ROOTFS}/$m
+    cat "${MODULE_PLAYGROUND}/dummy.sha1" >>"${ROOTFS}/$m"
 done
 
 for m in "${attach_sha256_array[@]}"; do
-    cat ${MODULE_PLAYGROUND}/dummy.sha256 >> ${ROOTFS}/$m
+    cat "${MODULE_PLAYGROUND}/dummy.sha256" >>"${ROOTFS}/$m"
 done
 
 for m in "${attach_pkcs7_array[@]}"; do
-    cat ${MODULE_PLAYGROUND}/dummy.pkcs7 >> ${ROOTFS}/$m
+    cat "${MODULE_PLAYGROUND}/dummy.pkcs7" >>"${ROOTFS}/$m"
 done
