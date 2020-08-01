@@ -95,6 +95,9 @@ fail_lookup:
 }
 
 DEFINE_TEST(blacklist_1,
+#if defined(KMOD_SYSCONFDIR_NOT_ETC)
+        .skip = true,
+#endif
 	.description = "check if modules are correctly blacklisted",
 	.config = {
 		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-blacklist/",

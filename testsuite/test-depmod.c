@@ -42,6 +42,9 @@ static noreturn int depmod_modules_order_for_compressed(const struct test *t)
 }
 
 DEFINE_TEST(depmod_modules_order_for_compressed,
+#if defined(KMOD_SYSCONFDIR_NOT_ETC)
+        .skip = true,
+#endif
 	.description = "check if depmod let aliases in right order when using compressed modules",
 	.config = {
 		[TC_UNAME_R] = MODULES_ORDER_UNAME,
@@ -121,6 +124,9 @@ static noreturn int depmod_detect_loop(const struct test *t)
 	exit(EXIT_FAILURE);
 }
 DEFINE_TEST(depmod_detect_loop,
+#if defined(KMOD_SYSCONFDIR_NOT_ETC)
+        .skip = true,
+#endif
 	.description = "check if depmod detects module loops correctly",
 	.config = {
 		[TC_UNAME_R] = "4.4.4",
@@ -144,6 +150,9 @@ static noreturn int depmod_search_order_external_first(const struct test *t)
 	exit(EXIT_FAILURE);
 }
 DEFINE_TEST(depmod_search_order_external_first,
+#if defined(KMOD_SYSCONFDIR_NOT_ETC)
+        .skip = true,
+#endif
 	.description = "check if depmod honor external keyword with higher priority",
 	.config = {
 		[TC_UNAME_R] = "4.4.4",
@@ -196,6 +205,9 @@ static noreturn int depmod_search_order_override(const struct test *t)
 	exit(EXIT_FAILURE);
 }
 DEFINE_TEST(depmod_search_order_override,
+#if defined(KMOD_SYSCONFDIR_NOT_ETC)
+        .skip = true,
+#endif
 	.description = "check if depmod honor override keyword",
 	.config = {
 		[TC_UNAME_R] = "4.4.4",

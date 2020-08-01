@@ -224,6 +224,8 @@ GTK_DOC_CHECK([1.14],[--flavour no-tmpl-flat])
 ], [
 AM_CONDITIONAL([ENABLE_GTK_DOC], false)])
 
+# Some tests are skipped when sysconfdir != /etc.
+AM_CONDITIONAL([KMOD_SYSCONFDIR_NOT_ETC], [test "x$sysconfdir" != "x/etc"])
 
 #####################################################################
 # Default CFLAGS and LDFLAGS
