@@ -109,6 +109,8 @@ struct test {
 	const struct keyval *env_vars;
 	bool need_spawn;
 	bool expected_fail;
+	/* allow to skip tests that don't meet compile-time dependencies */
+	bool skip;
 	bool print_outputs;
 } __attribute__((aligned(8)));
 
