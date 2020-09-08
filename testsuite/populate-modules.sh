@@ -66,8 +66,11 @@ map=(
 
 gzip_array=(
     "test-depmod/modules-order-compressed/lib/modules/4.4.4/kernel/drivers/block/cciss.ko"
-    "test-depmod/modules-order-compressed/lib/modules/4.4.4/kernel/drivers/scsi/hpsa.ko"
     "test-depmod/modules-order-compressed/lib/modules/4.4.4/kernel/drivers/scsi/scsi_mod.ko"
+    )
+
+zstd_array=(
+    "test-depmod/modules-order-compressed/lib/modules/4.4.4/kernel/drivers/scsi/hpsa.ko"
     )
 
 attach_sha256_array=(
@@ -99,6 +102,11 @@ done
 # gzip these modules
 for m in "${gzip_array[@]}"; do
     gzip $ROOTFS/$m
+done
+
+# zstd-compress these modules
+for m in "${zstd_array[@]}"; do
+    zstd --rm $ROOTFS/$m
 done
 
 for m in "${attach_sha1_array[@]}"; do
