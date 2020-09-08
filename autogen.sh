@@ -32,7 +32,14 @@ fi
 
 cd $oldpwd
 
-hackargs="--enable-debug --enable-python --with-xz --with-zlib --with-openssl"
+hackargs="\
+--enable-debug \
+--enable-python \
+--with-zstd \
+--with-xz \
+--with-zlib \
+--with-openssl \
+"
 
 if [ "x$1" = "xc" ]; then
         shift

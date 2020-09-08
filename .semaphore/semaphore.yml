@@ -22,7 +22,7 @@ blocks:
       prologue:
         commands:
           - sudo apt update
-          - sudo apt --yes install docbook-xsl liblzma-dev zlib1g-dev cython linux-headers-generic libssl-dev
+          - sudo apt --yes install docbook-xsl libzstd-dev liblzma-dev zlib1g-dev cython linux-headers-generic libssl-dev
           - checkout
 
       epilogue:
@@ -42,5 +42,5 @@ blocks:
       prologue:
         commands:
           - sudo apt update
-          - sudo apt --yes install docbook-xsl liblzma-dev zlib1g-dev cython linux-headers-generic libssl-dev
+          - sudo apt --yes install docbook-xsl libzstd-dev liblzma-dev zlib1g-dev cython linux-headers-generic libssl-dev
           - checkout

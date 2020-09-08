@@ -83,6 +83,17 @@ AC_ARG_WITH([rootlibdir],
         [], [with_rootlibdir=$libdir])
 AC_SUBST([rootlibdir], [$with_rootlibdir])
 
+AC_ARG_WITH([zstd],
+	AS_HELP_STRING([--with-zstd], [handle Zstandard-compressed modules @<:@default=disabled@:>@]),
+	[], [with_zstd=no])
+AS_IF([test "x$with_zstd" != "xno"], [
+	PKG_CHECK_MODULES([libzstd], [libzstd >= 1.4.4])
+	AC_DEFINE([ENABLE_ZSTD], [1], [Enable Zstandard for modules.])
+], [
+	AC_MSG_NOTICE([Zstandard support not requested])
+])
+CC_FEATURE_APPEND([with_features], [with_zstd], [ZSTD])
+
 AC_ARG_WITH([xz],
 	AS_HELP_STRING([--with-xz], [handle Xz-compressed modules @<:@default=disabled@:>@]),
 	[], [with_xz=no])
@@ -307,7 +318,7 @@ AC_MSG_RESULT([
 	tools:			${enable_tools}
 	python bindings:	${enable_python}
 	logging:		${enable_logging}
-	compression:		xz=${with_xz}  zlib=${with_zlib}
+	compression:		zstd=${with_zstd}  xz=${with_xz}  zlib=${with_zlib}
 	debug:			${enable_debug}
 	coverage:		${enable_coverage}
 	doc:			${enable_gtk_doc}

@@ -7,5 +7,5 @@ Name: libkmod
 Description: Library to deal with kernel modules
 Version: @VERSION@
 Libs: -L${libdir} -lkmod
-Libs.private: @liblzma_LIBS@ @zlib_LIBS@
+Libs.private: @libzstd_LIBS@ @liblzma_LIBS@ @zlib_LIBS@
 Cflags: -I${includedir}

@@ -157,6 +157,9 @@ static int test_path_ends_with_kmod_ext(const struct test *t)
 #ifdef ENABLE_XZ
 		{ "/bla.ko.xz", true },
 #endif
+#ifdef ENABLE_ZSTD
+		{ "/bla.ko.zst", true },
+#endif
 		{ "/bla.ko.x", false },
 		{ "/bla.ko.", false },
 		{ "/bla.koz", false },
