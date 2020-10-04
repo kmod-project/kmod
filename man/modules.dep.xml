@@ -48,7 +48,7 @@
       libkmod.
     </para>
     <para>
-      Its text counterpar is located in the same directory with the name
+      Its text counterpart is located in the same directory with the name
       <filename>modules.dep</filename>. The text version is maintained only
       for easy of reading by humans and is in no way used by any kmod tool.
     </para>
