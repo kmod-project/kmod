@@ -415,7 +415,7 @@ kmod 11
 - New features:
 	- libkmod now keeps a file opened after the first call to
 	  kmod_module_get_{info,versions,symbols,dependency_symbols}. This
-	  reduces signficantly the amount of time depmod tool takes to
+	  reduces significantly the amount of time depmod tool takes to
 	  execute. Particularly if compressed modules are used.
 	- Remove --with-rootprefix from build system. It was not a great idea
 	  after all and should not be use since it causes more harm then
