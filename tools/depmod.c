@@ -2412,10 +2412,8 @@ static int output_builtin_alias_bin(struct depmod *depmod, FILE *out)
 		return 0;
 
 	idx = index_create();
-	if (idx == NULL) {
-		ret = -ENOMEM;
-		goto fail;
-	}
+	if (idx == NULL)
+		return -ENOMEM;
 
 	ret = kmod_module_get_builtin(depmod->ctx, &builtin);
 	if (ret < 0) {
@@ -2458,12 +2456,11 @@ static int output_builtin_alias_bin(struct depmod *depmod, FILE *out)
 
 	if (count)
 		index_write(idx, out);
-
-	index_destroy(idx);
-
 fail:
 	if (builtin)
 		kmod_module_unref_list(builtin);
+
+	index_destroy(idx);
 
 	return ret;
 }
