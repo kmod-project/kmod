@@ -11,7 +11,7 @@
 #include "libkmod.h"
 
 static _always_inline_ _printf_format_(2, 3) void
-	kmod_log_null(struct kmod_ctx *ctx, const char *format, ...) {}
+	kmod_log_null(const struct kmod_ctx *ctx, const char *format, ...) {}
 
 #define kmod_log_cond(ctx, prio, arg...) \
 	do { \
