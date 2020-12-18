@@ -2419,7 +2419,7 @@ static int output_builtin_alias_bin(struct depmod *depmod, FILE *out)
 	if (ret < 0) {
 		if (ret == -ENOENT)
 			ret = 0;
-		goto fail;
+		goto out;
 	}
 
 	kmod_list_foreach(l, builtin) {
@@ -2429,7 +2429,7 @@ static int output_builtin_alias_bin(struct depmod *depmod, FILE *out)
 
 		ret = kmod_module_get_info(mod, &info_list);
 		if (ret < 0)
-			goto fail;
+			goto out;
 
 		kmod_list_foreach(ll, info_list) {
 			char alias[PATH_MAX];
@@ -2454,9 +2454,11 @@ static int output_builtin_alias_bin(struct depmod *depmod, FILE *out)
 		count++;
 	}
 
-	if (count)
+out:
+	/* do not bother writing the index if we are going to discard it */
+	if (!ret)
 		index_write(idx, out);
-fail:
+
 	if (builtin)
 		kmod_module_unref_list(builtin);
 
