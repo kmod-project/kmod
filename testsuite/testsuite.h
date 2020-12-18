@@ -139,7 +139,7 @@ int test_run(const struct test *t);
 
 /* Test definitions */
 #define DEFINE_TEST(_name, ...) \
-	static const struct test s##_name##UNIQ \
+	static const struct test UNIQ(s##_name) \
 	__attribute__((used, section("kmod_tests"), aligned(8))) = { \
 		.name = #_name, \
 		.func = _name, \

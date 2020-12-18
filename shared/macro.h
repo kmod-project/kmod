@@ -45,8 +45,13 @@
 	})
 
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]) + _array_size_chk(arr))
+
 #define XSTRINGIFY(x) #x
 #define STRINGIFY(x) XSTRINGIFY(x)
+
+#define XCONCATENATE(x, y) x ## y
+#define CONCATENATE(x, y) XCONCATENATE(x, y)
+#define UNIQ(x) CONCATENATE(x, __COUNTER__)
 
 /* Temporaries for importing index handling */
 #define NOFAIL(x) (x)
@@ -69,5 +74,3 @@
 #define noreturn __attribute__((noreturn))
 #endif
 #endif
-
-#define UNIQ __COUNTER__
