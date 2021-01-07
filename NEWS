@@ -1,3 +1,16 @@
+kmod 28
+=======
+
+- Improvements
+	- Add Zstandard to the supported compression formats using libzstd
+	  (pass --with-zstd to configure)
+
+- Bug fixes
+	- Ignore ill-formed kernel command line, e.g. with "ivrs_acpihid[00:14.5]=AMD0020:0"
+	  option in it
+	- Fix some memory leaks
+	- Fix 0-length builtin.alias.bin: it needs at least the index header
+
 kmod 27
 =======
 
