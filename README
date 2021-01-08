@@ -3,9 +3,6 @@ kmod - Linux kernel module handling
 Information
 ===========
 
-Build Status:
-	https://lucasdemarchi.semaphoreci.com/projects/kmod
-
 Mailing list:
 	linux-modules@vger.kernel.org (no subscription needed)
 	https://lore.kernel.org/linux-modules/
