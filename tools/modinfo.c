@@ -178,7 +178,11 @@ static int modinfo_do(struct kmod_module *mod)
 	is_builtin = (filename == NULL);
 
 	if (is_builtin) {
-		printf("%-16s%s%c", "name:", kmod_module_get_name(mod), separator);
+		if (field == NULL)
+			printf("%-16s%s%c", "name:",
+			       kmod_module_get_name(mod), separator);
+		else if (field != NULL && streq(field, "name"))
+			printf("%s%c", kmod_module_get_name(mod), separator);
 		filename = "(builtin)";
 	}
 
