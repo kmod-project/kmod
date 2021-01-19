@@ -53,6 +53,7 @@ static const char CFG_EXTERNAL_KEY[] = "external";
 static const char *default_cfg_paths[] = {
 	SYSCONFDIR "/depmod.d",
 	"/run/depmod.d",
+	"/usr/local/lib/depmod.d",
 	"/lib/depmod.d",
 	NULL
 };

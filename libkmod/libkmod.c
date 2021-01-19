@@ -64,6 +64,7 @@ static struct _index_files {
 static const char *default_config_paths[] = {
 	SYSCONFDIR "/modprobe.d",
 	"/run/modprobe.d",
+	"/usr/local/lib/modprobe.d",
 	"/lib/modprobe.d",
 	NULL
 };
@@ -234,10 +235,11 @@ static char *get_kernel_release(const char *dirname)
  *           Otherwise, give an absolute dirname.
  * @config_paths: ordered array of paths (directories or files) where
  *                to load from user-defined configuration parameters such as
- *                alias, blacklists, commands (install, remove). If
- *                NULL defaults to /etc/modprobe.d, /run/modprobe.d and
- *                /lib/modprobe.d. Give an empty vector if configuration should
- *                not be read. This array must be null terminated.
+ *                alias, blacklists, commands (install, remove). If NULL
+ *                defaults to /etc/modprobe.d, /run/modprobe.d,
+ *                /usr/local/lib/modprobe.d and /lib/modprobe.d. Give an empty
+ *                vector if configuration should not be read. This array must
+ *                be null terminated.
  *
  * Create kmod library context. This reads the kmod configuration
  * and fills in the default values.
