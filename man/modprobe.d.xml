@@ -41,8 +41,8 @@
 
   <refsynopsisdiv>
     <para><filename>/lib/modprobe.d/*.conf</filename></para>
-    <para><filename>/etc/modprobe.d/*.conf</filename></para>
     <para><filename>/run/modprobe.d/*.conf</filename></para>
+    <para><filename>/etc/modprobe.d/*.conf</filename></para>
   </refsynopsisdiv>
 
   <refsect1><title>DESCRIPTION</title>

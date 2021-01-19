@@ -235,7 +235,7 @@ static char *get_kernel_release(const char *dirname)
  * @config_paths: ordered array of paths (directories or files) where
  *                to load from user-defined configuration parameters such as
  *                alias, blacklists, commands (install, remove). If
- *                NULL defaults to /run/modprobe.d, /etc/modprobe.d and
+ *                NULL defaults to /etc/modprobe.d, /run/modprobe.d and
  *                /lib/modprobe.d. Give an empty vector if configuration should
  *                not be read. This array must be null terminated.
  *

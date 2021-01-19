@@ -40,8 +40,8 @@
 
   <refsynopsisdiv>
     <para><filename>/usr/lib/depmod.d/*.conf</filename></para>
-    <para><filename>/etc/depmod.d/*.conf</filename></para>
     <para><filename>/run/depmod.d/*.conf</filename></para>
+    <para><filename>/etc/depmod.d/*.conf</filename></para>
   </refsynopsisdiv>
 
   <refsect1><title>DESCRIPTION</title>
