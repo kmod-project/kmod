@@ -7,9 +7,6 @@ Mailing list:
 	linux-modules@vger.kernel.org (no subscription needed)
 	https://lore.kernel.org/linux-modules/
 
-Patchwork:
-	https://patchwork.kernel.org/project/linux-modules/
-
 Signed packages:
 	http://www.kernel.org/pub/linux/utils/kernel/kmod/
 
@@ -20,6 +17,7 @@ Git:
 
 Gitweb:
 	http://git.kernel.org/?p=utils/kernel/kmod/kmod.git
+	https://github.com/kmod-project/kmod
 
 Irc:
 	#kmod on irc.freenode.org
