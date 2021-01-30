@@ -72,6 +72,9 @@ map=(
 
 gzip_array=(
     "test-depmod/modules-order-compressed/lib/modules/4.4.4/kernel/drivers/block/cciss.ko"
+    )
+
+xz_array=(
     "test-depmod/modules-order-compressed/lib/modules/4.4.4/kernel/drivers/scsi/scsi_mod.ko"
     )
 
@@ -109,6 +112,12 @@ done
 if feature_enabled ZLIB; then
 	for m in "${gzip_array[@]}"; do
 	    gzip "$ROOTFS/$m"
+	done
+fi
+
+if feature_enabled XZ; then
+	for m in "${xz_array[@]}"; do
+	    xz "$ROOTFS/$m"
 	done
 fi
 
