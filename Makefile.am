@@ -249,7 +249,7 @@ CREATE_ROOTFS = $(AM_V_GEN) ( $(RM) -rf $(ROOTFS) && mkdir -p $(dir $(ROOTFS)) &
 				find $(ROOTFS) -type d -exec chmod +w {} \; && \
 				find $(ROOTFS) -type f -name .gitignore -exec rm -f {} \; && \
 				$(top_srcdir)/testsuite/populate-modules.sh \
-					$(MODULE_PLAYGROUND) $(ROOTFS) ) && \
+					$(MODULE_PLAYGROUND) $(ROOTFS) $(top_builddir)/config.h ) && \
 				touch testsuite/stamp-rootfs
 
 build-module-playground:

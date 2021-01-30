@@ -25,7 +25,6 @@
 
 #include "testsuite.h"
 
-#ifdef ENABLE_ZLIB
 #define MODULES_ORDER_UNAME "4.4.4"
 #define MODULES_ORDER_ROOTFS TESTSUITE_ROOTFS "test-depmod/modules-order-compressed"
 #define MODULES_ORDER_LIB_MODULES MODULES_ORDER_ROOTFS "/lib/modules/" MODULES_ORDER_UNAME
@@ -57,7 +56,6 @@ DEFINE_TEST(depmod_modules_order_for_compressed,
 			{ }
 		},
 	});
-#endif
 
 #define SEARCH_ORDER_SIMPLE_ROOTFS TESTSUITE_ROOTFS "test-depmod/search-order-simple"
 static noreturn int depmod_search_order_simple(const struct test *t)

@@ -4,6 +4,12 @@ set -e
 
 MODULE_PLAYGROUND=$1
 ROOTFS=$2
+CONFIG_H=$3
+
+feature_enabled() {
+	local feature=$1
+	grep KMOD_FEATURES  $CONFIG_H | head -n 1 | grep -q \+$feature
+}
 
 declare -A map
 map=(
@@ -99,15 +105,18 @@ done
 
 # start poking the final rootfs...
 
-# gzip these modules
-for m in "${gzip_array[@]}"; do
-    gzip "$ROOTFS/$m"
-done
+# compress modules with each format if feature is enabled
+if feature_enabled ZLIB; then
+	for m in "${gzip_array[@]}"; do
+	    gzip "$ROOTFS/$m"
+	done
+fi
 
-# zstd-compress these modules
-for m in "${zstd_array[@]}"; do
-    zstd --rm $ROOTFS/$m
-done
+if feature_enabled ZSTD; then
+	for m in "${zstd_array[@]}"; do
+	    zstd --rm $ROOTFS/$m
+	done
+fi
 
 for m in "${attach_sha1_array[@]}"; do
     cat "${MODULE_PLAYGROUND}/dummy.sha1" >>"${ROOTFS}/$m"
