@@ -499,7 +499,14 @@ static int kmod_config_parse_kcmdline(struct kmod_config *config)
 	char buf[KCMD_LINE_SIZE];
 	int fd, err;
 	char *p, *modname,  *param = NULL, *value = NULL;
-	bool is_quoted = false, is_module = true;
+	bool is_quoted = false, iter = true;
+	enum state {
+		STATE_IGNORE,
+		STATE_MODNAME,
+		STATE_PARAM,
+		STATE_VALUE,
+		STATE_COMPLETE,
+	} state;
 
 	fd = open("/proc/cmdline", O_RDONLY|O_CLOEXEC);
 	if (fd < 0) {
@@ -516,54 +523,65 @@ static int kmod_config_parse_kcmdline(struct kmod_config *config)
 		return err;
 	}
 
-	for (p = buf, modname = buf; *p != '\0' && *p != '\n'; p++) {
-		if (*p == '"') {
-			is_quoted = !is_quoted;
-
-			if (is_quoted) {
-				/* don't consider a module until closing quotes */
-				is_module = false;
-			} else if (param != NULL && value != NULL) {
-				/*
-				 * If we are indeed expecting a value and
-				 * closing quotes, then this can be considered
-				 * a valid option for a module
-				 */
-				is_module = true;
-			}
-
-			continue;
-		}
-		if (is_quoted)
-			continue;
-
+	state = STATE_MODNAME;
+	for (p = buf, modname = buf; iter; p++) {
 		switch (*p) {
+		case '"':
+			is_quoted = !is_quoted;
+			break;
+		case '\0':
+		case '\n':
+			/* Stop iterating on new chars */
+			iter = false;
+			/* fall-through */
 		case ' ':
-			*p = '\0';
-			if (is_module)
-				kcmdline_parse_result(config, modname, param, value);
-			param = value = NULL;
-			modname = p + 1;
-			is_module = true;
+			if (is_quoted && state == STATE_VALUE) {
+				/* no state change*/;
+			} else if (is_quoted) {
+				/* spaces are only allowed in the value part */
+				state = STATE_IGNORE;
+			} else if (state == STATE_VALUE || state == STATE_PARAM) {
+				*p = '\0';
+				state = STATE_COMPLETE;
+			} else {
+				/*
+				 * go to next option, ignoring any possible
+				 * partial match we have
+				 */
+				modname = p + 1;
+				state = STATE_MODNAME;
+			}
 			break;
 		case '.':
-			if (param == NULL) {
+			if (state == STATE_MODNAME) {
 				*p = '\0';
 				param = p + 1;
+				state = STATE_PARAM;
+			} else if (state == STATE_PARAM) {
+				state = STATE_IGNORE;
 			}
 			break;
 		case '=':
-			if (param != NULL)
+			if (state == STATE_PARAM) {
+				/*
+				 * Don't set *p to '\0': the value var shadows
+				 * param
+				 */
 				value = p + 1;
-			else
-				is_module = false;
+				state = STATE_VALUE;
+			} else if (state == STATE_MODNAME) {
+				state = STATE_IGNORE;
+			}
 			break;
 		}
-	}
 
-	*p = '\0';
-	if (is_module)
-		kcmdline_parse_result(config, modname, param, value);
+		if (state == STATE_COMPLETE) {
+			kcmdline_parse_result(config, modname, param, value);
+			/* start over on next iteration */
+			modname = p + 1;
+			state = STATE_MODNAME;
+		}
+	}
 
 	return 0;
 }
