@@ -213,7 +213,7 @@ DEFINE_TEST(modprobe_install_cmd_loop,
 	.modules_loaded = "mod-loop-b,mod-loop-a",
 	);
 
-static noreturn int modprobe_param_kcmdline(const struct test *t)
+static noreturn int modprobe_param_kcmdline_show_deps(const struct test *t)
 {
 	const char *progname = ABS_TOP_BUILDDIR "/tools/modprobe";
 	const char *const args[] = {
@@ -225,7 +225,7 @@ static noreturn int modprobe_param_kcmdline(const struct test *t)
 	test_spawn_prog(progname, args);
 	exit(EXIT_FAILURE);
 }
-DEFINE_TEST(modprobe_param_kcmdline,
+DEFINE_TEST(modprobe_param_kcmdline_show_deps,
 	.description = "check if params from kcmdline are passed to (f)init_module call",
 	.config = {
 		[TC_UNAME_R] = "4.4.4",
@@ -237,7 +237,7 @@ DEFINE_TEST(modprobe_param_kcmdline,
 	.modules_loaded = "",
 	);
 
-static noreturn int modprobe_param_kcmdline2(const struct test *t)
+static noreturn int modprobe_param_kcmdline(const struct test *t)
 {
 	const char *progname = ABS_TOP_BUILDDIR "/tools/modprobe";
 	const char *const args[] = {
@@ -249,7 +249,7 @@ static noreturn int modprobe_param_kcmdline2(const struct test *t)
 	test_spawn_prog(progname, args);
 	exit(EXIT_FAILURE);
 }
-DEFINE_TEST(modprobe_param_kcmdline2,
+DEFINE_TEST_WITH_FUNC(modprobe_param_kcmdline2, modprobe_param_kcmdline,
 	.description = "check if params with no value are parsed correctly from kcmdline",
 	.config = {
 		[TC_UNAME_R] = "4.4.4",
@@ -261,19 +261,7 @@ DEFINE_TEST(modprobe_param_kcmdline2,
 	.modules_loaded = "",
 	);
 
-static noreturn int modprobe_param_kcmdline3(const struct test *t)
-{
-	const char *progname = ABS_TOP_BUILDDIR "/tools/modprobe";
-	const char *const args[] = {
-		progname,
-		"-c",
-		NULL,
-	};
-
-	test_spawn_prog(progname, args);
-	exit(EXIT_FAILURE);
-}
-DEFINE_TEST(modprobe_param_kcmdline3,
+DEFINE_TEST_WITH_FUNC(modprobe_param_kcmdline3, modprobe_param_kcmdline,
 	.description = "check if unrelated strings in kcmdline are correctly ignored",
 	.config = {
 		[TC_UNAME_R] = "4.4.4",
@@ -285,19 +273,7 @@ DEFINE_TEST(modprobe_param_kcmdline3,
 	.modules_loaded = "",
 	);
 
-static noreturn int modprobe_param_kcmdline4(const struct test *t)
-{
-	const char *progname = ABS_TOP_BUILDDIR "/tools/modprobe";
-	const char *const args[] = {
-		progname,
-		"-c",
-		NULL,
-	};
-
-	test_spawn_prog(progname, args);
-	exit(EXIT_FAILURE);
-}
-DEFINE_TEST(modprobe_param_kcmdline4,
+DEFINE_TEST_WITH_FUNC(modprobe_param_kcmdline4, modprobe_param_kcmdline,
 	.description = "check if unrelated strings in kcmdline are correctly ignored",
 	.config = {
 		[TC_UNAME_R] = "4.4.4",
@@ -309,19 +285,7 @@ DEFINE_TEST(modprobe_param_kcmdline4,
 	.modules_loaded = "",
 	);
 
-static noreturn int modprobe_param_kcmdline5(const struct test *t)
-{
-	const char *progname = ABS_TOP_BUILDDIR "/tools/modprobe";
-	const char *const args[] = {
-		progname,
-		"-c",
-		NULL,
-	};
-
-	test_spawn_prog(progname, args);
-	exit(EXIT_FAILURE);
-}
-DEFINE_TEST(modprobe_param_kcmdline5,
+DEFINE_TEST_WITH_FUNC(modprobe_param_kcmdline5, modprobe_param_kcmdline,
 	.description = "check if params with spaces are parsed correctly from kcmdline",
 	.config = {
 		[TC_UNAME_R] = "4.4.4",
@@ -333,20 +297,7 @@ DEFINE_TEST(modprobe_param_kcmdline5,
 	.modules_loaded = "",
 	);
 
-
-static noreturn int modprobe_param_kcmdline6(const struct test *t)
-{
-	const char *progname = ABS_TOP_BUILDDIR "/tools/modprobe";
-	const char *const args[] = {
-		progname,
-		"-c",
-		NULL,
-	};
-
-	test_spawn_prog(progname, args);
-	exit(EXIT_FAILURE);
-}
-DEFINE_TEST(modprobe_param_kcmdline6,
+DEFINE_TEST_WITH_FUNC(modprobe_param_kcmdline6, modprobe_param_kcmdline,
 	.description = "check if dots on other parts of kcmdline don't confuse our parser",
 	.config = {
 		[TC_UNAME_R] = "4.4.4",
@@ -358,20 +309,7 @@ DEFINE_TEST(modprobe_param_kcmdline6,
 	.modules_loaded = "",
 	);
 
-
-static noreturn int modprobe_param_kcmdline7(const struct test *t)
-{
-	const char *progname = ABS_TOP_BUILDDIR "/tools/modprobe";
-	const char *const args[] = {
-		progname,
-		"-c",
-		NULL,
-	};
-
-	test_spawn_prog(progname, args);
-	exit(EXIT_FAILURE);
-}
-DEFINE_TEST(modprobe_param_kcmdline7,
+DEFINE_TEST_WITH_FUNC(modprobe_param_kcmdline7, modprobe_param_kcmdline,
 	.description = "check if dots on other parts of kcmdline don't confuse our parser",
 	.config = {
 		[TC_UNAME_R] = "4.4.4",
@@ -383,20 +321,7 @@ DEFINE_TEST(modprobe_param_kcmdline7,
 	.modules_loaded = "",
 	);
 
-
-static noreturn int modprobe_param_kcmdline8(const struct test *t)
-{
-	const char *progname = ABS_TOP_BUILDDIR "/tools/modprobe";
-	const char *const args[] = {
-		progname,
-		"-c",
-		NULL,
-	};
-
-	test_spawn_prog(progname, args);
-	exit(EXIT_FAILURE);
-}
-DEFINE_TEST(modprobe_param_kcmdline8,
+DEFINE_TEST_WITH_FUNC(modprobe_param_kcmdline8, modprobe_param_kcmdline,
 	.description = "check if dots on other parts of kcmdline don't confuse our parser",
 	.config = {
 		[TC_UNAME_R] = "4.4.4",
