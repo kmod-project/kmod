@@ -1,0 +1,5 @@
+options psmouse foo
+options parport dyndbg="file drivers/parport/ieee1284_ops.c +mpf"
+
+# End of configuration files. Dumping indexes now:
+
