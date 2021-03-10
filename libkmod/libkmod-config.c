@@ -543,11 +543,14 @@ static int kmod_config_parse_kcmdline(struct kmod_config *config)
 
 			break;
 		case '\0':
-		case '\n':
-			/* Stop iterating on new chars */
 			iter = false;
 			/* fall-through */
 		case ' ':
+		case '\n':
+		case '\t':
+		case '\v':
+		case '\f':
+		case '\r':
 			if (is_quoted && state == STATE_VALUE) {
 				/* no state change*/;
 			} else if (is_quoted) {
