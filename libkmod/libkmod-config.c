@@ -909,8 +909,10 @@ int kmod_config_new(struct kmod_ctx *ctx, struct kmod_config **p_config,
 		memcpy(cf->path, path, pathlen);
 
 		tmp = kmod_list_append(path_list, cf);
-		if (tmp == NULL)
+		if (tmp == NULL) {
+			free(cf);
 			goto oom;
+		}
 		path_list = tmp;
 	}
 
