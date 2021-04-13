@@ -313,7 +313,7 @@ ssize_t kmod_builtin_get_modinfo(struct kmod_ctx *ctx, const char *modname,
 	while (offset < iter->next) {
 		offset = get_string(iter, pos, &line, &linesz);
 		if (offset <= 0) {
-			count = (offset) ? -errno : -EOF;
+			count = (offset) ? -errno : -EINVAL;
 			free(*modinfo);
 			goto fail;
 		}
