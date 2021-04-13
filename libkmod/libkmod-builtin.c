@@ -246,7 +246,7 @@ bool kmod_builtin_iter_get_modname(struct kmod_builtin_iter *iter,
 
 	len = dot - line;
 
-	if (len > PATH_MAX) {
+	if (len >= PATH_MAX) {
 		sv_errno = ENAMETOOLONG;
 		goto fail;
 	}
