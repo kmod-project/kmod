@@ -3,6 +3,8 @@
 *.gcno
 /*.tar.xz
 /*.md5sum
+/*.mbx
+/*.cover
 .deps/
 .libs/
 /Makefile
