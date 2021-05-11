@@ -2457,7 +2457,7 @@ static int output_builtin_alias_bin(struct depmod *depmod, FILE *out)
 
 out:
 	/* do not bother writing the index if we are going to discard it */
-	if (!ret)
+	if (ret > 0)
 		index_write(idx, out);
 
 	if (builtin)
