@@ -2277,7 +2277,7 @@ list_error:
  *
  * After use, free the @list by calling kmod_module_info_free_list().
  *
- * Returns: 0 on success or < 0 otherwise.
+ * Returns: number of entries in @list on success or < 0 otherwise.
  */
 KMOD_EXPORT int kmod_module_get_info(const struct kmod_module *mod, struct kmod_list **list)
 {
