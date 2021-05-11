@@ -1,4 +1,3 @@
-*o.cmd
 *.ko
 !mod-simple-*.ko
 !cache/*.ko
@@ -8,6 +7,7 @@
 *.mod
 *.a
 *.cmd
+*.o.d
 
 modules.order
 Module.symvers
