@@ -1,3 +1,49 @@
+kmod 29
+=======
+
+- Improvements
+	- Add support to use /usr/local as a place for configuration files. This makes it easier
+	  to install locally without overriding distro files.
+
+- Bug fixes
+	- Fix `modinfo -F` when module is builtin: when we asked by a specific field from modinfo,
+	  it was not working correctly if the module was builtin
+
+	- Documentation fixes on precedence order of /etc and /run: the correct order is
+	  /etc/modprobe.d, /run/modprobe.d, /lib/modprobe.d
+
+	- Fix the priority order that we use for searching configuration files. The
+	  correct one is /etc, /run, /usr/local/lib, /lib, for both modprobe.d
+	  and depmo.d
+
+	- Fix kernel command line parsing when there are quotes present. Grub
+	  mangles the command line and changes it from 'module.option="val with
+	  spaces"' to '"module.option=val with spaces"'. Although this is weird
+	  behavior and grub could have been fixed, the kernel understands it
+	  correctly for builtin modules. So change libkmod to also parse it
+	  correctly. This also brings another hidden behavior from the kernel:
+	  newline in the kernel command line is also allowed and can be used to
+	  separate options.
+
+	- Fix a memory leak, overflow and double free on error path
+
+	- Fix documentation for return value from kmod_module_get_info(): we
+	  return the number of entries we added to the list
+
+	- Fix output of modules.builtin.alias.bin index: we were writing an empty file due to
+	  the misuse of kmod_module_get_info()
+
+- Infra/internal
+	- Retire integration with semaphoreci
+
+	- Declare the github mirror also as an official upstream source: now besides accepting
+	  patches via mailing list, PRs on github are also acceptable
+
+	- Misc improvements to testsuite, so we can use it reliably regardless
+	  of the configuration used: now tests will skip if we don't have the
+	  build dependencies)
+
+
 kmod 28
 =======
 
