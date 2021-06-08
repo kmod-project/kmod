@@ -2912,7 +2912,10 @@ int kmod_module_get_builtin(struct kmod_ctx *ctx, struct kmod_list **list)
 			goto fail;
 		}
 
-		kmod_module_new_from_name(ctx, modname, &mod);
+		err = kmod_module_new_from_name(ctx, modname, &mod);
+		if (err < 0)
+			goto fail;
+
 		kmod_module_set_builtin(mod, true);
 
 		*list = kmod_list_append(*list, mod);
