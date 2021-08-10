@@ -25,10 +25,12 @@ static _always_inline_ _printf_format_(2, 3) void
 #  else
 #    define DBG(ctx, arg...) kmod_log_null(ctx, ## arg)
 #  endif
+#  define NOTICE(ctx, arg...) kmod_log_cond(ctx, LOG_NOTICE, ## arg)
 #  define INFO(ctx, arg...) kmod_log_cond(ctx, LOG_INFO, ## arg)
 #  define ERR(ctx, arg...) kmod_log_cond(ctx, LOG_ERR, ## arg)
 #else
 #  define DBG(ctx, arg...) kmod_log_null(ctx, ## arg)
+#  define NOTICE(ctx, arg...) kmod_log_null(ctx, ## arg)
 #  define INFO(ctx, arg...) kmod_log_null(ctx, ## arg)
 #  define ERR(ctx, arg...) kmod_log_null(ctx, ## arg)
 #endif
