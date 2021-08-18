@@ -431,17 +431,18 @@ KMOD_EXPORT int kmod_module_new_from_path(struct kmod_ctx *ctx,
 			return -EEXIST;
 		}
 
-		*mod = kmod_module_ref(m);
-		return 0;
+		kmod_module_ref(m);
+	} else {
+		err = kmod_module_new(ctx, name, name, namelen, NULL, 0, &m);
+		if (err < 0) {
+			free(abspath);
+			return err;
+		}
+
+		m->path = abspath;
 	}
 
-	err = kmod_module_new(ctx, name, name, namelen, NULL, 0, &m);
-	if (err < 0) {
-		free(abspath);
-		return err;
-	}
-
-	m->path = abspath;
+	m->builtin = KMOD_MODULE_BUILTIN_NO;
 	*mod = m;
 
 	return 0;
