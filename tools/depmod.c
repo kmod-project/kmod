@@ -50,10 +50,11 @@ static const char *const default_cfg_paths[] = {
 	// clang-format on
 };
 
-static const char cmdopts_s[] = "aAb:m:o:C:E:F:evnP:wVh";
+static const char cmdopts_s[] = "aAIb:m:o:C:E:F:evnP:wVh";
 static const struct option cmdopts[] = {
 	{ "all", no_argument, 0, 'a' },
 	{ "quick", no_argument, 0, 'A' },
+	{ "incremental", no_argument, 0, 'I' },
 	{ "basedir", required_argument, 0, 'b' },
 	{ "moduledir", required_argument, 0, 'm' },
 	{ "outdir", required_argument, 0, 'o' },
@@ -83,6 +84,7 @@ static void help(void)
 	       "Options:\n"
 	       "\t-a, --all            Probe all modules\n"
 	       "\t-A, --quick          Only does the work if there's a new module\n"
+	       "\t-I, --incremental    Add modules from the command line\n"
 	       "\t-e, --errsyms        Report not supplied symbols\n"
 	       "\t-n, --show           Write the dependency file on stdout only\n"
 	       "\t-P, --symbol-prefix  Architecture symbol prefix\n"
@@ -516,6 +518,7 @@ struct cfg {
 	uint8_t check_symvers;
 	uint8_t print_unknown;
 	uint8_t warn_dups;
+	uint8_t incremental;
 	struct cfg_override *overrides;
 	struct cfg_search *searches;
 	struct cfg_external *externals;
@@ -2573,18 +2576,19 @@ static int depmod_output(struct depmod *depmod, FILE *out)
 	static const struct depfile {
 		const char *name;
 		int (*cb)(struct depmod *depmod, FILE *out);
+		bool skip_if_incremental;
 	} *itr, depfiles[] = {
-		{ "modules.dep", output_deps },
-		{ "modules.dep.bin", output_deps_bin },
-		{ "modules.alias", output_aliases },
-		{ "modules.alias.bin", output_aliases_bin },
-		{ "modules.softdep", output_softdeps },
-		{ "modules.weakdep", output_weakdeps },
-		{ "modules.symbols", output_symbols },
-		{ "modules.symbols.bin", output_symbols_bin },
-		{ "modules.builtin.bin", output_builtin_bin },
-		{ "modules.builtin.alias.bin", output_builtin_alias_bin },
-		{ "modules.devname", output_devname },
+		{ "modules.dep", output_deps, false },
+		{ "modules.dep.bin", output_deps_bin, false },
+		{ "modules.alias", output_aliases, false },
+		{ "modules.alias.bin", output_aliases_bin, false },
+		{ "modules.softdep", output_softdeps, false },
+		{ "modules.weakdep", output_weakdeps, false },
+		{ "modules.symbols", output_symbols, false },
+		{ "modules.symbols.bin", output_symbols_bin, false },
+		{ "modules.builtin.bin", output_builtin_bin, true },
+		{ "modules.builtin.alias.bin", output_builtin_alias_bin, true },
+		{ "modules.devname", output_devname, false },
 		{},
 	};
 	const char *dname = depmod->cfg->outdirname;
@@ -2613,6 +2617,9 @@ static int depmod_output(struct depmod *depmod, FILE *out)
 		FILE *fp = out;
 		struct tmpfile file;
 		int r, ferr;
+
+		if (depmod->cfg->incremental && itr->skip_if_incremental)
+			continue;
 
 		if (fp == NULL) {
 			mode_t mode = 0644;
@@ -2921,6 +2928,9 @@ static int do_depmod(int argc, char *argv[])
 			break;
 		case 'A':
 			maybe_all = 1;
+			break;
+		case 'I':
+			cfg.incremental = 1;
 			break;
 		case 'b':
 			free(root_arg);
