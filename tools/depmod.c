@@ -27,6 +27,7 @@
 #include <shared/util.h>
 
 #include <libkmod/libkmod-internal.h>
+#include <libkmod/libkmod-index.h>
 
 #undef ERR
 #undef DBG
@@ -126,12 +127,6 @@ _printf_format_(1, 2) static inline void _show(const char *fmt, ...)
 #define INDEX_VERSION ((INDEX_VERSION_MAJOR << 16) | INDEX_VERSION_MINOR)
 #define INDEX_CHILDMAX 128u
 
-struct index_value {
-	struct index_value *next;
-	unsigned int priority;
-	char value[0];
-};
-
 /* In-memory index (depmod only) */
 struct index_node {
 	char *prefix; /* path compression */
@@ -176,16 +171,6 @@ static struct index_node *index_create(void)
 	node->first = INDEX_CHILDMAX;
 
 	return node;
-}
-
-static void index_values_free(struct index_value *values)
-{
-	while (values) {
-		struct index_value *value = values;
-
-		values = value->next;
-		free(value);
-	}
 }
 
 static void index_destroy(struct index_node *node)
@@ -2691,6 +2676,398 @@ static int depmod_output(struct depmod *depmod, FILE *out)
 	return err;
 }
 
+static struct index_mm *read_index_mm_bin(const char *name, const struct depmod *depmod)
+{
+	struct index_mm *index;
+	unsigned long long dummy;
+	char fn[PATH_MAX];
+
+	if (snprintf(fn, PATH_MAX, "%s/%s.bin", depmod->cfg->dirname, name) >= PATH_MAX)
+		return NULL;
+
+	if (index_mm_open(depmod->ctx, fn, &dummy, &index) != 0)
+		return NULL;
+
+	return index;
+}
+
+static char *module_abspath(const char *str, ssize_t plen, const struct depmod *depmod)
+{
+	char *path;
+	size_t len;
+
+	if (str[0] == '/')
+		return strndup(str, plen);
+
+	len = strlen(depmod->cfg->dirname);
+	path = malloc(len + plen + 2);
+	if (!path)
+		return NULL;
+
+	memcpy(path, depmod->cfg->dirname, len);
+	path[len] = '/';
+	memcpy(path + len + 1, str, plen);
+	path[len + plen + 1] = '\0';
+
+	return path;
+}
+
+static void add_module_from_deps(const char *name, const char *deps, unsigned int len,
+				 unsigned int prio, void *arg)
+{
+	struct depmod *depmod = arg;
+	const char *colon = strchr(deps, ':');
+	char *path;
+	struct kmod_module *kmod;
+	int rc;
+
+	if (!colon) {
+		WRN("%s: unexpected value \"%s\"\n", __func__, deps);
+		return;
+	}
+
+	path = module_abspath(deps, colon - deps, depmod);
+	rc = kmod_module_new_from_path(depmod->ctx, path, &kmod);
+	if (rc < 0) {
+		ERR("%s: failed to create module %s: %s\n", __func__, path, strerror(-rc));
+		goto out_free_path;
+	}
+	assert(!strcmp(kmod_module_get_name(kmod), name));
+
+	rc = depmod_module_add(depmod, kmod);
+	if (rc < 0) {
+		ERR("%s: could not add module %s: %s\n", __func__, path, strerror(-rc));
+		kmod_module_unref(kmod);
+	}
+
+	DBG("%s: added %s as %s\n", __func__, name, kmod_module_get_path(kmod));
+
+out_free_path:
+	free(path);
+}
+
+static void add_module_deps_from_deps(const char *name, const char *deps,
+				      unsigned int len, unsigned int prio, void *arg)
+{
+	struct depmod *depmod = arg;
+	const char *dps = strchr(deps, ':');
+	char *tmp, *tok, *ptr = NULL;
+	struct mod *mod;
+
+	if (!dps) {
+		WRN("%s: unexpected value \"%s\"\n", __func__, deps);
+		return;
+	}
+
+	mod = hash_find(depmod->modules_by_name, name);
+	if (!mod) {
+		ERR("%s: failed to find %s\n", __func__, name);
+		return;
+	}
+
+	dps++;
+	while (*dps == ' ')
+		dps++;
+	if (*dps == '\0') {
+		DBG("%s: %s has no dependencies\n", __func__, name);
+		return;
+	}
+
+	tmp = strdup(dps);
+	for (tok = strtok_r(tmp, " ", &ptr); tok; tok = strtok_r(NULL, " \t", &ptr)) {
+		struct mod *dmod;
+		char *p;
+		int err;
+
+		p = strrchr(tok, '/');
+		if (!p)
+			p = tok;
+		p = strstr(p, KMOD_EXTENSION_UNCOMPRESSED);
+		if (!p) {
+			ERR("%s: invalid path %s\n", __func__, tok);
+			continue;
+		}
+		p[strlen(KMOD_EXTENSION_UNCOMPRESSED)] = '\0';
+
+		dmod = hash_find(depmod->modules_by_uncrelpath, tok);
+		if (!dmod) {
+			ERR("%s: dep %s not found\n", __func__, tok);
+			continue;
+		}
+
+		err = array_append_unique(&mod->deps, dmod);
+		if (err < 0 && err != -EEXIST) {
+			ERR("%s: failed to add dep %s->%s (%s)\n", __func__, mod->modname,
+			    tok, strerror(-err));
+			continue;
+		}
+		dmod->users++;
+		DBG("%s: %s depends on \"%s\"\n", __func__, mod->modname, tok);
+	}
+	free(tmp);
+}
+
+static void add_symbol_cb(const char *key, const char *val, unsigned int len,
+			  unsigned int prio, void *arg)
+{
+	struct depmod *depmod = arg;
+	static const char _symbol[] = "symbol:";
+	struct mod *mod;
+	struct symbol *sym, *old;
+	size_t namelen;
+	int err;
+
+	if (strncmp(key, _symbol, sizeof(_symbol) - 1)) {
+		ERR("%s: unexpected key %s\n", __func__, key);
+		return;
+	}
+	key += sizeof(_symbol) - 1;
+	namelen = strlen(key) + 1;
+
+	if (prio == UINT_MAX) {
+		/* CRC value */
+		uint64_t crc;
+		char *ep;
+
+		old = hash_find(depmod->symbols, key);
+		if (old == NULL) {
+			ERR("%s: symbol \"%s\" not found\n", __func__, key);
+			return;
+		}
+		crc = strtoull(val, &ep, 16);
+		if (*val == '\0' || *ep != '\0') {
+			ERR("%s: invalid crc \"%s\"\n", __func__, val);
+			return;
+		}
+		if (old->crc && old->crc != crc)
+			WRN("%s: crc mismatch for %s: %" PRIx64 " != %" PRIx64 "\n",
+			    __func__, key, old->crc, crc);
+		old->crc = crc;
+
+		DBG("%s: %s has crc %" PRIx64 "\n", __func__, key, crc);
+		return;
+	}
+
+	sym = calloc(1, sizeof(struct symbol) + namelen);
+	if (!sym)
+		return;
+
+	mod = hash_find(depmod->modules_by_name, val);
+	if (!mod) {
+		ERR("%s: module %s not found\n", __func__, val);
+		return;
+	}
+	sym->owner = mod;
+	memcpy(sym->name, key, namelen);
+
+	old = hash_find(depmod->symbols, sym->name);
+	if (old && old->owner) {
+		ERR("%s: symbol %s (->%s) already present, owner %s\n", __func__,
+		    sym->name, mod->path, old->owner->path);
+		free(sym);
+	} else if (old) {
+		DBG("%s: setting owner of %s(%" PRIx64 ") to %s\n", __func__, sym->name,
+		    sym->crc, mod->path);
+		old->owner = mod;
+		free(sym);
+	} else {
+		err = hash_add(depmod->symbols, sym->name, sym);
+		if (err < 0) {
+			ERR("%s: failed to add symbol \"%s\"\n", __func__, key);
+			free(sym);
+			return;
+		}
+		DBG("add %p sym=%s, crc=%" PRIx64 ", owner=%p %s\n", sym, sym->name,
+		    sym->crc, mod->modname, mod->path);
+	}
+}
+
+static void add_alias_cb(const char *key, const char *val, void *arg)
+{
+	struct depmod *depmod = arg;
+	struct mod *mod;
+	static const char __alias[] = "alias";
+	struct kmod_list *kl;
+
+	mod = hash_find(depmod->modules_by_name, val);
+	if (mod == NULL) {
+		ERR("%s: module %s not found\n", __func__, val);
+		return;
+	}
+
+	if ((kl = kmod_module_info_append(&mod->info_list, __alias, sizeof(__alias) - 1,
+					  key, strlen(key))) == 0)
+		ERR("%s: failed to add alias \"%s\" to \"%s\"\n", __func__, key, val);
+	else {
+		const char *ali = kmod_module_info_get_value(kmod_list_last(kl));
+
+		if (array_append(&mod->alias_values, ali) < 0)
+			ERR("%s: failed to add alias \"%s\" to \"%s\" to array\n",
+			    __func__, ali, val);
+		else
+			DBG("%s: %s: alias[%lu] => \"%s\"\n", __func__, val,
+			    mod->alias_values.count - 1, ali);
+	}
+}
+
+static int read_aliases(struct depmod *depmod)
+{
+	char line[10240];
+	char *fn;
+	FILE *fp;
+	int rc = -EINVAL;
+
+	rc = asprintf(&fn, "%s/modules.alias", depmod->cfg->dirname);
+	if (rc == -1)
+		return -ENOMEM;
+
+	fp = fopen(fn, "r");
+	if (fp == NULL) {
+		rc = -errno;
+		ERR("%s: failed to open %s: %s\n", __func__, fn, strerror(errno));
+		free(fn);
+		return rc;
+	}
+
+	INF("%s: loading %s\n", __func__, fn);
+	free(fn);
+	while (fgets(line, sizeof(line), fp) != NULL) {
+		static const char __alias[] = "alias ";
+		char *p, *key, *val;
+
+		if (line[0] == '\0' || line[0] == '\n' || line[0] == '#')
+			continue;
+
+		p = strchr(line, '\n');
+		if (p != NULL)
+			*p = '\0';
+		if (p == NULL || strncmp(line, __alias, sizeof(__alias) - 1)) {
+			WRN("%s: invalid line \"%s\"\n", __func__, line);
+			goto out_close;
+		}
+
+		key = line + sizeof(__alias) - 1;
+		val = strrchr(key, ' ');
+		assert(val != NULL && val > key);
+		*val++ = '\0';
+		add_alias_cb(key, val, depmod);
+	}
+	rc = 0;
+out_close:
+	fclose(fp);
+	return rc;
+}
+
+static int read_softdeps(struct depmod *depmod)
+{
+	char line[10240];
+	char *fn;
+	FILE *fp;
+	int rc = -EINVAL;
+
+	rc = asprintf(&fn, "%s/modules.softdep", depmod->cfg->dirname);
+	if (rc == -1)
+		return -ENOMEM;
+
+	fp = fopen(fn, "r");
+	if (fp == NULL) {
+		rc = -errno;
+		ERR("%s: failed to open %s: %s\n", __func__, fn, strerror(errno));
+		free(fn);
+		return rc;
+	}
+
+	INF("%s: loading %s\n", __func__, fn);
+	free(fn);
+
+	while (fgets(line, sizeof(line), fp) != NULL) {
+		static const char __softdep[] = "softdep";
+		char *p, *key, *val;
+		struct mod *mod;
+		struct kmod_list *kl;
+
+		if (line[0] == '\0' || line[0] == '\n' || line[0] == '#')
+			continue;
+
+		p = strchr(line, '\n');
+		if (p != NULL)
+			*p = '\0';
+		if (p == NULL || strncmp(line, __softdep, sizeof(__softdep) - 1) ||
+		    (line[sizeof(__softdep) - 1] != ' ')) {
+			WRN("%s: invalid line \"%s\"\n", __func__, line);
+			goto out_close;
+		}
+
+		key = line + sizeof(__softdep);
+		while (*key == ' ' || *key == '\t')
+			key++;
+
+		val = strpbrk(key, " \t");
+		if (val == NULL) {
+			WRN("%s: no softdep\n", __func__);
+			goto out_close;
+		}
+		*val++ = '\0';
+		while (*val == ' ' || *val == '\t')
+			val++;
+
+		mod = hash_find(depmod->modules_by_name, key);
+		if (mod == NULL) {
+			ERR("%s: module %s not found\n", __func__, key);
+			continue;
+		}
+
+		if ((kl = kmod_module_info_append(&mod->info_list, __softdep,
+						  sizeof(__softdep) - 1, val,
+						  strlen(val))) == 0)
+			ERR("%s: failed to add softdep \"%s\" => \"%s\"\n", __func__, key,
+			    val);
+		else {
+			const char *softdep =
+				kmod_module_info_get_value(kmod_list_last(kl));
+
+			if (array_append(&mod->softdep_values, softdep) < 0)
+				ERR("%s: failed to add softdep \"%s\" to \"%s\" to array\n",
+				    __func__, softdep, val);
+			else
+				DBG("%s: %s: softdep[%lu] => \"%s\"\n", __func__, val,
+				    mod->softdep_values.count - 1, softdep);
+		}
+	}
+	rc = 0;
+out_close:
+	fclose(fp);
+	return rc;
+}
+
+static int depmod_modules_read_mm(struct depmod *depmod)
+{
+	struct index_mm *deps, *symbols;
+
+	deps = read_index_mm_bin("modules.dep", depmod);
+	if (deps == NULL)
+		WRN("failed to read modules.dep.bin\n");
+	else {
+		index_mm_walk(deps, false, add_module_from_deps, depmod);
+		index_mm_walk(deps, false, add_module_deps_from_deps, depmod);
+		index_mm_close(deps);
+	}
+
+	symbols = read_index_mm_bin("modules.symbols", depmod);
+	if (symbols == NULL)
+		WRN("failed to read modules.symbols.bin\n");
+	else {
+		index_mm_walk(symbols, false, add_symbol_cb, depmod);
+		index_mm_close(symbols);
+	}
+
+	read_aliases(depmod);
+	read_softdeps(depmod);
+	depmod_modules_build_array(depmod);
+
+	return 0;
+}
+
 static void depmod_add_fake_syms(struct depmod *depmod)
 {
 	/* __this_module is magically inserted by kernel loader. */
@@ -3111,7 +3488,19 @@ static int do_depmod(int argc, char *argv[])
 		cfg.print_unknown = 0;
 	}
 
-	if (all) {
+	if (cfg.incremental) {
+		err = cfg_load(&cfg, config_paths);
+		if (err < 0) {
+			CRIT("could not load configuration files\n");
+			goto cmdline_modules_failed;
+		}
+		err = depmod_modules_read_mm(&depmod);
+		if (err < 0) {
+			CRIT("could not read modules: %s\n", strerror(-err));
+			goto cmdline_modules_failed;
+		}
+		goto done;
+	} else if (all) {
 		err = cfg_load(&cfg, config_paths);
 		if (err < 0) {
 			CRIT("could not load configuration files\n");
