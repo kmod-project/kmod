@@ -1855,7 +1855,12 @@ static int dep_cmp(const void *pa, const void *pb)
 {
 	const struct mod *a = *(const struct mod **)pa;
 	const struct mod *b = *(const struct mod **)pb;
-	return a->dep_sort_idx - b->dep_sort_idx;
+	int cmp = a->dep_sort_idx - b->dep_sort_idx;
+
+	if (cmp != 0)
+		return cmp;
+
+	return strcmp(a->modname, b->modname);
 }
 
 static void depmod_sort_dependencies(struct depmod *depmod)
@@ -2109,19 +2114,22 @@ out_list:
 static int depmod_calculate_dependencies(struct depmod *depmod)
 {
 	const struct mod **itrm;
-	uint16_t *users, *roots, *sorted;
-	uint16_t i, n_roots = 0, n_sorted = 0, n_mods = depmod->modules.count;
+	uint16_t *users, *roots, *rank;
+	uint16_t i, n_roots = 0, n_mods = depmod->modules.count;
+	uint16_t i_roots;
 	int ret = 0;
 
-	users = malloc(sizeof(uint16_t) * n_mods * 3);
+	users = malloc(sizeof(uint16_t) * n_mods * 4);
 	if (users == NULL)
 		return -ENOMEM;
 	roots = users + n_mods;
-	sorted = roots + n_mods;
+	rank = roots + n_mods;
 
 	DBG("calculate dependencies and ordering (%hu modules)\n", n_mods);
 
 	assert(depmod->modules.count < UINT16_MAX);
+
+	memset(rank, 0, sizeof(*rank) * n_mods);
 
 	/* populate modules users (how many modules uses it) */
 	itrm = (const struct mod **)depmod->modules.array;
@@ -2130,20 +2138,19 @@ static int depmod_calculate_dependencies(struct depmod *depmod)
 		users[i] = m->users;
 		if (users[i] == 0) {
 			roots[n_roots] = i;
+			rank[n_roots] = 1;
 			n_roots++;
 		}
 	}
 
 	/* topological sort (outputs modules without users first) */
-	while (n_roots > 0) {
+	for (i_roots = 0; i_roots < n_roots; i_roots++) {
 		const struct mod **itr_dst, **itr_dst_end;
 		struct mod *src;
-		uint16_t src_idx = roots[--n_roots];
+		uint16_t src_idx = roots[i_roots];
 
 		src = depmod->modules.array[src_idx];
-		src->dep_sort_idx = n_sorted;
-		sorted[n_sorted] = src_idx;
-		n_sorted++;
+		src->dep_sort_idx = rank[i_roots];
 
 		if (src->deps.count == 0)
 			continue;
@@ -2157,12 +2164,13 @@ static int depmod_calculate_dependencies(struct depmod *depmod)
 			users[dst_idx]--;
 			if (users[dst_idx] == 0) {
 				roots[n_roots] = dst_idx;
+				rank[n_roots] = rank[i_roots] + 1;
 				n_roots++;
 			}
 		}
 	}
 
-	if (n_sorted < n_mods) {
+	if (n_roots < n_mods) {
 		depmod_report_cycles(depmod, n_mods, users);
 		ret = -EINVAL;
 		goto exit;
