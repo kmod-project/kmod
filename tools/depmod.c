@@ -3181,9 +3181,187 @@ static int depmod_modules_read_mm(struct depmod *depmod)
 
 	read_aliases(depmod);
 	read_softdeps(depmod);
-	depmod_modules_build_array(depmod);
 
 	return 0;
+}
+
+/*
+ * Check if a module to be added replaces an existing one.
+ * If yes, add the dependent modules to the must_check list.
+ */
+static int depmod_check_incremental(struct depmod *depmod, const char *path,
+				    struct hash *must_check)
+{
+	int rc, err;
+	char *abspath, *p;
+	size_t baselen, namelen, modnamelen, i;
+	char modname[PATH_MAX];
+	struct mod *oldmod;
+
+	abspath = module_abspath(path, strlen(path), depmod);
+
+	/* sttrchr can't return 0 here */
+	p = strrchr(abspath, '/') + 1;
+	baselen = p - abspath;
+	namelen = strlen(p);
+
+	rc = depmod_must_replace(depmod, baselen, namelen, abspath, modname, &modnamelen,
+				 &oldmod, true);
+	free(abspath);
+
+	if (rc < 0) {
+		ERR("%s: error in depmod_must_replace: %s", __func__, strerror(-rc));
+		return rc;
+	}
+
+	else if (rc != DEPMOD_MUST_REPLACE)
+		return rc;
+
+	assert(oldmod != NULL);
+	INF("%s: %s will be replaced\n", __func__, modname);
+	for (i = 0; i < oldmod->user.count; i++) {
+		struct mod *user = oldmod->user.array[i];
+
+		err = hash_add(must_check, user->modname, user);
+		if (err < 0)
+			ERR("%s: error adding %s to must_check list\n", __func__,
+			    user->modname);
+		else
+			INF("%s: added %s to check list\n", __func__, user->modname);
+	}
+	/*
+	 * A previous dep check may have added oldmod to the must_check
+	 * list. Remove it there, too. If any module is replaced later
+	 * on on which oldmod would depend, this dependency won't be
+	 * found any more because we purge it here.
+	 */
+	hash_del(must_check, oldmod->modname);
+	err = depmod_module_del(depmod, oldmod);
+
+	return rc;
+}
+
+static int depmod_incremental_add_user(struct depmod *depmod, struct mod *mod)
+{
+	int err;
+	struct kmod_module *kmod;
+
+	err = kmod_module_new_from_path(depmod->ctx, mod->path, &kmod);
+	if (err < 0) {
+		ERR("%s: failed to create kmod_module for %s\n", __func__, mod->modname);
+		return err;
+	}
+
+	err = kmod_module_get_dependency_symbols(kmod, &mod->dep_sym_list);
+	if (err < 0)
+		ERR("%s: failed to get dependency symbols\n", __func__);
+
+	kmod_module_unref(kmod);
+
+	err = depmod_load_module_dependencies(depmod, mod);
+	if (err < 0)
+		ERR("%s: failed to check dependencies for %s\n", __func__, mod->modname);
+
+	return err;
+}
+
+static int depmod_incremental_add_arg(struct depmod *depmod, const char *path,
+				      struct hash *new_mods)
+{
+	char *abspath;
+	int err;
+	struct kmod_module *kmod;
+	struct mod *mod;
+
+	abspath = module_abspath(path, strlen(path), depmod);
+	err = kmod_module_new_from_path(depmod->ctx, abspath, &kmod);
+	free(abspath);
+	if (err < 0) {
+		ERR("%s: failed to create kmod_module for %s\n", __func__, path);
+		return err;
+	}
+
+	err = depmod_module_add(depmod, kmod);
+	if (err < 0) {
+		ERR("%s: failed to add %s: %s\n", __func__, path, strerror(-err));
+		kmod_module_unref(kmod);
+		return err;
+	}
+
+	mod = hash_find(depmod->modules_by_name, kmod_module_get_name(kmod));
+	assert(mod != NULL && mod->kmod == kmod);
+
+	err = depmod_load_module(depmod, mod);
+	if (err < 0)
+		ERR("%s: failed to load %s\n", __func__, path);
+	else {
+		INF("%s: loaded %s\n", __func__, path);
+		hash_add(new_mods, mod->modname, mod);
+	}
+
+	return err;
+}
+
+static int depmod_incremental(struct depmod *depmod, int argc, char *const argv[])
+{
+	struct hash *must_check, *new_mods;
+	int err;
+	struct hash_iter iter;
+	struct mod *mod;
+	int i;
+
+	err = depmod_modules_read_mm(depmod);
+	if (err < 0) {
+		CRIT("could not read modules: %s\n", strerror(-err));
+		return err;
+	}
+
+	must_check = hash_new(32, NULL);
+	new_mods = hash_new(32, NULL);
+	if (must_check == NULL || new_mods == NULL) {
+		err = -ENOMEM;
+		goto out;
+	}
+
+	for (i = 0; i < argc; i++) {
+		err = depmod_check_incremental(depmod, argv[i], must_check);
+		if (err < 0) {
+			CRIT("could not add module %s: %s\n", argv[i], strerror(-err));
+			goto out;
+		}
+		if (err != DEPMOD_MUST_NOTHING)
+			err = depmod_incremental_add_arg(depmod, argv[i], new_mods);
+	}
+
+	hash_iter_init(must_check, &iter);
+	while (hash_iter_next(&iter, NULL, (const void **)&mod)) {
+		err = depmod_incremental_add_user(depmod, mod);
+		if (err < 0)
+			goto out;
+	}
+
+	hash_iter_init(new_mods, &iter);
+	while (hash_iter_next(&iter, NULL, (const void **)&mod)) {
+		err = depmod_load_module_dependencies(depmod, mod);
+		if (err < 0)
+			ERR("%s: failed to check dependencies for %s\n", __func__,
+			    mod->modname);
+	}
+
+	err = depmod_modules_build_array(depmod);
+	if (err < 0) {
+		CRIT("could not build module array: %s\n", strerror(-err));
+		goto out;
+	}
+	depmod_modules_sort(depmod);
+	if (depmod_calculate_dependencies(depmod) < 0)
+		ERR("%s: error in depmod_calculate_dependencies()\n", __func__);
+out:
+	if (must_check != NULL)
+		hash_free(must_check);
+	if (new_mods != NULL)
+		hash_free(new_mods);
+	return err;
 }
 
 static void depmod_add_fake_syms(struct depmod *depmod)
@@ -3612,12 +3790,11 @@ static int do_depmod(int argc, char *argv[])
 			CRIT("could not load configuration files\n");
 			goto cmdline_modules_failed;
 		}
-		err = depmod_modules_read_mm(&depmod);
-		if (err < 0) {
-			CRIT("could not read modules: %s\n", strerror(-err));
+		err = depmod_incremental(&depmod, argc - optind, &argv[optind]);
+		if (err)
 			goto cmdline_modules_failed;
-		}
-		goto done;
+		else
+			goto output;
 	} else if (all) {
 		err = cfg_load(&cfg, config_paths);
 		if (err < 0) {
@@ -3669,6 +3846,7 @@ static int do_depmod(int argc, char *argv[])
 	if (err < 0)
 		goto cmdline_modules_failed;
 
+output:
 	err = depmod_output(&depmod, out);
 
 done:
