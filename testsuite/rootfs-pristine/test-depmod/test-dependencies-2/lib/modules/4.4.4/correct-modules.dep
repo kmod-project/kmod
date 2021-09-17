@@ -1,5 +1,5 @@
 kernel/lib/mod-foo-b.ko:
 kernel/mod-foo-c.ko:
 kernel/fs/foo/mod-foo-a.ko:
-kernel/fs/mod-foo.ko: kernel/lib/mod-foo-b.ko kernel/fs/foo/mod-foo-a.ko kernel/mod-foo-c.ko
+kernel/fs/mod-foo.ko: kernel/fs/foo/mod-foo-a.ko kernel/lib/mod-foo-b.ko kernel/mod-foo-c.ko
 kernel/fs/mod-bah.ko: kernel/lib/mod-foo-b.ko
