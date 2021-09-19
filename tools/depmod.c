@@ -945,6 +945,7 @@ struct mod {
 	struct array softdep_values;
 	struct array weakdep_values;
 	struct array deps; /* struct symbol */
+	struct array user; /* modules depending on this one */
 	size_t baselen; /* points to start of basename/filename */
 	size_t modnamesz;
 	int sort_idx; /* sort index using modules.order */
@@ -978,6 +979,7 @@ static void mod_free(struct mod *mod)
 	array_free_array(&mod->weakdep_values);
 	array_free_array(&mod->softdep_values);
 	array_free_array(&mod->alias_values);
+	array_free_array(&mod->user);
 	kmod_module_unref(mod->kmod);
 	kmod_module_info_free_list(mod->info_list);
 	kmod_module_dependency_symbols_free_list(mod->dep_sym_list);
@@ -1006,6 +1008,11 @@ static int mod_add_dependency(struct mod *mod, struct symbol *sym)
 	}
 
 	sym->owner->users++;
+	err = array_append_unique(&sym->owner->user, mod);
+	if (err < 0)
+		ERR("%s: failed to add %s as user of %s: %s\n", __func__, mod->modname,
+		    sym->owner->modname, strerror(-err));
+
 	SHOW("%s needs \"%s\": %s\n", mod->path, sym->name, sym->owner->path);
 	return 0;
 }
@@ -1098,6 +1105,7 @@ static int depmod_module_add(struct depmod *depmod, struct kmod_module *kmod)
 	array_init(&mod->weakdep_values, 4); // fits 100%
 
 	array_init(&mod->deps, 4);
+	array_init(&mod->user, 4);
 
 	mod->path = strdup(kmod_module_get_path(kmod));
 	if (mod->path == NULL) {
@@ -2802,6 +2810,10 @@ static void add_module_deps_from_deps(const char *name, const char *deps,
 			continue;
 		}
 		dmod->users++;
+		err = array_append_unique(&dmod->user, mod);
+		if (err < 0)
+			ERR("%s: failed to add %s as user of %s: %s\n", __func__,
+			    mod->modname, dmod->modname, strerror(-err));
 		DBG("%s: %s depends on \"%s\"\n", __func__, mod->modname, tok);
 	}
 	free(tmp);
