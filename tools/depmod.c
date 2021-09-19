@@ -2356,6 +2356,7 @@ static int output_symbols_bin(struct depmod *depmod, FILE *out)
 	while (hash_iter_next(&iter, NULL, &v)) {
 		int duplicate;
 		const struct symbol *sym = v;
+		char crcbuf[17];
 
 		if (sym->owner == NULL)
 			continue;
@@ -2374,6 +2375,9 @@ static int output_symbols_bin(struct depmod *depmod, FILE *out)
 		if (duplicate && depmod->cfg->warn_dups)
 			WRN("duplicate module syms:\n%s %s\n", strbuf_str(&salias),
 			    sym->owner->modname);
+
+		snprintf(crcbuf, sizeof(crcbuf), "%08" PRIx64, sym->crc);
+		index_insert(idx, strbuf_str(&salias), crcbuf, UINT_MAX);
 	}
 
 	index_write(idx, out);
