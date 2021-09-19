@@ -348,11 +348,13 @@ void kmod_pool_del_module(struct kmod_ctx *ctx, struct kmod_module *mod, const c
 	hash_del(ctx->modules_by_name, key);
 }
 
-static int kmod_lookup_alias_from_alias_bin(struct kmod_ctx *ctx,
-					    enum kmod_index index_number,
-					    const char *name, struct kmod_list **list)
+static int kmod_lookup_alias_from_alias_bin_n(struct kmod_ctx *ctx,
+					      enum kmod_index index_number,
+					      const char *name, struct kmod_list **list,
+					      unsigned int max_match)
 {
 	int err, nmatch = 0;
+	unsigned int n;
 	struct index_file *idx;
 	struct index_value *realnames, *realname;
 
@@ -378,7 +380,8 @@ static int kmod_lookup_alias_from_alias_bin(struct kmod_ctx *ctx,
 		index_file_close(idx);
 	}
 
-	for (realname = realnames; realname; realname = realname->next) {
+	for (realname = realnames, n = 0; realname && n < max_match;
+	     realname = realname->next, n++) {
 		struct kmod_module *mod;
 		struct kmod_list *node;
 
@@ -409,14 +412,21 @@ fail:
 	return err;
 }
 
+static int kmod_lookup_alias_from_alias_bin(struct kmod_ctx *ctx,
+					    enum kmod_index index_number,
+					    const char *name, struct kmod_list **list)
+{
+	return kmod_lookup_alias_from_alias_bin_n(ctx, index_number, name, list, UINT_MAX);
+}
+
 int kmod_lookup_alias_from_symbols_file(struct kmod_ctx *ctx, const char *name,
 					struct kmod_list **list)
 {
 	if (!strstartswith(name, "symbol:"))
 		return 0;
 
-	return kmod_lookup_alias_from_alias_bin(ctx, KMOD_INDEX_MODULES_SYMBOL, name,
-						list);
+	return kmod_lookup_alias_from_alias_bin_n(ctx, KMOD_INDEX_MODULES_SYMBOL, name,
+						  list, 1);
 }
 
 int kmod_lookup_alias_from_aliases_file(struct kmod_ctx *ctx, const char *name,
