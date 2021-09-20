@@ -1154,16 +1154,85 @@ fail:
 	return err;
 }
 
+static void depmod_del_deps_of_module(struct mod *mod)
+{
+	size_t i, j;
+
+	for (i = 0; i < mod->deps.count; i++) {
+		struct mod *dep = mod->deps.array[i];
+
+		for (j = 0; j < dep->user.count; j++)
+			if (dep->user.array[j] == mod)
+				break;
+		if (j < dep->user.count) {
+			INF("%s: removing %s as user from %s\n", __func__, mod->modname,
+			    dep->modname);
+			array_remove_at(&dep->user, j);
+			dep->users--;
+		}
+	}
+
+	for (i = 0; i < mod->user.count; i++) {
+		struct mod *user = mod->user.array[i];
+
+		for (j = 0; j < user->deps.count; j++)
+			if (user->deps.array[j] == mod)
+				break;
+		if (j < user->deps.count) {
+			INF("%s: removing %s as dep from %s\n", __func__, mod->modname,
+			    user->modname);
+			array_remove_at(&user->deps, j);
+		}
+	}
+}
+
+static void depmod_del_symbols_of_module(struct depmod *depmod, const struct mod *mod)
+{
+	struct array to_delete;
+	struct hash_iter iter;
+	const char *key;
+	const struct symbol *sym;
+	int err = 0;
+	size_t i;
+
+	array_init(&to_delete, 8);
+
+	hash_iter_init(depmod->symbols, &iter);
+	while (hash_iter_next(&iter, &key, (const void **)&sym)) {
+		int rc;
+
+		if (mod != sym->owner)
+			continue;
+		rc = array_append(&to_delete, sym);
+		if (err == 0 && rc < 0)
+			err = rc;
+	}
+	if (err < 0)
+		ERR("%s: failed to mark some symbols for deletion\n", __func__);
+
+	for (i = 0; i < to_delete.count; i++) {
+		sym = to_delete.array[i];
+		DBG("%s: deleting symbol %s\n", __func__, sym->name);
+		if (hash_del(depmod->symbols, sym->name) < 0)
+			ERR("%s: failed to delete symbol %s\n", __func__, sym->name);
+	}
+
+	array_free_array(&to_delete);
+}
+
 static int depmod_module_del(struct depmod *depmod, struct mod *mod)
 {
 	DBG("del %p kmod=%p, path=%s\n", mod, mod->kmod, mod->path);
+
+	depmod_del_deps_of_module(mod);
+	depmod_del_symbols_of_module(depmod, mod);
 
 	if (mod->uncrelpath != NULL)
 		hash_del(depmod->modules_by_uncrelpath, mod->uncrelpath);
 
 	hash_del(depmod->modules_by_name, mod->modname);
-
 	mod_free(mod);
+
 	return 0;
 }
 
