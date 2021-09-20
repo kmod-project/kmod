@@ -1622,6 +1622,62 @@ static struct symbol *depmod_symbol_find(const struct depmod *depmod, const char
 	return hash_find(depmod->symbols, name);
 }
 
+static int depmod_load_module(struct depmod *depmod, struct mod *mod)
+{
+	struct kmod_list *l, *list = NULL;
+	int err = kmod_module_get_symbols(mod->kmod, &list);
+
+	if (err < 0) {
+		if (err == -ENODATA)
+			DBG("ignoring %s: no symbols\n", mod->path);
+		else
+			ERR("failed to load symbols from %s: %s\n", mod->path,
+			    strerror(-err));
+		goto load_info;
+	}
+
+	kmod_list_foreach(l, list) {
+		const char *name = kmod_module_symbol_get_symbol(l);
+		uint64_t crc = kmod_module_symbol_get_crc(l);
+
+		depmod_symbol_add(depmod, name, false, crc, mod);
+	}
+	kmod_module_symbols_free_list(list);
+
+load_info:
+	kmod_module_get_info(mod->kmod, &mod->info_list);
+	kmod_list_foreach(l, mod->info_list) {
+		const char *key = kmod_module_info_get_key(l);
+
+		if (streq(key, "alias")) {
+			const char *value = kmod_module_info_get_value(l);
+
+			if (array_append(&mod->alias_values, value) < 0)
+				return 0;
+			continue;
+		}
+		if (streq(key, "softdep")) {
+			const char *value = kmod_module_info_get_value(l);
+
+			if (array_append(&mod->softdep_values, value) < 0)
+				return 0;
+			continue;
+		}
+		if (streq(key, "weakdep")) {
+			const char *value = kmod_module_info_get_value(l);
+
+			if (array_append(&mod->weakdep_values, value) < 0)
+				return 0;
+			continue;
+		}
+	}
+	kmod_module_get_dependency_symbols(mod->kmod, &mod->dep_sym_list);
+	kmod_module_unref(mod->kmod);
+	mod->kmod = NULL;
+
+	return 0;
+}
+
 static int depmod_load_modules(struct depmod *depmod)
 {
 	struct mod **itr, **itr_end;
@@ -1630,56 +1686,8 @@ static int depmod_load_modules(struct depmod *depmod)
 
 	itr = (struct mod **)depmod->modules.array;
 	itr_end = itr + depmod->modules.count;
-	for (; itr < itr_end; itr++) {
-		struct mod *mod = *itr;
-		struct kmod_list *l, *list = NULL;
-		int err = kmod_module_get_symbols(mod->kmod, &list);
-		if (err < 0) {
-			if (err == -ENODATA)
-				DBG("ignoring %s: no symbols\n", mod->path);
-			else
-				ERR("failed to load symbols from %s: %s\n", mod->path,
-				    strerror(-err));
-			goto load_info;
-		}
-		kmod_list_foreach(l, list) {
-			const char *name = kmod_module_symbol_get_symbol(l);
-			uint64_t crc = kmod_module_symbol_get_crc(l);
-			depmod_symbol_add(depmod, name, false, crc, mod);
-		}
-		kmod_module_symbols_free_list(list);
-
-load_info:
-		kmod_module_get_info(mod->kmod, &mod->info_list);
-		kmod_list_foreach(l, mod->info_list) {
-			const char *key = kmod_module_info_get_key(l);
-
-			if (streq(key, "alias")) {
-				const char *value = kmod_module_info_get_value(l);
-
-				if (array_append(&mod->alias_values, value) < 0)
-					return 0;
-				continue;
-			}
-			if (streq(key, "softdep")) {
-				const char *value = kmod_module_info_get_value(l);
-
-				if (array_append(&mod->softdep_values, value) < 0)
-					return 0;
-				continue;
-			}
-			if (streq(key, "weakdep")) {
-				const char *value = kmod_module_info_get_value(l);
-
-				if (array_append(&mod->weakdep_values, value) < 0)
-					return 0;
-				continue;
-			}
-		}
-		kmod_module_get_dependency_symbols(mod->kmod, &mod->dep_sym_list);
-		kmod_module_unref(mod->kmod);
-		mod->kmod = NULL;
-	}
+	for (; itr < itr_end; itr++)
+		depmod_load_module(depmod, *itr);
 
 	DBG("loaded symbols (%zu modules, %u symbols)\n", depmod->modules.count,
 	    hash_get_count(depmod->symbols));
