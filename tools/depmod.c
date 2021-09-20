@@ -1267,20 +1267,23 @@ static int depmod_module_is_higher_priority(const struct depmod *depmod,
 	return newprio <= oldprio;
 }
 
-static int depmod_modules_search_file(struct depmod *depmod, size_t baselen,
-				      size_t namelen, const char *path)
+enum {
+	DEPMOD_MUST_ADD,
+	DEPMOD_MUST_REPLACE,
+	DEPMOD_MUST_NOTHING,
+};
+
+static int depmod_must_replace(struct depmod *depmod, size_t baselen, size_t namelen,
+			       const char *path, char *modname, size_t *modnamelen,
+			       struct mod **oldmod)
 {
-	struct kmod_module *kmod;
-	struct mod *mod;
 	const char *relpath;
-	char modname[PATH_MAX];
-	size_t modnamelen;
-	int err;
+	struct mod *mod;
 
 	if (!path_ends_with_kmod_ext(path + baselen, namelen))
-		return 0;
+		return DEPMOD_MUST_NOTHING;
 
-	if (path_to_modname(path, modname, &modnamelen) == NULL) {
+	if (path_to_modname(path, modname, modnamelen) == NULL) {
 		ERR("could not get modname from path %s\n", path);
 		return -EINVAL;
 	}
@@ -1290,15 +1293,38 @@ static int depmod_modules_search_file(struct depmod *depmod, size_t baselen,
 
 	mod = hash_find(depmod->modules_by_name, modname);
 	if (mod == NULL)
-		goto add;
+		return DEPMOD_MUST_ADD;
 
-	if (depmod_module_is_higher_priority(depmod, mod, baselen, namelen, modnamelen,
+	if (depmod_module_is_higher_priority(depmod, mod, baselen, namelen, *modnamelen,
 					     path)) {
 		DBG("Ignored lower priority: %s, higher: %s\n", path, mod->path);
-		return 0;
+		return DEPMOD_MUST_NOTHING;
 	}
 
 	DBG("Replace lower priority %s with new module %s\n", mod->relpath, relpath);
+	*oldmod = mod;
+	return DEPMOD_MUST_REPLACE;
+}
+
+static int depmod_modules_search_file(struct depmod *depmod, size_t baselen,
+				      size_t namelen, const char *path)
+{
+	struct kmod_module *kmod;
+	struct mod *mod;
+	char modname[PATH_MAX];
+	size_t modnamelen;
+	int err;
+
+	err = depmod_must_replace(depmod, baselen, namelen, path, modname, &modnamelen,
+				  &mod);
+
+	if (err == DEPMOD_MUST_NOTHING)
+		return 0;
+	else if (err < 0)
+		return err;
+	else if (err == DEPMOD_MUST_ADD)
+		goto add;
+
 	err = depmod_module_del(depmod, mod);
 	if (err < 0) {
 		ERR("could not del module %s: %s\n", mod->path, strerror(-err));
