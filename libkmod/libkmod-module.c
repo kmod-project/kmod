@@ -498,12 +498,12 @@ KMOD_EXPORT struct kmod_module *kmod_module_ref(struct kmod_module *mod)
 	return mod;
 }
 
-#define CHECK_ERR_AND_FINISH(_err, _label_err, _list, label_finish)	\
+#define CHECK_ERR_AND_FINISH(_err, _label_err, _list, _label_finish)	\
 	do {								\
 		if ((_err) < 0)						\
 			goto _label_err;				\
 		if (*(_list) != NULL)					\
-			goto finish;					\
+			goto _label_finish;				\
 	} while (0)
 
 /**
