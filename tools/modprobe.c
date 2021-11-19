@@ -819,6 +819,7 @@ static int do_modprobe(int argc, char **orig_argv)
 	int do_show_modversions = 0;
 	int do_show_exports = 0;
 	int err;
+	struct stat stat_buf;
 
 	argv = prepend_options_from_env(&argc, orig_argv);
 	if (argv == NULL) {
@@ -946,6 +947,12 @@ static int do_modprobe(int argc, char **orig_argv)
 
 	args = argv + optind;
 	nargs = argc - optind;
+
+	if (!use_syslog &&
+	    (!stderr ||
+	     fileno(stderr) == -1 ||
+	     fstat(fileno(stderr), &stat_buf)))
+		use_syslog = 1;
 
 	log_open(use_syslog);
 
