@@ -3277,7 +3277,8 @@ static int depmod_incremental_add_arg(struct depmod *depmod, const char *path,
 	return err;
 }
 
-static int depmod_incremental(struct depmod *depmod, int argc, char *const argv[])
+static int depmod_incremental(struct depmod *depmod, bool all, int argc,
+			      char *const argv[])
 {
 	struct hash *must_check, *new_mods;
 	int err;
@@ -3301,6 +3302,39 @@ static int depmod_incremental(struct depmod *depmod, int argc, char *const argv[
 	if (must_check == NULL || new_mods == NULL) {
 		err = -ENOMEM;
 		goto out;
+	}
+
+	if (all) {
+		/*
+		 * Mark all modules as "visited" that we've seen so far,
+		 * search the file system for new modules, and scan all modules
+		 * that don't have the "visited" flag set.
+		 */
+		hash_iter_init(depmod->modules_by_name, &iter);
+		while (hash_iter_next(&iter, NULL, (const void **)&mod))
+			mod->visited = true;
+
+		err = depmod_modules_search(depmod);
+		if (err) {
+			CRIT("failed to search modules: %s\n", strerror(-err));
+			goto out;
+		}
+
+		hash_iter_init(depmod->modules_by_name, &iter);
+		while (hash_iter_next(&iter, NULL, (const void **)&mod)) {
+			if (!mod->visited) {
+				INF("load symbols for %s\n", mod->modname);
+				err = depmod_load_module(depmod, mod);
+				if (err < 0)
+					ERR("%s: failed to load %s\n", __func__,
+					    mod->modname);
+				else {
+					INF("%s: loaded %s\n", __func__, mod->modname);
+					hash_add(new_mods, mod->modname, mod);
+				}
+			} else
+				mod->visited = false;
+		}
 	}
 
 	/*
@@ -3786,7 +3820,7 @@ static int do_depmod(int argc, char *argv[])
 			CRIT("could not load configuration files\n");
 			goto cmdline_modules_failed;
 		}
-		err = depmod_incremental(&depmod, argc - optind, &argv[optind]);
+		err = depmod_incremental(&depmod, all, argc - optind, &argv[optind]);
 		if (err)
 			goto cmdline_modules_failed;
 		else
