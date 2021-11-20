@@ -1198,7 +1198,7 @@ static bool depmod_is_path_starts_with(const char *path, size_t pathlen,
 static int depmod_module_is_higher_priority(const struct depmod *depmod,
 					    const struct mod *mod, size_t baselen,
 					    size_t namelen, size_t modnamelen,
-					    const char *newpath)
+					    const char *newpath, bool replace_same_path)
 {
 	const struct cfg *cfg = depmod->cfg;
 	const struct cfg_override *ov;
@@ -1218,6 +1218,9 @@ static int depmod_module_is_higher_priority(const struct depmod *depmod,
 	const char *reloldpath = NULL;
 
 	DBG("comparing priorities of %s and %s\n", oldpath, newpath);
+
+	if (!strcmp(oldpath, newpath))
+		return replace_same_path ? 0 : 1;
 
 	if (strncmp(newpath, cfg->dirname, cfg->dirnamelen) == 0) {
 		relnewpath = newpath + cfg->dirnamelen + 1;
@@ -1275,7 +1278,7 @@ enum {
 
 static int depmod_must_replace(struct depmod *depmod, size_t baselen, size_t namelen,
 			       const char *path, char *modname, size_t *modnamelen,
-			       struct mod **oldmod)
+			       struct mod **oldmod, bool replace_same_path)
 {
 	const char *relpath;
 	struct mod *mod;
@@ -1296,7 +1299,7 @@ static int depmod_must_replace(struct depmod *depmod, size_t baselen, size_t nam
 		return DEPMOD_MUST_ADD;
 
 	if (depmod_module_is_higher_priority(depmod, mod, baselen, namelen, *modnamelen,
-					     path)) {
+					     path, replace_same_path)) {
 		DBG("Ignored lower priority: %s, higher: %s\n", path, mod->path);
 		return DEPMOD_MUST_NOTHING;
 	}
@@ -1316,7 +1319,7 @@ static int depmod_modules_search_file(struct depmod *depmod, size_t baselen,
 	int err;
 
 	err = depmod_must_replace(depmod, baselen, namelen, path, modname, &modnamelen,
-				  &mod);
+				  &mod, false);
 
 	if (err == DEPMOD_MUST_NOTHING)
 		return 0;
