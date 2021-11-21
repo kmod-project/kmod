@@ -970,6 +970,7 @@ struct depmod {
 	struct hash *modules_by_uncrelpath;
 	struct hash *modules_by_name;
 	struct hash *symbols;
+	struct hash *broken;
 };
 
 static void mod_free(struct mod *mod)
@@ -1009,7 +1010,7 @@ static int mod_add_dependency(struct mod *mod, struct symbol *sym)
 
 	sym->owner->users++;
 	err = array_append_unique(&sym->owner->user, mod);
-	if (err < 0)
+	if (err < 0 && err != -EEXIST)
 		ERR("%s: failed to add %s as user of %s: %s\n", __func__, mod->modname,
 		    sym->owner->modname, strerror(-err));
 
@@ -1053,8 +1054,16 @@ static int depmod_init(struct depmod *depmod, struct cfg *cfg, struct kmod_ctx *
 		goto symbols_failed;
 	}
 
+	depmod->broken = hash_new(256, NULL);
+	if (depmod->symbols == NULL) {
+		err = -errno;
+		goto broken_failed;
+	}
+
 	return 0;
 
+broken_failed:
+	hash_free(depmod->symbols);
 symbols_failed:
 	hash_free(depmod->modules_by_name);
 modules_by_name_failed:
@@ -1066,6 +1075,8 @@ modules_by_uncrelpath_failed:
 static void depmod_shutdown(struct depmod *depmod)
 {
 	size_t i;
+
+	hash_free(depmod->broken);
 
 	hash_free(depmod->symbols);
 
@@ -2842,7 +2853,10 @@ static void add_module_from_deps(const char *name, const char *deps, unsigned in
 
 	path = module_abspath(deps, colon - deps, depmod);
 	rc = kmod_module_new_from_path(depmod->ctx, path, &kmod);
-	if (rc < 0) {
+	if (rc == -ENOENT) {
+		INF("%s: module %s (%s) was removed\n", __func__, name, path);
+		goto out_free_path;
+	} else if (rc < 0) {
 		ERR("%s: failed to create module %s: %s\n", __func__, path, strerror(-rc));
 		goto out_free_path;
 	}
@@ -2875,7 +2889,7 @@ static void add_module_deps_from_deps(const char *name, const char *deps,
 
 	mod = hash_find(depmod->modules_by_name, name);
 	if (!mod) {
-		ERR("%s: failed to find %s\n", __func__, name);
+		INF("%s: failed to find %s\n", __func__, name);
 		return;
 	}
 
@@ -2905,8 +2919,10 @@ static void add_module_deps_from_deps(const char *name, const char *deps,
 
 		dmod = hash_find(depmod->modules_by_uncrelpath, tok);
 		if (!dmod) {
-			ERR("%s: dep %s not found\n", __func__, tok);
-			continue;
+			WRN("%s: dependency %s not found for %s\n", __func__, tok,
+			    mod->modname);
+			hash_add_unique(depmod->broken, mod->modname, mod);
+			goto out;
 		}
 
 		err = array_append_unique(&mod->deps, dmod);
@@ -2922,6 +2938,7 @@ static void add_module_deps_from_deps(const char *name, const char *deps,
 			    mod->modname, dmod->modname, strerror(-err));
 		DBG("%s: %s depends on \"%s\"\n", __func__, mod->modname, tok);
 	}
+out:
 	free(tmp);
 }
 
@@ -2949,7 +2966,7 @@ static void add_symbol_cb(const char *key, const char *val, unsigned int len,
 
 		old = hash_find(depmod->symbols, key);
 		if (old == NULL) {
-			ERR("%s: symbol \"%s\" not found\n", __func__, key);
+			INF("%s: symbol \"%s\" not found\n", __func__, key);
 			return;
 		}
 		crc = strtoull(val, &ep, 16);
@@ -2966,15 +2983,20 @@ static void add_symbol_cb(const char *key, const char *val, unsigned int len,
 		return;
 	}
 
+	mod = hash_find(depmod->modules_by_name, val);
+	if (!mod) {
+		INF("%s: module %s not found\n", __func__, val);
+		err = hash_del(depmod->symbols, key);
+		if (err < 0 && err != -ENOENT)
+			ERR("%s: failed to delete %s: %s\n", __func__, key,
+			    strerror(-err));
+		return;
+	}
+
 	sym = calloc(1, sizeof(struct symbol) + namelen);
 	if (!sym)
 		return;
 
-	mod = hash_find(depmod->modules_by_name, val);
-	if (!mod) {
-		ERR("%s: module %s not found\n", __func__, val);
-		return;
-	}
 	sym->owner = mod;
 	memcpy(sym->name, key, namelen);
 
@@ -3325,6 +3347,18 @@ static int depmod_incremental(struct depmod *depmod, bool all, int argc,
 	}
 
 	if (all) {
+		const char *name;
+
+		hash_iter_init(depmod->broken, &iter);
+		while (hash_iter_next(&iter, &name, (const void **)&mod)) {
+			INF("%s: %s has broken dependencies, re-loading\n", __func__,
+			    name);
+			err = depmod_incremental_add_user(depmod, mod);
+			if (err < 0)
+				ERR("%s: failed to add dependencies for %s\n", __func__,
+				    mod->modname);
+		}
+
 		hash_iter_init(depmod->modules_by_name, &iter);
 		while (hash_iter_next(&iter, NULL, (const void **)&mod))
 			mod->visited = true;
