@@ -72,6 +72,10 @@ map=(
     ["test-depmod/search-order-override$MODULE_DIRECTORY/4.4.4/override/"]="mod-simple.ko"
     ["test-depmod/check-weakdep$MODULE_DIRECTORY/4.4.4/kernel/mod-weakdep.ko"]="mod-weakdep.ko"
     ["test-depmod/check-weakdep$MODULE_DIRECTORY/4.4.4/kernel/mod-simple.ko"]="mod-simple.ko"
+    ["test-depmod/test-dependencies/lib/modules/4.4.4/kernel/fs/foo/"]="mod-foo-a.ko"
+    ["test-depmod/test-dependencies/lib/modules/4.4.4/kernel/"]="mod-foo-c.ko"
+    ["test-depmod/test-dependencies/lib/modules/4.4.4/kernel/lib/"]="mod-foo-b.ko"
+    ["test-depmod/test-dependencies/lib/modules/4.4.4/kernel/fs/"]="mod-foo.ko"
     ["test-dependencies$MODULE_DIRECTORY/4.0.20-kmod/kernel/fs/foo/"]="mod-foo-b.ko"
     ["test-dependencies$MODULE_DIRECTORY/4.0.20-kmod/kernel/"]="mod-foo-c.ko"
     ["test-dependencies$MODULE_DIRECTORY/4.0.20-kmod/kernel/lib/"]="mod-foo-a.ko"
@@ -187,5 +191,16 @@ done
 for m in "${attach_pkcs7_array[@]}"; do
     cat "${MODULE_PLAYGROUND}/dummy.pkcs7" >>"${ROOTFS}/$m"
 done
+
+# if CONFIG_MODVERSIONS is off, modules-symbols.bin is different.
+# both the input (if present) and the correct output must be replaced.
+. "${MODULE_PLAYGROUND}/modversions"
+if [ "${CONFIG_MODVERSIONS}" != y ]; then
+    find "$ROOTFS" -name 'novers-*modules.symbols.bin' | \
+	while read f; do
+	    rm -fv "${f/novers-/}"
+	    ln -sv "${f##*/}" "${f/novers-/}"
+	done
+fi
 
 touch testsuite/stamp-rootfs
