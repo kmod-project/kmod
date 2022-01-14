@@ -36,6 +36,16 @@ obj-m += mod-fake-cciss.o
 
 obj-m += mod-weakdep.o
 
+always-y += modversions
+$(src)/modversions:
+ifdef CONFIG_MODVERSIONS
+	echo "CONFIG_MODVERSIONS=y" >$@
+else
+	echo "CONFIG_MODVERSIONS=n" >$@
+endif
+
+clean-files := $(src)/modversions
+
 else
 # only build ARCH-specific module
 ifeq ($(ARCH),)

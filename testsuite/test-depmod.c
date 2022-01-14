@@ -257,4 +257,39 @@ DEFINE_TEST(depmod_check_weakdep,
 		},
 	});
 
+#define TEST_DEPENDENCIES_ROOTFS TESTSUITE_ROOTFS "test-depmod/test-dependencies"
+static noreturn int depmod_test_dependencies(const struct test *t)
+{
+	const char *progname = TOOLS_DIR "/depmod";
+	const char *const args[] = {
+		progname,
+		NULL,
+	};
+
+	test_spawn_prog(progname, args);
+	exit(EXIT_FAILURE);
+}
+DEFINE_TEST(depmod_test_dependencies,
+#if defined(KMOD_SYSCONFDIR_NOT_ETC)
+        .skip = true,
+#endif
+	.description = "check if depmod generates correct dependencies",
+	.config = {
+		[TC_UNAME_R] = "4.4.4",
+		[TC_ROOTFS] = TEST_DEPENDENCIES_ROOTFS,
+	},
+	.output = {
+		.files = (const struct keyval[]) {
+			{ TEST_DEPENDENCIES_ROOTFS "/lib/modules/4.4.4/correct-modules.dep",
+			  TEST_DEPENDENCIES_ROOTFS "/lib/modules/4.4.4/modules.dep" },
+			{ TEST_DEPENDENCIES_ROOTFS "/lib/modules/4.4.4/correct-modules.dep.bin",
+			  TEST_DEPENDENCIES_ROOTFS "/lib/modules/4.4.4/modules.dep.bin" },
+			{ TEST_DEPENDENCIES_ROOTFS "/lib/modules/4.4.4/correct-modules.symbols",
+			  TEST_DEPENDENCIES_ROOTFS "/lib/modules/4.4.4/modules.symbols" },
+			{ TEST_DEPENDENCIES_ROOTFS "/lib/modules/4.4.4/correct-modules.symbols.bin",
+			  TEST_DEPENDENCIES_ROOTFS "/lib/modules/4.4.4/modules.symbols.bin" },
+			{ }
+		},
+	});
+
 TESTSUITE_MAIN();
