@@ -7,6 +7,8 @@ obj-m += mod-foo-a.o
 obj-m += mod-foo-b.o
 obj-m += mod-foo-c.o
 obj-m += mod-foo.o
+# mod-bar depends on foo-b
+obj-m += mod-bar.o
 
 # mod-loop: create loops in dependencies:
 # 1) mod-loop-a  ->  mod-loop-b -> mod-loop-c -> mod-loop-a
