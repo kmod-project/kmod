@@ -229,6 +229,7 @@ EXTRA_DIST += \
 	testsuite/module-playground/Kbuild \
 	testsuite/module-playground/Makefile \
 	testsuite/module-playground/Makefile.arch \
+	testsuite/module-playground/mod-bar.c \
 	testsuite/module-playground/mod-fake-cciss.c \
 	testsuite/module-playground/mod-fake-hpsa.c \
 	testsuite/module-playground/mod-fake-scsi-mod.c \
