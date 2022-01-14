@@ -292,4 +292,76 @@ DEFINE_TEST(depmod_test_dependencies,
 		},
 	});
 
+#define TEST_DEPENDENCIES_1_ROOTFS TESTSUITE_ROOTFS "test-depmod/test-dependencies-1"
+static noreturn int depmod_test_dependencies_1(const struct test *t)
+{
+	const char *progname = TOOLS_DIR "/depmod";
+	const char *const args[] = {
+		progname,
+		NULL,
+	};
+
+	test_spawn_prog(progname, args);
+	exit(EXIT_FAILURE);
+}
+DEFINE_TEST(depmod_test_dependencies_1,
+#if defined(KMOD_SYSCONFDIR_NOT_ETC)
+        .skip = true,
+#endif
+	.description = "check dependency generation, case 1: mod_bar",
+	.config = {
+		[TC_UNAME_R] = "4.4.4",
+		[TC_ROOTFS] = TEST_DEPENDENCIES_1_ROOTFS,
+	},
+	.output = {
+		.regex = true,
+		.files = (const struct keyval[]) {
+			{ TEST_DEPENDENCIES_1_ROOTFS "/lib/modules/4.4.4/correct-modules.dep",
+			  TEST_DEPENDENCIES_1_ROOTFS "/lib/modules/4.4.4/modules.dep" },
+			{ TEST_DEPENDENCIES_1_ROOTFS "/lib/modules/4.4.4/correct-modules.dep.bin",
+			  TEST_DEPENDENCIES_1_ROOTFS "/lib/modules/4.4.4/modules.dep.bin" },
+			{ TEST_DEPENDENCIES_1_ROOTFS "/lib/modules/4.4.4/correct-modules.symbols",
+			  TEST_DEPENDENCIES_1_ROOTFS "/lib/modules/4.4.4/modules.symbols" },
+			{ TEST_DEPENDENCIES_1_ROOTFS "/lib/modules/4.4.4/correct-modules.symbols.bin",
+			  TEST_DEPENDENCIES_1_ROOTFS "/lib/modules/4.4.4/modules.symbols.bin" },
+			{ }
+		},
+	});
+
+#define TEST_DEPENDENCIES_2_ROOTFS TESTSUITE_ROOTFS "test-depmod/test-dependencies-2"
+static noreturn int depmod_test_dependencies_2(const struct test *t)
+{
+	const char *progname = TOOLS_DIR "/depmod";
+	const char *const args[] = {
+		progname,
+		NULL,
+	};
+
+	test_spawn_prog(progname, args);
+	exit(EXIT_FAILURE);
+}
+DEFINE_TEST(depmod_test_dependencies_2,
+#if defined(KMOD_SYSCONFDIR_NOT_ETC)
+        .skip = true,
+#endif
+	.description = "check dependency generation, case 2: mod_bah",
+	.config = {
+		[TC_UNAME_R] = "4.4.4",
+		[TC_ROOTFS] = TEST_DEPENDENCIES_2_ROOTFS,
+	},
+	.output = {
+		.regex = true,
+		.files = (const struct keyval[]) {
+			{ TEST_DEPENDENCIES_2_ROOTFS "/lib/modules/4.4.4/correct-modules.dep",
+			  TEST_DEPENDENCIES_2_ROOTFS "/lib/modules/4.4.4/modules.dep" },
+			{ TEST_DEPENDENCIES_2_ROOTFS "/lib/modules/4.4.4/correct-modules.dep.bin",
+			  TEST_DEPENDENCIES_2_ROOTFS "/lib/modules/4.4.4/modules.dep.bin" },
+			{ TEST_DEPENDENCIES_2_ROOTFS "/lib/modules/4.4.4/correct-modules.symbols",
+			  TEST_DEPENDENCIES_2_ROOTFS "/lib/modules/4.4.4/modules.symbols" },
+			{ TEST_DEPENDENCIES_2_ROOTFS "/lib/modules/4.4.4/correct-modules.symbols.bin",
+			  TEST_DEPENDENCIES_2_ROOTFS "/lib/modules/4.4.4/modules.symbols.bin" },
+			{ }
+		},
+	});
+
 TESTSUITE_MAIN();
