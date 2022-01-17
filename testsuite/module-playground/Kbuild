@@ -46,7 +46,11 @@ else
 	echo "CONFIG_MODVERSIONS=n" >$@
 endif
 
-clean-files := $(src)/modversions
+include $(src)/gen_mod.mak
+$(src)/gen_mod.mak:
+	cd $(src) && python3 ./gen_mod.py
+
+clean-files := $(src)/gen_mod.mak $(src)/modversions
 
 else
 # only build ARCH-specific module

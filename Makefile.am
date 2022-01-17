@@ -226,6 +226,7 @@ EXTRA_DIST += \
 	testsuite/module-playground/dummy.pkcs7 \
 	testsuite/module-playground/dummy.sha1 \
 	testsuite/module-playground/dummy.sha256 \
+	testsuite/module-playground/gen_mod.py \
 	testsuite/module-playground/Kbuild \
 	testsuite/module-playground/Makefile \
 	testsuite/module-playground/Makefile.arch \
