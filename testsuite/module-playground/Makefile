@@ -26,3 +26,4 @@ arch-modules: $(ARCH_SPECIFIC_MODULES)
 
 clean:
 	$(MAKE) -C $(KDIR) M=$$PWD clean
+	rm -f gen_mod.mak
