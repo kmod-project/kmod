@@ -13,4 +13,4 @@ if test "$SRCDIR" != "$BUILDDIR"; then
 fi
 
 export MAKEFLAGS=${MAKEFLAGS-"-j$(nproc)"}
-"${MAKE-make}" -C "$PWD/$MODULE_PLAYGROUND" modules
+"${MAKE-make}" -C "$PWD/$MODULE_PLAYGROUND"

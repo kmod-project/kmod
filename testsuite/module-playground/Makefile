@@ -13,7 +13,7 @@ endif
 
 ARCH_SPECIFIC_MODULES := mod-simple-x86_64.ko mod-simple-i386.ko mod-simple-sparc64.ko
 
-default: modules
+default: modules symvers
 
 mod-simple-%.ko: mod-simple-%.c Makefile.arch
 	$(eval arch=$(patsubst mod-simple-%.ko,%,$@))
@@ -22,8 +22,12 @@ mod-simple-%.ko: mod-simple-%.c Makefile.arch
 modules:
 	$(MAKE) -C $(KDIR) M=$$PWD modules
 
+symvers:
+	cp $(KDIR)/Module.symvers $@
+
 arch-modules: $(ARCH_SPECIFIC_MODULES)
 
 clean:
 	$(MAKE) -C $(KDIR) M=$$PWD clean
 	rm -f gen_mod.mak
+	rm -f symvers
