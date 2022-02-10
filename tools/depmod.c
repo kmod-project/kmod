@@ -2405,7 +2405,7 @@ static int output_devname(struct depmod *depmod, FILE *out)
 
 static int output_builtin_alias_bin(struct depmod *depmod, FILE *out)
 {
-	int ret = 0, count = 0;
+	int ret = 0;
 	struct index_node *idx;
 	struct kmod_list *l, *builtin = NULL;
 
@@ -2450,9 +2450,6 @@ static int output_builtin_alias_bin(struct depmod *depmod, FILE *out)
 		}
 
 		kmod_module_info_free_list(info_list);
-
-		index_insert(idx, modname, modname, 0);
-		count++;
 	}
 
 out:
