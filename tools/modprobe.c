@@ -684,7 +684,7 @@ static int options_from_array(char **args, int nargs, char **output)
 static char **prepend_options_from_env(int *p_argc, char **orig_argv)
 {
 	const char *p, *env = getenv("MODPROBE_OPTIONS");
-	char **new_argv, *str_start, *str_end, *str, *s, *quote;
+	char **new_argv, *str_end, *str, *s, *quote;
 	int i, argc = *p_argc;
 	size_t envlen, space_count = 0;
 
@@ -702,10 +702,10 @@ static char **prepend_options_from_env(int *p_argc, char **orig_argv)
 		return NULL;
 
 	new_argv[0] = orig_argv[0];
-	str_start = str = (char *) (new_argv + argc + space_count + 3);
+	str = (char *) (new_argv + argc + space_count + 3);
 	memcpy(str, env, envlen + 1);
 
-	str_end = str_start + envlen;
+	str_end = str + envlen;
 
 	quote = NULL;
 	for (i = 1, s = str; *s != '\0'; s++) {
