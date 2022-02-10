@@ -2346,6 +2346,102 @@ static int output_builtin_bin(struct depmod *depmod, FILE *out)
 	return 0;
 }
 
+static int flush_stream(FILE *in, int endchar)
+{
+	size_t i = 0;
+	int c;
+
+	for (c = fgetc(in);
+	     c != EOF && c != endchar && c != '\0';
+	     c = fgetc(in))
+		;
+
+	return c == endchar ? i : 0;
+}
+
+static int flush_stream_to(FILE *in, int endchar, char *dst, size_t dst_sz)
+{
+	size_t i = 0;
+	int c;
+
+	for (c = fgetc(in);
+	     c != EOF && c != endchar && c != '\0' && i < dst_sz;
+	     c = fgetc(in))
+		dst[i++] = c;
+
+	if (i == dst_sz) {
+		WRN("Could not flush stream: %d. Partial content: %.*s\n",
+		    ENOSPC, (int) dst_sz, dst);
+	}
+
+	return c == endchar ? i : 0;
+}
+
+static int output_builtin_alias_bin(struct depmod *depmod, FILE *out)
+{
+	FILE *in;
+	struct index_node *idx;
+	int ret;
+
+	if (out == stdout)
+		return 0;
+
+	in = dfdopen(depmod->cfg->dirname, "modules.builtin.modinfo", O_RDONLY, "r");
+	if (in == NULL)
+		return 0;
+
+	idx = index_create();
+	if (idx == NULL) {
+		fclose(in);
+		return -ENOMEM;
+	}
+
+	/* format: modname.key=value\0 */
+	while (!feof(in) && !ferror(in)) {
+		char alias[PATH_MAX];
+		char modname[PATH_MAX];
+		char value[PATH_MAX];
+		size_t len;
+
+		len = flush_stream_to(in, '.', modname, sizeof(modname));
+		modname[len] = '\0';
+		if (!len)
+			continue;
+
+		len = flush_stream_to(in, '=', value, sizeof(value));
+		value[len] = '\0';
+		if (!streq(value, "alias")) {
+			flush_stream(in, '\0');
+			continue;
+		}
+
+		len = flush_stream_to(in, '\0', value, sizeof(value));
+		value[len] = '\0';
+		if (!len)
+			continue;
+
+		alias[0] = '\0';
+		if (alias_normalize(value, alias, NULL) < 0) {
+			WRN("Unmatched bracket in %s\n", value);
+			continue;
+		}
+
+		index_insert(idx, alias, modname, 0);
+	}
+
+	if (ferror(in)) {
+		ret = -EINVAL;
+	} else {
+		index_write(idx, out);
+		ret = 0;
+	}
+
+	index_destroy(idx);
+	fclose(in);
+
+	return ret;
+}
+
 static int output_devname(struct depmod *depmod, FILE *out)
 {
 	size_t i;
@@ -2401,68 +2497,6 @@ static int output_devname(struct depmod *depmod, FILE *out)
 	}
 
 	return 0;
-}
-
-static int output_builtin_alias_bin(struct depmod *depmod, FILE *out)
-{
-	int ret = 0;
-	struct index_node *idx;
-	struct kmod_list *l, *builtin = NULL;
-
-	if (out == stdout)
-		return 0;
-
-	idx = index_create();
-	if (idx == NULL)
-		return -ENOMEM;
-
-	ret = kmod_module_get_builtin(depmod->ctx, &builtin);
-	if (ret < 0) {
-		if (ret == -ENOENT)
-			ret = 0;
-		goto out;
-	}
-
-	kmod_list_foreach(l, builtin) {
-		struct kmod_list *ll, *info_list = NULL;
-		struct kmod_module *mod = l->data;
-		const char *modname = kmod_module_get_name(mod);
-
-		ret = kmod_module_get_info(mod, &info_list);
-		if (ret < 0)
-			goto out;
-
-		kmod_list_foreach(ll, info_list) {
-			char alias[PATH_MAX];
-			const char *key = kmod_module_info_get_key(ll);
-			const char *value = kmod_module_info_get_value(ll);
-
-			if (!streq(key, "alias"))
-				continue;
-
-			alias[0] = '\0';
-			if (alias_normalize(value, alias, NULL) < 0) {
-				WRN("Unmatched bracket in %s\n", value);
-				continue;
-			}
-
-			index_insert(idx, alias, modname, 0);
-		}
-
-		kmod_module_info_free_list(info_list);
-	}
-
-out:
-	/* do not bother writing the index if we are going to discard it */
-	if (ret > 0)
-		index_write(idx, out);
-
-	if (builtin)
-		kmod_module_unref_list(builtin);
-
-	index_destroy(idx);
-
-	return ret;
 }
 
 static int depmod_output(struct depmod *depmod, FILE *out)
