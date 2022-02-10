@@ -576,13 +576,15 @@ KMOD_EXPORT int kmod_module_new_from_lookup(struct kmod_ctx *ctx,
 	err = kmod_lookup_alias_from_aliases_file(ctx, alias, list);
 	CHECK_ERR_AND_FINISH(err, fail, list, finish);
 
+	DBG(ctx, "lookup modules.builtin %s\n", alias);
+	err = kmod_lookup_alias_from_builtin_file(ctx, alias, list);
+	CHECK_ERR_AND_FINISH(err, fail, list, finish);
+
 	DBG(ctx, "lookup modules.builtin.modinfo %s\n", alias);
 	err = kmod_lookup_alias_from_kernel_builtin_file(ctx, alias, list);
-	if (err == -ENOSYS) {
-		/* Optional index missing, try the old one */
-		DBG(ctx, "lookup modules.builtin %s\n", alias);
-		err = kmod_lookup_alias_from_builtin_file(ctx, alias, list);
-	}
+	/* Optional index missing, ignore */
+	if (err == -ENOSYS)
+		err = 0;
 	CHECK_ERR_AND_FINISH(err, fail, list, finish);
 
 
