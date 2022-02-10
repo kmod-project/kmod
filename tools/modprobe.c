@@ -744,7 +744,7 @@ static char **prepend_options_from_env(int *p_argc, char **orig_argv)
 	}
 
 	memcpy(new_argv + i, orig_argv + 1, sizeof(char *) * (argc - 1));
-	new_argv[i + argc] = NULL;
+	new_argv[i + argc - 1] = NULL;
 	*p_argc = i + argc - 1;
 
 	return new_argv;
