@@ -589,8 +589,8 @@ KMOD_EXPORT int kmod_module_new_from_lookup(struct kmod_ctx *ctx,
 
 
 finish:
-	DBG(ctx, "lookup %s=%d, list=%p\n", alias, err, *list);
-	return err;
+	DBG(ctx, "lookup %s matches=%d, list=%p\n", alias, err, *list);
+	return err > 0 ? 0 : err;
 fail:
 	DBG(ctx, "Failed to lookup %s\n", alias);
 	kmod_module_unref_list(*list);
