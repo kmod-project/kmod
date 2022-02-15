@@ -45,7 +45,7 @@ static noreturn int test_initstate_from_lookup(const struct test *t)
 		exit(EXIT_FAILURE);
 
 	err = kmod_module_new_from_lookup(ctx, "fake-builtin", &list);
-	if (err != 0) {
+	if (err < 0) {
 		ERR("could not create module from lookup: %s\n", strerror(-err));
 		exit(EXIT_FAILURE);
 	}
