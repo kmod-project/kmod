@@ -337,7 +337,7 @@ static const struct option cmdopts[] = {
 static void help(void)
 {
 	printf("Usage:\n"
-		"\t%s [options] filename [args]\n"
+		"\t%s [options] <modulename|filename> [args]\n"
 		"Options:\n"
 		"\t-a, --author                Print only 'author'\n"
 		"\t-d, --description           Print only 'description'\n"
