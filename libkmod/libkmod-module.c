@@ -534,7 +534,7 @@ static int __kmod_module_new_from_lookup(struct kmod_ctx *ctx, const lookup_func
  *
  * The search order is: 1. aliases in configuration file; 2. module names in
  * modules.dep index; 3. symbol aliases in modules.symbols index; 4. aliases
- * in modules.alias index.
+ * from install commands; 5. builtin indexes from kernel.
  *
  * The initial refcount is 1, and needs to be decremented to release the
  * resources of the kmod_module. The returned @list must be released by
