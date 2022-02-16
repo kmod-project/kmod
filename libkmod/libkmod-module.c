@@ -592,6 +592,63 @@ KMOD_EXPORT int kmod_module_new_from_lookup(struct kmod_ctx *ctx,
 }
 
 /**
+ * kmod_module_new_from_name_lookup:
+ * @ctx: kmod library context
+ * @modname: module name to look for
+ * @mod: returned module on success
+ *
+ * Lookup by module name, without considering possible aliases. This is similar
+ * to kmod_module_new_from_lookup(), but don't consider as source indexes and
+ * configurations that work with aliases. When succesful, this always resolves
+ * to one and only one module.
+ *
+ * The search order is: 1. module names in modules.dep index;
+ * 2. builtin indexes from kernel.
+ *
+ * The initial refcount is 1, and needs to be decremented to release the
+ * resources of the kmod_module. Since libkmod keeps track of all
+ * kmod_modules created, they are all released upon @ctx destruction too. Do
+ * not unref @ctx before all the desired operations with the returned list are
+ * completed.
+ *
+ * Returns: 0 on success or < 0 otherwise. It fails if any of the lookup
+ * methods failed, which is basically due to memory allocation failure. If
+ * module is not found, it still returns 0, but @mod is left untouched.
+ */
+KMOD_EXPORT int kmod_module_new_from_name_lookup(struct kmod_ctx *ctx,
+						 const char *modname,
+						 struct kmod_module **mod)
+{
+	const lookup_func lookup[] = {
+		kmod_lookup_alias_from_moddep_file,
+		kmod_lookup_alias_from_builtin_file,
+		kmod_lookup_alias_from_kernel_builtin_file,
+	};
+	char name_norm[PATH_MAX];
+	struct kmod_list *list = NULL;
+	int err;
+
+	if (ctx == NULL || modname == NULL || mod == NULL)
+		return -ENOENT;
+
+	modname_normalize(modname, name_norm, NULL);
+
+	DBG(ctx, "input modname=%s, normalized=%s\n", modname, name_norm);
+
+	err = __kmod_module_new_from_lookup(ctx, lookup, sizeof(lookup),
+					    name_norm, &list);
+
+	DBG(ctx, "lookup=%s found=%d\n", name_norm, err >= 0 && list);
+
+	if (err >= 0 && list != NULL)
+		*mod = kmod_module_get_module(list);
+
+	kmod_module_unref_list(list);
+
+	return err;
+}
+
+/**
  * kmod_module_unref_list:
  * @list: list of kmod modules
  *

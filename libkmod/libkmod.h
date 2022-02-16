@@ -129,6 +129,9 @@ int kmod_module_new_from_path(struct kmod_ctx *ctx, const char *path,
 						struct kmod_module **mod);
 int kmod_module_new_from_lookup(struct kmod_ctx *ctx, const char *given_alias,
 						struct kmod_list **list);
+int kmod_module_new_from_name_lookup(struct kmod_ctx *ctx,
+				     const char *modname,
+				     struct kmod_module **mod);
 int kmod_module_new_from_loaded(struct kmod_ctx *ctx,
 						struct kmod_list **list);
 

@@ -30,6 +30,7 @@ global:
 	kmod_module_new_from_name;
 	kmod_module_new_from_path;
 	kmod_module_new_from_lookup;
+	kmod_module_new_from_name_lookup;
 	kmod_module_new_from_loaded;
 	kmod_module_ref;
 	kmod_module_unref;
