@@ -293,6 +293,24 @@ static int modinfo_path_do(struct kmod_ctx *ctx, const char *path)
 	return err;
 }
 
+static int modinfo_name_do(struct kmod_ctx *ctx, const char *name)
+{
+	struct kmod_module *mod = NULL;
+	int err;
+
+	err = kmod_module_new_from_name_lookup(ctx, name, &mod);
+	if (err < 0 || mod == NULL) {
+		ERR("Module name %s not found.\n", name);
+		return err < 0 ? err : -ENOENT;
+	}
+
+	err = modinfo_do(mod);
+	kmod_module_unref(mod);
+
+	return err;
+}
+
+
 static int modinfo_alias_do(struct kmod_ctx *ctx, const char *alias)
 {
 	struct kmod_list *l, *list = NULL;
@@ -318,7 +336,7 @@ static int modinfo_alias_do(struct kmod_ctx *ctx, const char *alias)
 	return err;
 }
 
-static const char cmdopts_s[] = "adlpn0F:k:b:Vh";
+static const char cmdopts_s[] = "adlpn0mF:k:b:Vh";
 static const struct option cmdopts[] = {
 	{"author", no_argument, 0, 'a'},
 	{"description", no_argument, 0, 'd'},
@@ -326,6 +344,7 @@ static const struct option cmdopts[] = {
 	{"parameters", no_argument, 0, 'p'},
 	{"filename", no_argument, 0, 'n'},
 	{"null", no_argument, 0, '0'},
+	{"modname", no_argument, 0, 'm'},
 	{"field", required_argument, 0, 'F'},
 	{"set-version", required_argument, 0, 'k'},
 	{"basedir", required_argument, 0, 'b'},
@@ -345,6 +364,7 @@ static void help(void)
 		"\t-p, --parameters            Print only 'parm'\n"
 		"\t-n, --filename              Print only 'filename'\n"
 		"\t-0, --null                  Use \\0 instead of \\n\n"
+		"\t-m, --modname               Handle argument as module name instead of alias or filename\n"
 		"\t-F, --field=FIELD           Print only provided FIELD\n"
 		"\t-k, --set-version=VERSION   Use VERSION instead of `uname -r`\n"
 		"\t-b, --basedir=DIR           Use DIR as filesystem root for /lib/modules\n"
@@ -372,6 +392,7 @@ static int do_modinfo(int argc, char *argv[])
 	const char *kversion = NULL;
 	const char *root = NULL;
 	const char *null_config = NULL;
+	bool arg_is_modname = false;
 	int i, err;
 
 	for (;;) {
@@ -397,6 +418,9 @@ static int do_modinfo(int argc, char *argv[])
 			break;
 		case '0':
 			separator = '\0';
+			break;
+		case 'm':
+			arg_is_modname = true;
 			break;
 		case 'F':
 			field = optarg;
@@ -454,7 +478,9 @@ static int do_modinfo(int argc, char *argv[])
 		const char *name = argv[i];
 		int r;
 
-		if (is_module_filename(name))
+		if (arg_is_modname)
+			r = modinfo_name_do(ctx, name);
+		else if (is_module_filename(name))
 			r = modinfo_path_do(ctx, name);
 		else
 			r = modinfo_alias_do(ctx, name);
