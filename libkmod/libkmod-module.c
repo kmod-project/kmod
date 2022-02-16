@@ -499,13 +499,26 @@ KMOD_EXPORT struct kmod_module *kmod_module_ref(struct kmod_module *mod)
 	return mod;
 }
 
-#define CHECK_ERR_AND_FINISH(_err, _label_err, _list, label_finish)	\
-	do {								\
-		if ((_err) < 0)						\
-			goto _label_err;				\
-		if (*(_list) != NULL)					\
-			goto finish;					\
-	} while (0)
+typedef int (*lookup_func)(struct kmod_ctx *ctx, const char *name, struct kmod_list **list) __attribute__((nonnull(1, 2, 3)));
+
+static int __kmod_module_new_from_lookup(struct kmod_ctx *ctx, const lookup_func lookup[],
+					 size_t lookup_count, const char *s,
+					 struct kmod_list **list)
+{
+	unsigned int i;
+
+	for (i = 0; i < lookup_count; i++) {
+		int err;
+
+		err = lookup[i](ctx, s, list);
+		if (err < 0 && err != -ENOSYS)
+			return err;
+		else if (*list != NULL)
+			return 0;
+	}
+
+	return 0;
+}
 
 /**
  * kmod_module_new_from_lookup:
@@ -538,8 +551,17 @@ KMOD_EXPORT int kmod_module_new_from_lookup(struct kmod_ctx *ctx,
 						const char *given_alias,
 						struct kmod_list **list)
 {
-	int err;
+	const lookup_func lookup[] = {
+		kmod_lookup_alias_from_config,
+		kmod_lookup_alias_from_moddep_file,
+		kmod_lookup_alias_from_symbols_file,
+		kmod_lookup_alias_from_commands,
+		kmod_lookup_alias_from_aliases_file,
+		kmod_lookup_alias_from_builtin_file,
+		kmod_lookup_alias_from_kernel_builtin_file,
+	};
 	char alias[PATH_MAX];
+	int err;
 
 	if (ctx == NULL || given_alias == NULL)
 		return -ENOENT;
@@ -556,48 +578,18 @@ KMOD_EXPORT int kmod_module_new_from_lookup(struct kmod_ctx *ctx,
 
 	DBG(ctx, "input alias=%s, normalized=%s\n", given_alias, alias);
 
-	/* Aliases from config file override all the others */
-	err = kmod_lookup_alias_from_config(ctx, alias, list);
-	CHECK_ERR_AND_FINISH(err, fail, list, finish);
+	err = __kmod_module_new_from_lookup(ctx, lookup, sizeof(lookup),
+					    alias, list);
 
-	DBG(ctx, "lookup modules.dep %s\n", alias);
-	err = kmod_lookup_alias_from_moddep_file(ctx, alias, list);
-	CHECK_ERR_AND_FINISH(err, fail, list, finish);
+	DBG(ctx, "lookup=%s found=%d\n", alias, err >= 0 && *list);
 
-	DBG(ctx, "lookup modules.symbols %s\n", alias);
-	err = kmod_lookup_alias_from_symbols_file(ctx, alias, list);
-	CHECK_ERR_AND_FINISH(err, fail, list, finish);
+	if (err < 0) {
+		kmod_module_unref_list(*list);
+		*list = NULL;
+	}
 
-	DBG(ctx, "lookup install and remove commands %s\n", alias);
-	err = kmod_lookup_alias_from_commands(ctx, alias, list);
-	CHECK_ERR_AND_FINISH(err, fail, list, finish);
-
-	DBG(ctx, "lookup modules.aliases %s\n", alias);
-	err = kmod_lookup_alias_from_aliases_file(ctx, alias, list);
-	CHECK_ERR_AND_FINISH(err, fail, list, finish);
-
-	DBG(ctx, "lookup modules.builtin %s\n", alias);
-	err = kmod_lookup_alias_from_builtin_file(ctx, alias, list);
-	CHECK_ERR_AND_FINISH(err, fail, list, finish);
-
-	DBG(ctx, "lookup modules.builtin.modinfo %s\n", alias);
-	err = kmod_lookup_alias_from_kernel_builtin_file(ctx, alias, list);
-	/* Optional index missing, ignore */
-	if (err == -ENOSYS)
-		err = 0;
-	CHECK_ERR_AND_FINISH(err, fail, list, finish);
-
-
-finish:
-	DBG(ctx, "lookup %s matches=%d, list=%p\n", alias, err, *list);
-	return err > 0 ? 0 : err;
-fail:
-	DBG(ctx, "Failed to lookup %s\n", alias);
-	kmod_module_unref_list(*list);
-	*list = NULL;
 	return err;
 }
-#undef CHECK_ERR_AND_FINISH
 
 /**
  * kmod_module_unref_list:
