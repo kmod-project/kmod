@@ -578,7 +578,7 @@ KMOD_EXPORT int kmod_module_new_from_lookup(struct kmod_ctx *ctx,
 
 	DBG(ctx, "input alias=%s, normalized=%s\n", given_alias, alias);
 
-	err = __kmod_module_new_from_lookup(ctx, lookup, sizeof(lookup),
+	err = __kmod_module_new_from_lookup(ctx, lookup, ARRAY_SIZE(lookup),
 					    alias, list);
 
 	DBG(ctx, "lookup=%s found=%d\n", alias, err >= 0 && *list);
@@ -635,7 +635,7 @@ KMOD_EXPORT int kmod_module_new_from_name_lookup(struct kmod_ctx *ctx,
 
 	DBG(ctx, "input modname=%s, normalized=%s\n", modname, name_norm);
 
-	err = __kmod_module_new_from_lookup(ctx, lookup, sizeof(lookup),
+	err = __kmod_module_new_from_lookup(ctx, lookup, ARRAY_SIZE(lookup),
 					    name_norm, &list);
 
 	DBG(ctx, "lookup=%s found=%d\n", name_norm, err >= 0 && list);
