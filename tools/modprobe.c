@@ -418,7 +418,7 @@ static int rmmod_do_module(struct kmod_module *mod, int flags)
 
 	rmmod_do_modlist(post, false);
 
-	if ((flags & RMMOD_FLAG_REMOVE_HOLDERS) && remove_holders) {
+	if (flags & RMMOD_FLAG_REMOVE_HOLDERS) {
 		struct kmod_list *holders = kmod_module_get_holders(mod);
 
 		err = rmmod_do_modlist(holders, true);
@@ -471,7 +471,9 @@ static int rmmod(struct kmod_ctx *ctx, const char *alias)
 
 	kmod_list_foreach(l, list) {
 		struct kmod_module *mod = kmod_module_get_module(l);
-		err = rmmod_do_module(mod, RMMOD_FLAG_REMOVE_HOLDERS);
+		int flags = remove_holders ? RMMOD_FLAG_REMOVE_HOLDERS : 0;
+
+		err = rmmod_do_module(mod, flags);
 		kmod_module_unref(mod);
 		if (err < 0)
 			break;
