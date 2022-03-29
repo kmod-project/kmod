@@ -54,7 +54,7 @@ static int use_blacklist = 0;
 static int force = 0;
 static int strip_modversion = 0;
 static int strip_vermagic = 0;
-static int remove_dependencies = 0;
+static int remove_holders = 0;
 static int quiet_inuse = 0;
 
 static const char cmdopts_s[] = "arRibfDcnC:d:S:sqvVh";
@@ -62,6 +62,7 @@ static const struct option cmdopts[] = {
 	{"all", no_argument, 0, 'a'},
 	{"remove", no_argument, 0, 'r'},
 	{"remove-dependencies", no_argument, 0, 5},
+	{"remove-holders", no_argument, 0, 5},
 	{"resolve-alias", no_argument, 0, 'R'},
 	{"first-time", no_argument, 0, 3},
 	{"ignore-install", no_argument, 0, 'i'},
@@ -107,7 +108,8 @@ static void help(void)
 		"\t                            be a module name to be inserted\n"
 		"\t                            or removed (-r)\n"
 		"\t-r, --remove                Remove modules instead of inserting\n"
-		"\t    --remove-dependencies   Also remove modules depending on it\n"
+		"\t    --remove-dependencies   Deprecated: use --remove-holders\n"
+		"\t    --remove-holders        Also remove module holders (use together with -r)\n"
 		"\t-R, --resolve-alias         Only lookup and print alias and exit\n"
 		"\t    --first-time            Fail if module already inserted or removed\n"
 		"\t-i, --ignore-install        Ignore install commands\n"
@@ -353,7 +355,7 @@ static int rmmod_do_remove_module(struct kmod_module *mod)
 	return err;
 }
 
-#define RMMOD_FLAG_DO_DEPENDENCIES	0x1
+#define RMMOD_FLAG_REMOVE_HOLDERS	0x1
 #define RMMOD_FLAG_IGNORE_BUILTIN	0x2
 static int rmmod_do_module(struct kmod_module *mod, int flags);
 
@@ -416,10 +418,10 @@ static int rmmod_do_module(struct kmod_module *mod, int flags)
 
 	rmmod_do_modlist(post, false);
 
-	if ((flags & RMMOD_FLAG_DO_DEPENDENCIES) && remove_dependencies) {
-		struct kmod_list *deps = kmod_module_get_dependencies(mod);
+	if ((flags & RMMOD_FLAG_REMOVE_HOLDERS) && remove_holders) {
+		struct kmod_list *holders = kmod_module_get_holders(mod);
 
-		err = rmmod_do_modlist(deps, true);
+		err = rmmod_do_modlist(holders, true);
 		if (err < 0)
 			goto error;
 	}
@@ -469,7 +471,7 @@ static int rmmod(struct kmod_ctx *ctx, const char *alias)
 
 	kmod_list_foreach(l, list) {
 		struct kmod_module *mod = kmod_module_get_module(l);
-		err = rmmod_do_module(mod, RMMOD_FLAG_DO_DEPENDENCIES);
+		err = rmmod_do_module(mod, RMMOD_FLAG_REMOVE_HOLDERS);
 		kmod_module_unref(mod);
 		if (err < 0)
 			break;
@@ -787,7 +789,7 @@ static int do_modprobe(int argc, char **orig_argv)
 			do_remove = 1;
 			break;
 		case 5:
-			remove_dependencies = 1;
+			remove_holders = 1;
 			break;
 		case 'R':
 			lookup_only = 1;
