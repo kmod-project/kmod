@@ -357,7 +357,8 @@ static int rmmod_do_remove_module(struct kmod_module *mod)
 #define RMMOD_FLAG_IGNORE_BUILTIN	0x2
 static int rmmod_do_module(struct kmod_module *mod, int flags);
 
-static int rmmod_do_deps_list(struct kmod_list *list, bool stop_on_errors)
+/* Remove modules in reverse order */
+static int rmmod_do_modlist(struct kmod_list *list, bool stop_on_errors)
 {
 	struct kmod_list *l;
 
@@ -413,12 +414,12 @@ static int rmmod_do_module(struct kmod_module *mod, int flags)
 		}
 	}
 
-	rmmod_do_deps_list(post, false);
+	rmmod_do_modlist(post, false);
 
 	if ((flags & RMMOD_FLAG_DO_DEPENDENCIES) && remove_dependencies) {
 		struct kmod_list *deps = kmod_module_get_dependencies(mod);
 
-		err = rmmod_do_deps_list(deps, true);
+		err = rmmod_do_modlist(deps, true);
 		if (err < 0)
 			goto error;
 	}
@@ -443,7 +444,7 @@ static int rmmod_do_module(struct kmod_module *mod, int flags)
 	if (err < 0)
 		goto error;
 
-	rmmod_do_deps_list(pre, false);
+	rmmod_do_modlist(pre, false);
 
 error:
 	kmod_module_unref_list(pre);
