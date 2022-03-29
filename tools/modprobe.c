@@ -322,7 +322,6 @@ end:
 static int rmmod_do_remove_module(struct kmod_module *mod)
 {
 	const char *modname = kmod_module_get_name(mod);
-	struct kmod_list *deps, *itr;
 	int flags = 0, err;
 
 	SHOW("rmmod %s\n", kmod_module_get_name(mod));
@@ -339,17 +338,6 @@ static int rmmod_do_remove_module(struct kmod_module *mod)
 			err = 0;
 		else
 			LOG("Module %s is not in kernel.\n", modname);
-	}
-
-	deps = kmod_module_get_dependencies(mod);
-	if (deps != NULL) {
-		kmod_list_foreach(itr, deps) {
-			struct kmod_module *dep = kmod_module_get_module(itr);
-			if (kmod_module_get_refcnt(dep) == 0)
-				rmmod_do_remove_module(dep);
-			kmod_module_unref(dep);
-		}
-		kmod_module_unref_list(deps);
 	}
 
 	return err;
@@ -394,7 +382,8 @@ static int rmmod_do_module(struct kmod_module *mod, int flags)
 		cmd = kmod_module_get_remove_commands(mod);
 	}
 
-	if (cmd == NULL && !ignore_loaded) {
+	/* Quick check if module is loaded, otherwise there's nothing to do */
+	if (!cmd && !ignore_loaded) {
 		int state = kmod_module_get_initstate(mod);
 
 		if (state < 0) {
@@ -416,8 +405,10 @@ static int rmmod_do_module(struct kmod_module *mod, int flags)
 		}
 	}
 
+	/* 1. @mod's post-softdeps in reverse order */
 	rmmod_do_modlist(post, false);
 
+	/* 2. Other modules holding @mod */
 	if (flags & RMMOD_FLAG_REMOVE_HOLDERS) {
 		struct kmod_list *holders = kmod_module_get_holders(mod);
 
@@ -426,7 +417,8 @@ static int rmmod_do_module(struct kmod_module *mod, int flags)
 			goto error;
 	}
 
-	if (!ignore_loaded && !cmd) {
+	/* 3. @mod itself, but check for refcnt first */
+	if (!cmd && !ignore_loaded) {
 		int usage = kmod_module_get_refcnt(mod);
 
 		if (usage > 0) {
@@ -438,7 +430,7 @@ static int rmmod_do_module(struct kmod_module *mod, int flags)
 		}
 	}
 
-	if (cmd == NULL)
+	if (!cmd)
 		err = rmmod_do_remove_module(mod);
 	else
 		err = command_do(mod, "remove", cmd, NULL);
@@ -446,6 +438,21 @@ static int rmmod_do_module(struct kmod_module *mod, int flags)
 	if (err < 0)
 		goto error;
 
+	/* 4. Other modules that became unused: errors are non-fatal */
+	if (!cmd) {
+		struct kmod_list *deps, *itr;
+
+		deps = kmod_module_get_dependencies(mod);
+		kmod_list_foreach(itr, deps) {
+			struct kmod_module *dep = kmod_module_get_module(itr);
+			if (kmod_module_get_refcnt(dep) == 0)
+				rmmod_do_remove_module(dep);
+			kmod_module_unref(dep);
+		}
+		kmod_module_unref_list(deps);
+	}
+
+	/* 5. @mod's pre-softdeps in reverse order: errors are non-fatal */
 	rmmod_do_modlist(pre, false);
 
 error:
