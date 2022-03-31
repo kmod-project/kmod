@@ -458,6 +458,11 @@ struct cfg_external {
 	char path[];
 };
 
+struct cfg_exclude {
+	struct cfg_exclude *next;
+	char exclude_dir[];
+};
+
 struct cfg {
 	const char *kversion;
 	char dirname[PATH_MAX];
@@ -469,6 +474,7 @@ struct cfg {
 	struct cfg_override *overrides;
 	struct cfg_search *searches;
 	struct cfg_external *externals;
+	struct cfg_exclude *excludes;
 };
 
 static enum search_type cfg_define_search_type(const char *path)
@@ -580,6 +586,30 @@ static void cfg_external_free(struct cfg_external *ext)
 	free(ext);
 }
 
+static int cfg_exclude_add(struct cfg *cfg, const char *path)
+{
+	struct cfg_exclude *exc;
+	size_t len = strlen(path);
+
+	exc = malloc(sizeof(struct cfg_exclude) + len + 1);
+	if (exc == NULL) {
+		ERR("exclude add: out of memory\n");
+		return -ENOMEM;
+	}
+	memcpy(exc->exclude_dir, path, len + 1);
+
+	DBG("exclude add: %s\n", path);
+
+	exc->next = cfg->excludes;
+	cfg->excludes = exc;
+	return 0;
+}
+
+static void cfg_exclude_free(struct cfg_exclude *exc)
+{
+	free(exc);
+}
+
 static int cfg_kernel_matches(const struct cfg *cfg, const char *pattern)
 {
 	regex_t re;
@@ -657,6 +687,11 @@ static int cfg_file_parse(struct cfg *cfg, const char *filename)
 			}
 
 			cfg_external_add(cfg, dir);
+		} else if (streq(cmd, "exclude")) {
+			const char *sp;
+			while ((sp = strtok_r(NULL, "\t ", &saveptr)) != NULL) {
+				cfg_exclude_add(cfg, sp);
+			}
 		} else if (streq(cmd, "include")
 				|| streq(cmd, "make_map_files")) {
 			INF("%s:%u: command %s not implemented yet\n",
@@ -856,6 +891,12 @@ static void cfg_free(struct cfg *cfg)
 		struct cfg_external *tmp = cfg->externals;
 		cfg->externals = cfg->externals->next;
 		cfg_external_free(tmp);
+	}
+
+	while (cfg->excludes) {
+		struct cfg_exclude *tmp = cfg->excludes;
+		cfg->excludes = cfg->excludes->next;
+		cfg_exclude_free(tmp);
 	}
 }
 
@@ -1229,6 +1270,25 @@ add:
 	return 0;
 }
 
+static bool should_exclude_dir(const struct cfg *cfg, const char *name)
+{
+	struct cfg_exclude *exc;
+
+	if (name[0] == '.' && (name[1] == '\0' ||
+			(name[1] == '.' && name[2] == '\0')))
+		return true;
+
+	if (streq(name, "build") || streq(name, "source"))
+		return true;
+
+	for (exc = cfg->excludes; exc != NULL; exc = exc->next) {
+		if (streq(name, exc->exclude_dir))
+			return true;
+	}
+
+	return false;
+}
+
 static int depmod_modules_search_dir(struct depmod *depmod, DIR *d, size_t baselen, struct scratchbuf *s_path)
 {
 	struct dirent *de;
@@ -1240,11 +1300,9 @@ static int depmod_modules_search_dir(struct depmod *depmod, DIR *d, size_t basel
 		size_t namelen;
 		uint8_t is_dir;
 
-		if (name[0] == '.' && (name[1] == '\0' ||
-				       (name[1] == '.' && name[2] == '\0')))
+		if (should_exclude_dir(depmod->cfg, name))
 			continue;
-		if (streq(name, "build") || streq(name, "source"))
-			continue;
+
 		namelen = strlen(name);
 		if (scratchbuf_alloc(s_path, baselen + namelen + 2) < 0) {
 			err = -ENOMEM;
