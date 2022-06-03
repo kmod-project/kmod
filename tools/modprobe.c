@@ -324,7 +324,7 @@ static int rmmod_do_remove_module(struct kmod_module *mod)
 	const char *modname = kmod_module_get_name(mod);
 	int flags = 0, err;
 
-	SHOW("rmmod %s\n", kmod_module_get_name(mod));
+	SHOW("rmmod %s\n", modname);
 
 	if (dry_run)
 		return 0;
