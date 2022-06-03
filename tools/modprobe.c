@@ -110,7 +110,6 @@ static void help(void)
 		"\t-r, --remove                Remove modules instead of inserting\n"
 		"\t    --remove-dependencies   Deprecated: use --remove-holders\n"
 		"\t    --remove-holders        Also remove module holders (use together with -r)\n"
-		"\t-R, --resolve-alias         Only lookup and print alias and exit\n"
 		"\t    --first-time            Fail if module already inserted or removed\n"
 		"\t-i, --ignore-install        Ignore install commands\n"
 		"\t-i, --ignore-remove         Ignore remove commands\n"
@@ -122,6 +121,7 @@ static void help(void)
 		"\t    --force-vermagic        Ignore module's version magic\n"
 		"\n"
 		"Query Options:\n"
+		"\t-R, --resolve-alias         Only lookup and print alias and exit\n"
 		"\t-D, --show-depends          Only print module dependencies and exit\n"
 		"\t-c, --showconfig            Print out known configuration and exit\n"
 		"\t-c, --show-config           Same as --showconfig\n"
@@ -800,9 +800,6 @@ static int do_modprobe(int argc, char **orig_argv)
 		case 5:
 			remove_holders = 1;
 			break;
-		case 'R':
-			lookup_only = 1;
-			break;
 		case 3:
 			first_time = 1;
 			break;
@@ -825,6 +822,9 @@ static int do_modprobe(int argc, char **orig_argv)
 			ignore_loaded = 1;
 			dry_run = 1;
 			do_show = 1;
+			break;
+		case 'R':
+			lookup_only = 1;
 			break;
 		case 'c':
 			do_show_config = 1;
