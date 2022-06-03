@@ -229,4 +229,45 @@ DEFINE_TEST(test_addu64_overflow,
 	);
 
 
+static int test_backoff_time(const struct test *t)
+{
+	unsigned long long delta;
+
+	/* Check exponential increments */
+	get_backoff_delta_msec(now_msec(), now_msec() + 10, &delta);
+	assert_return(delta == 1, EXIT_FAILURE);
+	get_backoff_delta_msec(now_msec(), now_msec() + 10, &delta);
+	assert_return(delta == 2, EXIT_FAILURE);
+	get_backoff_delta_msec(now_msec(), now_msec() + 10, &delta);
+	assert_return(delta == 4, EXIT_FAILURE);
+	get_backoff_delta_msec(now_msec(), now_msec() + 10, &delta);
+	assert_return(delta == 8, EXIT_FAILURE);
+
+	{
+		unsigned long long t0, tend;
+
+		/* Check tail */
+		delta = 4;
+		tend = now_msec() + 3;
+		t0 = tend - 10;
+		get_backoff_delta_msec(t0, tend, &delta);
+		assert_return(delta == 2, EXIT_FAILURE);
+		tend = now_msec() + 1;
+		t0 = tend - 9;
+		get_backoff_delta_msec(t0, tend, &delta);
+		assert_return(delta == 1, EXIT_FAILURE);
+		tend = now_msec();
+		t0 = tend - 10;
+		get_backoff_delta_msec(t0, tend, &delta);
+		assert_return(delta == 0, EXIT_FAILURE);
+	}
+
+	return EXIT_SUCCESS;
+}
+DEFINE_TEST(test_backoff_time,
+	.description = "check implementation of get_backoff_delta_msec()",
+	.need_spawn = false,
+	);
+
+
 TESTSUITE_MAIN();
