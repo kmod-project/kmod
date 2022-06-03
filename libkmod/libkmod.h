@@ -145,6 +145,8 @@ struct kmod_module *kmod_module_get_module(const struct kmod_list *entry);
 enum kmod_remove {
 	KMOD_REMOVE_FORCE = O_TRUNC,
 	KMOD_REMOVE_NOWAIT = O_NONBLOCK, /* always set */
+	/* libkmod-only defines, not passed to kernel */
+	KMOD_REMOVE_NOLOG = 1,
 };
 
 /* Insertion flags */
