@@ -466,6 +466,12 @@ unsigned long long ts_usec(const struct timespec *ts)
 	       (unsigned long long) ts->tv_nsec / NSEC_PER_USEC;
 }
 
+unsigned long long ts_msec(const struct timespec *ts)
+{
+	return (unsigned long long) ts->tv_sec * MSEC_PER_SEC +
+	       (unsigned long long) ts->tv_nsec / NSEC_PER_MSEC;
+}
+
 unsigned long long now_usec(void)
 {
 	struct timespec ts;
@@ -474,6 +480,16 @@ unsigned long long now_usec(void)
 		return 0;
 
 	return ts_usec(&ts);
+}
+
+unsigned long long now_msec(void)
+{
+	struct timespec ts;
+
+	if (clock_gettime(CLOCK_MONOTONIC, &ts) != 0)
+		return 0;
+
+	return ts_msec(&ts);
 }
 
 unsigned long long stat_mstamp(const struct stat *st)

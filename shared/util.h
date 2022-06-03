@@ -48,9 +48,13 @@ unsigned long long stat_mstamp(const struct stat *st);
  * ************************************************************************ */
 #define USEC_PER_SEC	1000000ULL
 #define USEC_PER_MSEC	1000ULL
+#define MSEC_PER_SEC	1000ULL
+#define NSEC_PER_MSEC	1000000ULL
 
 unsigned long long ts_usec(const struct timespec *ts);
+unsigned long long ts_msec(const struct timespec *ts);
 unsigned long long now_usec(void);
+unsigned long long now_msec(void);
 
 /* endianess and alignments                                                 */
 /* ************************************************************************ */
