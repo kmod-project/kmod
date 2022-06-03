@@ -2430,6 +2430,7 @@ static int flush_stream_to(FILE *in, int endchar, char *dst, size_t dst_sz)
 	if (i == dst_sz) {
 		WRN("Could not flush stream: %d. Partial content: %.*s\n",
 		    ENOSPC, (int) dst_sz, dst);
+		i--;
 	}
 
 	return c == endchar ? i : 0;
