@@ -466,6 +466,16 @@ unsigned long long ts_usec(const struct timespec *ts)
 	       (unsigned long long) ts->tv_nsec / NSEC_PER_USEC;
 }
 
+unsigned long long now_usec(void)
+{
+	struct timespec ts;
+
+	if (clock_gettime(CLOCK_MONOTONIC, &ts) != 0)
+		return 0;
+
+	return ts_usec(&ts);
+}
+
 unsigned long long stat_mstamp(const struct stat *st)
 {
 #ifdef HAVE_STRUCT_STAT_ST_MTIM

@@ -51,6 +51,7 @@ static const struct option options[] = {
 };
 
 #define OVERRIDE_LIBDIR ABS_TOP_BUILDDIR "/testsuite/.libs/"
+#define TEST_TIMEOUT_USEC 2 * USEC_PER_SEC
 
 struct _env_config {
 	const char *key;
@@ -61,19 +62,6 @@ struct _env_config {
 	[TC_INIT_MODULE_RETCODES] = { S_TC_INIT_MODULE_RETCODES, OVERRIDE_LIBDIR "init_module.so" },
 	[TC_DELETE_MODULE_RETCODES] = { S_TC_DELETE_MODULE_RETCODES, OVERRIDE_LIBDIR "delete_module.so" },
 };
-
-#define USEC_PER_SEC  1000000ULL
-#define USEC_PER_MSEC  1000ULL
-#define TEST_TIMEOUT_USEC 2 * USEC_PER_SEC
-static unsigned long long now_usec(void)
-{
-	struct timespec ts;
-
-	if (clock_gettime(CLOCK_MONOTONIC, &ts) != 0)
-		return 0;
-
-	return ts_usec(&ts);
-}
 
 static void help(void)
 {
