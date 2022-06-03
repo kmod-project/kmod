@@ -32,6 +32,7 @@
 #include <sys/wait.h>
 
 #include <shared/array.h>
+#include <shared/util.h>
 #include <shared/macro.h>
 
 #include <libkmod/libkmod.h>
@@ -55,14 +56,18 @@ static int force = 0;
 static int strip_modversion = 0;
 static int strip_vermagic = 0;
 static int remove_holders = 0;
+static unsigned long long wait_msec = 0;
 static int quiet_inuse = 0;
 
-static const char cmdopts_s[] = "arRibfDcnC:d:S:sqvVh";
+static const char cmdopts_s[] = "arw:RibfDcnC:d:S:sqvVh";
 static const struct option cmdopts[] = {
 	{"all", no_argument, 0, 'a'},
+
 	{"remove", no_argument, 0, 'r'},
 	{"remove-dependencies", no_argument, 0, 5},
 	{"remove-holders", no_argument, 0, 5},
+	{"wait", required_argument, 0, 'w'},
+
 	{"resolve-alias", no_argument, 0, 'R'},
 	{"first-time", no_argument, 0, 3},
 	{"ignore-install", no_argument, 0, 'i'},
@@ -110,6 +115,9 @@ static void help(void)
 		"\t-r, --remove                Remove modules instead of inserting\n"
 		"\t    --remove-dependencies   Deprecated: use --remove-holders\n"
 		"\t    --remove-holders        Also remove module holders (use together with -r)\n"
+		"\t-w, --wait <MSEC>           When removing a module, wait up to MSEC for\n"
+		"\t                            module's refcount to become 0 so it can be\n"
+		"\t                            removed (use together with -r)\n"
 		"\t    --first-time            Fail if module already inserted or removed\n"
 		"\t-i, --ignore-install        Ignore install commands\n"
 		"\t-i, --ignore-remove         Ignore remove commands\n"
@@ -322,6 +330,8 @@ end:
 static int rmmod_do_remove_module(struct kmod_module *mod)
 {
 	const char *modname = kmod_module_get_name(mod);
+	unsigned long long interval_msec = 0, t0_msec = 0,
+		      tend_msec = 0;
 	int flags = 0, err;
 
 	SHOW("rmmod %s\n", modname);
@@ -332,13 +342,45 @@ static int rmmod_do_remove_module(struct kmod_module *mod)
 	if (force)
 		flags |= KMOD_REMOVE_FORCE;
 
-	err = kmod_module_remove_module(mod, flags);
-	if (err == -EEXIST) {
-		if (!first_time)
-			err = 0;
-		else
-			LOG("Module %s is not in kernel.\n", modname);
-	}
+	if (wait_msec)
+		flags |= KMOD_REMOVE_NOLOG;
+
+	do {
+		err = kmod_module_remove_module(mod, flags);
+		if (err == -EEXIST) {
+			if (!first_time)
+				err = 0;
+			else
+				LOG("Module %s is not in kernel.\n", modname);
+			break;
+		} else if (err == -EAGAIN && wait_msec) {
+			unsigned long long until_msec;
+
+			if (!t0_msec) {
+				t0_msec = now_msec();
+				tend_msec = t0_msec + wait_msec;
+				interval_msec = 1;
+			}
+
+			until_msec = get_backoff_delta_msec(t0_msec, tend_msec,
+							  &interval_msec);
+			err = sleep_until_msec(until_msec);
+
+			if (!t0_msec)
+				err = -ENOTSUP;
+
+			if (err < 0) {
+				ERR("Failed to sleep: %s\n", strerror(-err));
+				err = -EAGAIN;
+				break;
+			}
+		} else {
+			break;
+		}
+	} while (interval_msec);
+
+	if (err < 0 && wait_msec)
+		ERR("could not remove '%s': %s\n", modname, strerror(-err));
 
 	return err;
 }
@@ -418,7 +460,7 @@ static int rmmod_do_module(struct kmod_module *mod, int flags)
 	}
 
 	/* 3. @mod itself, but check for refcnt first */
-	if (!cmd && !ignore_loaded) {
+	if (!cmd && !ignore_loaded && !wait_msec) {
 		int usage = kmod_module_get_refcnt(mod);
 
 		if (usage > 0) {
@@ -800,6 +842,16 @@ static int do_modprobe(int argc, char **orig_argv)
 		case 5:
 			remove_holders = 1;
 			break;
+		case 'w': {
+			char *endptr = NULL;
+			wait_msec = strtoul(optarg, &endptr, 0);
+			if (!*optarg || *endptr) {
+				ERR("unexpected wait value '%s'.\n", optarg);
+				err = -1;
+				goto done;
+			}
+			break;
+		}
 		case 3:
 			first_time = 1;
 			break;

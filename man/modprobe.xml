@@ -390,6 +390,23 @@
       </varlistentry>
       <varlistentry>
         <term>
+          <option>-w</option>
+        </term>
+        <term>
+        <option>--wait=</option>TIMEOUT_MSEC
+        </term>
+        <listitem>
+          <para>
+            This option causes <command>modprobe -r</command> to continue trying to
+            remove a module if it fails due to the module being busy, i.e. its refcount
+            is not 0 at the time the call is made. Modprobe tries to remove the module
+            with an incremental sleep time between each tentative up until the maximum
+            wait time in milliseconds passed in this option.
+          </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>
           <option>-S</option>
         </term>
         <term>
