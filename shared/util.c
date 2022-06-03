@@ -472,6 +472,52 @@ unsigned long long ts_msec(const struct timespec *ts)
 	       (unsigned long long) ts->tv_nsec / NSEC_PER_MSEC;
 }
 
+static struct timespec msec_ts(unsigned long long msec)
+{
+	struct timespec ts = {
+		.tv_sec = msec / MSEC_PER_SEC,
+		.tv_nsec = (msec % MSEC_PER_SEC) * NSEC_PER_MSEC,
+	};
+
+	return ts;
+}
+
+int sleep_until_msec(unsigned long long msec)
+{
+	struct timespec ts = msec_ts(msec);
+
+	if (clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &ts, NULL) < 0 &&
+	    errno != EINTR)
+		return -errno;
+
+	return 0;
+}
+
+/*
+ * Exponential retry backoff with tail
+ */
+unsigned long long get_backoff_delta_msec(unsigned long long t0,
+					  unsigned long long tend,
+					  unsigned long long *delta)
+{
+	unsigned long long t;
+
+	t = now_msec();
+
+	if (!*delta)
+		*delta = 1;
+	else
+		*delta <<= 1;
+
+	while (t + *delta > tend)
+		*delta >>= 1;
+
+	if (!*delta && tend > t)
+		*delta = tend - t;
+
+	return t + *delta;
+}
+
 unsigned long long now_usec(void)
 {
 	struct timespec ts;

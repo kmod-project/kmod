@@ -55,6 +55,11 @@ unsigned long long ts_usec(const struct timespec *ts);
 unsigned long long ts_msec(const struct timespec *ts);
 unsigned long long now_usec(void);
 unsigned long long now_msec(void);
+int sleep_until_msec(unsigned long long msec);
+unsigned long long get_backoff_delta_msec(unsigned long long t0,
+					  unsigned long long tend,
+					  unsigned long long *delta);
+
 
 /* endianess and alignments                                                 */
 /* ************************************************************************ */
