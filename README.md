@@ -51,6 +51,8 @@ In order to compiler the source code you need following software packages:
 Optional dependencies:
 	- ZLIB library
 	- LZMA library
+	- ZSTD library
+	- OPENSSL library (signature handling in modinfo)
 
 Typical configuration:
 	./configure CFLAGS="-g -O2" --prefix=/usr \
