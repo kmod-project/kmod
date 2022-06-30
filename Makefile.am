@@ -57,9 +57,9 @@ SED_PROCESS = \
 #    increment age.
 # 6. If any interfaces have been removed or changed since the last public
 #    release, then set age to 0.
-LIBKMOD_CURRENT=5
-LIBKMOD_REVISION=7
-LIBKMOD_AGE=3
+LIBKMOD_CURRENT=6
+LIBKMOD_REVISION=0
+LIBKMOD_AGE=4
 
 noinst_LTLIBRARIES = shared/libshared.la
 shared_libshared_la_SOURCES = \

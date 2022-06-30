@@ -1,3 +1,84 @@
+kmod 30
+=======
+
+- Improvements
+	- Stop adding duplicate information on modules.builtin.alias.bin, just use
+	  the modules.builtin.bin index
+
+	- Speedup depmod, particularly under qemu with emulated arch, by
+	  avoiding a lot of open/read/close of modules.alias.bin. On an
+	  emulated ARM rootfs, depmod with only 2 modules was taking ~32s
+	  vs ~0.07s now.
+
+	- Add kmod_module_new_from_name_lookup() which allows doing a lookup by
+	  module name, without considering the aliases. Other than that search
+	  order is similar to kmod_module_new_from_lookup().
+
+	- modinfo learned the --modname option to explicitely show information
+	  about the module, even if there is an alias with the same name. This
+	  allows showing information about e.g. kernel/lib/crc32.ko, even if
+	  kernel also exports a crc32 alias in modules.alias:
+
+		alias crc32 crc32_pclmul
+		alias crc32 crc32_generic
+
+	  Same behavior will be used to other modules and to aliases provided
+	  by user/distro.
+
+	- depmod.conf learned a new "excludedir" directive so distro/user can
+	  configure more directories to be excluded from its search, besides
+	  the hardcoded values "build" and "source".
+
+	- Better group modprobe options on help output under "Management, Query and General".
+
+	- modprobe learned a --wait <MSEC> option to be used together with -r
+	  when removing a module. This allows modprobe to keep trying the
+	  removal if it fails because the module is still in use. An exponential backoff
+	  time is used for further retries.
+
+	  The wait behavior provided by the kernel when not passing O_NONBLOCK
+	  to delete_module() was removed in v3.13 due to not be used and the
+	  consequences of having to support it in the kernel. However there may
+	  be some users, particularly on testsuites for individual susbsystems, that
+	  would want that. So provide a userspace implementation inside modprobe for
+	  such users. "rmmod" doesn't have a --wait as it remains a bare minimal over
+	  the API provided by the kernel. In future the --wait behavior can be added
+	  to libkmod for testsuites not exec'ing modprobe for module removal.
+
+	- kmod_module_remove_module() learned a new flag to silence output when
+	  caller wants to handle them - this is particularly important for the
+	  --wait flag to modprobe, as it's not desired to keep seeing error messages
+	  while waiting for the module to be unused.
+
+	- Add SM3 hash algo support to modinfo output, as already available in the kernel.
+
+- Bug Fixes
+	- Fix modinfo output when showing information for a .ko module when running
+	  on a kernel that has that module as builtin.
+
+	- Fix kmod_module_new_from_lookup() returning > 0 rather than 0
+	  when it matches an alias.
+
+	- Fix modinfo segfault when module doesn't exist.
+
+	- Add missing function in the html documentation: kmod_get_dirname().
+
+	- Fix modprobe incorrectly handling number of arguments when prepending values from
+	  MODPROBE_OPTIONS environment variable.
+
+	- Fix modprobe -r --remove-dependencies and since "dependencies" was a
+	  misnomer, add the preferred argument option: "--remove-holders". This
+	  is the same name used by the kernel. It allows users to also remove
+	  other modules holding the one that is being removed.
+
+	- Fix off-by-one in max module name length in depmod.
+
+- Infra/internal
+	- Start some changes in the out-of-tree test modules in kmod so they are useful
+	  for being really inserted in the kernel rather than relying on kmod's mock
+	  interface. This helps manual testing and may be used to exercise to test
+	  changes in the kernel.
+
 kmod 29
 =======
 
@@ -42,7 +123,6 @@ kmod 29
 	- Misc improvements to testsuite, so we can use it reliably regardless
 	  of the configuration used: now tests will skip if we don't have the
 	  build dependencies)
-
 
 kmod 28
 =======
