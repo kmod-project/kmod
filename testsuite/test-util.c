@@ -231,7 +231,7 @@ DEFINE_TEST(test_addu64_overflow,
 
 static int test_backoff_time(const struct test *t)
 {
-	unsigned long long delta;
+	unsigned long long delta = 0;
 
 	/* Check exponential increments */
 	get_backoff_delta_msec(now_msec(), now_msec() + 10, &delta);
