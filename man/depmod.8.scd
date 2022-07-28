@@ -7,10 +7,10 @@ depmod - Generate modules.dep and map files.
 # SYNOPSIS
 
 *depmod* [*-b* _basedir_] [*-m* _moduledir_] [*-o* _outdir_] [*-e*] [*-E* _Module.symvers_]
-\ \ \ \ \ \ \ \[*-F* _System.map_] [*-n*] [*-v*] [*-A*] [*-P* _prefix_] [*-w*] [*-I*] [_version_]
+\ \ \ \ \ \ \ \[*-F* _System.map_] [*-n*] [*-v*] [*-A*] [*-P* _prefix_] [*-w*] [*-x*] [*-I*] [_version_]
 
 *depmod* [*-e*] [*-E* _Module.symvers_] [*-F* _System.map_] [*-n*] [*-v*] [*-P* _prefix_]
-\ \ \ \ \ \ \ \[*-w*] [*-I*] [_version_] [_filename_...]
+\ \ \ \ \ \ \ \[*-w*] [*-x*] [*-I*] [_version_] [_filename_...]
 
 # DESCRIPTION
 
@@ -161,6 +161,12 @@ depmod -b /tmp/build -m kernel-modules
 
 *-w*
 	Warn on duplicate dependencies, aliases, symbol versions, etc.
+
+*-x*, *--errexit*
+	Exit with an error status if any condition occurs that would create
+	a warning with *-e*, i.e. if some module requires an unknown symbol,
+	or if a symbol with a symbol version that doesn't match the version
+	provided by the kernel or other modules.
 
 # COPYRIGHT
 
