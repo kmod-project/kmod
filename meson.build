@@ -3,7 +3,7 @@ project(
   'c',
   version : '33',
   license : ['LGPLv2.1', 'GPL-2.0-or-later'],
-  meson_version : '>=0.61.0',
+  meson_version : '>=0.64.0',
   default_options : [
     'c_std=gnu11',
     'b_pie=true',
