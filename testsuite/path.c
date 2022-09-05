@@ -15,6 +15,10 @@
  * License along with this library; if not, see <http://www.gnu.org/licenses/>.
  */
 
+/* We unset _FILE_OFFSET_BITS here so we can override both stat and stat64 on
+ * 32-bit architectures and forward each to the right libc function */
+#undef _FILE_OFFSET_BITS
+
 #include <assert.h>
 #include <dirent.h>
 #include <dlfcn.h>
@@ -183,23 +187,20 @@ TS_EXPORT int prefix ## stat ## suffix (int ver,	    \
 WRAP_1ARG(DIR*, NULL, opendir);
 
 WRAP_2ARGS(FILE*, NULL, fopen, const char*);
+WRAP_2ARGS(FILE*, NULL, fopen64, const char*);
 WRAP_2ARGS(int, -1, mkdir, mode_t);
 WRAP_2ARGS(int, -1, access, int);
 WRAP_2ARGS(int, -1, stat, struct stat*);
 WRAP_2ARGS(int, -1, lstat, struct stat*);
-#ifndef _FILE_OFFSET_BITS
 WRAP_2ARGS(int, -1, stat64, struct stat64*);
 WRAP_2ARGS(int, -1, lstat64, struct stat64*);
 WRAP_OPEN(64);
-#endif
 
 WRAP_OPEN();
 
 #ifdef HAVE___XSTAT
 WRAP_VERSTAT(__x,);
 WRAP_VERSTAT(__lx,);
-#ifndef _FILE_OFFSET_BITS
 WRAP_VERSTAT(__x,64);
 WRAP_VERSTAT(__lx,64);
-#endif
 #endif
