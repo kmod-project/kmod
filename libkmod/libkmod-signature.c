@@ -38,12 +38,14 @@
  */
 enum pkey_algo {
 	PKEY_ALGO_DSA,
+	PKEY_ALGO_RDSA,
 	PKEY_ALGO_RSA,
 	PKEY_ALGO__LAST
 };
 
 static const char *const pkey_algo[PKEY_ALGO__LAST] = {
 	[PKEY_ALGO_DSA]		= "DSA",
+	[PKEY_ALGO_RDSA]	= "RDSA",
 	[PKEY_ALGO_RSA]		= "RSA",
 };
 
@@ -57,6 +59,8 @@ enum pkey_hash_algo {
 	PKEY_HASH_SHA512,
 	PKEY_HASH_SHA224,
 	PKEY_HASH_SM3,
+	PKEY_HASH_STREEBOG256,
+	PKEY_HASH_STREEBOG512,
 	PKEY_HASH__LAST
 };
 
@@ -70,6 +74,8 @@ const char *const pkey_hash_algo[PKEY_HASH__LAST] = {
 	[PKEY_HASH_SHA512]	= "sha512",
 	[PKEY_HASH_SHA224]	= "sha224",
 	[PKEY_HASH_SM3]		= "sm3",
+	[PKEY_HASH_STREEBOG256] = "streebog256",
+	[PKEY_HASH_STREEBOG512] = "streebog512",
 };
 
 enum pkey_id_type {
@@ -166,6 +172,12 @@ static int obj_to_hash_algo(const ASN1_OBJECT *o)
 # ifndef OPENSSL_NO_SM3
 	case NID_sm3:
 		return PKEY_HASH_SM3;
+# endif
+# ifndef OPENSSL_NO_GOST
+	case NID_id_GostR3411_2012_256:
+		return PKEY_HASH_STREEBOG256;
+	case NID_id_GostR3411_2012_512:
+		return PKEY_HASH_STREEBOG512;
 # endif
 	default:
 		return -1;
