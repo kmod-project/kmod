@@ -278,6 +278,9 @@ static bool fill_pkcs7(const char *mem, off_t size,
 	X509_ALGOR_get0(&o, NULL, NULL, dig_alg);
 
 	sig_info->hash_algo = pkey_hash_algo[obj_to_hash_algo(o)];
+	// hash algo has not been recognized
+	if (sig_info->hash_algo == NULL)
+		goto err3;
 	sig_info->id_type = pkey_id_type[modsig->id_type];
 
 	pvt = malloc(sizeof(*pvt));
