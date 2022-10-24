@@ -19,6 +19,7 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/mman.h>
 
 #include <unistd.h>
 #include <stdio.h>
@@ -36,6 +37,9 @@ struct kmod_builtin_iter {
 
 	// The file descriptor.
 	int file;
+
+	// The memory-mapped file address.
+	char *mmf_addr;
 
 	// The total size in bytes.
 	ssize_t size;
@@ -56,7 +60,7 @@ struct kmod_builtin_iter {
 
 struct kmod_builtin_iter *kmod_builtin_iter_new(struct kmod_ctx *ctx)
 {
-	char path[PATH_MAX];
+	char path[PATH_MAX], *addr = NULL;
 	int file, sv_errno;
 	struct stat sb;
 	struct kmod_builtin_iter *iter = NULL;
@@ -83,6 +87,12 @@ struct kmod_builtin_iter *kmod_builtin_iter_new(struct kmod_ctx *ctx)
 		goto fail;
 	}
 
+	addr = (char*) mmap(NULL, sb.st_size, PROT_READ, MAP_SHARED, file, 0);
+	if (addr == MAP_FAILED) {
+		sv_errno = errno;
+		goto fail;
+	}
+
 	iter = malloc(sizeof(*iter));
 	if (!iter) {
 		sv_errno = ENOMEM;
@@ -91,6 +101,7 @@ struct kmod_builtin_iter *kmod_builtin_iter_new(struct kmod_ctx *ctx)
 
 	iter->ctx = ctx;
 	iter->file = file;
+	iter->mmf_addr = addr;
 	iter->size = sb.st_size;
 	iter->nstrings = 0;
 	iter->pos = 0;
@@ -100,6 +111,9 @@ struct kmod_builtin_iter *kmod_builtin_iter_new(struct kmod_ctx *ctx)
 
 	return iter;
 fail:
+	if (addr && addr != MAP_FAILED)
+		munmap(addr, sb.st_size);
+
 	if (file >= 0)
 		close(file);
 
@@ -110,6 +124,7 @@ fail:
 
 void kmod_builtin_iter_free(struct kmod_builtin_iter *iter)
 {
+	munmap(iter->mmf_addr, iter->size);
 	close(iter->file);
 	free(iter->buf);
 	free(iter);
@@ -119,47 +134,43 @@ static off_t get_string(struct kmod_builtin_iter *iter, off_t offset,
 			char **line, size_t *size)
 {
 	int sv_errno;
-	char *nullp = NULL;
-	size_t linesz = 0;
+	char *nullp = NULL, *buf = NULL;
+	size_t sz = iter->size - offset, linesz = 0;
 
-	while (!nullp) {
-		char buf[BUFSIZ];
-		ssize_t sz;
-		size_t partsz;
-
-		sz = pread(iter->file, buf, BUFSIZ, offset);
-		if (sz < 0) {
-			sv_errno = errno;
-			goto fail;
-		} else if (sz == 0) {
-			offset = 0;
-			break;
-		}
-
-		nullp = memchr(buf, '\0', (size_t) sz);
-		partsz = (size_t)((nullp) ? (nullp - buf) + 1 : sz);
-		offset += (off_t) partsz;
-
-		if (iter->bufsz < linesz + partsz) {
-			iter->bufsz = linesz + partsz;
-			iter->buf = realloc(iter->buf, iter->bufsz);
-
-			if (!iter->buf) {
-				sv_errno = errno;
-				goto fail;
-			}
-		}
-
-		strncpy(iter->buf + linesz, buf, partsz);
-		linesz += partsz;
+	if (sz < 0) {
+		/* invalid offset passed */
+		sv_errno = -EINVAL;
+		goto fail;
+	} else if (sz == 0) {
+		/* end of file found */
+		return 0;
 	}
 
+	buf = iter->mmf_addr + offset;
+	nullp = memchr(buf, '\0', (size_t) sz);
+	if (!nullp) {
+		/* no terminator detected  */
+		return 0;
+	}
+
+	linesz = (size_t)(nullp - buf + 1);
+	if (iter->bufsz < linesz) {
+		iter->bufsz = linesz;
+		iter->buf = realloc(iter->buf, iter->bufsz);
+
+		if (!iter->buf) {
+			sv_errno = errno;
+			goto fail;
+		}
+	}
+
+	strncpy(iter->buf, buf, linesz);
 	if (linesz) {
 		*line = iter->buf;
 		*size = linesz;
 	}
 
-	return offset;
+	return offset + linesz;
 fail:
 	errno = sv_errno;
 	return -1;
