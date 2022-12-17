@@ -68,7 +68,8 @@ AC_COMPILE_IFELSE(
 
 AC_MSG_CHECKING([whether _Noreturn is supported])
 AC_COMPILE_IFELSE(
-	[AC_LANG_SOURCE([[_Noreturn int foo(void) { exit(0); }]])],
+	[AC_LANG_SOURCE([[#include <stdlib.h>
+	_Noreturn int foo(void) { exit(0); }]])],
         [AC_DEFINE([HAVE_NORETURN], [1], [Define if _Noreturn is available])
 	 AC_MSG_RESULT([yes])],
 	[AC_MSG_RESULT([no])])
