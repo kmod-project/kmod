@@ -569,14 +569,52 @@ static void print_action(struct kmod_module *m, bool install,
 		printf("insmod %s %s\n", kmod_module_get_path(m), options);
 }
 
+static int insmod_insert(struct kmod_module *mod, int flags,
+				const char *extra_options)
+{
+	int err = 0;
+	void (*show)(struct kmod_module *m, bool install,
+						const char *options) = NULL;
+
+	if (do_show || verbose > DEFAULT_VERBOSE)
+		show = &print_action;
+
+	if (lookup_only)
+		printf("%s\n", kmod_module_get_name(mod));
+	else
+		err = kmod_module_probe_insert_module(mod, flags,
+				extra_options, NULL, NULL, show);
+
+	if (err >= 0)
+		/* ignore flag return values such as a mod being blacklisted */
+		err = 0;
+	else {
+		switch (err) {
+		case -EEXIST:
+			ERR("could not insert '%s': Module already in kernel\n",
+						kmod_module_get_name(mod));
+			break;
+		case -ENOENT:
+			ERR("could not insert '%s': Unknown symbol in module, "
+					"or unknown parameter (see dmesg)\n",
+					kmod_module_get_name(mod));
+			break;
+		default:
+			ERR("could not insert '%s': %s\n",
+					kmod_module_get_name(mod),
+					strerror(-err));
+			break;
+		}
+	}
+
+	return err;
+}
+
 static int insmod(struct kmod_ctx *ctx, const char *alias,
 						const char *extra_options)
 {
 	struct kmod_list *l, *list = NULL;
 	int err, flags = 0;
-
-	void (*show)(struct kmod_module *m, bool install,
-						const char *options) = NULL;
 
 	err = kmod_module_new_from_lookup(ctx, alias, &list);
 
@@ -596,8 +634,6 @@ static int insmod(struct kmod_ctx *ctx, const char *alias,
 		flags |= KMOD_PROBE_IGNORE_LOADED;
 	if (dry_run)
 		flags |= KMOD_PROBE_DRY_RUN;
-	if (do_show || verbose > DEFAULT_VERBOSE)
-		show = &print_action;
 
 	flags |= KMOD_PROBE_APPLY_BLACKLIST_ALIAS_ONLY;
 
@@ -608,36 +644,7 @@ static int insmod(struct kmod_ctx *ctx, const char *alias,
 
 	kmod_list_foreach(l, list) {
 		struct kmod_module *mod = kmod_module_get_module(l);
-
-		if (lookup_only)
-			printf("%s\n", kmod_module_get_name(mod));
-		else {
-			err = kmod_module_probe_insert_module(mod, flags,
-					extra_options, NULL, NULL, show);
-		}
-
-		if (err >= 0)
-			/* ignore flag return values such as a mod being blacklisted */
-			err = 0;
-		else {
-			switch (err) {
-			case -EEXIST:
-				ERR("could not insert '%s': Module already in kernel\n",
-							kmod_module_get_name(mod));
-				break;
-			case -ENOENT:
-				ERR("could not insert '%s': Unknown symbol in module, "
-						"or unknown parameter (see dmesg)\n",
-						kmod_module_get_name(mod));
-				break;
-			default:
-				ERR("could not insert '%s': %s\n",
-						kmod_module_get_name(mod),
-						strerror(-err));
-				break;
-			}
-		}
-
+		err = insmod_insert(mod, flags, extra_options);
 		kmod_module_unref(mod);
 	}
 
