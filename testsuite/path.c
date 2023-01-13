@@ -185,6 +185,7 @@ TS_EXPORT int prefix ## stat ## suffix (int ver,	    \
 }
 
 WRAP_1ARG(DIR*, NULL, opendir);
+WRAP_1ARG(int, -1, chdir);
 
 WRAP_2ARGS(FILE*, NULL, fopen, const char*);
 WRAP_2ARGS(FILE*, NULL, fopen64, const char*);
