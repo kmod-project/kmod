@@ -422,4 +422,54 @@ DEFINE_TEST(modprobe_external,
 	.modules_loaded = "mod-simple",
 	);
 
+static noreturn int modprobe_module_from_abspath(const struct test *t)
+{
+	const char *progname = ABS_TOP_BUILDDIR "/tools/modprobe";
+	const char *const args[] = {
+		progname,
+		"/home/foo/mod-simple.ko",
+		NULL,
+	};
+
+	test_spawn_prog(progname, args);
+	exit(EXIT_FAILURE);
+}
+DEFINE_TEST(modprobe_module_from_abspath,
+	.description = "check modprobe able to load module given as an absolute path",
+	.config = {
+		[TC_UNAME_R] = "4.4.4",
+		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-modprobe/module-from-abspath",
+		[TC_INIT_MODULE_RETCODES] = "",
+	},
+	.modules_loaded = "mod-simple",
+	);
+
+static noreturn int modprobe_module_from_relpath(const struct test *t)
+{
+	const char *progname = ABS_TOP_BUILDDIR "/tools/modprobe";
+	const char *const args[] = {
+		progname,
+		"./mod-simple.ko",
+		NULL,
+	};
+
+	if (chdir("/home/foo") != 0) {
+		perror("failed to change into /home/foo");
+		exit(EXIT_FAILURE);
+	}
+
+	test_spawn_prog(progname, args);
+	exit(EXIT_FAILURE);
+}
+DEFINE_TEST(modprobe_module_from_relpath,
+	.description = "check modprobe able to load module given as a relative path",
+	.config = {
+		[TC_UNAME_R] = "4.4.4",
+		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-modprobe/module-from-relpath",
+		[TC_INIT_MODULE_RETCODES] = "",
+	},
+	.need_spawn = true,
+	.modules_loaded = "mod-simple",
+	);
+
 TESTSUITE_MAIN();

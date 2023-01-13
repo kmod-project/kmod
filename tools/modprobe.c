@@ -614,14 +614,23 @@ static int insmod(struct kmod_ctx *ctx, const char *alias,
 						const char *extra_options)
 {
 	struct kmod_list *l, *list = NULL;
+	struct kmod_module *mod = NULL;
 	int err, flags = 0;
 
-	err = kmod_module_new_from_lookup(ctx, alias, &list);
-
-	if (list == NULL || err < 0) {
-		LOG("Module %s not found in directory %s\n", alias,
-			ctx ? kmod_get_dirname(ctx) : "(missing)");
-		return -ENOENT;
+	if (strncmp(alias, "/", 1) == 0 || strncmp(alias, "./", 2) == 0) {
+		err = kmod_module_new_from_path(ctx, alias, &mod);
+		if (err < 0) {
+			LOG("Failed to get module from path %s: %s\n", alias,
+				strerror(-err));
+			return -ENOENT;
+		}
+	} else {
+		err = kmod_module_new_from_lookup(ctx, alias, &list);
+		if (list == NULL || err < 0) {
+			LOG("Module %s not found in directory %s\n", alias,
+				ctx ? kmod_get_dirname(ctx) : "(missing)");
+			return -ENOENT;
+		}
 	}
 
 	if (strip_modversion || force)
@@ -642,13 +651,18 @@ static int insmod(struct kmod_ctx *ctx, const char *alias,
 	if (first_time)
 		flags |= KMOD_PROBE_FAIL_ON_LOADED;
 
-	kmod_list_foreach(l, list) {
-		struct kmod_module *mod = kmod_module_get_module(l);
+	/* If module is loaded from path */
+	if (mod != NULL) {
 		err = insmod_insert(mod, flags, extra_options);
 		kmod_module_unref(mod);
+	} else {
+		kmod_list_foreach(l, list) {
+			mod = kmod_module_get_module(l);
+			err = insmod_insert(mod, flags, extra_options);
+			kmod_module_unref(mod);
+		}
+		kmod_module_unref_list(list);
 	}
-
-	kmod_module_unref_list(list);
 	return err;
 }
 

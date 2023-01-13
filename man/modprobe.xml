@@ -115,6 +115,13 @@
       kernel (in addition to any options listed in the configuration
       file).
     </para>
+    <para>
+      When loading modules, <replaceable>modulename</replaceable> can also
+      be a path to the module. If the path is relative, it must
+      explicitly start with "./". Note that this may fail when using a
+      path to a module with dependencies not matching the installed depmod
+      database.
+    </para>
   </refsect1>
 
   <refsect1><title>OPTIONS</title>
