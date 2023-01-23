@@ -58,11 +58,12 @@ static const char *default_cfg_paths[] = {
 	NULL
 };
 
-static const char cmdopts_s[] = "aAb:C:E:F:euqrvnP:wmVh";
+static const char cmdopts_s[] = "aAb:o:C:E:F:euqrvnP:wmVh";
 static const struct option cmdopts[] = {
 	{ "all", no_argument, 0, 'a' },
 	{ "quick", no_argument, 0, 'A' },
 	{ "basedir", required_argument, 0, 'b' },
+	{ "outdir", required_argument, 0, 'o' },
 	{ "config", required_argument, 0, 'C' },
 	{ "symvers", required_argument, 0, 'E' },
 	{ "filesyms", required_argument, 0, 'F' },
@@ -104,6 +105,7 @@ static void help(void)
 		"\n"
 		"The following options are useful for people managing distributions:\n"
 		"\t-b, --basedir=DIR    Use an image of a module tree.\n"
+		"\t-o, --outdir=DIR     The output equivalent of basedir.\n"
 		"\t-F, --filesyms=FILE  Use the file instead of the\n"
 		"\t                     current kernel symbols.\n"
 		"\t-E, --symvers=FILE   Use Module.symvers file to check\n"
@@ -467,6 +469,8 @@ struct cfg {
 	const char *kversion;
 	char dirname[PATH_MAX];
 	size_t dirnamelen;
+	char outdirname[PATH_MAX];
+	size_t outdirnamelen;
 	char sym_prefix;
 	uint8_t check_symvers;
 	uint8_t print_unknown;
@@ -2576,7 +2580,7 @@ static int depmod_output(struct depmod *depmod, FILE *out)
 		{ "modules.devname", output_devname },
 		{ }
 	};
-	const char *dname = depmod->cfg->dirname;
+	const char *dname = depmod->cfg->outdirname;
 	int dfd, err = 0;
 	struct timeval tv;
 
@@ -2585,6 +2589,11 @@ static int depmod_output(struct depmod *depmod, FILE *out)
 	if (out != NULL)
 		dfd = -1;
 	else {
+		err = mkdir_p(dname, strlen(dname), 0755);
+		if (err < 0) {
+			CRIT("could not create directory %s: %m\n", dname);
+			return err;
+		}
 		dfd = open(dname, O_RDONLY);
 		if (dfd < 0) {
 			err = -errno;
@@ -2898,6 +2907,7 @@ static int do_depmod(int argc, char *argv[])
 	FILE *out = NULL;
 	int err = 0, all = 0, maybe_all = 0, n_config_paths = 0;
 	_cleanup_free_ char *root = NULL;
+	_cleanup_free_ char *out_root = NULL;
 	_cleanup_free_ const char **config_paths = NULL;
 	const char *system_map = NULL;
 	const char *module_symvers = NULL;
@@ -2926,6 +2936,11 @@ static int do_depmod(int argc, char *argv[])
 			if (root)
 				free(root);
 			root = path_make_absolute_cwd(optarg);
+			break;
+		case 'o':
+			if (out_root)
+				free(out_root);
+			out_root = path_make_absolute_cwd(optarg);
 			break;
 		case 'C': {
 			size_t bytes = sizeof(char *) * (n_config_paths + 2);
@@ -3009,7 +3024,11 @@ static int do_depmod(int argc, char *argv[])
 
 	cfg.dirnamelen = snprintf(cfg.dirname, PATH_MAX,
 				  "%s/lib/modules/%s",
-				  root == NULL ? "" : root, cfg.kversion);
+				  root ?: "", cfg.kversion);
+
+	cfg.outdirnamelen = snprintf(cfg.outdirname, PATH_MAX,
+				     "%s/lib/modules/%s",
+				     out_root ?: (root ?: ""), cfg.kversion);
 
 	if (optind == argc)
 		all = 1;

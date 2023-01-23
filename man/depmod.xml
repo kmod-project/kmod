@@ -45,6 +45,7 @@
     <cmdsynopsis>
       <command>depmod</command>
       <arg><option>-b <replaceable>basedir</replaceable></option></arg>
+      <arg><option>-o <replaceable>outdir</replaceable></option></arg>
       <arg><option>-e</option></arg>
       <arg><option>-E <replaceable>Module.symvers</replaceable></option></arg>
       <arg><option>-F <replaceable>System.map</replaceable></option></arg>
@@ -146,6 +147,24 @@
             directory name.  This <replaceable>basedir</replaceable> is
             stripped from the resulting <filename>modules.dep</filename> file,
             so it is ready to be moved into the normal location. Use this
+            option if you are a distribution vendor who needs to pre-generate
+            the meta-data files rather than running depmod again later.
+          </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>
+          <option>-o <replaceable>outdir</replaceable></option>
+        </term>
+        <term>
+          <option>--outdir <replaceable>outdir</replaceable></option>
+        </term>
+        <listitem>
+          <para>
+            If your modules are stored in a read-only location, you may want to
+            create the output meta-data files in another location. Setting
+            <replaceable>outdir</replaceable> serves as a root to that location
+            similar to how we use <replaceable>basedir</replaceable>. Use this
             option if you are a distribution vendor who needs to pre-generate
             the meta-data files rather than running depmod again later.
           </para>
