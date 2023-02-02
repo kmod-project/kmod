@@ -52,7 +52,8 @@
       want to use
       <citerefentry>
         <refentrytitle>modprobe</refentrytitle><manvolnum>8</manvolnum>
-      </citerefentry> with the <option>-r</option> option instead.
+      </citerefentry> with the <option>-r</option> option instead
+      since it removes unused dependent modules as well.
     </para>
   </refsect1>
 
