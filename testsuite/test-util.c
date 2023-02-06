@@ -31,7 +31,7 @@
 
 static int alias_1(const struct test *t)
 {
-	static const char *input[] = {
+	static const char *const input[] = {
 		"test1234",
 		"test[abcfoobar]2211",
 		"bar[aaa][bbbb]sss",
@@ -42,7 +42,7 @@ static int alias_1(const struct test *t)
 
 	char buf[PATH_MAX];
 	size_t len;
-	const char **alias;
+	const char *const *alias;
 
 	for (alias = input; *alias != NULL; alias++) {
 		int ret;

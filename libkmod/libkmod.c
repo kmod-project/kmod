@@ -50,7 +50,7 @@
  * and is passed to all library operations.
  */
 
-static struct _index_files {
+static const struct {
 	const char *fn;
 	const char *prefix;
 } index_files[] = {
@@ -61,7 +61,7 @@ static struct _index_files {
 	[KMOD_INDEX_MODULES_BUILTIN] = { .fn = "modules.builtin", .prefix = ""},
 };
 
-static const char *default_config_paths[] = {
+static const char *const default_config_paths[] = {
 	SYSCONFDIR "/modprobe.d",
 	"/run/modprobe.d",
 	"/usr/local/lib/modprobe.d",

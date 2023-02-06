@@ -29,7 +29,7 @@
 
 static int from_name(const struct test *t)
 {
-	static const char *modnames[] = {
+	static const char *const modnames[] = {
 		"ext4",
 		"balbalbalbbalbalbalbalbalbalbal",
 		"snd-hda-intel",
@@ -37,7 +37,7 @@ static int from_name(const struct test *t)
 		"iTCO_wdt",
 		NULL,
 	};
-	const char **p;
+	const char *const *p;
 	struct kmod_ctx *ctx;
 	struct kmod_module *mod;
 	const char *null_config = NULL;
@@ -72,11 +72,11 @@ DEFINE_TEST(from_name,
 
 static int from_alias(const struct test *t)
 {
-	static const char *modnames[] = {
+	static const char *const modnames[] = {
 		"ext4.*",
 		NULL,
 	};
-	const char **p;
+	const char *const *p;
 	struct kmod_ctx *ctx;
 	int err;
 

@@ -53,7 +53,7 @@ static const struct option options[] = {
 #define OVERRIDE_LIBDIR ABS_TOP_BUILDDIR "/testsuite/.libs/"
 #define TEST_TIMEOUT_USEC 2 * USEC_PER_SEC
 
-struct _env_config {
+static const struct {
 	const char *key;
 	const char *ldpreload;
 } env_config[_TC_LAST] = {

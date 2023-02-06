@@ -551,7 +551,7 @@ KMOD_EXPORT int kmod_module_new_from_lookup(struct kmod_ctx *ctx,
 						const char *given_alias,
 						struct kmod_list **list)
 {
-	const lookup_func lookup[] = {
+	static const lookup_func lookup[] = {
 		kmod_lookup_alias_from_config,
 		kmod_lookup_alias_from_moddep_file,
 		kmod_lookup_alias_from_symbols_file,
@@ -619,7 +619,7 @@ KMOD_EXPORT int kmod_module_new_from_name_lookup(struct kmod_ctx *ctx,
 						 const char *modname,
 						 struct kmod_module **mod)
 {
-	const lookup_func lookup[] = {
+	static const lookup_func lookup[] = {
 		kmod_lookup_alias_from_moddep_file,
 		kmod_lookup_alias_from_builtin_file,
 		kmod_lookup_alias_from_kernel_builtin_file,

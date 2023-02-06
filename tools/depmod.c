@@ -50,7 +50,7 @@ static int verbose = DEFAULT_VERBOSE;
 
 static const char CFG_BUILTIN_KEY[] = "built-in";
 static const char CFG_EXTERNAL_KEY[] = "external";
-static const char *default_cfg_paths[] = {
+static const char *const default_cfg_paths[] = {
 	SYSCONFDIR "/depmod.d",
 	"/run/depmod.d",
 	"/usr/local/lib/depmod.d",
