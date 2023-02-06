@@ -163,8 +163,15 @@ TS_EXPORT int open ## suffix (const char *path, int flags, ...)	\
 	return _fn(p, flags);					\
 }
 
-/* wrapper template for __xstat family */
+/*
+ * wrapper template for __xstat family
+ * This family got deprecated/dropped in glibc 2.32.9000, but we still need
+ * to keep it for a while for programs that were built against previous versions
+ */
 #define WRAP_VERSTAT(prefix, suffix)			    \
+TS_EXPORT int prefix ## stat ## suffix (int ver,	    \
+			      const char *path,		    \
+	                      struct stat ## suffix *st);   \
 TS_EXPORT int prefix ## stat ## suffix (int ver,	    \
 			      const char *path,		    \
 	                      struct stat ## suffix *st)    \
