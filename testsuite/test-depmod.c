@@ -57,6 +57,42 @@ DEFINE_TEST(depmod_modules_order_for_compressed,
 		},
 	});
 
+#define MODULES_OUTDIR_UNAME "4.4.4"
+#define MODULES_OUTDIR_ROOTFS TESTSUITE_ROOTFS "test-depmod/modules-outdir"
+#define MODULES_OUTDIR_LIB_MODULES_OUTPUT MODULES_OUTDIR_ROOTFS "/outdir/lib/modules/" MODULES_OUTDIR_UNAME
+#define MODULES_OUTDIR_LIB_MODULES_INPUT MODULES_OUTDIR_ROOTFS "/lib/modules/" MODULES_OUTDIR_UNAME
+static noreturn int depmod_modules_outdir(const struct test *t)
+{
+	const char *progname = ABS_TOP_BUILDDIR "/tools/depmod";
+	const char *const args[] = {
+		progname,
+		"--outdir", MODULES_OUTDIR_ROOTFS "/outdir/",
+		NULL,
+	};
+
+	test_spawn_prog(progname, args);
+	exit(EXIT_FAILURE);
+}
+
+DEFINE_TEST(depmod_modules_outdir,
+#if defined(KMOD_SYSCONFDIR_NOT_ETC)
+        .skip = true,
+#endif
+	.description = "check if depmod honours the outdir option",
+	.config = {
+		[TC_UNAME_R] = MODULES_OUTDIR_UNAME,
+		[TC_ROOTFS] = MODULES_OUTDIR_ROOTFS,
+	},
+	.output = {
+		.files = (const struct keyval[]) {
+			{ MODULES_OUTDIR_LIB_MODULES_OUTPUT "/modules.dep",
+			  MODULES_OUTDIR_ROOTFS "/correct-modules.dep" },
+			{ MODULES_OUTDIR_LIB_MODULES_OUTPUT "/modules.alias",
+			  MODULES_OUTDIR_ROOTFS "/correct-modules.alias" },
+			{ }
+		},
+	});
+
 #define SEARCH_ORDER_SIMPLE_ROOTFS TESTSUITE_ROOTFS "test-depmod/search-order-simple"
 static noreturn int depmod_search_order_simple(const struct test *t)
 {

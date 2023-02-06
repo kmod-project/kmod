@@ -1,0 +1,3 @@
+kernel/drivers/block/cciss.ko:
+kernel/drivers/scsi/scsi_mod.ko:
+kernel/drivers/scsi/hpsa.ko: kernel/drivers/scsi/scsi_mod.ko

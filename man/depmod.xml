@@ -45,6 +45,7 @@
     <cmdsynopsis>
       <command>depmod</command>
       <arg><option>-b <replaceable>basedir</replaceable></option></arg>
+      <arg><option>-o <replaceable>outdir</replaceable></option></arg>
       <arg><option>-e</option></arg>
       <arg><option>-E <replaceable>Module.symvers</replaceable></option></arg>
       <arg><option>-F <replaceable>System.map</replaceable></option></arg>
@@ -148,6 +149,25 @@
             so it is ready to be moved into the normal location. Use this
             option if you are a distribution vendor who needs to pre-generate
             the meta-data files rather than running depmod again later.
+          </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>
+          <option>-o <replaceable>outdir</replaceable></option>
+        </term>
+        <term>
+          <option>--outdir <replaceable>outdir</replaceable></option>
+        </term>
+        <listitem>
+          <para>
+            Set the output directory where depmod will store any generated file.
+            <replaceable>outdir</replaceable> serves as a root to that location,
+            similar to how <replaceable>basedir</replaceable> is used. Also this
+            setting takes precedence and if used together with
+            <replaceable>basedir</replaceable> it will result in the input being
+            that directory, but the output being the one set by
+            <replaceable>outdir</replaceable>.
           </para>
         </listitem>
       </varlistentry>
