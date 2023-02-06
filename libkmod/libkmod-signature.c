@@ -219,6 +219,7 @@ static bool fill_pkcs7(const char *mem, off_t size,
 	unsigned char *key_id_str;
 	struct pkcs7_private *pvt;
 	const char *issuer_str;
+	int hash_algo;
 
 	size -= sig_len;
 	pkcs7_raw = mem + size;
@@ -277,7 +278,10 @@ static bool fill_pkcs7(const char *mem, off_t size,
 
 	X509_ALGOR_get0(&o, NULL, NULL, dig_alg);
 
-	sig_info->hash_algo = pkey_hash_algo[obj_to_hash_algo(o)];
+	hash_algo = obj_to_hash_algo(o);
+	if (hash_algo < 0)
+		goto err3;
+	sig_info->hash_algo = pkey_hash_algo[hash_algo];
 	// hash algo has not been recognized
 	if (sig_info->hash_algo == NULL)
 		goto err3;
