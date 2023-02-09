@@ -239,18 +239,12 @@ endif
 # TESTSUITE
 # ------------------------------------------------------------------------------
 
-EXTRA_DIST += testsuite/populate-modules.sh
+EXTRA_DIST += testsuite/setup-rootfs.sh
 
 MODULE_PLAYGROUND = testsuite/module-playground
 ROOTFS = testsuite/rootfs
 ROOTFS_PRISTINE = $(top_srcdir)/testsuite/rootfs-pristine
-CREATE_ROOTFS = $(AM_V_GEN) ( $(RM) -rf $(ROOTFS) && mkdir -p $(dir $(ROOTFS)) && \
-				cp -r $(ROOTFS_PRISTINE) $(ROOTFS) && \
-				find $(ROOTFS) -type d -exec chmod +w {} \; && \
-				find $(ROOTFS) -type f -name .gitignore -exec rm -f {} \; && \
-				$(top_srcdir)/testsuite/populate-modules.sh \
-					$(MODULE_PLAYGROUND) $(ROOTFS) $(top_builddir)/config.h ) && \
-				touch testsuite/stamp-rootfs
+CREATE_ROOTFS = $(AM_V_GEN) $(top_srcdir)/testsuite/setup-rootfs.sh $(ROOTFS_PRISTINE) $(ROOTFS) $(MODULE_PLAYGROUND) $(top_builddir)/config.h
 
 build-module-playground:
 	$(AM_V_GEN)if test "$(top_srcdir)" != "$(top_builddir)"; then \

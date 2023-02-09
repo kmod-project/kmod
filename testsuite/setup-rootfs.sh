@@ -2,9 +2,20 @@
 
 set -e
 
-MODULE_PLAYGROUND=$1
+ROOTFS_PRISTINE=$1
 ROOTFS=$2
-CONFIG_H=$3
+MODULE_PLAYGROUND=$3
+CONFIG_H=$4
+
+# create rootfs from rootfs-pristine
+
+create_rootfs() {
+	rm -rf "$ROOTFS"
+	mkdir -p $(dirname "$ROOTFS")
+	cp -r "$ROOTFS_PRISTINE" "$ROOTFS"
+	find "$ROOTFS" -type d -exec chmod +w {} \;
+	find "$ROOTFS" -type f -name .gitignore -exec rm -f {} \;
+}
 
 feature_enabled() {
 	local feature=$1
@@ -99,6 +110,8 @@ attach_pkcs7_array=(
     "test-modinfo/mod-simple-pkcs7.ko"
     )
 
+create_rootfs
+
 for k in "${!map[@]}"; do
     dst=${ROOTFS}/$k
     src=${MODULE_PLAYGROUND}/${map[$k]}
@@ -143,3 +156,5 @@ done
 for m in "${attach_pkcs7_array[@]}"; do
     cat "${MODULE_PLAYGROUND}/dummy.pkcs7" >>"${ROOTFS}/$m"
 done
+
+touch testsuite/stamp-rootfs
