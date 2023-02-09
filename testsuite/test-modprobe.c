@@ -83,9 +83,6 @@ static noreturn int modprobe_show_alias_to_none(const struct test *t)
 	exit(EXIT_FAILURE);
 }
 DEFINE_TEST(modprobe_show_alias_to_none,
-#if defined(KMOD_SYSCONFDIR_NOT_ETC)
-        .skip = true,
-#endif
 	.description = "check if modprobe --show-depends doesn't explode with an alias to nothing",
 	.config = {
 		[TC_UNAME_R] = "4.4.4",
@@ -175,9 +172,6 @@ static noreturn int modprobe_softdep_loop(const struct test *t)
 	exit(EXIT_FAILURE);
 }
 DEFINE_TEST(modprobe_softdep_loop,
-#if defined(KMOD_SYSCONFDIR_NOT_ETC)
-        .skip = true,
-#endif
 	.description = "check if modprobe breaks softdep loop",
 	.config = {
 		[TC_UNAME_R] = "4.4.4",

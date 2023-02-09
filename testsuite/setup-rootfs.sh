@@ -6,6 +6,7 @@ ROOTFS_PRISTINE=$1
 ROOTFS=$2
 MODULE_PLAYGROUND=$3
 CONFIG_H=$4
+SYSCONFDIR=$5
 
 # create rootfs from rootfs-pristine
 
@@ -15,6 +16,13 @@ create_rootfs() {
 	cp -r "$ROOTFS_PRISTINE" "$ROOTFS"
 	find "$ROOTFS" -type d -exec chmod +w {} \;
 	find "$ROOTFS" -type f -name .gitignore -exec rm -f {} \;
+
+	if [ "$SYSCONFDIR" != "/etc" ]; then
+		find "$ROOTFS" -type d -name etc -printf "%h\n" | while read -r e; do
+			mkdir -p "$(dirname $e/$SYSCONFDIR)"
+			mv $e/{etc,$SYSCONFDIR}
+		done
+	fi
 }
 
 feature_enabled() {
