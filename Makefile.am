@@ -24,26 +24,6 @@ AM_CPPFLAGS = \
 AM_CFLAGS = $(OUR_CFLAGS)
 AM_LDFLAGS = $(OUR_LDFLAGS)
 
-SED_PROCESS = \
-	$(AM_V_GEN)$(MKDIR_P) $(dir $@) && $(SED) \
-	-e 's,@VERSION\@,$(VERSION),g' \
-	-e 's,@prefix\@,$(prefix),g' \
-	-e 's,@exec_prefix\@,$(exec_prefix),g' \
-	-e 's,@libdir\@,$(libdir),g' \
-	-e 's,@includedir\@,$(includedir),g' \
-	-e 's,@libzstd_CFLAGS\@,${libzstd_CFLAGS},g' \
-	-e 's,@libzstd_LIBS\@,${libzstd_LIBS},g' \
-	-e 's,@liblzma_CFLAGS\@,${liblzma_CFLAGS},g' \
-	-e 's,@liblzma_LIBS\@,${liblzma_LIBS},g' \
-	-e 's,@zlib_CFLAGS\@,${zlib_CFLAGS},g' \
-	-e 's,@zlib_LIBS\@,${zlib_LIBS},g' \
-	-e 's,@libcrypto_CFLAGS\@,${libcrypto_CFLAGS},g' \
-	-e 's,@libcrypto_LIBS\@,${libcrypto_LIBS},g' \
-	< $< > $@ || rm $@
-
-%.pc: %.pc.in Makefile
-	$(SED_PROCESS)
-
 # Rules for libtool versioning (from https://www.gnu.org/software/libtool/manual/html_node/Updating-version-info.html)
 # 1. Start with version information of ‘0:0:0’ for each libtool library.
 # 2. Update the version information only immediately before a public release of
@@ -116,8 +96,6 @@ libkmod_libkmod_internal_la_LIBADD = $(libkmod_libkmod_la_LIBADD)
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libkmod/libkmod.pc
-EXTRA_DIST += libkmod/libkmod.pc.in
-CLEANFILES += libkmod/libkmod.pc
 
 bashcompletiondir=@bashcompletiondir@
 dist_bashcompletion_DATA = \
@@ -178,9 +156,6 @@ am__v_CYTHON_0 = @echo "  CYTHON " $@;
 
 .pyx.c:
 	$(AM_V_CYTHON)$(CYTHON) -o $@ $<
-
-%.py: %.py.in Makefile
-	$(SED_PROCESS)
 
 # Remove some warnings for generated code
 PYTHON_NOWARN = -Wno-redundant-decls -Wno-shadow -Wno-strict-aliasing

@@ -292,6 +292,8 @@ AC_CONFIG_FILES([
 	man/Makefile
 	libkmod/docs/Makefile
 	libkmod/docs/version.xml
+	libkmod/libkmod.pc
+	libkmod/python/kmod/version.py
 ])
 
 
