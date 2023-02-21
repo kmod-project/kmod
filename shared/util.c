@@ -354,7 +354,7 @@ char *freadline_wrapped(FILE *fp, unsigned int *linenum)
 /* path handling functions                                                  */
 /* ************************************************************************ */
 
-bool path_is_absolute(const char *p)
+static bool path_is_absolute(const char *p)
 {
 	assert(p != NULL);
 
@@ -460,13 +460,13 @@ int mkdir_parents(const char *path, mode_t mode)
 	return mkdir_p(path, end - path, mode);
 }
 
-unsigned long long ts_usec(const struct timespec *ts)
+static unsigned long long ts_usec(const struct timespec *ts)
 {
 	return (unsigned long long) ts->tv_sec * USEC_PER_SEC +
 	       (unsigned long long) ts->tv_nsec / NSEC_PER_USEC;
 }
 
-unsigned long long ts_msec(const struct timespec *ts)
+static unsigned long long ts_msec(const struct timespec *ts)
 {
 	return (unsigned long long) ts->tv_sec * MSEC_PER_SEC +
 	       (unsigned long long) ts->tv_nsec / NSEC_PER_MSEC;

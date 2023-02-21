@@ -38,7 +38,6 @@ char *freadline_wrapped(FILE *fp, unsigned int *linenum) __attribute__((nonnull(
 
 /* path handling functions                                                  */
 /* ************************************************************************ */
-bool path_is_absolute(const char *p) _must_check_ __attribute__((nonnull(1)));
 char *path_make_absolute_cwd(const char *p) _must_check_ __attribute__((nonnull(1)));
 int mkdir_p(const char *path, int len, mode_t mode);
 int mkdir_parents(const char *path, mode_t mode);
@@ -51,8 +50,6 @@ unsigned long long stat_mstamp(const struct stat *st);
 #define MSEC_PER_SEC	1000ULL
 #define NSEC_PER_MSEC	1000000ULL
 
-unsigned long long ts_usec(const struct timespec *ts);
-unsigned long long ts_msec(const struct timespec *ts);
 unsigned long long now_usec(void);
 unsigned long long now_msec(void);
 int sleep_until_msec(unsigned long long msec);
