@@ -54,7 +54,7 @@ struct kmod_builtin_iter {
 	char *buf;
 };
 
-struct kmod_builtin_iter *kmod_builtin_iter_new(struct kmod_ctx *ctx)
+static struct kmod_builtin_iter *kmod_builtin_iter_new(struct kmod_ctx *ctx)
 {
 	char path[PATH_MAX];
 	int file, sv_errno;
@@ -108,7 +108,7 @@ fail:
 	return iter;
 }
 
-void kmod_builtin_iter_free(struct kmod_builtin_iter *iter)
+static void kmod_builtin_iter_free(struct kmod_builtin_iter *iter)
 {
 	close(iter->file);
 	free(iter->buf);
@@ -165,7 +165,7 @@ fail:
 	return -1;
 }
 
-bool kmod_builtin_iter_next(struct kmod_builtin_iter *iter)
+static bool kmod_builtin_iter_next(struct kmod_builtin_iter *iter)
 {
 	char *line,  *modname;
 	size_t linesz;
@@ -216,7 +216,7 @@ bool kmod_builtin_iter_next(struct kmod_builtin_iter *iter)
 	return (iter->pos < iter->size);
 }
 
-bool kmod_builtin_iter_get_modname(struct kmod_builtin_iter *iter,
+static bool kmod_builtin_iter_get_modname(struct kmod_builtin_iter *iter,
 				char modname[static PATH_MAX])
 {
 	int sv_errno;
