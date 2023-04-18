@@ -455,6 +455,7 @@ static int rmmod_do_module(struct kmod_module *mod, int flags)
 		struct kmod_list *holders = kmod_module_get_holders(mod);
 
 		err = rmmod_do_modlist(holders, true);
+		kmod_module_unref_list(holders);
 		if (err < 0)
 			goto error;
 	}
