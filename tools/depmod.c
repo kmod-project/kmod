@@ -1586,7 +1586,7 @@ static int depmod_load_modules(struct depmod *depmod)
 		struct kmod_list *l, *list = NULL;
 		int err = kmod_module_get_symbols(mod->kmod, &list);
 		if (err < 0) {
-			if (err == -ENOENT)
+			if (err == -ENODATA)
 				DBG("ignoring %s: no symbols\n", mod->path);
 			else
 				ERR("failed to load symbols from %s: %s\n",
