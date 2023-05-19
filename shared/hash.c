@@ -241,12 +241,15 @@ void *hash_find(const struct hash *hash, const char *key)
 		.key = key,
 		.value = NULL
 	};
-	const struct hash_entry *entry = bsearch(
-		&se, bucket->entries, bucket->used,
-		sizeof(struct hash_entry), hash_entry_cmp);
-	if (entry == NULL)
+	const struct hash_entry *entry;
+
+	if (!bucket->entries)
 		return NULL;
-	return (void *)entry->value;
+
+	entry = bsearch(&se, bucket->entries, bucket->used,
+			sizeof(struct hash_entry), hash_entry_cmp);
+
+	return entry ? (void *)entry->value : NULL;
 }
 
 int hash_del(struct hash *hash, const char *key)
