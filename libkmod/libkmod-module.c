@@ -1810,6 +1810,10 @@ KMOD_EXPORT int kmod_module_get_initstate(const struct kmod_module *mod)
 
 	pathlen = snprintf(path, sizeof(path),
 				"/sys/module/%s/initstate", mod->name);
+	if (pathlen >= (int)sizeof(path)) {
+		/* Too long path was truncated */
+		return -ENAMETOOLONG;
+	}
 	fd = open(path, O_RDONLY|O_CLOEXEC);
 	if (fd < 0) {
 		err = -errno;
