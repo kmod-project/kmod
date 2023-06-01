@@ -917,6 +917,8 @@ KMOD_EXPORT int kmod_module_insert_module(struct kmod_module *mod,
 			goto init_finished;
 	}
 
+	kmod_file_load_contents(mod->file);
+
 	if (flags & (KMOD_INSERT_FORCE_VERMAGIC | KMOD_INSERT_FORCE_MODVERSION)) {
 		elf = kmod_file_get_elf(mod->file);
 		if (elf == NULL) {

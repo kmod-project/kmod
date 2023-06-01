@@ -421,6 +421,7 @@ struct kmod_elf *kmod_file_get_elf(struct kmod_file *file)
 	if (file->elf)
 		return file->elf;
 
+	kmod_file_load_contents(file);
 	file->elf = kmod_elf_new(file->memory, file->size);
 	return file->elf;
 }
@@ -431,7 +432,7 @@ struct kmod_file *kmod_file_open(const struct kmod_ctx *ctx,
 	struct kmod_file *file = calloc(1, sizeof(struct kmod_file));
 	const struct comp_type *itr;
 	size_t magic_size_max = 0;
-	int err;
+	int err = 0;
 
 	if (file == NULL)
 		return NULL;
@@ -477,8 +478,8 @@ struct kmod_file *kmod_file_open(const struct kmod_ctx *ctx,
 	if (file->ops == NULL)
 		file->ops = &reg_ops;
 
-	err = file->ops->load(file);
 	file->ctx = ctx;
+
 error:
 	if (err < 0) {
 		if (file->fd >= 0)
@@ -489,6 +490,18 @@ error:
 	}
 
 	return file;
+}
+
+/*
+ *  Callers should just check file->memory got updated
+ */
+void kmod_file_load_contents(struct kmod_file *file)
+{
+	if (file->memory)
+		return;
+
+	/*  The load functions already log possible errors. */
+	file->ops->load(file);
 }
 
 void *kmod_file_get_contents(const struct kmod_file *file)
@@ -516,7 +529,9 @@ void kmod_file_unref(struct kmod_file *file)
 	if (file->elf)
 		kmod_elf_unref(file->elf);
 
-	file->ops->unload(file);
+	if (file->memory)
+		file->ops->unload(file);
+
 	if (file->fd >= 0)
 		close(file->fd);
 	free(file);
