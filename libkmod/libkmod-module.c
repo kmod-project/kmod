@@ -864,15 +864,24 @@ extern long init_module(const void *mem, unsigned long len, const char *args);
 static int do_finit_module(struct kmod_module *mod, unsigned int flags,
 			   const char *args)
 {
+	enum kmod_file_compression_type compression, kernel_compression;
 	unsigned int kernel_flags = 0;
 	int err;
 
 	/*
-	 * Re-use ENOSYS, returned when there is no such syscall, so the
-	 * fallback to init_module applies
+	 * When module is not compressed or its compression type matches the
+	 * one in use by the kernel, there is no need to read the file
+	 * in userspace. Otherwise, re-use ENOSYS to trigger the same fallback
+	 * as when finit_module() is not supported.
 	 */
-	if (!kmod_file_get_direct(mod->file))
+	compression = kmod_file_get_compression(mod->file);
+	kernel_compression = kmod_get_kernel_compression(mod->ctx);
+	if (!(compression == KMOD_FILE_COMPRESSION_NONE ||
+	      compression == kernel_compression))
 		return -ENOSYS;
+
+	if (compression != KMOD_FILE_COMPRESSION_NONE)
+		kernel_flags |= MODULE_INIT_COMPRESSED_FILE;
 
 	if (flags & KMOD_INSERT_FORCE_VERMAGIC)
 		kernel_flags |= MODULE_INIT_IGNORE_VERMAGIC;

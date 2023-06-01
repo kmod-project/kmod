@@ -112,6 +112,7 @@ void kmod_pool_add_module(struct kmod_ctx *ctx, struct kmod_module *mod, const c
 void kmod_pool_del_module(struct kmod_ctx *ctx, struct kmod_module *mod, const char *key) __attribute__((nonnull(1, 2, 3)));
 
 const struct kmod_config *kmod_get_config(const struct kmod_ctx *ctx) __attribute__((nonnull(1)));
+enum kmod_file_compression_type kmod_get_kernel_compression(const struct kmod_ctx *ctx) __attribute__((nonnull(1)));
 
 /* libkmod-config.c */
 struct kmod_config_path {
@@ -162,7 +163,7 @@ struct kmod_elf *kmod_file_get_elf(struct kmod_file *file) __attribute__((nonnul
 void kmod_file_load_contents(struct kmod_file *file) __attribute__((nonnull(1)));
 void *kmod_file_get_contents(const struct kmod_file *file) _must_check_ __attribute__((nonnull(1)));
 off_t kmod_file_get_size(const struct kmod_file *file) _must_check_ __attribute__((nonnull(1)));
-bool kmod_file_get_direct(const struct kmod_file *file) _must_check_ __attribute__((nonnull(1)));
+enum kmod_file_compression_type kmod_file_get_compression(const struct kmod_file *file) _must_check_ __attribute__((nonnull(1)));
 int kmod_file_get_fd(const struct kmod_file *file) _must_check_ __attribute__((nonnull(1)));
 void kmod_file_unref(struct kmod_file *file) __attribute__((nonnull(1)));
 

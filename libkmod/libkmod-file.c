@@ -517,9 +517,9 @@ off_t kmod_file_get_size(const struct kmod_file *file)
 	return file->size;
 }
 
-bool kmod_file_get_direct(const struct kmod_file *file)
+enum kmod_file_compression_type kmod_file_get_compression(const struct kmod_file *file)
 {
-	return file->compression == KMOD_FILE_COMPRESSION_NONE;
+	return file->compression;
 }
 
 int kmod_file_get_fd(const struct kmod_file *file)

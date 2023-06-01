@@ -1016,3 +1016,8 @@ const struct kmod_config *kmod_get_config(const struct kmod_ctx *ctx)
 {
 	return ctx->config;
 }
+
+enum kmod_file_compression_type kmod_get_kernel_compression(const struct kmod_ctx *ctx)
+{
+	return ctx->kernel_compression;
+}
