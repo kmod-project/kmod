@@ -61,6 +61,13 @@ struct kmod_list {
 	void *data;
 };
 
+enum kmod_file_compression_type {
+	KMOD_FILE_COMPRESSION_NONE = 0,
+	KMOD_FILE_COMPRESSION_ZSTD,
+	KMOD_FILE_COMPRESSION_XZ,
+	KMOD_FILE_COMPRESSION_ZLIB,
+};
+
 struct kmod_list *kmod_list_append(struct kmod_list *list, const void *data) _must_check_ __attribute__((nonnull(2)));
 struct kmod_list *kmod_list_prepend(struct kmod_list *list, const void *data) _must_check_ __attribute__((nonnull(2)));
 struct kmod_list *kmod_list_remove(struct kmod_list *list) _must_check_;
