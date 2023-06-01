@@ -83,6 +83,7 @@ struct kmod_ctx {
 	void *log_data;
 	const void *userdata;
 	char *dirname;
+	enum kmod_file_compression_type kernel_compression;
 	struct kmod_config *config;
 	struct hash *modules_by_name;
 	struct index_mm *indexes[_KMOD_INDEX_MODULES_SIZE];
@@ -227,6 +228,40 @@ static char *get_kernel_release(const char *dirname)
 	return p;
 }
 
+static enum kmod_file_compression_type get_kernel_compression(struct kmod_ctx *ctx)
+{
+	const char *path = "/sys/module/compression";
+	char buf[16];
+	int fd;
+	int err;
+
+	fd = open(path, O_RDONLY|O_CLOEXEC);
+	if (fd < 0) {
+		/* Not having the file is not an error: kernel may be too old */
+		DBG(ctx, "could not open '%s' for reading: %m\n", path);
+		return KMOD_FILE_COMPRESSION_NONE;
+	}
+
+	err = read_str_safe(fd, buf, sizeof(buf));
+	close(fd);
+	if (err < 0) {
+		ERR(ctx, "could not read from '%s': %s\n",
+		    path, strerror(-err));
+		return KMOD_FILE_COMPRESSION_NONE;
+	}
+
+	if (streq(buf, "zstd\n"))
+		return KMOD_FILE_COMPRESSION_ZSTD;
+	else if (streq(buf, "xz\n"))
+		return KMOD_FILE_COMPRESSION_XZ;
+	else if (streq(buf, "gzip\n"))
+		return KMOD_FILE_COMPRESSION_ZLIB;
+
+	ERR(ctx, "unknown kernel compression %s", buf);
+
+	return KMOD_FILE_COMPRESSION_NONE;
+}
+
 /**
  * kmod_new:
  * @dirname: what to consider as linux module's directory, if NULL
@@ -271,6 +306,8 @@ KMOD_EXPORT struct kmod_ctx *kmod_new(const char *dirname,
 	env = secure_getenv("KMOD_LOG");
 	if (env != NULL)
 		kmod_set_log_priority(ctx, log_priority(env));
+
+	ctx->kernel_compression = get_kernel_compression(ctx);
 
 	if (config_paths == NULL)
 		config_paths = default_config_paths;
