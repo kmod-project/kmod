@@ -21,6 +21,9 @@ LT_INIT([disable-static pic-only])
 AS_IF([test "x$enable_static" = "xyes"], [AC_MSG_ERROR([--enable-static is not supported by kmod])])
 AS_IF([test "x$enable_largefile" = "xno"], [AC_MSG_ERROR([--disable-largefile is not supported by kmod])])
 
+module_compressions=""
+module_signatures="legacy"
+
 #####################################################################
 # Program checks and configurations
 #####################################################################
@@ -94,6 +97,7 @@ AC_ARG_WITH([zstd],
 AS_IF([test "x$with_zstd" != "xno"], [
 	PKG_CHECK_MODULES([libzstd], [libzstd >= 1.4.4], [LIBS="$LIBS $libzstd_LIBS"])
 	AC_DEFINE([ENABLE_ZSTD], [1], [Enable Zstandard for modules.])
+	module_compressions="zstd $module_compressions"
 ], [
 	AC_MSG_NOTICE([Zstandard support not requested])
 ])
@@ -105,6 +109,7 @@ AC_ARG_WITH([xz],
 AS_IF([test "x$with_xz" != "xno"], [
 	PKG_CHECK_MODULES([liblzma], [liblzma >= 4.99], [LIBS="$LIBS $liblzma_LIBS"])
 	AC_DEFINE([ENABLE_XZ], [1], [Enable Xz for modules.])
+	module_compressions="xz $module_compressions"
 ], [
 	AC_MSG_NOTICE([Xz support not requested])
 ])
@@ -116,6 +121,7 @@ AC_ARG_WITH([zlib],
 AS_IF([test "x$with_zlib" != "xno"], [
 	PKG_CHECK_MODULES([zlib], [zlib], [LIBS="$LIBS $zlib_LIBS"])
 	AC_DEFINE([ENABLE_ZLIB], [1], [Enable zlib for modules.])
+	module_compressions="gzip $module_compressions"
 ], [
 	AC_MSG_NOTICE([zlib support not requested])
 ])
@@ -134,6 +140,7 @@ AS_IF([test "x$with_openssl" != "xno"], [
 		AC_MSG_NOTICE([openssl sm3 support not detected])
 		CPPFLAGS="$CPPFLAGS -DOPENSSL_NO_SM3"
 	])
+	module_signatures="PKCS7 $module_signatures"
 ], [
 	AC_MSG_NOTICE([openssl support not requested])
 ])
@@ -298,6 +305,9 @@ AC_DEFINE_UNQUOTED(KMOD_FEATURES, ["$with_features"], [Features in this build])
 # Generate files from *.in
 #####################################################################
 
+AC_SUBST([module_compressions], $module_compressions)
+AC_SUBST([module_signatures], $module_signatures)
+
 AC_CONFIG_FILES([
 	Makefile
 	man/Makefile
@@ -305,6 +315,7 @@ AC_CONFIG_FILES([
 	libkmod/docs/version.xml
 	libkmod/libkmod.pc
 	libkmod/python/kmod/version.py
+	tools/kmod.pc
 ])
 
 
