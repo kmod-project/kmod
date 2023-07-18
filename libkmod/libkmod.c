@@ -65,6 +65,7 @@ static const char *const default_config_paths[] = {
 	SYSCONFDIR "/modprobe.d",
 	"/run/modprobe.d",
 	"/usr/local/lib/modprobe.d",
+	DISTCONFDIR "/modprobe.d",
 	"/lib/modprobe.d",
 	NULL
 };
@@ -272,9 +273,9 @@ static enum kmod_file_compression_type get_kernel_compression(struct kmod_ctx *c
  *                to load from user-defined configuration parameters such as
  *                alias, blacklists, commands (install, remove). If NULL
  *                defaults to /etc/modprobe.d, /run/modprobe.d,
- *                /usr/local/lib/modprobe.d and /lib/modprobe.d. Give an empty
- *                vector if configuration should not be read. This array must
- *                be null terminated.
+ *                /usr/local/lib/modprobe.d, DISTCONFDIR/modprobe.d, and
+ *                /lib/modprobe.d. Give an empty vector if configuration should
+ *                not be read. This array must be null terminated.
  *
  * Create kmod library context. This reads the kmod configuration
  * and fills in the default values.

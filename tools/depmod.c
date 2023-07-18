@@ -54,6 +54,7 @@ static const char *const default_cfg_paths[] = {
 	SYSCONFDIR "/depmod.d",
 	"/run/depmod.d",
 	"/usr/local/lib/depmod.d",
+	DISTCONFDIR "/depmod.d",
 	"/lib/depmod.d",
 	NULL
 };

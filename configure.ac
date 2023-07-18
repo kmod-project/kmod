@@ -79,6 +79,10 @@ AC_COMPILE_IFELSE(
 # --with-
 #####################################################################
 
+AC_ARG_WITH([distconfdir], AS_HELP_STRING([--with-distconfdir=DIR], [directory to search for distribution configuration files]),
+        [], [with_distconfdir='${prefix}/lib'])
+AC_SUBST([distconfdir], [$with_distconfdir])
+
 AC_ARG_WITH([rootlibdir],
         AS_HELP_STRING([--with-rootlibdir=DIR], [rootfs directory to install shared libraries]),
         [], [with_rootlibdir=$libdir])
@@ -313,6 +317,7 @@ AC_MSG_RESULT([
 
 	prefix:			${prefix}
 	sysconfdir:		${sysconfdir}
+	distconfdir:		${distconfdir}
 	libdir:			${libdir}
 	rootlibdir:		${rootlibdir}
 	includedir:		${includedir}

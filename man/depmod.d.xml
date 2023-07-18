@@ -40,6 +40,7 @@
 
   <refsynopsisdiv>
     <para><filename>/lib/depmod.d/*.conf</filename></para>
+    <para><filename>@DISTCONFDIR@/depmod.d/*.conf</filename></para>
     <para><filename>/usr/local/lib/depmod.d/*.conf</filename></para>
     <para><filename>/run/depmod.d/*.conf</filename></para>
     <para><filename>/etc/depmod.d/*.conf</filename></para>
