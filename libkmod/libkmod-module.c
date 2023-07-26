@@ -2396,6 +2396,12 @@ KMOD_EXPORT int kmod_module_get_info(const struct kmod_module *mod, struct kmod_
 			goto list_error;
 		count++;
 
+		n = kmod_module_info_append(list, "sig_algo", strlen("sig_algo"),
+				sig_info.algo, strlen(sig_info.algo));
+		if (n == NULL)
+			goto list_error;
+		count++;
+
 		n = kmod_module_info_append(list,
 				"sig_hashalgo", strlen("sig_hashalgo"),
 				sig_info.hash_algo, strlen(sig_info.hash_algo));
@@ -2403,10 +2409,6 @@ KMOD_EXPORT int kmod_module_get_info(const struct kmod_module *mod, struct kmod_
 			goto list_error;
 		count++;
 
-		/*
-		 * Omit sig_info.algo for now, as these
-		 * are currently constant.
-		 */
 		n = kmod_module_info_append(list, "signature", strlen("signature"),
 						sig_info.sig,
 						sig_info.sig_len);
