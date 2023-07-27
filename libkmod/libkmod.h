@@ -238,6 +238,7 @@ long kmod_module_get_size(const struct kmod_module *mod);
 int kmod_module_get_info(const struct kmod_module *mod, struct kmod_list **list);
 const char *kmod_module_info_get_key(const struct kmod_list *entry);
 const char *kmod_module_info_get_value(const struct kmod_list *entry);
+const char *kmod_module_info_get_value_n(const struct kmod_list *entry, size_t *valuelen);
 void kmod_module_info_free_list(struct kmod_list *list);
 
 int kmod_module_get_versions(const struct kmod_module *mod, struct kmod_list **list);

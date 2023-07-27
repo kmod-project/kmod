@@ -2261,6 +2261,7 @@ static struct kmod_elf *kmod_module_get_elf(const struct kmod_module *mod)
 
 struct kmod_module_info {
 	char *key;
+	size_t valuelen;
 	char value[];
 };
 
@@ -2278,6 +2279,7 @@ static struct kmod_module_info *kmod_module_info_new(const char *key, size_t key
 	info->key[keylen] = '\0';
 	memcpy(info->value, value, valuelen);
 	info->value[valuelen] = '\0';
+	info->valuelen = valuelen;
 	return info;
 }
 
@@ -2300,63 +2302,6 @@ static struct kmod_list *kmod_module_info_append(struct kmod_list **list, const 
 	else
 		kmod_module_info_free(info);
 	return n;
-}
-
-static char *kmod_module_hex_to_str(const char *hex, size_t len)
-{
-	char *str;
-	int i;
-	int j;
-	const size_t line_limit = 20;
-	size_t str_len;
-
-	str_len = len * 3; /* XX: or XX\0 */
-	str_len += ((str_len + line_limit - 1) / line_limit - 1) * 3; /* \n\t\t */
-
-	str = malloc(str_len);
-	if (str == NULL)
-		return NULL;
-
-	for (i = 0, j = 0; i < (int)len; i++) {
-		j += sprintf(str + j, "%02X", (unsigned char)hex[i]);
-		if (i < (int)len - 1) {
-			str[j++] = ':';
-
-			if ((i + 1) % line_limit == 0)
-				j += sprintf(str + j, "\n\t\t");
-		}
-	}
-	return str;
-}
-
-static struct kmod_list *kmod_module_info_append_hex(struct kmod_list **list,
-						     const char *key,
-						     size_t keylen,
-						     const char *value,
-						     size_t valuelen)
-{
-	char *hex;
-	struct kmod_list *n;
-
-	if (valuelen > 0) {
-		/* Display as 01:12:DE:AD:BE:EF:... */
-		hex = kmod_module_hex_to_str(value, valuelen);
-		if (hex == NULL)
-			goto list_error;
-		n = kmod_module_info_append(list, key, keylen, hex, strlen(hex));
-		free(hex);
-		if (n == NULL)
-			goto list_error;
-	} else {
-		n = kmod_module_info_append(list, key, keylen, NULL, 0);
-		if (n == NULL)
-			goto list_error;
-	}
-
-	return n;
-
-list_error:
-	return NULL;
 }
 
 /**
@@ -2444,7 +2389,7 @@ KMOD_EXPORT int kmod_module_get_info(const struct kmod_module *mod, struct kmod_
 		count++;
 
 
-		n = kmod_module_info_append_hex(list, "sig_key", strlen("sig_key"),
+		n = kmod_module_info_append(list, "sig_key", strlen("sig_key"),
 						sig_info.key_id,
 						sig_info.key_id_len);
 		if (n == NULL)
@@ -2462,8 +2407,7 @@ KMOD_EXPORT int kmod_module_get_info(const struct kmod_module *mod, struct kmod_
 		 * Omit sig_info.algo for now, as these
 		 * are currently constant.
 		 */
-		n = kmod_module_info_append_hex(list, "signature",
-						strlen("signature"),
+		n = kmod_module_info_append(list, "signature", strlen("signature"),
 						sig_info.sig,
 						sig_info.sig_len);
 
@@ -2523,6 +2467,29 @@ KMOD_EXPORT const char *kmod_module_info_get_value(const struct kmod_list *entry
 		return NULL;
 
 	info = entry->data;
+	return info->value;
+}
+
+/**
+ * kmod_module_info_get_value_n:
+ * @entry: a list entry representing a kmod module info
+ * @len: where to return length of value
+ *
+ * Get the value with length of a kmod module info.
+ *
+ * Returns: the value of this kmod module info on success or NULL on
+ * failure. The string is owned by the info, do not free it.
+ */
+KMOD_EXPORT const char *kmod_module_info_get_value_n(const struct kmod_list *entry, size_t *len)
+{
+	struct kmod_module_info *info;
+
+	if (entry == NULL)
+		return NULL;
+
+	info = entry->data;
+	if (len)
+		*len = info->valuelen;
 	return info->value;
 }
 
