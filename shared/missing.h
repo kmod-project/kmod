@@ -15,6 +15,10 @@
 # define MODULE_INIT_IGNORE_VERMAGIC 2
 #endif
 
+#ifndef MODULE_INIT_COMPRESSED_FILE
+# define MODULE_INIT_COMPRESSED_FILE 4
+#endif
+
 #ifndef __NR_finit_module
 # define __NR_finit_module -1
 #endif
