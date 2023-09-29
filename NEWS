@@ -1,3 +1,67 @@
+kmod 31
+=======
+
+- Improvements
+
+	- Allow passing a path to modprobe so the module is loaded from
+	  anywhere from the filesystem, but still handling the module
+	  dependencies recorded in the indexes. This is mostly intended for kernel
+	  developers to speedup testing their kernel modules without having to load the
+	  dependencies manually or override the module in /usr/lib/modules/.
+	  Now it's possible to do:
+
+		# modprobe ./drivers/gpu/drm/i915/i915.ko
+
+	  As long as the dependencies didn't change, this should do the right thing
+
+	- Use in-kernel decompression if available. This will check the runtime support
+	  in the kernel for decompressing modules and use it through finit_module().
+	  Previously kmod would fallback to the older init_module() when using
+	  compressed modules since there wasn't a way to instruct the kernel to
+	  uncompress it on load or check if the kernel supported it or not.
+	  This requires a recent kernel (>= 6.4) to have that support and
+	  in-kernel decompression properly working in the kernel.
+
+	- Make modprobe fallback to syslog when stderr is not available, as was
+	  documented in the man page, but not implemented
+
+	- Better explaing `modprobe -r` and how it differentiates from rmmod
+
+	- depmod learned a `-o <dir>` option to allow using a separate output
+	  directory. With this, it's possible to split the output files from
+	  the ones used as input from the kernel build system
+
+	- Add compat with glibc >= 2.32.9000 that dropped __xstat
+
+	- Improve testsuite to stop skipping tests when sysconfdir is something
+	  other than /etc
+
+	- Build system improvements and updates
+
+	- Change a few return codes from -ENOENT to -ENODATA to avoid confusing output
+	  in depmod when the module itself lacks a particular ELF section due to e.g.
+	  CONFIG_MODVERSIONS=n in the kernel.
+
+
+- Bug Fixes
+
+	- Fix testsuite using uninitialized memory when testing module removal
+	  with --wait
+
+	- Fix testsuite not correctly overriding the stat syscall on 32-bit
+	  platforms. For most architectures this was harmless, but for MIPS it
+	  was causing some tests to fail.
+
+	- Fix handling unknown signature algorithm
+
+	- Fix linking with a static liblzma, libzstd or zlib
+
+	- Fix memory leak when removing module holders
+
+	- Fix out-of-bounds access when using very long paths as argument to rmmod
+
+	- Fix warnings reported by UBSan
+
 kmod 30
 =======
 
