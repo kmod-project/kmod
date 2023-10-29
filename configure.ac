@@ -133,13 +133,6 @@ AC_ARG_WITH([openssl],
 AS_IF([test "x$with_openssl" != "xno"], [
 	PKG_CHECK_MODULES([libcrypto], [libcrypto >= 1.1.0], [LIBS="$LIBS $libcrypto_LIBS"])
 	AC_DEFINE([ENABLE_OPENSSL], [1], [Enable openssl for modinfo.])
-	AC_COMPILE_IFELSE([AC_LANG_SOURCE([[#include <openssl/ssl.h>
-		int nid = NID_sm3;]])], [
-		AC_MSG_NOTICE([openssl supports sm3])
-	], [
-		AC_MSG_NOTICE([openssl sm3 support not detected])
-		CPPFLAGS="$CPPFLAGS -DOPENSSL_NO_SM3"
-	])
 	module_signatures="PKCS7 $module_signatures"
 ], [
 	AC_MSG_NOTICE([openssl support not requested])

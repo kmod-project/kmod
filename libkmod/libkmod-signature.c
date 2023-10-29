@@ -127,6 +127,7 @@ struct pkcs7_private {
 	PKCS7 *pkcs7;
 	unsigned char *key_id;
 	BIGNUM *sno;
+	char *hash_algo;
 };
 
 static void pkcs7_free(void *s)
@@ -137,40 +138,9 @@ static void pkcs7_free(void *s)
 	PKCS7_free(pvt->pkcs7);
 	BN_free(pvt->sno);
 	free(pvt->key_id);
+	free(pvt->hash_algo);
 	free(pvt);
 	si->private = NULL;
-}
-
-static int obj_to_hash_algo(const ASN1_OBJECT *o)
-{
-	int nid;
-
-	nid = OBJ_obj2nid(o);
-	switch (nid) {
-	case NID_md4:
-		return PKEY_HASH_MD4;
-	case NID_md5:
-		return PKEY_HASH_MD5;
-	case NID_sha1:
-		return PKEY_HASH_SHA1;
-	case NID_ripemd160:
-		return PKEY_HASH_RIPE_MD_160;
-	case NID_sha256:
-		return PKEY_HASH_SHA256;
-	case NID_sha384:
-		return PKEY_HASH_SHA384;
-	case NID_sha512:
-		return PKEY_HASH_SHA512;
-	case NID_sha224:
-		return PKEY_HASH_SHA224;
-# ifndef OPENSSL_NO_SM3
-	case NID_sm3:
-		return PKEY_HASH_SM3;
-# endif
-	default:
-		return -1;
-	}
-	return -1;
 }
 
 static const char *x509_name_to_str(X509_NAME *name)
@@ -219,7 +189,8 @@ static bool fill_pkcs7(const char *mem, off_t size,
 	unsigned char *key_id_str;
 	struct pkcs7_private *pvt;
 	const char *issuer_str;
-	int hash_algo;
+	char *hash_algo;
+	int hash_algo_len;
 
 	size -= sig_len;
 	pkcs7_raw = mem + size;
@@ -278,27 +249,37 @@ static bool fill_pkcs7(const char *mem, off_t size,
 
 	X509_ALGOR_get0(&o, NULL, NULL, dig_alg);
 
-	hash_algo = obj_to_hash_algo(o);
-	if (hash_algo < 0)
+	// Use OBJ_obj2txt to calculate string length
+	hash_algo_len = OBJ_obj2txt(NULL, 0, o, 0);
+	if (hash_algo_len < 0)
 		goto err3;
-	sig_info->hash_algo = pkey_hash_algo[hash_algo];
-	// hash algo has not been recognized
-	if (sig_info->hash_algo == NULL)
+	hash_algo = malloc(hash_algo_len + 1);
+	if (hash_algo == NULL)
 		goto err3;
+	hash_algo_len = OBJ_obj2txt(hash_algo, hash_algo_len + 1, o, 0);
+	if (hash_algo_len < 0)
+		goto err4;
+
+	// Assign libcrypto hash algo string or number
+	sig_info->hash_algo = hash_algo;
+
 	sig_info->id_type = pkey_id_type[modsig->id_type];
 
 	pvt = malloc(sizeof(*pvt));
 	if (pvt == NULL)
-		goto err3;
+		goto err4;
 
 	pvt->pkcs7 = pkcs7;
 	pvt->key_id = key_id_str;
 	pvt->sno = sno_bn;
+	pvt->hash_algo = hash_algo;
 	sig_info->private = pvt;
 
 	sig_info->free = pkcs7_free;
 
 	return true;
+err4:
+	free(hash_algo);
 err3:
 	free(key_id_str);
 err2:
