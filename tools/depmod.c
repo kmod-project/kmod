@@ -190,7 +190,7 @@ static struct index_node *index_create(void)
 {
 	struct index_node *node;
 
-	node = NOFAIL(calloc(sizeof(struct index_node), 1));
+	node = NOFAIL(calloc(1, sizeof(struct index_node)));
 	node->prefix = NOFAIL(strdup(""));
 	node->first = INDEX_CHILDMAX;
 
@@ -253,7 +253,7 @@ static int index_add_value(struct index_value **values,
 		values = &(*values)->next;
 
 	len = strlen(value);
-	v = NOFAIL(calloc(sizeof(struct index_value) + len + 1, 1));
+	v = NOFAIL(calloc(1, sizeof(struct index_value) + len + 1));
 	v->next = *values;
 	v->priority = priority;
 	memcpy(v->value, value, len + 1);
@@ -284,7 +284,7 @@ static int index_insert(struct index_node *node, const char *key,
 				struct index_node *n;
 
 				/* New child is copy of node with prefix[j+1..N] */
-				n = NOFAIL(calloc(sizeof(struct index_node), 1));
+				n = NOFAIL(calloc(1, sizeof(struct index_node)));
 				memcpy(n, node, sizeof(struct index_node));
 				n->prefix = NOFAIL(strdup(&prefix[j+1]));
 
@@ -313,7 +313,7 @@ static int index_insert(struct index_node *node, const char *key,
 				node->first = ch;
 			if (ch > node->last)
 				node->last = ch;
-			node->children[ch] = NOFAIL(calloc(sizeof(struct index_node), 1));
+			node->children[ch] = NOFAIL(calloc(1, sizeof(struct index_node)));
 
 			child = node->children[ch];
 			child->prefix = NOFAIL(strdup(&key[i+1]));
