@@ -141,6 +141,20 @@ static void pkcs7_free(void *s)
 	si->private = NULL;
 }
 
+static const char *obj_to_sig_algo(const ASN1_OBJECT *o)
+{
+	int nid = OBJ_obj2nid(o);
+
+	switch (nid) {
+	case NID_sha256WithRSAEncryption:
+		return "sha256WithRSAEncryption";
+	case NID_SM2_with_SM3:
+		return "SM2-with-SM3";
+	default:
+		return "unknown";
+	}
+}
+
 static int obj_to_hash_algo(const ASN1_OBJECT *o)
 {
 	int nid;
@@ -276,8 +290,10 @@ static bool fill_pkcs7(const char *mem, off_t size,
 		sig_info->signer_len = strlen(issuer_str);
 	}
 
-	X509_ALGOR_get0(&o, NULL, NULL, dig_alg);
+	X509_ALGOR_get0(&o, NULL, NULL, sig_alg);
+	sig_info->algo = obj_to_sig_algo(o);
 
+	X509_ALGOR_get0(&o, NULL, NULL, dig_alg);
 	hash_algo = obj_to_hash_algo(o);
 	if (hash_algo < 0)
 		goto err3;

@@ -92,3 +92,8 @@ LIBKMOD_22 {
 global:
 	kmod_get_dirname;
 } LIBKMOD_6;
+
+LIBKMOD_31 {
+global:
+	kmod_module_info_get_value_n;
+} LIBKMOD_22;

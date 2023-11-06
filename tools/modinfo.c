@@ -168,6 +168,33 @@ end:
 	return err;
 }
 
+static char *hex_to_str(const char *hex, size_t len)
+{
+	char *str;
+	int i;
+	int j;
+	const size_t line_limit = 20;
+	size_t str_len;
+
+	str_len = len * 3; /* XX: or XX\0 */
+	str_len += ((str_len + line_limit - 1) / line_limit - 1) * 3; /* \n\t\t */
+
+	str = malloc(str_len);
+	if (str == NULL)
+		return NULL;
+
+	for (i = 0, j = 0; i < (int)len; i++) {
+		j += sprintf(str + j, "%02X", (unsigned char)hex[i]);
+		if (i < (int)len - 1) {
+			str[j++] = ':';
+
+			if ((i + 1) % line_limit == 0)
+				j += sprintf(str + j, "\n\t\t");
+		}
+	}
+	return str;
+}
+
 static int modinfo_do(struct kmod_module *mod)
 {
 	struct kmod_list *l, *list = NULL;
@@ -214,32 +241,35 @@ static int modinfo_do(struct kmod_module *mod)
 	}
 
 	kmod_list_foreach(l, list) {
+        size_t valuelen;
 		const char *key = kmod_module_info_get_key(l);
-		const char *value = kmod_module_info_get_value(l);
+		const char *value = kmod_module_info_get_value_n(l, &valuelen);
+		char *hex = NULL;
 		int keylen;
+
+		if ((streq(key, "sig_key") || streq(key, "signature")) && valuelen > 0) {
+			hex = hex_to_str(value, valuelen);
+			value = hex;
+		}
 
 		if (field != NULL) {
 			if (!streq(field, key))
 				continue;
 			/* filtered output contains no key, just value */
 			printf("%s%c", value, separator);
-			continue;
-		}
-
-		if (streq(key, "parm") || streq(key, "parmtype")) {
+		} else if (streq(key, "parm") || streq(key, "parmtype")) {
 			err = process_parm(key, value, &params);
 			if (err < 0)
 				goto end;
-			continue;
-		}
-
-		if (separator == '\0') {
+		} else if (separator == '\0') {
 			printf("%s=%s%c", key, value, separator);
-			continue;
+		} else {
+			keylen = strlen(key);
+			printf("%s:%-*s%s%c", key, 15 - keylen, "", value, separator);
 		}
 
-		keylen = strlen(key);
-		printf("%s:%-*s%s%c", key, 15 - keylen, "", value, separator);
+		if (hex)
+			free(hex);
 	}
 
 	if (field != NULL)
