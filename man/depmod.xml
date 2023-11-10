@@ -80,7 +80,7 @@
     </para>
     <para> <command>depmod</command> creates a list of module dependencies by
       reading each module under
-      <filename>/lib/modules/</filename><replaceable>version</replaceable> and
+      <filename>@MODULE_DIRECTORY@/</filename><replaceable>version</replaceable> and
       determining what symbols it exports and what symbols it needs.  By
       default, this list is written to <filename>modules.dep</filename>, and a
       binary hashed version named <filename>modules.dep.bin</filename>, in the
@@ -141,7 +141,7 @@
         <listitem>
           <para>
             If your modules are not currently in the (normal) directory
-            <filename>/lib/modules/</filename><replaceable>version</replaceable>,
+            <filename>@MODULE_DIRECTORY@/</filename><replaceable>version</replaceable>,
             but in a staging area, you can specify a
             <replaceable>basedir</replaceable> which is prepended to the
             directory name.  This <replaceable>basedir</replaceable> is

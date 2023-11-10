@@ -1,6 +1,7 @@
 prefix=@prefix@
 sysconfdir=@sysconfdir@
 distconfdir=@distconfdir@
+module_directory=@module_directory@
 module_compressions=@module_compressions@
 module_signatures=@module_signatures@
 

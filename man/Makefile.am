@@ -22,6 +22,7 @@ CLEANFILES = $(dist_man_MANS)
 	else \
 		sed -e '/@DISTCONFDIR@/d' $< ; \
 	fi | \
+	sed -e 's|@MODULE_DIRECTORY@|$(module_directory)|g' | \
 	$(XSLT) \
 		-o $@ \
 		--nonet \

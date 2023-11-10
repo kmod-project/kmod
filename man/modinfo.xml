@@ -54,7 +54,7 @@
       <command>modinfo</command> extracts information from the Linux Kernel
       modules given on the command line.  If the module name is not a filename,
       then the
-      <filename>/lib/modules/</filename><replaceable>version</replaceable>
+      <filename>@MODULE_DIRECTORY@/</filename><replaceable>version</replaceable>
       directory is searched, as is also done by
       <citerefentry><refentrytitle>modprobe</refentrytitle><manvolnum>8</manvolnum></citerefentry>
       when loading kernel modules.

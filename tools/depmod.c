@@ -911,7 +911,7 @@ struct vertex;
 struct mod {
 	struct kmod_module *kmod;
 	char *path;
-	const char *relpath; /* path relative to '$ROOT/lib/modules/$VER/' */
+	const char *relpath; /* path relative to '$ROOT$MODULE_DIRECTORY/$VER/' */
 	char *uncrelpath; /* same as relpath but ending in .ko */
 	struct kmod_list *info_list;
 	struct kmod_list *dep_sym_list;
@@ -3024,11 +3024,11 @@ static int do_depmod(int argc, char *argv[])
 	}
 
 	cfg.dirnamelen = snprintf(cfg.dirname, PATH_MAX,
-				  "%s/lib/modules/%s",
+				  "%s" MODULE_DIRECTORY "/%s",
 				  root ?: "", cfg.kversion);
 
 	cfg.outdirnamelen = snprintf(cfg.outdirname, PATH_MAX,
-				     "%s/lib/modules/%s",
+				     "%s" MODULE_DIRECTORY "/%s",
 				     out_root ?: (root ?: ""), cfg.kversion);
 
 	if (optind == argc)

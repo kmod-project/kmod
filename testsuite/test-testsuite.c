@@ -64,7 +64,7 @@ static int testsuite_rootfs_fopen(const struct test *t)
 	char s[100];
 	int n;
 
-	fp = fopen("/lib/modules/a", "r");
+	fp = fopen(MODULE_DIRECTORY "/a", "r");
 	if (fp == NULL)
 		return EXIT_FAILURE;;
 
@@ -89,7 +89,7 @@ static int testsuite_rootfs_open(const struct test *t)
 	char buf[100];
 	int fd, done;
 
-	fd = open("/lib/modules/a", O_RDONLY);
+	fd = open(MODULE_DIRECTORY "/a", O_RDONLY);
 	if (fd < 0)
 		return EXIT_FAILURE;
 
@@ -121,12 +121,12 @@ static int testsuite_rootfs_stat_access(const struct test *t)
 {
 	struct stat st;
 
-	if (access("/lib/modules/a", F_OK) < 0) {
+	if (access(MODULE_DIRECTORY "/a", F_OK) < 0) {
 		ERR("access failed: %m\n");
 		return EXIT_FAILURE;
 	}
 
-	if (stat("/lib/modules/a", &st) < 0) {
+	if (stat(MODULE_DIRECTORY "/a", &st) < 0) {
 		ERR("stat failed: %m\n");
 		return EXIT_FAILURE;
 	}

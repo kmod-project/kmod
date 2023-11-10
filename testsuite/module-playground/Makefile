@@ -47,7 +47,7 @@ endif
 
 else
 # normal makefile
-KDIR ?= /lib/modules/`uname -r`/build
+KDIR ?= $(module_prefix)/lib/modules/`uname -r`/build
 KVER ?= `uname -r`
 ifeq ($(FAKE_BUILD),)
     FAKE_BUILD=0

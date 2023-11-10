@@ -70,7 +70,7 @@
         </term>
         <listitem>
           <para>
-            This allows you to specify the order in which /lib/modules
+            This allows you to specify the order in which @MODULE_DIRECTORY@
             (or other configured module location) subdirectories will
             be processed by <command>depmod</command>. Directories are
             listed in order, with the highest priority given to the
@@ -101,7 +101,7 @@
             <command>depmod</command> command. It is possible to
             specify one kernel or all kernels using the * wildcard.
             <replaceable>modulesubdirectory</replaceable> is the
-            name of the subdirectory under /lib/modules (or other
+            name of the subdirectory under @MODULE_DIRECTORY@ (or other
             module location) where the target module is installed.
           </para>
           <para>
@@ -110,7 +110,7 @@
             specifying the following command: "override kmod * extra".
             This will ensure that any matching module name installed
             under the <command>extra</command> subdirectory within
-            /lib/modules (or other module location) will take priority
+            @MODULE_DIRECTORY@ (or other module location) will take priority
             over any likenamed module already provided by the kernel.
           </para>
         </listitem>
