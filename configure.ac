@@ -97,6 +97,23 @@ AC_ARG_WITH([module_directory],
         [], [with_module_directory=/lib/modules])
 AC_SUBST([module_directory], [$with_module_directory])
 
+# Check all directory arguments for consistency.
+for ac_var in	distconfdir rootlibdir module_directory
+do
+  eval ac_val=\$$ac_var
+  # Remove trailing slashes.
+  case $ac_val in
+    */ )
+      ac_val=`expr "X$ac_val" : 'X\(.*@<:@^/@:>@\)' \| "X$ac_val" : 'X\(.*\)'`
+      eval $ac_var=\$ac_val;;
+  esac
+  # Be sure to have absolute directory names.
+  case $ac_val in
+    @<:@\\/$@:>@* | ?:@<:@\\/@:>@* )  continue;;
+  esac
+  as_fn_error $? "expected an absolute directory name for --$ac_var: $ac_val"
+done
+
 AC_ARG_WITH([zstd],
 	AS_HELP_STRING([--with-zstd], [handle Zstandard-compressed modules @<:@default=disabled@:>@]),
 	[], [with_zstd=no])
