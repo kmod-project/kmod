@@ -24,6 +24,7 @@
 #include <string.h>
 
 #include <shared/util.h>
+#include <shared/missing.h>
 
 #include <libkmod/libkmod.h>
 

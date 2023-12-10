@@ -53,7 +53,9 @@ CC_CHECK_FUNC_BUILTIN([__builtin_uaddll_overflow], [ ], [ ])
 AC_CHECK_MEMBERS([struct stat.st_mtim], [], [], [#include <sys/stat.h>])
 
 # musl 1.0 and bionic 4.4 don't have strndupa
-AC_CHECK_DECLS_ONCE([strndupa])
+# basename may be only available in libgen.h with the POSIX behavior,
+# not desired here
+AC_CHECK_DECLS_ONCE([[strndupa], [basename]], [], [], [[#include <string.h>]])
 
 # RHEL 5 and older do not have be32toh
 AC_CHECK_DECLS_ONCE([be32toh])

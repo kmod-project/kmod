@@ -38,6 +38,7 @@ static inline int finit_module(int fd, const char *uargs, int flags)
 #endif
 
 #if !HAVE_DECL_STRNDUPA
+#include <string.h>
 #define strndupa(s, n)							\
 	({								\
 		const char *__old = (s);				\
@@ -46,6 +47,15 @@ static inline int finit_module(int fd, const char *uargs, int flags)
 		__new[__len] = '\0';					\
 		memcpy(__new, __old, __len);				\
 	 })
+#endif
+
+#if !HAVE_DECL_BASENAME
+#include <string.h>
+static inline const char *basename(const char *s)
+{
+	const char *p = strrchr(s, '/');
+	return p ? p + 1 : s;
+}
 #endif
 
 #if !HAVE_DECL_BE32TOH
