@@ -794,7 +794,7 @@ static int conf_files_insert_sorted(struct kmod_ctx *ctx,
 	bool is_single = false;
 
 	if (name == NULL) {
-		name = basename(path);
+		name = gnu_basename(path);
 		is_single = true;
 	}
 

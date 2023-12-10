@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <time.h>
@@ -75,6 +76,12 @@ do {						\
 	} *__p = (typeof(__p)) (ptr);		\
 	__p->__v = (val);			\
 } while(0)
+
+static _always_inline_ const char *gnu_basename(const char *s)
+{
+  const char *p = strrchr(s, '/');
+  return p ? p+1 : s;
+}
 
 static _always_inline_ unsigned int ALIGN_POWER2(unsigned int u)
 {
