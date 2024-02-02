@@ -67,8 +67,7 @@ Hacking
 =======
 
 Run 'autogen.sh' script before configure. If you want to accept the recommended
-flags, you just need to run 'autogen.sh c'. Note that the recommended
-flags require cython be installed to compile successfully.
+flags, you just need to run 'autogen.sh c'.
 
 Make sure to read the CODING-STYLE file and the other READMEs: libkmod/README
 and testsuite/README.

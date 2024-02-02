@@ -33,7 +33,6 @@ cd $oldpwd
 
 hackargs="\
 --enable-debug \
---enable-python \
 --with-zstd \
 --with-xz \
 --with-zlib \

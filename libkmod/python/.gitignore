@@ -1,6 +1,0 @@
-__pycache__
-dist
-*.c
-*.pyc
-*.so
-kmod/version.py

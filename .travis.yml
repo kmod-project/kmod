@@ -18,7 +18,6 @@ before_install:
   - sudo apt-get install -qq linux-headers-generic
 
 before_script:
-  - unset PYTHON_CFLAGS # hack to broken travis setup
   - export KDIR="$(find  /lib/modules/* -maxdepth  1 -name build | sort -n --reverse | head -1)"
 
 script:
