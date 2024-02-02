@@ -1,6 +1,7 @@
 *.o
 *.gcda
 *.gcno
+*.pc
 /*.tar.xz
 /*.md5sum
 /*.mbx
