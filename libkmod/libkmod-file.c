@@ -54,9 +54,6 @@ struct kmod_file {
 #ifdef ENABLE_XZ
 	bool xz_used;
 #endif
-#ifdef ENABLE_ZLIB
-	gzFile gzf;
-#endif
 	int fd;
 	enum kmod_file_compression_type compression;
 	off_t size;
@@ -317,6 +314,7 @@ static int load_zlib(struct kmod_file *file)
 	int err = 0;
 	off_t did = 0, total = 0;
 	_cleanup_free_ unsigned char *p = NULL;
+	gzFile gzf;
 	int gzfd;
 
 	errno = 0;
@@ -324,8 +322,8 @@ static int load_zlib(struct kmod_file *file)
 	if (gzfd < 0)
 		return -errno;
 
-	file->gzf = gzdopen(gzfd, "rb"); /* takes ownership of the fd */
-	if (file->gzf == NULL) {
+	gzf = gzdopen(gzfd, "rb"); /* takes ownership of the fd */
+	if (gzf == NULL) {
 		close(gzfd);
 		return -errno;
 	}
@@ -343,12 +341,12 @@ static int load_zlib(struct kmod_file *file)
 			p = tmp;
 		}
 
-		r = gzread(file->gzf, p + did, total - did);
+		r = gzread(gzf, p + did, total - did);
 		if (r == 0)
 			break;
 		else if (r < 0) {
 			int gzerr;
-			const char *gz_errmsg = gzerror(file->gzf, &gzerr);
+			const char *gz_errmsg = gzerror(gzf, &gzerr);
 
 			ERR(file->ctx, "gzip: %s\n", gz_errmsg);
 
@@ -362,19 +360,17 @@ static int load_zlib(struct kmod_file *file)
 	file->memory = p;
 	file->size = did;
 	p = NULL;
+	gzclose(gzf);
 	return 0;
 
 error:
-	gzclose(file->gzf); /* closes the gzfd */
+	gzclose(gzf); /* closes the gzfd */
 	return err;
 }
 
 static void unload_zlib(struct kmod_file *file)
 {
-	if (file->gzf == NULL)
-		return;
 	free(file->memory);
-	gzclose(file->gzf);
 }
 
 static const char magic_zlib[] = {0x1f, 0x8b};
