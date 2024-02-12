@@ -317,12 +317,18 @@ static int load_zlib(struct kmod_file *file)
 	int err = 0;
 	off_t did = 0, total = 0;
 	_cleanup_free_ unsigned char *p = NULL;
+	int gzfd;
 
 	errno = 0;
-	file->gzf = gzdopen(file->fd, "rb");
-	if (file->gzf == NULL)
+	gzfd = fcntl(file->fd, F_DUPFD_CLOEXEC, 3);
+	if (gzfd < 0)
 		return -errno;
-	file->fd = -1; /* now owned by gzf due gzdopen() */
+
+	file->gzf = gzdopen(gzfd, "rb"); /* takes ownership of the fd */
+	if (file->gzf == NULL) {
+		close(gzfd);
+		return -errno;
+	}
 
 	for (;;) {
 		int r;
@@ -359,7 +365,7 @@ static int load_zlib(struct kmod_file *file)
 	return 0;
 
 error:
-	gzclose(file->gzf);
+	gzclose(file->gzf); /* closes the gzfd */
 	return err;
 }
 
@@ -368,7 +374,7 @@ static void unload_zlib(struct kmod_file *file)
 	if (file->gzf == NULL)
 		return;
 	free(file->memory);
-	gzclose(file->gzf); /* closes file->fd */
+	gzclose(file->gzf);
 }
 
 static const char magic_zlib[] = {0x1f, 0x8b};
@@ -535,7 +541,6 @@ void kmod_file_unref(struct kmod_file *file)
 	if (file->memory)
 		file->ops->unload(file);
 
-	if (file->fd >= 0)
-		close(file->fd);
+	close(file->fd);
 	free(file);
 }
