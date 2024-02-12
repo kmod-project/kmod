@@ -174,9 +174,14 @@ out:
 	free((void *)zst_outb.dst);
 	return ret;
 }
+#else
+static int load_zstd(struct kmod_file *file)
+{
+	return -ENOSYS;
+}
+#endif
 
 static const char magic_zstd[] = {0x28, 0xB5, 0x2F, 0xFD};
-#endif
 
 #ifdef ENABLE_XZ
 static void xz_uncompress_belch(struct kmod_file *file, lzma_ret ret)
@@ -275,9 +280,14 @@ static int load_xz(struct kmod_file *file)
 	lzma_end(&strm);
 	return ret;
 }
+#else
+static int load_xz(struct kmod_file *file)
+{
+	return -ENOSYS;
+}
+#endif
 
 static const char magic_xz[] = {0xfd, '7', 'z', 'X', 'Z', 0};
-#endif
 
 #ifdef ENABLE_ZLIB
 #define READ_STEP (4 * 1024 * 1024)
@@ -339,9 +349,14 @@ error:
 	gzclose(gzf); /* closes the gzfd */
 	return err;
 }
+#else
+static int load_zlib(struct kmod_file *file)
+{
+	return -ENOSYS;
+}
+#endif
 
 static const char magic_zlib[] = {0x1f, 0x8b};
-#endif
 
 static const struct comp_type {
 	size_t magic_size;
@@ -349,15 +364,9 @@ static const struct comp_type {
 	const char *magic_bytes;
 	int (*load)(struct kmod_file *file);
 } comp_types[] = {
-#ifdef ENABLE_ZSTD
 	{sizeof(magic_zstd),	KMOD_FILE_COMPRESSION_ZSTD, magic_zstd, load_zstd},
-#endif
-#ifdef ENABLE_XZ
 	{sizeof(magic_xz),	KMOD_FILE_COMPRESSION_XZ, magic_xz, load_xz},
-#endif
-#ifdef ENABLE_ZLIB
 	{sizeof(magic_zlib),	KMOD_FILE_COMPRESSION_ZLIB, magic_zlib, load_zlib},
-#endif
 	{0,			KMOD_FILE_COMPRESSION_NONE, NULL, NULL}
 };
 
