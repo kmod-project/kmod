@@ -42,11 +42,6 @@ static const struct kmod_cmd *kmod_cmds[] = {
 	&kmod_cmd_help,
 	&kmod_cmd_list,
 	&kmod_cmd_static_nodes,
-
-#ifdef ENABLE_EXPERIMENTAL
-	&kmod_cmd_insert,
-	&kmod_cmd_remove,
-#endif
 };
 
 static const struct kmod_cmd *kmod_compat_cmds[] = {
