@@ -48,12 +48,6 @@ struct file_ops {
 };
 
 struct kmod_file {
-#ifdef ENABLE_ZSTD
-	bool zstd_used;
-#endif
-#ifdef ENABLE_XZ
-	bool xz_used;
-#endif
 	int fd;
 	enum kmod_file_compression_type compression;
 	off_t size;
@@ -176,7 +170,6 @@ static int load_zstd(struct kmod_file *file)
 
 	ZSTD_freeDStream(dstr);
 	free((void *)zst_inb.src);
-	file->zstd_used = true;
 	file->memory = zst_outb.dst;
 	file->size = zst_outb.pos;
 	return 0;
@@ -190,8 +183,6 @@ out:
 
 static void unload_zstd(struct kmod_file *file)
 {
-	if (!file->zstd_used)
-		return;
 	free(file->memory);
 }
 
@@ -269,7 +260,6 @@ static int xz_uncompress(lzma_stream *strm, struct kmod_file *file)
 			goto out;
 		}
 	}
-	file->xz_used = true;
 	file->memory = p;
 	file->size = total;
 	return 0;
@@ -299,8 +289,6 @@ static int load_xz(struct kmod_file *file)
 
 static void unload_xz(struct kmod_file *file)
 {
-	if (!file->xz_used)
-		return;
 	free(file->memory);
 }
 
