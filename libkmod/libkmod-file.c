@@ -410,7 +410,6 @@ struct kmod_file *kmod_file_open(const struct kmod_ctx *ctx,
 {
 	struct kmod_file *file = calloc(1, sizeof(struct kmod_file));
 	const struct comp_type *itr;
-	size_t magic_size_max = 0;
 	int err = 0;
 
 	if (file == NULL)
@@ -422,22 +421,17 @@ struct kmod_file *kmod_file_open(const struct kmod_ctx *ctx,
 		goto error;
 	}
 
-	for (itr = comp_types; itr->load != NULL; itr++) {
-		if (magic_size_max < itr->magic_size)
-			magic_size_max = itr->magic_size;
-	}
-
-	if (magic_size_max > 0) {
-		char *buf = alloca(magic_size_max + 1);
+	{
+		char buf[7];
 		ssize_t sz;
 
-		if (buf == NULL) {
-			err = -errno;
-			goto error;
-		}
-		sz = read_str_safe(file->fd, buf, magic_size_max + 1);
+		assert_cc(sizeof(magic_zstd) < sizeof(buf));
+		assert_cc(sizeof(magic_xz) < sizeof(buf));
+		assert_cc(sizeof(magic_zlib) < sizeof(buf));
+
+		sz = read_str_safe(file->fd, buf, sizeof(buf));
 		lseek(file->fd, 0, SEEK_SET);
-		if (sz != (ssize_t)magic_size_max) {
+		if (sz != (sizeof(buf) - 1)) {
 			if (sz < 0)
 				err = sz;
 			else
