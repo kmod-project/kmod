@@ -358,18 +358,6 @@ static int load_zlib(struct kmod_file *file)
 
 static const char magic_zlib[] = {0x1f, 0x8b};
 
-static const struct comp_type {
-	size_t magic_size;
-	enum kmod_file_compression_type compression;
-	const char *magic_bytes;
-	int (*load)(struct kmod_file *file);
-} comp_types[] = {
-	{sizeof(magic_zstd),	KMOD_FILE_COMPRESSION_ZSTD, magic_zstd, load_zstd},
-	{sizeof(magic_xz),	KMOD_FILE_COMPRESSION_XZ, magic_xz, load_xz},
-	{sizeof(magic_zlib),	KMOD_FILE_COMPRESSION_ZLIB, magic_zlib, load_zlib},
-	{0,			KMOD_FILE_COMPRESSION_NONE, NULL, NULL}
-};
-
 static int load_reg(struct kmod_file *file)
 {
 	struct stat st;
@@ -387,6 +375,18 @@ static int load_reg(struct kmod_file *file)
 
 	return 0;
 }
+
+static const struct comp_type {
+	size_t magic_size;
+	enum kmod_file_compression_type compression;
+	const char *magic_bytes;
+	int (*load)(struct kmod_file *file);
+} comp_types[] = {
+	{sizeof(magic_zstd),	KMOD_FILE_COMPRESSION_ZSTD, magic_zstd, load_zstd},
+	{sizeof(magic_xz),	KMOD_FILE_COMPRESSION_XZ, magic_xz, load_xz},
+	{sizeof(magic_zlib),	KMOD_FILE_COMPRESSION_ZLIB, magic_zlib, load_zlib},
+	{0,			KMOD_FILE_COMPRESSION_NONE, NULL, NULL}
+};
 
 struct kmod_elf *kmod_file_get_elf(struct kmod_file *file)
 {
