@@ -392,8 +392,10 @@ static int load_reg(struct kmod_file *file)
 	file->size = st.st_size;
 	file->memory = mmap(NULL, file->size, PROT_READ, MAP_PRIVATE,
 			    file->fd, 0);
-	if (file->memory == MAP_FAILED)
+	if (file->memory == MAP_FAILED) {
+		file->memory = NULL;
 		return -errno;
+	}
 
 	return 0;
 }
