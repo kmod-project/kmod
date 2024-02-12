@@ -408,43 +408,43 @@ struct kmod_elf *kmod_file_get_elf(struct kmod_file *file)
 struct kmod_file *kmod_file_open(const struct kmod_ctx *ctx,
 						const char *filename)
 {
-	struct kmod_file *file = calloc(1, sizeof(struct kmod_file));
+	struct kmod_file *file;
 	const struct comp_type *itr;
-	int err = 0;
+	char buf[7];
+	ssize_t sz;
 
+	assert_cc(sizeof(magic_zstd) < sizeof(buf));
+	assert_cc(sizeof(magic_xz) < sizeof(buf));
+	assert_cc(sizeof(magic_zlib) < sizeof(buf));
+
+	file = calloc(1, sizeof(struct kmod_file));
 	if (file == NULL)
 		return NULL;
 
 	file->fd = open(filename, O_RDONLY|O_CLOEXEC);
 	if (file->fd < 0) {
-		err = -errno;
-		goto error;
+		free(file);
+		return NULL;
 	}
 
-	{
-		char buf[7];
-		ssize_t sz;
+	sz = read_str_safe(file->fd, buf, sizeof(buf));
+	lseek(file->fd, 0, SEEK_SET);
+	if (sz != (sizeof(buf) - 1)) {
+		if (sz < 0)
+			errno = -sz;
+		else
+			errno = EINVAL;
 
-		assert_cc(sizeof(magic_zstd) < sizeof(buf));
-		assert_cc(sizeof(magic_xz) < sizeof(buf));
-		assert_cc(sizeof(magic_zlib) < sizeof(buf));
+		close(file->fd);
+		free(file);
+		return NULL;
+	}
 
-		sz = read_str_safe(file->fd, buf, sizeof(buf));
-		lseek(file->fd, 0, SEEK_SET);
-		if (sz != (sizeof(buf) - 1)) {
-			if (sz < 0)
-				err = sz;
-			else
-				err = -EINVAL;
-			goto error;
-		}
-
-		for (itr = comp_types; itr->load != NULL; itr++) {
-			if (memcmp(buf, itr->magic_bytes, itr->magic_size) == 0) {
-				file->load = itr->load;
-				file->compression = itr->compression;
-				break;
-			}
+	for (itr = comp_types; itr->load != NULL; itr++) {
+		if (memcmp(buf, itr->magic_bytes, itr->magic_size) == 0) {
+			file->load = itr->load;
+			file->compression = itr->compression;
+			break;
 		}
 	}
 
@@ -454,15 +454,6 @@ struct kmod_file *kmod_file_open(const struct kmod_ctx *ctx,
 	}
 
 	file->ctx = ctx;
-
-error:
-	if (err < 0) {
-		if (file->fd >= 0)
-			close(file->fd);
-		free(file);
-		errno = -err;
-		return NULL;
-	}
 
 	return file;
 }
