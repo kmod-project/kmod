@@ -385,7 +385,7 @@ static const struct comp_type {
 	{sizeof(magic_zstd),	KMOD_FILE_COMPRESSION_ZSTD, magic_zstd, load_zstd},
 	{sizeof(magic_xz),	KMOD_FILE_COMPRESSION_XZ, magic_xz, load_xz},
 	{sizeof(magic_zlib),	KMOD_FILE_COMPRESSION_ZLIB, magic_zlib, load_zlib},
-	{0,			KMOD_FILE_COMPRESSION_NONE, NULL, NULL}
+	{0,			KMOD_FILE_COMPRESSION_NONE, NULL, load_reg}
 };
 
 struct kmod_elf *kmod_file_get_elf(struct kmod_file *file)
@@ -409,7 +409,6 @@ struct kmod_file *kmod_file_open(const struct kmod_ctx *ctx,
 						const char *filename)
 {
 	struct kmod_file *file;
-	const struct comp_type *itr;
 	char buf[7];
 	ssize_t sz;
 
@@ -440,17 +439,15 @@ struct kmod_file *kmod_file_open(const struct kmod_ctx *ctx,
 		return NULL;
 	}
 
-	for (itr = comp_types; itr->load != NULL; itr++) {
-		if (memcmp(buf, itr->magic_bytes, itr->magic_size) == 0) {
-			file->load = itr->load;
-			file->compression = itr->compression;
+	for (unsigned int i = 0; i < ARRAY_SIZE(comp_types); i++) {
+		const struct comp_type *itr = &comp_types[i];
+
+		file->load = itr->load;
+		file->compression = itr->compression;
+		if (itr->magic_size &&
+		    memcmp(buf, itr->magic_bytes, itr->magic_size) == 0) {
 			break;
 		}
-	}
-
-	if (file->load == NULL) {
-		file->load = load_reg;
-		file->compression = KMOD_FILE_COMPRESSION_NONE;
 	}
 
 	file->ctx = ctx;
