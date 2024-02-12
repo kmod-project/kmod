@@ -903,7 +903,9 @@ static int do_init_module(struct kmod_module *mod, unsigned int flags,
 	off_t size;
 	int err;
 
-	kmod_file_load_contents(mod->file);
+	err = kmod_file_load_contents(mod->file);
+	if (err)
+		return err;
 
 	if (flags & (KMOD_INSERT_FORCE_VERMAGIC | KMOD_INSERT_FORCE_MODVERSION)) {
 		elf = kmod_file_get_elf(mod->file);

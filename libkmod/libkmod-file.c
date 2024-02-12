@@ -381,10 +381,17 @@ static int load_reg(struct kmod_file *file)
 
 struct kmod_elf *kmod_file_get_elf(struct kmod_file *file)
 {
+	int err;
+
 	if (file->elf)
 		return file->elf;
 
-	kmod_file_load_contents(file);
+	err = kmod_file_load_contents(file);
+	if (err) {
+		errno = err;
+		return NULL;
+	}
+
 	file->elf = kmod_elf_new(file->memory, file->size);
 	return file->elf;
 }
@@ -460,13 +467,13 @@ error:
 /*
  *  Callers should just check file->memory got updated
  */
-void kmod_file_load_contents(struct kmod_file *file)
+int kmod_file_load_contents(struct kmod_file *file)
 {
 	if (file->memory)
-		return;
+		return 0;
 
 	/*  The load functions already log possible errors. */
-	file->load(file);
+	return file->load(file);
 }
 
 void *kmod_file_get_contents(const struct kmod_file *file)
