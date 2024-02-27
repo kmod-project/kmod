@@ -1665,6 +1665,56 @@ KMOD_EXPORT int kmod_module_get_softdeps(const struct kmod_module *mod,
 }
 
 /**
+ * kmod_module_get_user_softdeps:
+ * @mod: kmod module
+ * @user: where to save the list of user soft dependencies.
+ *
+ * Get user dependencies for this kmod module. Soft dependencies come
+ * from configuration file and are not cached in @mod because it may include
+ * dependency cycles that would make we leak kmod_module. Any call
+ * to this function will search for this module in configuration, allocate a
+ * list and return the result.
+ *
+ * @user is newly created list of kmod_module and
+ * should be unreferenced with kmod_module_unref_list().
+ *
+ * Returns: 0 on success or < 0 otherwise.
+ */
+KMOD_EXPORT int kmod_module_get_user_softdeps(const struct kmod_module *mod,
+						struct kmod_list **user)
+{
+	const struct kmod_list *l;
+	const struct kmod_config *config;
+
+	if (mod == NULL || user == NULL)
+		return -ENOENT;
+
+	assert(*user == NULL);
+
+	config = kmod_get_config(mod->ctx);
+
+	kmod_list_foreach(l, config->softdeps) {
+		const char *modname = kmod_softdep_get_name(l);
+		const char * const *array;
+		unsigned count;
+
+		if (fnmatch(modname, mod->name, 0) != 0)
+			continue;
+
+		array = kmod_softdep_get_user(l, &count);
+		*user = lookup_softdep(mod->ctx, array, count);
+
+		/*
+		 * find only the first command, as modprobe from
+		 * module-init-tools does
+		 */
+		break;
+	}
+
+	return 0;
+}
+
+/**
  * kmod_module_get_remove_commands:
  * @mod: kmod module
  *
