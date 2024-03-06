@@ -1,3 +1,41 @@
+kmod 32
+=======
+
+- Improvements
+
+	- Use any hash algo known by kernel/openssl instead of keep needing
+	  to update the mapping
+
+	- Teach kmod to load modprobe.d/depmod.d configuration from ${prefix}/lib
+	  and allow it to be overriden during build with --with-distconfdir=DIR
+
+	- Make kernel modules directory configurable. This allows distro to
+	  make kmod use only files from /usr regardless of having a compat
+	  symlink in place.
+
+	- Install kmod.pc containing the features selected at build time.
+
+	- Install all tools and symlinks by default. Previously kmod relied on
+	  distro packaging to set up the symlinks in place like modprobe,
+	  depmod, lsmod, etc. Now those symlinks are created by kmod itself
+	  and they are always placed in $bindir.
+
+- Bug Fixes
+
+	- Fix warnings due to -Walloc-size
+
+- Others
+
+	- Drop python bindings. Those were not update in ages and not compatible
+	  with latest python releases.
+
+	- Cleanup test infra, dropping what was not used anymore
+
+	- Drop experimental tools `kmod insert` / `kmod remove`. Building those
+	  was protected by a configure option never set by distros. They also
+	  didn't gain enough traction to replace the older interfaces via
+	  modprobe/insmod/rmmod.
+
 kmod 31
 =======
 
