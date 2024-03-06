@@ -113,7 +113,7 @@ install-exec-hook:
 	fi
 if BUILD_TOOLS
 	for tool in insmod lsmod rmmod depmod modprobe modinfo; do \
-		$(LN_S) kmod $(DESTDIR)$(bindir)/$$tool; \
+		$(LN_S) -f kmod $(DESTDIR)$(bindir)/$$tool; \
 	done
 endif
 
