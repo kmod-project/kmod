@@ -231,6 +231,9 @@ GTK_DOC_CHECK([1.14],[--flavour no-tmpl-flat])
 ], [
 AM_CONDITIONAL([ENABLE_GTK_DOC], false)])
 
+PKG_INSTALLDIR
+PKG_NOARCH_INSTALLDIR
+
 #####################################################################
 # Default CFLAGS and LDFLAGS
 #####################################################################
