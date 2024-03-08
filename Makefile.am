@@ -96,8 +96,8 @@ libkmod_libkmod_internal_la_LDFLAGS = $(AM_LDFLAGS) \
 libkmod_libkmod_internal_la_DEPENDENCIES  = $(libkmod_libkmod_la_DEPENDENCIES)
 libkmod_libkmod_internal_la_LIBADD = $(libkmod_libkmod_la_LIBADD)
 
-pkgconfigdir = $(libdir)/pkgconfig
-pkgconfig_DATA = libkmod/libkmod.pc tools/kmod.pc
+pkgconfig_DATA = libkmod/libkmod.pc
+noarch_pkgconfig_DATA = tools/kmod.pc
 
 bashcompletiondir=@bashcompletiondir@
 dist_bashcompletion_DATA = \
