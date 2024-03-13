@@ -145,6 +145,7 @@ const char *kmod_command_get_modname(const struct kmod_list *l) __attribute__((n
 const char *kmod_softdep_get_name(const struct kmod_list *l) __attribute__((nonnull(1)));
 const char * const *kmod_softdep_get_pre(const struct kmod_list *l, unsigned int *count) __attribute__((nonnull(1, 2)));
 const char * const *kmod_softdep_get_post(const struct kmod_list *l, unsigned int *count);
+const char * const *kmod_softdep_get_user(const struct kmod_list *l, unsigned int *count);
 
 
 /* libkmod-module.c */

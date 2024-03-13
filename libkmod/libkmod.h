@@ -196,6 +196,8 @@ const char *kmod_module_get_remove_commands(const struct kmod_module *mod);
 struct kmod_list *kmod_module_get_dependencies(const struct kmod_module *mod);
 int kmod_module_get_softdeps(const struct kmod_module *mod,
 				struct kmod_list **pre, struct kmod_list **post);
+int kmod_module_get_user_softdeps(const struct kmod_module *mod,
+					struct kmod_list **user);
 int kmod_module_get_filtered_blacklist(const struct kmod_ctx *ctx,
 					const struct kmod_list *input,
 					struct kmod_list **output) __attribute__ ((deprecated));

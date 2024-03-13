@@ -54,8 +54,10 @@ struct kmod_softdep {
 	char *name;
 	const char **pre;
 	const char **post;
+	const char **user;
 	unsigned int n_pre;
 	unsigned int n_post;
+	unsigned int n_user;
 };
 
 const char *kmod_blacklist_get_modname(const struct kmod_list *l)
@@ -108,6 +110,12 @@ const char * const *kmod_softdep_get_post(const struct kmod_list *l, unsigned in
 	const struct kmod_softdep *dep = l->data;
 	*count = dep->n_post;
 	return dep->post;
+}
+
+const char * const *kmod_softdep_get_user(const struct kmod_list *l, unsigned int *count) {
+	const struct kmod_softdep *dep = l->data;
+	*count = dep->n_user;
+	return dep->user;
 }
 
 static int kmod_config_add_command(struct kmod_config *config,
@@ -263,11 +271,11 @@ static int kmod_config_add_softdep(struct kmod_config *config,
 	struct kmod_softdep *dep;
 	const char *s, *p;
 	char *itr;
-	unsigned int n_pre = 0, n_post = 0;
+	unsigned int n_pre = 0, n_post = 0, n_user = 0;
 	size_t modnamelen = strlen(modname) + 1;
 	size_t buflen = 0;
 	bool was_space = false;
-	enum { S_NONE, S_PRE, S_POST } mode = S_NONE;
+	enum { S_NONE, S_PRE, S_POST, S_USER } mode = S_NONE;
 
 	DBG(config->ctx, "modname=%s\n", modname);
 
@@ -298,6 +306,9 @@ static int kmod_config_add_softdep(struct kmod_config *config,
 		else if (plen == sizeof("post:") - 1 &&
 				memcmp(p, "post:", sizeof("post:") - 1) == 0)
 			mode = S_POST;
+		else if (plen == sizeof("user:") - 1 &&
+				memcmp(p, "user:", sizeof("user:") - 1) == 0)
+			mode = S_USER;
 		else if (*s != '\0' || (*s == '\0' && !was_space)) {
 			if (mode == S_PRE) {
 				buflen += plen + 1;
@@ -305,6 +316,9 @@ static int kmod_config_add_softdep(struct kmod_config *config,
 			} else if (mode == S_POST) {
 				buflen += plen + 1;
 				n_post++;
+			} else if (mode == S_USER) {
+				buflen += plen + 1;
+				n_user++;
 			}
 		}
 		p = s + 1;
@@ -312,11 +326,12 @@ static int kmod_config_add_softdep(struct kmod_config *config,
 			break;
 	}
 
-	DBG(config->ctx, "%u pre, %u post\n", n_pre, n_post);
+	DBG(config->ctx, "%u pre, %u post, %u user\n", n_pre, n_post, n_user);
 
 	dep = malloc(sizeof(struct kmod_softdep) + modnamelen +
 		     n_pre * sizeof(const char *) +
 		     n_post * sizeof(const char *) +
+		     n_user * sizeof(const char *) +
 		     buflen);
 	if (dep == NULL) {
 		ERR(config->ctx, "out-of-memory modname=%s\n", modname);
@@ -324,9 +339,11 @@ static int kmod_config_add_softdep(struct kmod_config *config,
 	}
 	dep->n_pre = n_pre;
 	dep->n_post = n_post;
+	dep->n_user = n_user;
 	dep->pre = (const char **)((char *)dep + sizeof(struct kmod_softdep));
 	dep->post = dep->pre + n_pre;
-	dep->name = (char *)(dep->post + n_post);
+	dep->user = dep->post + n_post;
+	dep->name = (char *)(dep->user + n_user);
 
 	memcpy(dep->name, modname, modnamelen);
 
@@ -334,6 +351,7 @@ static int kmod_config_add_softdep(struct kmod_config *config,
 	itr = dep->name + modnamelen;
 	n_pre = 0;
 	n_post = 0;
+	n_user = 0;
 	mode = S_NONE;
 	was_space = false;
 	for (p = s = line; ; s++) {
@@ -362,6 +380,9 @@ static int kmod_config_add_softdep(struct kmod_config *config,
 		else if (plen == sizeof("post:") - 1 &&
 				memcmp(p, "post:", sizeof("post:") - 1) == 0)
 			mode = S_POST;
+		else if (plen == sizeof("user:") - 1 &&
+				memcmp(p, "user:", sizeof("user:") - 1) == 0)
+			mode = S_USER;
 		else if (*s != '\0' || (*s == '\0' && !was_space)) {
 			if (mode == S_PRE) {
 				dep->pre[n_pre] = itr;
@@ -375,6 +396,12 @@ static int kmod_config_add_softdep(struct kmod_config *config,
 				itr[plen] = '\0';
 				itr += plen + 1;
 				n_post++;
+			} else if (mode == S_USER) {
+				dep->user[n_user] = itr;
+				memcpy(itr, p, plen);
+				itr[plen] = '\0';
+				itr += plen + 1;
+				n_user++;
 			}
 		}
 		p = s + 1;
@@ -395,14 +422,15 @@ static int kmod_config_add_softdep(struct kmod_config *config,
 static char *softdep_to_char(struct kmod_softdep *dep) {
 	const size_t sz_preprefix = sizeof("pre: ") - 1;
 	const size_t sz_postprefix = sizeof("post: ") - 1;
+	const size_t sz_userprefix = sizeof("user: ") - 1;
 	size_t sz = 1; /* at least '\0' */
-	size_t sz_pre, sz_post;
+	size_t sz_pre, sz_post, sz_user;
 	const char *start, *end;
 	char *s, *itr;
 
 	/*
-	 * Rely on the fact that dep->pre[] and dep->post[] are strv's that
-	 * point to a contiguous buffer
+	 * Rely on the fact that dep->pre[] dep->post[] and dep->user[]
+	 * are strv's that point to a contiguous buffer
 	 */
 	if (dep->n_pre > 0) {
 		start = dep->pre[0];
@@ -421,6 +449,15 @@ static char *softdep_to_char(struct kmod_softdep *dep) {
 		sz += sz_post + sz_postprefix;
 	} else
 		sz_post = 0;
+
+	if (dep->n_user > 0) {
+		start = dep->user[0];
+		end = dep->user[dep->n_user - 1]
+					+ strlen(dep->user[dep->n_user - 1]);
+		sz_user = end - start;
+		sz += sz_user + sz_userprefix;
+	} else
+		sz_user = 0;
 
 	itr = s = malloc(sz);
 	if (s == NULL)
@@ -450,6 +487,21 @@ static char *softdep_to_char(struct kmod_softdep *dep) {
 		/* include last '\0' */
 		memcpy(itr, dep->post[0], sz_post + 1);
 		for (p = itr; p < itr + sz_post; p++) {
+			if (*p == '\0')
+				*p = ' ';
+		}
+		itr = p;
+	}
+
+	if (sz_user) {
+		char *p;
+
+		memcpy(itr, "user: ", sz_userprefix);
+		itr += sz_userprefix;
+
+		/* include last '\0' */
+		memcpy(itr, dep->user[0], sz_user + 1);
+		for (p = itr; p < itr + sz_user; p++) {
 			if (*p == '\0')
 				*p = ' ';
 		}
