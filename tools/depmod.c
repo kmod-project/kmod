@@ -762,7 +762,7 @@ static int cfg_files_insert_sorted(struct cfg_file ***p_files, size_t *p_n_files
 	if (name != NULL)
 		namelen = strlen(name);
 	else {
-		name = basename(dir);
+		name = gnu_basename(dir);
 		namelen = strlen(name);
 		dirlen -= namelen + 1;
 	}

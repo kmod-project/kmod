@@ -70,7 +70,7 @@ static void help(void)
 
 	printf("Usage:\n"
 	       "\t%s [options] <test>\n"
-	       "Options:\n", basename(progname));
+	       "Options:\n", gnu_basename(progname));
 
 	for (itr = options, itr_short = options_short;
 				itr->name != NULL; itr++, itr_short++)

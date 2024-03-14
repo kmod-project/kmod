@@ -172,9 +172,9 @@ char *modname_normalize(const char *modname, char buf[static PATH_MAX], size_t *
 
 char *path_to_modname(const char *path, char buf[static PATH_MAX], size_t *len)
 {
-	char *modname;
+	const char *modname;
 
-	modname = basename(path);
+	modname = gnu_basename(path);
 	if (modname == NULL || modname[0] == '\0')
 		return NULL;
 
