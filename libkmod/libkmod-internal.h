@@ -128,6 +128,7 @@ struct kmod_config {
 	struct kmod_list *remove_commands;
 	struct kmod_list *install_commands;
 	struct kmod_list *softdeps;
+	struct kmod_list *weakdeps;
 
 	struct kmod_list *paths;
 };
@@ -146,6 +147,8 @@ const char *kmod_softdep_get_name(const struct kmod_list *l) __attribute__((nonn
 const char * const *kmod_softdep_get_pre(const struct kmod_list *l, unsigned int *count) __attribute__((nonnull(1, 2)));
 const char * const *kmod_softdep_get_post(const struct kmod_list *l, unsigned int *count);
 
+const char *kmod_weakdep_get_name(const struct kmod_list *l) __attribute__((nonnull(1)));
+const char * const *kmod_weakdep_get_weak(const struct kmod_list *l, unsigned int *count) __attribute__((nonnull(1, 2)));
 
 /* libkmod-module.c */
 int kmod_module_new_from_alias(struct kmod_ctx *ctx, const char *alias, const char *name, struct kmod_module **mod);

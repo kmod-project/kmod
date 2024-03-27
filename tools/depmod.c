@@ -2296,6 +2296,30 @@ static int output_softdeps(struct depmod *depmod, FILE *out)
 	return 0;
 }
 
+static int output_weakdeps(struct depmod *depmod, FILE *out)
+{
+	size_t i;
+
+	fputs("# Weak dependencies extracted from modules themselves.\n", out);
+
+	for (i = 0; i < depmod->modules.count; i++) {
+		const struct mod *mod = depmod->modules.array[i];
+		struct kmod_list *l;
+
+		kmod_list_foreach(l, mod->info_list) {
+			const char *key = kmod_module_info_get_key(l);
+			const char *value = kmod_module_info_get_value(l);
+
+			if (!streq(key, "weakdep"))
+				continue;
+
+			fprintf(out, "weakdep %s %s\n", mod->modname, value);
+		}
+	}
+
+	return 0;
+}
+
 static int output_symbols(struct depmod *depmod, FILE *out)
 {
 	struct hash_iter iter;
@@ -2574,6 +2598,7 @@ static int depmod_output(struct depmod *depmod, FILE *out)
 		{ "modules.alias", output_aliases },
 		{ "modules.alias.bin", output_aliases_bin },
 		{ "modules.softdep", output_softdeps },
+		{ "modules.weakdep", output_weakdeps },
 		{ "modules.symbols", output_symbols },
 		{ "modules.symbols.bin", output_symbols_bin },
 		{ "modules.builtin.bin", output_builtin_bin },

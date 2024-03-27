@@ -37,6 +37,7 @@ kmod_config_get_remove_commands
 kmod_config_get_aliases
 kmod_config_get_options
 kmod_config_get_softdeps
+kmod_config_get_weakdeps
 kmod_config_iter_get_key
 kmod_config_iter_get_value
 kmod_config_iter_next
@@ -62,6 +63,7 @@ kmod_module_remove_module
 kmod_module_get_module
 kmod_module_get_dependencies
 kmod_module_get_softdeps
+kmod_module_get_weakdeps
 kmod_module_apply_filter
 kmod_module_get_filtered_blacklist
 kmod_module_get_install_commands

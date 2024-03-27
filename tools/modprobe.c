@@ -182,6 +182,7 @@ static int show_config(struct kmod_ctx *ctx)
 		{ "alias", kmod_config_get_aliases },
 		{ "options", kmod_config_get_options },
 		{ "softdep", kmod_config_get_softdeps },
+		{ "weakdep", kmod_config_get_weakdeps },
 	};
 	size_t i;
 

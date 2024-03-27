@@ -58,6 +58,12 @@ struct kmod_softdep {
 	unsigned int n_post;
 };
 
+struct kmod_weakdep {
+	char *name;
+	const char **weak;
+	unsigned int n_weak;
+};
+
 const char *kmod_blacklist_get_modname(const struct kmod_list *l)
 {
 	return l->data;
@@ -110,6 +116,16 @@ const char * const *kmod_softdep_get_post(const struct kmod_list *l, unsigned in
 	return dep->post;
 }
 
+const char *kmod_weakdep_get_name(const struct kmod_list *l) {
+	const struct kmod_weakdep *dep = l->data;
+	return dep->name;
+}
+
+const char * const *kmod_weakdep_get_weak(const struct kmod_list *l, unsigned int *count) {
+	const struct kmod_weakdep *dep = l->data;
+	*count = dep->n_weak;
+	return dep->weak;
+}
 static int kmod_config_add_command(struct kmod_config *config,
 						const char *modname,
 						const char *command,
@@ -392,6 +408,112 @@ static int kmod_config_add_softdep(struct kmod_config *config,
 	return 0;
 }
 
+static int kmod_config_add_weakdep(struct kmod_config *config,
+							const char *modname,
+							const char *line)
+{
+	struct kmod_list *list;
+	struct kmod_weakdep *dep;
+	const char *s, *p;
+	char *itr;
+	unsigned int n_weak = 0;
+	size_t modnamelen = strlen(modname) + 1;
+	size_t buflen = 0;
+	bool was_space = false;
+
+	DBG(config->ctx, "modname=%s\n", modname);
+
+	/* analyze and count */
+	for (p = s = line; ; s++) {
+		size_t plen;
+
+		if (*s != '\0') {
+			if (!isspace(*s)) {
+				was_space = false;
+				continue;
+			}
+
+			if (was_space) {
+				p = s + 1;
+				continue;
+			}
+			was_space = true;
+
+			if (p >= s)
+				continue;
+		}
+		plen = s - p;
+
+		if (*s != '\0' || (*s == '\0' && !was_space)) {
+			buflen += plen + 1;
+			n_weak++;
+		}
+		p = s + 1;
+		if (*s == '\0')
+			break;
+	}
+
+	DBG(config->ctx, "%u weak\n", n_weak);
+
+	dep = malloc(sizeof(struct kmod_weakdep) + modnamelen +
+		     n_weak * sizeof(const char *) +
+		     buflen);
+	if (dep == NULL) {
+		ERR(config->ctx, "out-of-memory modname=%s\n", modname);
+		return -ENOMEM;
+	}
+	dep->n_weak = n_weak;
+	dep->weak = (const char **)((char *)dep + sizeof(struct kmod_weakdep));
+	dep->name = (char *)(dep->weak + n_weak);
+
+	memcpy(dep->name, modname, modnamelen);
+
+	/* copy strings */
+	itr = dep->name + modnamelen;
+	n_weak = 0;
+	was_space = false;
+	for (p = s = line; ; s++) {
+		size_t plen;
+
+		if (*s != '\0') {
+			if (!isspace(*s)) {
+				was_space = false;
+				continue;
+			}
+
+			if (was_space) {
+				p = s + 1;
+				continue;
+			}
+			was_space = true;
+
+			if (p >= s)
+				continue;
+		}
+		plen = s - p;
+
+		if (*s != '\0' || (*s == '\0' && !was_space)) {
+			dep->weak[n_weak] = itr;
+			memcpy(itr, p, plen);
+			itr[plen] = '\0';
+			itr += plen + 1;
+			n_weak++;
+		}
+		p = s + 1;
+		if (*s == '\0')
+			break;
+	}
+
+	list = kmod_list_append(config->weakdeps, dep);
+	if (list == NULL) {
+		free(dep);
+		return -ENOMEM;
+	}
+	config->weakdeps = list;
+
+	return 0;
+}
+
 static char *softdep_to_char(struct kmod_softdep *dep) {
 	const size_t sz_preprefix = sizeof("pre: ") - 1;
 	const size_t sz_postprefix = sizeof("post: ") - 1;
@@ -461,11 +583,56 @@ static char *softdep_to_char(struct kmod_softdep *dep) {
 	return s;
 }
 
+static char *weakdep_to_char(struct kmod_weakdep *dep) {
+	size_t sz;
+	const char *start, *end;
+	char *s, *itr;
+
+	/*
+	 * Rely on the fact that dep->weak[] and are strv's that point to a
+	 * contiguous buffer
+	 */
+	if (dep->n_weak > 0) {
+		start = dep->weak[0];
+		end = dep->weak[dep->n_weak - 1]
+					+ strlen(dep->weak[dep->n_weak - 1]);
+		sz = end - start;
+	} else
+		sz = 0;
+
+	itr = s = malloc(sz);
+	if (s == NULL)
+		return NULL;
+
+	if (sz) {
+		char *p;
+
+		/* include last '\0' */
+		memcpy(itr, dep->weak[0], sz + 1);
+		for (p = itr; p < itr + sz; p++) {
+			if (*p == '\0')
+				*p = ' ';
+		}
+		itr = p;
+	}
+
+	*itr = '\0';
+
+	return s;
+}
+
 static void kmod_config_free_softdep(struct kmod_config *config,
 							struct kmod_list *l)
 {
 	free(l->data);
 	config->softdeps = kmod_list_remove(l);
+}
+
+static void kmod_config_free_weakdep(struct kmod_config *config,
+							struct kmod_list *l)
+{
+	free(l->data);
+	config->weakdeps = kmod_list_remove(l);
 }
 
 static void kcmdline_parse_result(struct kmod_config *config, char *modname,
@@ -703,6 +870,14 @@ static int kmod_config_parse(struct kmod_config *config, int fd,
 				goto syntax_error;
 
 			kmod_config_add_softdep(config, modname, softdeps);
+		} else if (streq(cmd, "weakdep")) {
+			char *modname = strtok_r(NULL, "\t ", &saveptr);
+			char *weakdeps = strtok_r(NULL, "\0", &saveptr);
+
+			if (underscores(modname) < 0 || weakdeps == NULL)
+				goto syntax_error;
+
+			kmod_config_add_weakdep(config, modname, weakdeps);
 		} else if (streq(cmd, "include")
 				|| streq(cmd, "config")) {
 			ERR(ctx, "%s: command %s is deprecated and not parsed anymore\n",
@@ -745,6 +920,9 @@ void kmod_config_free(struct kmod_config *config)
 
 	while (config->softdeps)
 		kmod_config_free_softdep(config, config->softdeps);
+
+	while (config->weakdeps)
+		kmod_config_free_weakdep(config, config->weakdeps);
 
 	for (; config->paths != NULL;
 				config->paths = kmod_list_remove(config->paths))
@@ -889,6 +1067,7 @@ int kmod_config_new(struct kmod_ctx *ctx, struct kmod_config **p_config,
 	size_t i;
 
 	conf_files_insert_sorted(ctx, &list, kmod_get_dirname(ctx), "modules.softdep");
+	conf_files_insert_sorted(ctx, &list, kmod_get_dirname(ctx), "modules.weakdep");
 
 	for (i = 0; config_paths[i] != NULL; i++) {
 		const char *path = config_paths[i];
@@ -973,6 +1152,7 @@ enum config_type {
 	CONFIG_TYPE_ALIAS,
 	CONFIG_TYPE_OPTION,
 	CONFIG_TYPE_SOFTDEP,
+	CONFIG_TYPE_WEAKDEP,
 };
 
 struct kmod_config_iter {
@@ -988,6 +1168,12 @@ struct kmod_config_iter {
 static const char *softdep_get_plain_softdep(const struct kmod_list *l)
 {
 	char *s = softdep_to_char(l->data);
+	return s;
+}
+
+static const char *weakdep_get_plain_weakdep(const struct kmod_list *l)
+{
+	char *s = weakdep_to_char(l->data);
 	return s;
 }
 
@@ -1031,6 +1217,12 @@ static struct kmod_config_iter *kmod_config_iter_new(const struct kmod_ctx* ctx,
 		iter->list = config->softdeps;
 		iter->get_key = kmod_softdep_get_name;
 		iter->get_value = softdep_get_plain_softdep;
+		iter->intermediate = true;
+		break;
+	case CONFIG_TYPE_WEAKDEP:
+		iter->list = config->weakdeps;
+		iter->get_key = kmod_weakdep_get_name;
+		iter->get_value = weakdep_get_plain_weakdep;
 		iter->intermediate = true;
 		break;
 	}
@@ -1161,6 +1353,26 @@ KMOD_EXPORT struct kmod_config_iter *kmod_config_get_softdeps(const struct kmod_
 		return NULL;;
 
 	return kmod_config_iter_new(ctx, CONFIG_TYPE_SOFTDEP);
+}
+
+/**
+ * kmod_config_get_weakdeps:
+ * @ctx: kmod library context
+ *
+ * Retrieve an iterator to deal with the weakdeps maintained inside the
+ * library. See kmod_config_iter_get_key(), kmod_config_iter_get_value() and
+ * kmod_config_iter_next(). At least one call to kmod_config_iter_next() must
+ * be made to initialize the iterator and check if it's valid.
+ *
+ * Returns: a new iterator over the weakdeps or NULL on failure. Free it with
+ * kmod_config_iter_free_iter().
+ */
+KMOD_EXPORT struct kmod_config_iter *kmod_config_get_weakdeps(const struct kmod_ctx *ctx)
+{
+	if (ctx == NULL)
+		return NULL;;
+
+	return kmod_config_iter_new(ctx, CONFIG_TYPE_WEAKDEP);
 }
 
 /**

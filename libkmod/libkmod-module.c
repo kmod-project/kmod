@@ -1591,7 +1591,7 @@ void kmod_module_set_install_commands(struct kmod_module *mod, const char *cmd)
 	mod->install_commands = cmd;
 }
 
-static struct kmod_list *lookup_softdep(struct kmod_ctx *ctx, const char * const * array, unsigned int count)
+static struct kmod_list *lookup_dep(struct kmod_ctx *ctx, const char * const * array, unsigned int count)
 {
 	struct kmod_list *ret = NULL;
 	unsigned i;
@@ -1603,7 +1603,7 @@ static struct kmod_list *lookup_softdep(struct kmod_ctx *ctx, const char * const
 
 		err = kmod_module_new_from_lookup(ctx, depname, &lst);
 		if (err < 0) {
-			ERR(ctx, "failed to lookup soft dependency '%s', continuing anyway.\n", depname);
+			ERR(ctx, "failed to lookup dependency '%s', continuing anyway.\n", depname);
 			continue;
 		} else if (lst != NULL)
 			ret = kmod_list_append_list(ret, lst);
@@ -1652,9 +1652,59 @@ KMOD_EXPORT int kmod_module_get_softdeps(const struct kmod_module *mod,
 			continue;
 
 		array = kmod_softdep_get_pre(l, &count);
-		*pre = lookup_softdep(mod->ctx, array, count);
+		*pre = lookup_dep(mod->ctx, array, count);
 		array = kmod_softdep_get_post(l, &count);
-		*post = lookup_softdep(mod->ctx, array, count);
+		*post = lookup_dep(mod->ctx, array, count);
+
+		/*
+		 * find only the first command, as modprobe from
+		 * module-init-tools does
+		 */
+		break;
+	}
+
+	return 0;
+}
+
+/*
+ * kmod_module_get_weakdeps:
+ * @mod: kmod module
+ * @weak: where to save the list of weak dependencies.
+ *
+ * Get weak dependencies for this kmod module. Weak dependencies come
+ * from configuration file and are not cached in @mod because it may include
+ * dependency cycles that would make we leak kmod_module. Any call
+ * to this function will search for this module in configuration, allocate a
+ * list and return the result.
+ *
+ * @weak is newly created list of kmod_module and
+ * should be unreferenced with kmod_module_unref_list().
+ *
+ * Returns: 0 on success or < 0 otherwise.
+ */
+KMOD_EXPORT int kmod_module_get_weakdeps(const struct kmod_module *mod,
+						struct kmod_list **weak)
+{
+	const struct kmod_list *l;
+	const struct kmod_config *config;
+
+	if (mod == NULL || weak == NULL)
+		return -ENOENT;
+
+	assert(*weak == NULL);
+
+	config = kmod_get_config(mod->ctx);
+
+	kmod_list_foreach(l, config->weakdeps) {
+		const char *modname = kmod_weakdep_get_name(l);
+		const char * const *array;
+		unsigned count;
+
+		if (fnmatch(modname, mod->name, 0) != 0)
+			continue;
+
+		array = kmod_weakdep_get_weak(l, &count);
+		*weak = lookup_dep(mod->ctx, array, count);
 
 		/*
 		 * find only the first command, as modprobe from

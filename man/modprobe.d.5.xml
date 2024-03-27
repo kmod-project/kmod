@@ -212,6 +212,30 @@
           </para>
         </listitem>
       </varlistentry>
+      <varlistentry>
+        <term>weakdep <replaceable>modulename</replaceable> <replaceable>modules...</replaceable>
+        </term>
+        <listitem>
+          <para>
+            The <command>weakdep</command> command allows you to specify weak module
+            dependencies. Those are similar to pre softdep, with the
+            difference that userspace doesn't attempt to load that
+            dependency before the specified module. Instead the kernel
+            may request one or multiple of them during module probe,
+            depending on the hardware it's binding to. The purpose of
+            weak module is to allow a driver to specify that a certain
+            dependency may be needed, so it should be present in the
+            filesystem (e.g. in initramfs) when that module is probed.
+          </para>
+	  <para>
+            Example: Assume "weakdep c a b". A program creating an
+            initramfs knows it should add a, b, and c to the filesystem
+            since a and b may be required/desired at runtime. When c is
+            loaded and is being probed, it may issue calls to
+            request_module() causing a or b to also be loaded.
+          </para>
+        </listitem>
+      </varlistentry>
     </variablelist>
   </refsect1>
   <refsect1><title>COMPATIBILITY</title>
