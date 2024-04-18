@@ -18,6 +18,7 @@
 /* We unset _FILE_OFFSET_BITS here so we can override both stat and stat64 on
  * 32-bit architectures and forward each to the right libc function */
 #undef _FILE_OFFSET_BITS
+#undef _TIME_BITS
 
 #include <assert.h>
 #include <dirent.h>
@@ -202,8 +203,14 @@ WRAP_2ARGS(int, -1, stat, struct stat*);
 WRAP_2ARGS(int, -1, lstat, struct stat*);
 WRAP_2ARGS(int, -1, stat64, struct stat64*);
 WRAP_2ARGS(int, -1, lstat64, struct stat64*);
-WRAP_OPEN(64);
 
+struct __stat64_t64;
+extern int __stat64_time64 (const char *file, struct __stat64_t64 *buf);
+extern int __lstat64_time64 (const char *file, struct __stat64_t64 *buf);
+WRAP_2ARGS(int, -1, __stat64_time64, struct __stat64_t64*);
+WRAP_2ARGS(int, -1, __lstat64_time64, struct __stat64_t64*);
+
+WRAP_OPEN(64);
 WRAP_OPEN();
 
 #ifdef HAVE___XSTAT
