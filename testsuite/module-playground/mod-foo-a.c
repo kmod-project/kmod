@@ -4,6 +4,8 @@
 #include <linux/module.h>
 #include <linux/printk.h>
 
+void print_fooA(void);
+
 static int __init foo_init(void)
 {
 	return 0;

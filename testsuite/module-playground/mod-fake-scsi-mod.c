@@ -1,6 +1,8 @@
 #include <linux/init.h>
 #include <linux/module.h>
 
+void dummy_export(void);
+
 static int __init test_module_init(void)
 {
 	return 0;
