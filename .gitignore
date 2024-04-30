@@ -26,6 +26,8 @@
 /libtool
 /stamp-h1
 /test-suite.log
+/build
+/build-*
 
 *~
 .*.swp
