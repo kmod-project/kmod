@@ -37,6 +37,8 @@ obj-m += mod-fake-hpsa.o
 obj-m += mod-fake-scsi-mod.o
 obj-m += mod-fake-cciss.o
 
+obj-m += mod-weakdep.o
+
 else
 # only build ARCH-specific module
 ifeq ($(ARCH),)

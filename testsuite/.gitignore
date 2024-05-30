@@ -18,6 +18,7 @@
 /test-modprobe
 /test-hash
 /test-list
+/test-user
 /rootfs
 /stamp-rootfs
 /test-scratchbuf.log
@@ -52,3 +53,5 @@
 /test-testsuite.trs
 /test-list.log
 /test-list.trs
+/test-user.log
+/test-user.trs

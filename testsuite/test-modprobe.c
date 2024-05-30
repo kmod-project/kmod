@@ -181,6 +181,29 @@ DEFINE_TEST(modprobe_softdep_loop,
 	.modules_loaded = "mod-loop-a,mod-loop-b",
 	);
 
+static noreturn int modprobe_weakdep_loop(const struct test *t)
+{
+	const char *progname = ABS_TOP_BUILDDIR "/tools/modprobe";
+	const char *const args[] = {
+		progname,
+		"mod-loop-b",
+		NULL,
+	};
+
+	test_spawn_prog(progname, args);
+	exit(EXIT_FAILURE);
+}
+DEFINE_TEST(modprobe_weakdep_loop,
+	.description = "check if modprobe breaks weakdep loop",
+	.config = {
+		[TC_UNAME_R] = "4.4.4",
+		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-modprobe/weakdep-loop",
+		[TC_INIT_MODULE_RETCODES] = "",
+	},
+	.modules_loaded = "mod-loop-b",
+	.modules_not_loaded = "mod-loop-a,mod-simple-c",
+	);
+
 static noreturn int modprobe_install_cmd_loop(const struct test *t)
 {
 	const char *progname = ABS_TOP_BUILDDIR "/tools/modprobe";

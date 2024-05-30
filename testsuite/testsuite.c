@@ -773,10 +773,10 @@ static int cmp_modnames(const void *m1, const void *m2)
 }
 
 /*
- * Store the expected module names in buf and return a list of pointers to
- * them.
+ * Auxiliary function to store the module names in buf and return a list
+ * of pointers to them.
  */
-static const char **read_expected_modules(const struct test *t,
+static const char **read_modules(const char* modules,
 		char **buf, int *count)
 {
 	const char **res;
@@ -784,12 +784,8 @@ static const char **read_expected_modules(const struct test *t,
 	int i;
 	char *p;
 
-	if (t->modules_loaded[0] == '\0') {
-		*count = 0;
-		*buf = NULL;
-		return NULL;
-	}
-	*buf = strdup(t->modules_loaded);
+
+	*buf = strdup(modules);
 	if (!*buf) {
 		*count = -1;
 		return NULL;
@@ -815,6 +811,36 @@ static const char **read_expected_modules(const struct test *t,
 		}
 	*count = len;
 	return res;
+}
+
+/*
+ * Store the expected module names in buf and return a list of pointers to
+ * them.
+ */
+static const char **read_expected_modules(const struct test *t,
+		char **buf, int *count)
+{
+	if (t->modules_loaded[0] == '\0') {
+		*count = 0;
+		*buf = NULL;
+		return NULL;
+	}
+	return read_modules(t->modules_loaded, buf, count);
+}
+
+/*
+ * Store the unexpected module names in buf and return a list of pointers to
+ * them.
+ */
+static const char **read_unexpected_modules(const struct test *t,
+		char **buf, int *count)
+{
+	if (t->modules_not_loaded[0] == '\0') {
+		*count = 0;
+		*buf = NULL;
+		return NULL;
+	}
+	return read_modules(t->modules_not_loaded, buf, count);
 }
 
 static char **read_loaded_modules(const struct test *t, char **buf, int *count)
@@ -931,6 +957,54 @@ out_a1:
 	return err;
 }
 
+static int check_not_loaded_modules(const struct test *t)
+{
+	int l1, l2, i1, i2;
+	const char **a1;
+	char **a2;
+	char *buf1, *buf2;
+	int err = false;
+
+	a1 = read_unexpected_modules(t, &buf1, &l1);
+	if (l1 < 0)
+		return err;
+	a2 = read_loaded_modules(t, &buf2, &l2);
+	if (l2 < 0)
+		goto out_a1;
+	qsort(a1, l1, sizeof(char *), cmp_modnames);
+	qsort(a2, l2, sizeof(char *), cmp_modnames);
+	i1 = i2 = 0;
+	err = true;
+	while (i1 < l1 || i2 < l2) {
+		int cmp;
+
+		if (i1 >= l1)
+			cmp = 1;
+		else if (i2 >= l2)
+			cmp = -1;
+		else
+			cmp = cmp_modnames(&a1[i1], &a2[i2]);
+		if (cmp == 0) {
+			err = false;
+			ERR("module %s loaded\n", a1[i1]);
+			i1++;
+		} else if (cmp < 0) {
+			i1++;
+			i2++;
+		} else  {
+			err = false;
+			ERR("module %s is loaded but should not be\n", a2[i2]);
+			i2++;
+		}
+	}
+	free(a2);
+	free(buf2);
+out_a1:
+	free(a1);
+	free(buf1);
+	return err;
+}
+
 static inline int test_run_parent(const struct test *t, int fdout[2],
 				int fderr[2], int fdmonitor[2], pid_t child)
 {
@@ -995,6 +1069,8 @@ static inline int test_run_parent(const struct test *t, int fdout[2],
 		match_modules = check_loaded_modules(t);
 	else
 		match_modules = true;
+	if (match_modules && t->modules_not_loaded)
+		match_modules = check_not_loaded_modules(t);
 
 	if (t->expected_fail == false) {
 		if (err == 0) {

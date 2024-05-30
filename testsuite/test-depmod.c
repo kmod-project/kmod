@@ -244,4 +244,31 @@ DEFINE_TEST(depmod_search_order_override,
 		},
 	});
 
+#define CHECK_WEAKDEP_ROOTFS TESTSUITE_ROOTFS "test-depmod/check-weakdep"
+#define CHECK_WEAKDEP_LIB_MODULES CHECK_WEAKDEP_ROOTFS MODULE_DIRECTORY "/" MODULES_UNAME
+static noreturn int depmod_check_weakdep(const struct test *t)
+{
+	const char *progname = ABS_TOP_BUILDDIR "/tools/depmod";
+	const char *const args[] = {
+		progname,
+		NULL,
+	};
+
+	test_spawn_prog(progname, args);
+	exit(EXIT_FAILURE);
+}
+DEFINE_TEST(depmod_check_weakdep,
+	.description = "check weakdep output",
+	.config = {
+		[TC_UNAME_R] = MODULES_UNAME,
+		[TC_ROOTFS] = CHECK_WEAKDEP_ROOTFS,
+	},
+	.output = {
+		.files = (const struct keyval[]) {
+			{ CHECK_WEAKDEP_LIB_MODULES "/correct-modules.weakdep",
+			  CHECK_WEAKDEP_LIB_MODULES "/modules.weakdep" },
+			{ }
+		},
+	});
+
 TESTSUITE_MAIN();

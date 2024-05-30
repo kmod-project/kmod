@@ -1,0 +1,2 @@
+mod-loop-b: mod_loop_a mod_simple
+mod-weakdep: mod_simple
