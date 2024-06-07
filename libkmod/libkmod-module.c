@@ -2049,7 +2049,7 @@ KMOD_EXPORT int kmod_module_get_refcnt(const struct kmod_module *mod)
 	fd = open(path, O_RDONLY|O_CLOEXEC);
 	if (fd < 0) {
 		err = -errno;
-		DBG(mod->ctx, "could not open '%s': %s\n",
+		ERR(mod->ctx, "could not open '%s': %s\n",
 			path, strerror(errno));
 		return err;
 	}
