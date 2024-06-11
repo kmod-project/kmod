@@ -2638,8 +2638,8 @@ static int depmod_output(struct depmod *depmod, FILE *out)
 			int mode = 0644;
 			int fd;
 
-			snprintf(tmp, sizeof(tmp), "%s.%i.%li.%li", itr->name, getpid(),
-					tv.tv_usec, tv.tv_sec);
+			snprintf(tmp, sizeof(tmp), "%s.%i.%lli.%lli", itr->name, getpid(),
+					(long long)tv.tv_usec, (long long)tv.tv_sec);
 			fd = openat(dfd, tmp, flags, mode);
 			if (fd < 0) {
 				ERR("openat(%s, %s, %o, %o): %m\n",
