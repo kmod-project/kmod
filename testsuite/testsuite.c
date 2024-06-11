@@ -32,6 +32,7 @@
 #include <sys/stat.h>
 #include <sys/wait.h>
 
+#include <shared/missing.h>
 #include <shared/util.h>
 
 #include "testsuite.h"
