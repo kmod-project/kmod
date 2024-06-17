@@ -89,7 +89,11 @@ static int zstd_ensure_outbuffer_space(ZSTD_outBuffer *buffer, size_t min_free)
 	if (buffer->size - buffer->pos >= min_free)
 		return 0;
 
-	buffer->size += min_free;
+	if (buffer->size < min_free)
+		buffer->size = min_free;
+	else
+		buffer->size *= 2;
+
 	buffer->dst = realloc(buffer->dst, buffer->size);
 	if (buffer->dst == NULL) {
 		ret = -errno;
