@@ -32,7 +32,6 @@ AC_PROG_SED
 AC_PROG_MKDIR_P
 AC_PROG_LN_S
 PKG_PROG_PKG_CONFIG
-AC_PATH_PROG([SCDOC], [scdoc])
 
 AC_PROG_CC_C99
 
@@ -185,6 +184,11 @@ AM_CONDITIONAL([BUILD_TOOLS], [test "x$enable_tools" = "xyes"])
 AC_ARG_ENABLE([manpages],
         AS_HELP_STRING([--disable-manpages], [disable manpages @<:@default=enabled@:>@]),
 	[], enable_manpages=yes)
+AS_IF([test "x$enable_manpages" = "xyes"], [
+	AC_PATH_PROG([SCDOC], [scdoc])
+	AS_IF([test "x$SCDOC" = "x"],[
+	       AC_MSG_ERROR([*** scdoc needed for building manpages. Either install it or pass --disable-manpages])
+	])])
 AM_CONDITIONAL([BUILD_MANPAGES], [test "x$enable_manpages" = "xyes"])
 
 AC_ARG_ENABLE([test-modules],
