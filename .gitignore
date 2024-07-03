@@ -22,6 +22,7 @@
 /cov-int
 /coverage
 /gtk-doc.make
+/gtk-doc.m4
 /kmod-*.tar.*
 /libtool
 /stamp-h1
