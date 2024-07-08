@@ -35,16 +35,19 @@ rather than the current kernel version (as returned by *uname -r*).
 
 # OPTIONS
 
-*-a*, *--all*
+*-a*
+*--all*
 	Probe all modules. This option is enabled by default if no file names
 	are given in the command-line.
 
-*-A*, *--quick*
+*-A*
+*--quick*
 	This option scans to see if any modules are newer than the
 	*modules.dep* file before any work is done: if not, it silently exits
 	rather than regenerating the files.
 
-*-b* _basedir_, *--basedir* _basedir_
+*-b* _basedir_
+*--basedir* _basedir_
 	If your modules are not currently in the (normal) directory
 	@MODULE_DIRECTORY@/_version_, but in a staging area, you can specify a
 	_basedir_ which is prepended to the directory name. This _basedir_ is
@@ -53,18 +56,21 @@ rather than the current kernel version (as returned by *uname -r*).
 	distribution vendor who needs to pre-generate the meta-data files rather
 	than running *depmod* again later.
 
-*-o* _outdir_, *--outdir* _outdir_
+*-o* _outdir_
+*--outdir* _outdir_
 	Set the output directory where *depmod* will store any generated file.
 	_outdir_ serves as a root to that location, similar to how _basedir_ is
 	used. Also this setting takes precedence and if used together with
 	_basedir_ it will result in the input being that directory, but the output
 	being the one set by _outdir_.
 
-*-C*, *--config* _file_ _or_ _directory_
+*-C*  _file_ _or_ _directory_
+*--config* _file_ _or_ _directory_
 	This option overrides the default configuration files. See
 	*depmod.d*(5).
 
-*-e*, *--errsyms*
+*-e*
+*--errsyms*
 	When combined with the *-F* option, this reports any symbols which a
 	module needs which are not supplied by other modules or the kernel.
 	Normally, any symbols not provided by modules are assumed to be provided
@@ -72,21 +78,26 @@ rather than the current kernel version (as returned by *uname -r*).
 	assumption can break especially when additionally updated third party
 	drivers are not correctly installed or were built incorrectly.
 
-*-E*, *--symvers* _Module.symvers_
+*-E* _Module.symvers_
+*--symvers* _Module.symvers_
 	When combined with the *-e* option, this reports any symbol versions
 	supplied by modules that do not match with the symbol versions provided
 	by the kernel in its _Module.symvers_. This option is mutually
 	incompatible with *-F*.
 
-*-F*, *--filesyms* _System.map_
+*-F* _System.map_
+*--filesyms* _System.map_
 	Supplied with the _System.map_ produced when the kernel was built, this
 	allows the *-e* option to report unresolved symbols. This option is
 	mutually incompatible with *-E*.
 
-*-h*, *--help*
+*-h*
+*--help*
 	Print the help message and exit.
 
-*-n*, *--show*, *--dry-run*
+*-n*
+*--show*
+*--dry-run*
 	This sends the resulting *modules.dep* and the various map files to
 	standard output rather than writing them into the module directory.
 
@@ -94,11 +105,13 @@ rather than the current kernel version (as returned by *uname -r*).
 	Some architectures prefix symbols with an extraneous character. This
 	specifies a prefix character (for example '\_') to ignore.
 
-*-v*, *--verbose*
+*-v*
+*--verbose*
 	In verbose mode, *depmod* will print (to stdout) all the symbols each
 	module depends on and the module's file name which provides that symbol.
 
-*-V*, *--version*
+*-V*
+*--version*
 	Show version of program and exit. See below for caveats when run on
 	older kernels.
 

@@ -28,17 +28,20 @@ architecture.
 
 # OPTIONS
 
-*-V*, *--version*
+*-V*
+*--version*
 	Print the *modinfo* version.
 
-*-F* _field_, *--field* _field_
+*-F* _field_
+*--field* _field_
 	Only print this _field_ value, one per line. This is most useful for
 	scripts. Field names are case-insensitive. Common fields (which may not
 	be in every module) include author, description, license, parm, depends,
 	and alias. There are often multiple parm, alias and depends fields. The
 	special _field_ filename lists the filename of the module.
 
-*-b* _basedir_, *--basedir* _basedir_
+*-b* _basedir_
+*--basedir* _basedir_
 	Root directory for modules, / by default.
 
 *-k* _kernel_
@@ -49,12 +52,16 @@ architecture.
 	modules in a new kernel for which you must make an initrd/initramfs
 	image prior to booting.
 
-*-0*, *--null*
+*-0*
+*--null*
 	Use the ASCII zero character to separate _field_ values, instead of a new
 	line. This is useful for scripts, since a new line can theoretically
 	appear inside a _field_.
 
-*-a* *--author*, *-d* *--description*, *-l* *--license*, *-p* *--parameters*,
+*-a* *--author*
+*-d* *--description*
+*-l* *--license*
+*-p* *--parameters*
 *-n* *--filename*
 	These are shortcuts for the *--field* flag's author, description,
 	license, parm and filename arguments, to ease the transition from the
