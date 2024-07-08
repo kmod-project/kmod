@@ -31,8 +31,8 @@ architecture.
 *-V*, *--version*
 	Print the *modinfo* version.
 
-*-F*, *--field*
-	Only print this field value, one per line. This is most useful for
+*-F* _field_, *--field* _field_
+	Only print this _field_ value, one per line. This is most useful for
 	scripts. Field names are case-insensitive. Common fields (which may not
 	be in every module) include author, description, license, parm, depends,
 	and alias. There are often multiple parm, alias and depends fields. The
