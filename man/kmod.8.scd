@@ -35,8 +35,7 @@ Linux Kernel modules. Most users will only run it using its other names.
 
 # COPYRIGHT
 
-This manual page originally Copyright 2014, Marco d'Itri. Maintained by Lucas De
-Marchi and others.
+This manual page originally Copyright 2014, Marco d'Itri.
 
 # SEE ALSO
 

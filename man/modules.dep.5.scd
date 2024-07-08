@@ -29,7 +29,6 @@ fashion rather than touching these files.
 # COPYRIGHT
 
 This manual page originally Copyright 2002, Rusty Russell, IBM Corporation.
-Maintained by Jon Masters and others.
 
 # SEE ALSO
 

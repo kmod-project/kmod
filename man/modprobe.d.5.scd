@@ -167,7 +167,6 @@ directly within the modules.
 # COPYRIGHT
 
 This manual page originally Copyright 2004, Rusty Russell, IBM Corporation.
-Maintained by Jon Masters and others.
 
 # SEE ALSO
 

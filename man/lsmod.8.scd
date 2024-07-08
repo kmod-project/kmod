@@ -15,7 +15,6 @@ lsmod - Show the status of modules in the Linux Kernel
 # COPYRIGHT
 
 This manual page originally Copyright 2002, Rusty Russell, IBM Corporation.
-Maintained by Jon Masters and others.
 
 # SEE ALSO
 
