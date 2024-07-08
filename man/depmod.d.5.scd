@@ -18,11 +18,14 @@ depmod.d - Configuration directory for depmod
 
 # DESCRIPTION
 
-The order in which modules are processed by the *depmod* command can be altered
-on a global or per-module basis. This is typically useful in cases where
-built-in kernel modules are complemented by custom built versions of the same
-and the user wishes to affect the priority of processing in order to override
-the module version supplied by the kernel.
+On execution *depmod* reads the configuration files from the above location and
+based on that it processes the available modules and their dependencies. For
+example: one can change the search order, exclude folders, override specific
+module's location and more.
+
+This is typically useful in cases where built-in kernel modules are complemented
+by custom built versions of the same and the user wishes to affect the priority
+of processing in order to override the module version supplied by the kernel.
 
 # CONFIGURATION FORMAT
 
