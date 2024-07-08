@@ -9,11 +9,11 @@ modprobe - Add and remove modules from the Linux Kernel
 *modprobe* [*-v*] [*-V*] [*-C *_config-file_] [*-n*] [*-i*] [*-q*] [*-b*] [_modulename_]
 \ \ \ \ \ \ \ \ \ \[_module parameters_...]
 
-*modprobe* [-r] [*-v*] [*-n*] [*-i*] [_modulename_...]
+*modprobe* [*-r*] [*-v*] [*-n*] [*-i*] [_modulename_...]
 
-*modprobe* [-c]
+*modprobe* [*-c*]
 
-*modprobe* [--dump-modversions] [_filename_]
+*modprobe* [*--dump-modversions*] [_filename_]
 
 # DESCRIPTION
 
@@ -42,7 +42,7 @@ If any arguments are given after the _modulename_, they are passed to the kernel
 
 When loading modules, _modulename_ can also be a path to the module. If the path
 is relative, it must explicitly start with "./". Note that this may fail when
-using a path to a module with dependencies not matching the installed depmod
+using a path to a module with dependencies not matching the installed *depmod*
 database.
 
 # OPTIONS
@@ -78,7 +78,7 @@ database.
 	module which is already present or to remove a module which isn't
 	present. This is ideal for simple scripts; however, more complicated
 	scripts often want to know whether *modprobe* really did something: this
-	option makes modprobe fail in the case that it actually didn't do
+	option makes *modprobe* fail in the case that it actually didn't do
 	anything.
 
 *--force-vermagic*
@@ -97,7 +97,7 @@ database.
 	detailing the versions of every interfaced used by (or supplied by) the
 	module is created. If a module fails to load and the kernel complains
 	that the module disagrees about a version of some interface, you can use
-	"--force-modversion" to remove the version information altogether.
+	*--force-modversion* to remove the version information altogether.
 	Naturally, this check is there for your protection, so using this option
 	is dangerous unless you know what you're doing.
 

@@ -21,7 +21,7 @@ dependencies can get quite complex.
 
 *depmod* creates a list of module dependencies by reading each module under
 @MODULE_DIRECTORY@/_version_ and determining what symbols it exports and what
-symbols it needs. By default, this list is written to modules.dep, and a binary
+symbols it needs. By default, this list is written to *modules.dep*, and a binary
 hashed version named modules.dep.bin, in the same directory. If filenames are
 given on the command line, only those modules are examined (which is rarely
 useful unless all modules are listed). * depmod* also creates a list of symbols
@@ -41,20 +41,20 @@ rather than the current kernel version (as returned by *uname -r*).
 
 *-A*, *--quick*
 	This option scans to see if any modules are newer than the
-	modules.dep file before any work is done: if not, it silently exits
+	*modules.dep* file before any work is done: if not, it silently exits
 	rather than regenerating the files.
 
 *-b* _basedir_, *--basedir* _basedir_
 	If your modules are not currently in the (normal) directory
 	@MODULE_DIRECTORY@/_version_, but in a staging area, you can specify a
 	_basedir_ which is prepended to the directory name. This _basedir_ is
-	stripped from the resulting modules.dep file, so it is ready to be moved
-	into the normal location. Use this option if you are a distribution
-	vendor who needs to pre-generate the meta-data files rather than running
-	depmod again later.
+	stripped from the resulting *modules.dep* file, so it is ready to be
+	moved into the normal location. Use this option if you are a
+	distribution vendor who needs to pre-generate the meta-data files rather
+	than running *depmod* again later.
 
 *-o* _outdir_, *--outdir* _outdir_
-	Set the output directory where depmod will store any generated file.
+	Set the output directory where *depmod* will store any generated file.
 	_ outdir_ serves as a root to that location, similar to how _basedir_ is
 	used. Also this setting takes precedence and if used together with
 	_basedir_ it will result in the input being that directory, but the output
@@ -75,11 +75,11 @@ rather than the current kernel version (as returned by *uname -r*).
 *-E*, *--symvers*
 	When combined with the *-e* option, this reports any symbol versions
 	supplied by modules that do not match with the symbol versions provided
-	by the kernel in its Module.symvers. This option is mutually
+	by the kernel in its _Module.symvers_. This option is mutually
 	incompatible with *-F*.
 
 *-F*, *--filesyms* _System.map_
-	Supplied with the System.map produced when the kernel was built, this
+	Supplied with the _System.map_ produced when the kernel was built, this
 	allows the *-e* option to report unresolved symbols. This option is
 	mutually incompatible with *-E*.
 
@@ -87,7 +87,7 @@ rather than the current kernel version (as returned by *uname -r*).
 	Print the help message and exit.
 
 *-n*, *--show*, *--dry-run*
-	This sends the resulting modules.dep and the various map files to
+	This sends the resulting *modules.dep* and the various map files to
 	standard output rather than writing them into the module directory.
 
 *-P*

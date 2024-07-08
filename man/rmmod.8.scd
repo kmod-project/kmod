@@ -29,7 +29,7 @@ is provided) from the kernel. Most users will want to use *modprobe*(8) with the
 *-s*, *--syslog*
 	Send errors to syslog instead of standard error.
 
-*-V --version*
+*-V*, *--version*
 	Show version of program and exit.
 
 # COPYRIGHT
