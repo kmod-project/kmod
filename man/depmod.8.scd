@@ -55,7 +55,7 @@ rather than the current kernel version (as returned by *uname -r*).
 
 *-o* _outdir_, *--outdir* _outdir_
 	Set the output directory where *depmod* will store any generated file.
-	_ outdir_ serves as a root to that location, similar to how _basedir_ is
+	_outdir_ serves as a root to that location, similar to how _basedir_ is
 	used. Also this setting takes precedence and if used together with
 	_basedir_ it will result in the input being that directory, but the output
 	being the one set by _outdir_.

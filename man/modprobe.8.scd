@@ -6,7 +6,7 @@ modprobe - Add and remove modules from the Linux Kernel
 
 # SYNOPSIS
 
-*modprobe* [*-v*] [*-V*] [*-C *_config-file_] [*-n*] [*-i*] [*-q*] [*-b*] [_modulename_]
+*modprobe* [*-v*] [*-V*] [*-C* _config-file_] [*-n*] [*-i*] [*-q*] [*-b*] [_modulename_]
 \ \ \ \ \ \ \ \ \ \[_module parameters_...]
 
 *modprobe* [*-r*] [*-v*] [*-n*] [*-i*] [_modulename_...]
@@ -19,10 +19,10 @@ modprobe - Add and remove modules from the Linux Kernel
 
 *modprobe* intelligently adds or removes a module from the Linux kernel: note
 that for convenience, there is no difference between \_ and - in module names
-(automatic underscore conversion is performed). * modprobe* looks in the module
+(automatic underscore conversion is performed). *modprobe* looks in the module
 directory @DISTCONFDIR@/`uname -r` for all the modules and other files, except
 for the optional configuration files in the /etc/modprobe.d directory (see
-*modprobe.d*(5)). * modprobe* will also use module options specified on the
+*modprobe.d*(5)). *modprobe* will also use module options specified on the
 kernel command line in the form of <module>.<option> and blacklists in the form
 of modprobe.blacklist=<module>.
 
@@ -167,7 +167,7 @@ database.
 	itself. This produces a (possibly empty) set of module filenames, one
 	per line, each starting with "insmod" and is typically used by
 	distributions to determine which modules to include when generating
-	initrd/initramfs images. * Install* commands which apply are shown
+	initrd/initramfs images. *Install* commands which apply are shown
 	prefixed by "install". It does not run any of the install commands. Note
 	that *modinfo*(8) can be used to extract dependencies of a module from the
 	module itself, but knows nothing of aliases or install commands.

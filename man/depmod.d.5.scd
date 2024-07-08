@@ -50,7 +50,7 @@ override _modulename_ _kernelversion_ _modulesubdirectory_
 	This command allows you to override which version of a specific module
 	will be used when more than one module sharing the same name is
 	processed by the *depmod* command. It is possible to specify one kernel
-	or all kernels using the \* wildcard. _ modulesubdirectory_ is the name
+	or all kernels using the \* wildcard. _modulesubdirectory_ is the name
 	of the subdirectory under @MODULE_DIRECTORY@ (or other module location)
 	where the target module is installed.
 
