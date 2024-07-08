@@ -14,11 +14,8 @@ EXTRA_DIST = $(MAN5:%.5=%.5.scd) $(MAN8:%.8=%.8.scd)
 CLEANFILES = $(filter-out $(MAN_STUB), $(dist_man_MANS))
 
 define generate_manpage
-	$(AM_V_SCDOC)if [ '$(distconfdir)' != '/lib' ] ; then \
-		sed -e 's|@DISTCONFDIR@|$(distconfdir)|g' $< ; \
-	else \
-		sed -e '/@DISTCONFDIR@/d' $< ; \
-	fi | \
+	$(AM_V_SCDOC)cat $< | \
+	sed -e 's|@DISTCONFDIR@|$(distconfdir)|g' | \
 	sed -e 's|@MODULE_DIRECTORY@|$(module_directory)|g' | \
 	$(SCDOC) > $@
 endef
