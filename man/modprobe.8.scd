@@ -21,10 +21,9 @@ modprobe - Add and remove modules from the Linux Kernel
 that for convenience, there is no difference between \_ and - in module names
 (automatic underscore conversion is performed). *modprobe* looks in the module
 directory @DISTCONFDIR@/`uname -r` for all the modules and other files, except
-for the optional configuration files in the /etc/modprobe.d directory (see
-*modprobe.d*(5)). *modprobe* will also use module options specified on the
-kernel command line in the form of <module>.<option> and blacklists in the form
-of modprobe.blacklist=<module>.
+for the optional configuration files (see *modprobe.d*(5)). *modprobe* will also
+use module options specified on the kernel command line in the form of
+<module>.<option> and blacklists in the form of modprobe.blacklist=<module>.
 
 Note that unlike in 2.4 series Linux kernels (which are not supported by this
 tool) this version of *modprobe* does not do anything to the module itself: the
@@ -56,8 +55,8 @@ database.
 	by *udev*(7).
 
 *-C* _directory_, *--config* _directory_
-	This option overrides the default configuration directory
-	(/etc/modprobe.d).
+	This option overrides the default configuration directory. See
+	*modprobe.d*(5).
 
 	This option is passed through *install* or *remove* commands to other
 	*modprobe* commands in the MODPROBE_OPTIONS environment variable.
