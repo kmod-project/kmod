@@ -39,7 +39,7 @@ Maintained by Jon Masters and others.
 
 # SEE ALSO
 
-*modprobe*(8), *insmod*(8), *lsmod*(8), *modinfo*(8) *depmod*(8)
+*modprobe*(8), *insmod*(8), *lsmod*(8), *modinfo*(8), *depmod*(8)
 
 # AUTHORS
 

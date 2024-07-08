@@ -73,7 +73,7 @@ exclude _excludedir_
 	This specifies the trailing directories that will be excluded during the
 	search for kernel modules.
 
-	The _excludedir_ is the trailing directory to exclude
+	The _excludedir_ is the trailing directory to exclude.
 
 # COPYRIGHT
 
