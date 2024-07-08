@@ -101,7 +101,7 @@ database.
 	Naturally, this check is there for your protection, so using this option
 	is dangerous unless you know what you're doing.
 
-	This applies any modules inserted: both the module (or alias) on the
+	This applies to any modules inserted: both the module (or alias) on the
 	command line and any modules on which it depends.
 
 *-f*, *--force*
@@ -112,7 +112,7 @@ database.
 	know what you are doing.
 
 	This applies to any modules inserted: both the module (or alias) on the
-	command line and any modules it on which it depends.
+	command line and any modules on which it depends.
 
 *-i*, *--ignore-install*, *--ignore-remove*
 	This option causes *modprobe* to ignore *install* and *remove* commands
