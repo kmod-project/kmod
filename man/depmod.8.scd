@@ -61,8 +61,8 @@ rather than the current kernel version (as returned by *uname -r*).
 	being the one set by _outdir_.
 
 *-C*, *--config* _file_ _or_ _directory_
-	This option overrides the default configuration directory at
-	/etc/depmod.d/.
+	This option overrides the default configuration files. See
+	*depmod.d*(5).
 
 *-e*, *--errsyms*
 	When combined with the *-F* option, this reports any symbols which a
