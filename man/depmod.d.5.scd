@@ -6,15 +6,15 @@ depmod.d - Configuration directory for depmod
 
 # SYNOPSIS
 
-/lib/depmod.d/\*.conf
-
-@DISTCONFDIR@/depmod.d/\*.conf
-
-/usr/local/lib/depmod.d/\*.conf
+@SYSCONFDIR@/depmod.d/\*.conf
 
 /run/depmod.d/\*.conf
 
-/etc/depmod.d/\*.conf
+/usr/local/lib/depmod.d/\*.conf
+
+@DISTCONFDIR@/depmod.d/\*.conf
+
+/lib/depmod.d/\*.conf
 
 # DESCRIPTION
 
@@ -28,6 +28,18 @@ The format of files under depmod.d is simple: one command per line, with blank
 lines and lines starting with '#' ignored (useful for adding comments). A '\\'
 at the end of a line causes it to continue on the next line, which makes the
 files a bit neater.
+
+# CONFIGURATION DIRECTORIES AND PRECEDENCE
+
+Configuration files are read from directories in listed in SYNOPSYS in that
+order of precedence. Once a file of a given filename is loaded, any file of the
+same name in subsequent directories is ignored.
+
+All configuration files are sorted in lexicographic order, regardless of the
+directory they reside in. Configuration files can either be completely replaced
+(by having a new configuration file with the same name in a directory of higher
+priority) or partially replaced (by having a configuration file that is ordered
+later).
 
 # COMMANDS
 
