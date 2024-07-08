@@ -192,8 +192,12 @@ database.
 
 # ENVIRONMENT
 
-The MODPROBE_OPTIONS environment variable can also be used to pass arguments to
-*modprobe*.
+The MODPROBE_OPTIONS environment variable can also be used to pass command line
+arguments to *modprobe*. The format is intentionally left undocumented, since
+the use by third-party tools and scripts is discouraged.
+
+The environment variable originates with the implementation of the install
+rules.
 
 # COPYRIGHT
 

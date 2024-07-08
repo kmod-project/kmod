@@ -49,6 +49,9 @@ directory they reside in. Configuration files can either be completely replaced
 priority) or partially replaced (by having a configuration file that is ordered
 later).
 
+NOTE: The configuration directories may be altered via the MODPROBE_OPTIONS
+environment variable. See the ENVIRONMENT section in *modprobe*(8).
+
 # COMMANDS
 
 alias _wildcard_ _modulename_
