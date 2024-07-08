@@ -174,11 +174,10 @@ This manual page originally Copyright 2004, Rusty Russell, IBM Corporation.
 
 # AUTHORS
 
-*Jon Masters* <jcm@jonmasters.org>
-	Developer
+Numerous contributions have come from the linux-modules mailing list
+<linux-modules@vger.kernel.org> and Github. If you have a clone of kmod.git
+itself, the output of *git-shortlog*(1) and *git-blame*(1) can show you the
+authors for specific parts of the project.
 
-*Robby Workman* <rworkman@slackware.com>
-	Developer
-
-*Lucas De Marchi* <lucas.de.marchi@gmail.com>
-	Developer
+*Lucas De Marchi* <lucas.de.marchi@gmail.com> is the current maintainer of the
+project.

@@ -43,5 +43,14 @@ This manual page originally Copyright 2014, Marco d'Itri.
 
 # AUTHOR
 
-*Lucas De Marchi* <lucas.de.marchi@gmail.com>
-	Developer
+*kmod* project was started by Lucas De Marchi as a drop-in replacement to
+module-init-tools that was maintained by Jon Masters, adding a library (libkmod)
+and additional features.
+
+Numerous contributions have come from the linux-modules mailing list
+<linux-modules@vger.kernel.org> and Github. If you have a clone of kmod.git
+itself, the output of *git-shortlog*(1) and *git-blame*(1) can show you the
+authors for specific parts of the project.
+
+*Lucas De Marchi* <lucas.de.marchi@gmail.com> is the current maintainer of the
+project.
