@@ -221,6 +221,7 @@ EXTRA_DIST += \
 	testsuite/module-playground/mod-simple-i386.ko \
 	testsuite/module-playground/mod-simple-sparc64.ko \
 	testsuite/module-playground/mod-simple-x86_64.ko \
+	testsuite/module-playground/mod-weakdep.c \
 	testsuite/module-playground/README
 
 check_LTLIBRARIES = $(TESTSUITE_OVERRIDE_LIBS)
