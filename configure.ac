@@ -137,6 +137,7 @@ AS_IF([test "x$with_xz" != "xno"], [
 	AC_MSG_NOTICE([Xz support not requested])
 ])
 CC_FEATURE_APPEND([with_features], [with_xz], [XZ])
+AM_CONDITIONAL([ENABLE_XZ], [test "x$with_xz" != "xno"])
 
 AC_ARG_WITH([zlib],
 	AS_HELP_STRING([--with-zlib], [handle gzipped modules @<:@default=disabled@:>@]),

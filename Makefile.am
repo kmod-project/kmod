@@ -63,6 +63,7 @@ lib_LTLIBRARIES = libkmod/libkmod.la
 
 libkmod_libkmod_la_SOURCES = \
 	libkmod/libkmod.h \
+	libkmod/libkmod-internal-file.h \
 	libkmod/libkmod-internal.h \
 	libkmod/libkmod.c \
 	libkmod/libkmod-builtin.c \
@@ -74,6 +75,10 @@ libkmod_libkmod_la_SOURCES = \
 	libkmod/libkmod-file.c \
 	libkmod/libkmod-elf.c \
 	libkmod/libkmod-signature.c
+
+if ENABLE_XZ
+libkmod_libkmod_la_SOURCES += libkmod/libkmod-file-xz.c
+endif
 
 EXTRA_DIST += libkmod/libkmod.sym
 EXTRA_DIST += libkmod/README \
