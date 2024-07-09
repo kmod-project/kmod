@@ -84,6 +84,10 @@ if ENABLE_ZLIB
 libkmod_libkmod_la_SOURCES += libkmod/libkmod-file-zlib.c
 endif
 
+if ENABLE_ZSTD
+libkmod_libkmod_la_SOURCES += libkmod/libkmod-file-zstd.c
+endif
+
 EXTRA_DIST += libkmod/libkmod.sym
 EXTRA_DIST += libkmod/README \
 	libkmod/COPYING testsuite/COPYING tools/COPYING COPYING

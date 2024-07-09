@@ -32,3 +32,8 @@ int kmod_file_load_zlib(struct kmod_file *file);
 static inline int kmod_file_load_zlib(struct kmod_file *file) { return -ENOSYS; }
 #endif
 
+#ifdef ENABLE_ZSTD
+int kmod_file_load_zstd(struct kmod_file *file);
+#else
+static inline int kmod_file_load_zstd(struct kmod_file *file) { return -ENOSYS; }
+#endif
