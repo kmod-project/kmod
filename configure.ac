@@ -150,6 +150,7 @@ AS_IF([test "x$with_zlib" != "xno"], [
 	AC_MSG_NOTICE([zlib support not requested])
 ])
 CC_FEATURE_APPEND([with_features], [with_zlib], [ZLIB])
+AM_CONDITIONAL([ENABLE_ZLIB], [test "x$with_zlib" != "xno"])
 
 AC_ARG_WITH([openssl],
 	AS_HELP_STRING([--with-openssl], [handle PKCS7 signatures @<:@default=disabled@:>@]),
