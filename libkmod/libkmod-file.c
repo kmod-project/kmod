@@ -29,9 +29,6 @@
 #ifdef ENABLE_ZSTD
 #include <zstd.h>
 #endif
-#ifdef ENABLE_ZLIB
-#include <zlib.h>
-#endif
 
 #include <shared/util.h>
 
@@ -175,74 +172,6 @@ static int load_zstd(struct kmod_file *file)
 
 static const char magic_zstd[] = {0x28, 0xB5, 0x2F, 0xFD};
 static const char magic_xz[] = {0xfd, '7', 'z', 'X', 'Z', 0};
-
-#ifdef ENABLE_ZLIB
-#define READ_STEP (4 * 1024 * 1024)
-static int load_zlib(struct kmod_file *file)
-{
-	int err = 0;
-	off_t did = 0, total = 0;
-	_cleanup_free_ unsigned char *p = NULL;
-	gzFile gzf;
-	int gzfd;
-
-	errno = 0;
-	gzfd = fcntl(file->fd, F_DUPFD_CLOEXEC, 3);
-	if (gzfd < 0)
-		return -errno;
-
-	gzf = gzdopen(gzfd, "rb"); /* takes ownership of the fd */
-	if (gzf == NULL) {
-		close(gzfd);
-		return -errno;
-	}
-
-	for (;;) {
-		int r;
-
-		if (did == total) {
-			void *tmp = realloc(p, total + READ_STEP);
-			if (tmp == NULL) {
-				err = -errno;
-				goto error;
-			}
-			total += READ_STEP;
-			p = tmp;
-		}
-
-		r = gzread(gzf, p + did, total - did);
-		if (r == 0)
-			break;
-		else if (r < 0) {
-			int gzerr;
-			const char *gz_errmsg = gzerror(gzf, &gzerr);
-
-			ERR(file->ctx, "gzip: %s\n", gz_errmsg);
-
-			/* gzip might not set errno here */
-			err = gzerr == Z_ERRNO ? -errno : -EINVAL;
-			goto error;
-		}
-		did += r;
-	}
-
-	file->memory = p;
-	file->size = did;
-	p = NULL;
-	gzclose(gzf);
-	return 0;
-
-error:
-	gzclose(gzf); /* closes the gzfd */
-	return err;
-}
-#else
-static int load_zlib(struct kmod_file *file)
-{
-	return -ENOSYS;
-}
-#endif
-
 static const char magic_zlib[] = {0x1f, 0x8b};
 
 static int load_reg(struct kmod_file *file)
@@ -271,7 +200,7 @@ static const struct comp_type {
 } comp_types[] = {
 	{sizeof(magic_zstd),	KMOD_FILE_COMPRESSION_ZSTD, magic_zstd, load_zstd},
 	{sizeof(magic_xz),	KMOD_FILE_COMPRESSION_XZ, magic_xz, kmod_file_load_xz},
-	{sizeof(magic_zlib),	KMOD_FILE_COMPRESSION_ZLIB, magic_zlib, load_zlib},
+	{sizeof(magic_zlib),	KMOD_FILE_COMPRESSION_ZLIB, magic_zlib, kmod_file_load_zlib},
 	{0,			KMOD_FILE_COMPRESSION_NONE, NULL, load_reg}
 };
 
