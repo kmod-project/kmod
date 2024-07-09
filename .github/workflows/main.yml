@@ -1,0 +1,56 @@
+name: Build and Test
+
+on:
+  push:
+    branches: [master, ci-test]
+  pull_request:
+    branches: [master]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes \
+            build-essential \
+            autoconf \
+            automake \
+            gtk-doc-tools \
+            libssl-dev \
+            liblzma-dev \
+            libssl-dev \
+            libtool \
+            libzstd-dev \
+            linux-headers-generic \
+            scdoc \
+            zstd \
+
+      - name: configure
+        run: |
+          mkdir build
+          cd build
+          ../autogen.sh c
+
+      - name: build
+        run: |
+          cd build
+          make -j$(nproc)
+
+      - name: test
+        run: |
+          cd build
+          make -j$(nproc) check
+
+      - name: install
+        run: |
+          cd build
+          DESTDIR=$PWD/inst make install
+
+      - name: distcheck
+        run: |
+          cd build
+          make distcheck
