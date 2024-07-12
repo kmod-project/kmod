@@ -61,11 +61,19 @@ static int do_lsmod(int argc, char *argv[])
 		const char *name = kmod_module_get_name(mod);
 		int use_count = kmod_module_get_refcnt(mod);
 		long size = kmod_module_get_size(mod);
-		struct kmod_list *holders, *hitr;
+		struct kmod_list *holders = kmod_module_get_holders(mod), *hitr;
 		int first = 1;
 
+		if (holders == NULL || use_count < 0 || size < 0) {
+			fprintf(stderr, "Error: could not query module %s! Was the module unloaded?\n", name);
+			kmod_module_unref_list(holders);
+			kmod_module_unref(mod);
+			kmod_module_unref_list(list);
+			kmod_unref(ctx);
+			return EXIT_FAILURE;
+		}
+
 		printf("%-19s %8ld  %d", name, size, use_count);
-		holders = kmod_module_get_holders(mod);
 		kmod_list_foreach(hitr, holders) {
 			struct kmod_module *hm = kmod_module_get_module(hitr);
 
