@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        container: ['ubuntu:22.04', 'ubuntu:24.04', 'archlinux:base-devel']
+        container: ['ubuntu:22.04', 'ubuntu:24.04', 'archlinux:base-devel', 'fedora:latest']
 
     container:
       image: ${{ matrix.container }}
@@ -23,6 +23,8 @@ jobs:
         if: ${{ startsWith(matrix.container, 'ubuntu') }}
       - uses: ./.github/actions/setup-archlinux
         if: ${{ startsWith(matrix.container, 'archlinux') }}
+      - uses: ./.github/actions/setup-fedora
+        if: ${{ startsWith(matrix.container, 'fedora') }}
 
       - name: configure
         run: |

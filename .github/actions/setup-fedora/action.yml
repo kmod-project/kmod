@@ -1,0 +1,27 @@
+name: 'setup Fedora'
+description: 'Setup a Fedora container for running CI'
+runs:
+  using: 'composite'
+  steps:
+    - name: Install dependencies
+      shell: bash
+      run: |
+        dnf update -y
+        dnf install -y \
+          autoconf \
+          automake \
+          make \
+          gcc \
+          kernel-devel \
+          zlib-devel \
+          xz-devel \
+          libzstd-devel \
+          openssl-devel \
+          gtk-doc \
+          libtool \
+          scdoc
+        # CI builds with KDIR pointing to /usr/lib/modules/*/build
+        # so just a foo/build pointing to the right place, assuming
+        # just one kernel installed
+        mkdir -p /usr/lib/modules/foo/
+        ln -s /usr/src/kernels/* /usr/lib/modules/foo/build
