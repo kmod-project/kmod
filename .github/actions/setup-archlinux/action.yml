@@ -1,0 +1,20 @@
+name: 'setup Archlinux'
+description: 'Setup an Archlinux container for running CI'
+runs:
+  using: 'composite'
+  steps:
+    - name: Install dependencies
+      shell: bash
+      run: |
+        # Semi-regularly the packager key may have (temporarily) expired.
+        # Somewhat robust solution is to wipe the local keyring and
+        # regenerate/reinstall it prior to any other packages on the system.
+        rm -rf /etc/pacman.d/gnupg
+        pacman-key --init
+        pacman-key --populate
+        pacman --noconfirm -Sy archlinux-keyring
+
+        pacman --noconfirm -Su \
+          linux-headers \
+          scdoc \
+          gtk-doc
