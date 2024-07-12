@@ -11,7 +11,17 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        container: ['ubuntu:22.04', 'ubuntu:24.04', 'archlinux:base-devel', 'fedora:latest']
+        include:
+          - container: 'ubuntu:22.04'
+            test: 'yes'
+          - container: 'ubuntu:24.04'
+            test: 'yes'
+          - container: 'archlinux:base-devel'
+            test: 'yes'
+          - container: 'fedora:latest'
+            test: 'yes'
+          - container: 'alpine:latest'
+            test: 'no'
 
     container:
       image: ${{ matrix.container }}
@@ -25,6 +35,8 @@ jobs:
         if: ${{ startsWith(matrix.container, 'archlinux') }}
       - uses: ./.github/actions/setup-fedora
         if: ${{ startsWith(matrix.container, 'fedora') }}
+      - uses: ./.github/actions/setup-alpine
+        if: ${{ startsWith(matrix.container, 'alpine') }}
 
       - name: configure
         run: |
@@ -38,6 +50,7 @@ jobs:
           make -j$(nproc)
 
       - name: test
+        if: ${{ matrix.test == 'yes' }}
         run: |
           cd build
           make KDIR=/usr/lib/modules/*/build -j$(nproc) check
@@ -48,6 +61,7 @@ jobs:
           DESTDIR=$PWD/inst make install
 
       - name: distcheck
+        if: ${{ matrix.test == 'yes' }}
         run: |
           cd build
           make KDIR=/usr/lib/modules/*/build distcheck

@@ -1,0 +1,22 @@
+name: 'setup Alpine'
+description: 'Setup an Alpine container for running CI'
+runs:
+  using: 'composite'
+  steps:
+    - name: Install dependencies
+      shell: sh
+      run: |
+        apk update
+        apk add \
+          autoconf \
+          automake \
+          bash \
+          build-base \
+          gtk-doc \
+          libtool \
+          linux-edge-dev \
+          openssl-dev \
+          scdoc \
+          xz-dev \
+          zlib-dev \
+          zstd-dev
