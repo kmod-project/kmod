@@ -6,8 +6,8 @@ runs:
     - name: Install dependencies
       shell: bash
       run: |
-        sudo apt-get update
-        sudo apt-get install --yes \
+        apt-get update
+        apt-get install --yes \
           build-essential \
           autoconf \
           automake \
@@ -19,4 +19,5 @@ runs:
           libzstd-dev \
           linux-headers-generic \
           scdoc \
+          zlib1g-dev \
           zstd

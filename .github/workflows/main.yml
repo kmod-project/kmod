@@ -9,6 +9,13 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        container: ['ubuntu:22.04', 'ubuntu:24.04']
+
+    container:
+      image: ${{ matrix.container }}
+
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-ubuntu
@@ -27,7 +34,7 @@ jobs:
       - name: test
         run: |
           cd build
-          make -j$(nproc) check
+          make KDIR=/usr/lib/modules/*/build -j$(nproc) check
 
       - name: install
         run: |
@@ -37,4 +44,4 @@ jobs:
       - name: distcheck
         run: |
           cd build
-          make distcheck
+          make KDIR=/usr/lib/modules/*/build distcheck
