@@ -1,0 +1,22 @@
+name: 'setup Ubuntu'
+description: 'Setup an Ubuntu container for running CI'
+runs:
+  using: 'composite'
+  steps:
+    - name: Install dependencies
+      shell: bash
+      run: |
+        sudo apt-get update
+        sudo apt-get install --yes \
+          build-essential \
+          autoconf \
+          automake \
+          gtk-doc-tools \
+          libssl-dev \
+          liblzma-dev \
+          libssl-dev \
+          libtool \
+          libzstd-dev \
+          linux-headers-generic \
+          scdoc \
+          zstd
