@@ -940,8 +940,7 @@ static bool conf_files_filter_out(struct kmod_ctx *ctx, DIR *d,
 	if (fn[0] == '.')
 		return true;
 
-	if (len < 6 || (!streq(&fn[len - 5], ".conf")
-				&& !streq(&fn[len - 6], ".alias")))
+	if (len < 6 || !streq(&fn[len - 5], ".conf"))
 		return true;
 
 	fstatat(dirfd(d), fn, &st, 0);
