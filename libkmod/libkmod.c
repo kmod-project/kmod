@@ -971,6 +971,7 @@ KMOD_EXPORT void kmod_unload_resources(struct kmod_ctx *ctx)
  * KMOD_INDEX_MODULES_DEP: index of module dependencies;
  * KMOD_INDEX_MODULES_ALIAS: index of module aliases;
  * KMOD_INDEX_MODULES_SYMBOL: index of symbol aliases;
+ * KMOD_INDEX_MODULES_BUILTIN_ALIAS: index of builtin module aliases.
  * KMOD_INDEX_MODULES_BUILTIN: index of builtin module.
  * @fd: file descriptor to dump index to
  *
