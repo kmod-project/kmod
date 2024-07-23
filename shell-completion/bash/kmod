@@ -1,8 +1,6 @@
 # kmod completion                                          -*- shell-script -*-
 # SPDX-License-Identifier: LGPL-2.1-or-later
 #
-# This file is part of kmod.
-#
 # Copyright 2010 Ran Benita
 # Copyright (C) 2013  Intel Corporation. All rights reserved.
 

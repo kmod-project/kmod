@@ -1,7 +1,5 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 /*
- * libkmod - interface to kernel module operations
- *
  * Copyright (C) 2011-2013  ProFUSION embedded systems
  */
 

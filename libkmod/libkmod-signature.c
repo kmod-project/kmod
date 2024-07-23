@@ -1,7 +1,5 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 /*
- * libkmod - module signature display
- *
  * Copyright (C) 2013 Michal Marek, SUSE
  */
 

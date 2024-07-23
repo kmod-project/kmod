@@ -1,7 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 /*
- * kmod - one tool to rule them all
- *
  * Copyright (C) 2011-2013  ProFUSION embedded systems
  */
 

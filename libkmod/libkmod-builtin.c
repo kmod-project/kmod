@@ -1,7 +1,5 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 /*
- * libkmod - interface to kernel built-in modules
- *
  * Copyright (C) 2019  Alexey Gladkov <gladkov.alexey@gmail.com>
  */
 

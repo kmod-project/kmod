@@ -1,7 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0-or-later WITH Autoconf-exception-macro
 #
-# Macros to check the presence of generic (non-typed) symbols.
-#
 # Copyright (c) 2006-2008 Diego Pettenò <flameeyes@gmail.com>
 # Copyright (c) 2006-2008 xine project
 # Copyright (c) 2012 Lucas De Marchi <lucas.de.marchi@gmail.com>

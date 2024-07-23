@@ -1,7 +1,5 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 /*
- * kmod - interface to kernel module operations
- *
  * Copyright (C) 2016  Intel Corporation. All rights reserved.
  */
 #include "scratchbuf.h"

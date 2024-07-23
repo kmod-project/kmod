@@ -1,7 +1,5 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 /*
- * kmod - interface to kernel module operations
- *
  * Copyright (C) 2011-2013  ProFUSION embedded systems
  * Copyright (C) 2012  Lucas De Marchi <lucas.de.marchi@gmail.com>
  * Copyright (C) 2013-2014  Intel Corporation. All rights reserved.
