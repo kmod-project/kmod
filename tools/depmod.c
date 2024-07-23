@@ -1,8 +1,10 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /*
+ * Copyright (C) 2008  Alan Jenkins <alan-jenkins@tuffmail.co.uk>.
  * Copyright (C) 2011-2013  ProFUSION embedded systems
  */
 
+#include <arpa/inet.h>
 #include <assert.h>
 #include <ctype.h>
 #include <dirent.h>
@@ -116,30 +118,7 @@ static inline void _show(const char *fmt, ...)
 #define SHOW(...) _show(__VA_ARGS__)
 
 
-/* binary index write *************************************************/
-#include <arpa/inet.h>
-/* BEGIN: code from module-init-tools/index.c just modified to compile here.
- *
- * Original copyright:
- *   index.c: module index file shared functions for modprobe and depmod
- *   Copyright (C) 2008  Alan Jenkins <alan-jenkins@tuffmail.co.uk>.
- *
- *   These programs are free software; you can redistribute it and/or modify
- *   it under the terms of the GNU General Public License as published by
- *   the Free Software Foundation; either version 2 of the License, or
- *   (at your option) any later version.
- *
- *   This program is distributed in the hope that it will be useful,
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *   GNU General Public License for more details.
- *
- *   You should have received a copy of the GNU General Public License
- *   along with these programs.  If not, see <http://www.gnu.org/licenses/>.
- */
-
 /* see documentation in libkmod/libkmod-index.c */
-
 #define INDEX_MAGIC 0xB007F457
 #define INDEX_VERSION_MAJOR 0x0002
 #define INDEX_VERSION_MINOR 0x0001
@@ -417,9 +396,6 @@ static void index_write(const struct index_node *node, FILE *out)
 	fwrite(&u, sizeof(uint32_t), 1, out);
 	(void)fseek(out, final_offset, SEEK_SET);
 }
-
-/* END: code from module-init-tools/index.c just modified to compile here.
- */
 
 /* configuration parsing **********************************************/
 struct cfg_override {
