@@ -1,17 +1,6 @@
+# SPDX-License-Identifier: GPL-2.0-or-later WITH Autoconf-exception-macro
+#
 #  Copyright (c) 2015 Lucas De Marchi <lucas.de.marchi@gmail.com>
-#
-#  This program is free software: you can redistribute it and/or modify it
-#  under the terms of the GNU General Public License as published by the
-#  Free Software Foundation, either version 2 of the License, or (at your
-#  option) any later version.
-#
-#  This program is distributed in the hope that it will be useful, but
-#  WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
-#  Public License for more details.
-#
-#  You should have received a copy of the GNU General Public License along
-#  with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 #  As a special exception, the respective Autoconf Macro's copyright owner
 #  gives unlimited permission to copy, distribute and modify the configure
@@ -25,7 +14,7 @@
 #  Macro released by the Autoconf Archive. When you make and distribute a
 #  modified version of the Autoconf Macro, you may extend this special
 #  exception to the GPL to apply to your modified version as well.
-#
+
 # CC_FEATURE_APPEND([FLAGS], [ENV-TO-CHECK], [FLAG-NAME])
 AC_DEFUN([CC_FEATURE_APPEND], [
   AS_VAR_PUSHDEF([FLAGS], [$1])dnl
