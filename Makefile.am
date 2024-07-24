@@ -321,7 +321,7 @@ DISTCLEAN_LOCAL_HOOKS += testsuite-distclean
 EXTRA_DIST += testsuite/rootfs-pristine
 
 DISTCHECK_CONFIGURE_FLAGS=--enable-gtk-doc --sysconfdir=/etc \
-	--with-zlib --with-zstd --with-openssl \
+	--with-zlib --with-zstd --with-xz --with-openssl \
 	--with-bashcompletiondir=$$dc_install_base/$(bashcompletiondir)
 
 distclean-local: $(DISTCLEAN_LOCAL_HOOKS)
