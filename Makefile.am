@@ -412,7 +412,7 @@ coverity-clean:
 
 git-release:
 	head -1 NEWS | grep -q "kmod $(VERSION)"
-	git commit -a -m "kmod $(VERSION)"
+	git commit -a -s -m "kmod $(VERSION)"
 	git tag -m "kmod $(VERSION)" -s v$(VERSION)
 	git gc --prune=0
 
