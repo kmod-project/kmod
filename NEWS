@@ -1,3 +1,87 @@
+kmod 33
+=======
+
+- Improvements
+
+	- Allow to handle compressed modules even without decompression
+	  libraries linked in. Previously we would detect if the kernel
+	  supported the decompression algorithm and pass the module directly
+	  through finit_module(). However it wouldn't consider the file if
+	  the respective decompression library was compiled out. Now it's
+	  possible to completely disable all libraries and still have module
+	  load working with libkmod.
+
+	  Tools that inspect module content themselves like modinfo and depmod
+	  won't work if the decompression library is not enabled.
+
+	- Add weak dependencies - these are similar to pre softdep, but they
+	  don't cause the dependency to be loaded by libkmod: when a module has
+	  a weak dependency, it is expected that module may or may not be used,
+	  with decision happening in runtime by the kernel. It's purpose is to
+	  be informational for other tools like ones used to create initramfs,
+	  so the module is made available before switch_root(), but doesn't
+	  imply it to be loaded when not needed.
+
+	- Improve compatibility with non-gnu libc like musl and uClibc. Now it's
+	  possible to build and use libkmod and tools without any additional compat
+	  patches.
+
+	- Move manpages from xsltproc to scdoc, which is now needed during build.
+
+	- Improve documentation in manpages, fixing typos, rewording sentences,
+	  detailing how configuration files are handled with precedence order
+	  and making all the manpages more consistent on how to reference options,
+	  environment variables, configuration, authors, etc.
+
+	- Speed up zstd decompression, particularly when not using glibc.
+
+	- Stop parsing .alias files from modprobe.d directories. Configuration files
+	  were always documented as needing the .conf extension. For compatibility
+	  reason with module-init-tools, kmod also parsed .alias files. However that
+	  was also done in module-init-tools for compatibility reasons and not
+	  documented anywhere. From inspection on what distros are using, none use
+	  .alias files in practice, so stop parsing those files and follow what's
+	  documented.
+
+	- Adopt SPDX for license and cleanup comments on individual files.
+
+	- Since kmod 29 there's a github mirror for the repository. Now it's
+	  also used for issues and improvement tracking. With that, the old
+	  TODO file has been removed and distros/users are encouraged to file
+	  issues in github.
+
+- Bug fixes
+
+	- Move kmod.pc to the right dir, ${datadir}/pkgconfig, as it's related
+	  to kmod, not libkmod.
+
+	- Fix error handling while loading a file and mmap fails.
+
+	- Fix error handling while handling errors from the decompression
+	  libraries.
+
+	- Add missing documentation for KMOD_INDEX_MODULES_BUILTIN that was
+	  added in v27 breaking the ABI. A wide search has found one external
+	  tool using it, which hasn't been updated in the past 12 years. It
+	  was deemed safe to simply update the documentation to include the
+	  missing enum.
+
+	- Move kmod_module_new_from_name_lookup() to the correct symbol
+	  version. It was added by mistake to @LIBKMOD_5 when v30 got released.
+	  No external user of this API was found, so it was considered safe
+	  to just move it.
+
+- Others
+
+	- Overwrite symlinks when installing tools.
+
+	- General cleanup of how (de)compression libraries are integrated.
+
+	- Add CI infrastructure to automatically test in several distros
+	  before applying commit series. Currently the latest versions of
+	  Alpine, Archlinux, Fedora and Ubuntu are covered. More distros are
+	  easy to add as they are all containerized.
+
 kmod 32
 =======
 

@@ -39,9 +39,9 @@ AM_LDFLAGS = $(OUR_LDFLAGS)
 #    increment age.
 # 6. If any interfaces have been removed or changed since the last public
 #    release, then set age to 0.
-LIBKMOD_CURRENT=6
-LIBKMOD_REVISION=2
-LIBKMOD_AGE=4
+LIBKMOD_CURRENT=7
+LIBKMOD_REVISION=0
+LIBKMOD_AGE=5
 
 noinst_LTLIBRARIES = shared/libshared.la
 shared_libshared_la_SOURCES = \
