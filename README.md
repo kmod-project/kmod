@@ -29,6 +29,8 @@ License:
 	LGPLv2.1+ for libkmod, testsuite and helper libraries
 	GPLv2+ for tools/*
 
+Issues:
+    https://github.com/kmod-project/kmod/issues
 
 OVERVIEW
 ========
