@@ -4,6 +4,11 @@
 # Copyright (c) 2006-2008 xine project
 # Copyright (c) 2012 Lucas De Marchi <lucas.de.marchi@gmail.com>
 
+# Check if FLAG in ENV-VAR is supported by compiler and append it
+# to WHERE-TO-APPEND variable. Note that we invert -Wno-* checks to
+# -W* as gcc cannot test for negated warnings.
+# CC_CHECK_FLAG_APPEND([WHERE-TO-APPEND], [ENV-VAR], [FLAG])
+
 AC_DEFUN([CC_CHECK_FLAG_APPEND], [
   AC_CACHE_CHECK([if $CC supports flag $3 in envvar $2],
                  AS_TR_SH([cc_cv_$2_$3]),
