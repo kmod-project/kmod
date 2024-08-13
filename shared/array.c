@@ -28,6 +28,14 @@ static int array_realloc(struct array *array, size_t new_total)
 	return 0;
 }
 
+static void array_trim(struct array *array)
+{
+	if (array->count + array->step < array->total) {
+		/* ignore error */
+		array_realloc(array, array->total - array->step);
+	}
+}
+
 void array_init(struct array *array, size_t step)
 {
 	assert(step > 0);
@@ -70,11 +78,7 @@ void array_pop(struct array *array) {
 	if (array->count == 0)
 		return;
 	array->count--;
-	if (array->count + array->step < array->total) {
-		int r = array_realloc(array, array->total - array->step);
-		if (r < 0)
-			return;
-	}
+	array_trim(array);
 }
 
 void array_free_array(struct array *array) {
@@ -99,13 +103,7 @@ int array_remove_at(struct array *array, size_t pos)
 	if (pos < array->count)
 		memmove(array->array + pos, array->array + pos + 1,
 			sizeof(void *) * (array->count - pos));
-
-	if (array->count + array->step < array->total) {
-		int r = array_realloc(array, array->total - array->step);
-		/* ignore error */
-		if (r < 0)
-			return 0;
-	}
+	array_trim(array);
 
 	return 0;
 }
