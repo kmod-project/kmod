@@ -130,13 +130,16 @@ static int test_array_remove_at(const struct test *t)
 	assert_return(array.count == 2, EXIT_FAILURE);
 	assert_return(array.array[0] == c1, EXIT_FAILURE);
 	assert_return(array.array[1] == c2, EXIT_FAILURE);
+	assert_return(array.total == 4, EXIT_FAILURE);
 
 	array_remove_at(&array, 0);
 	assert_return(array.count == 1, EXIT_FAILURE);
 	assert_return(array.array[0] == c2, EXIT_FAILURE);
+	assert_return(array.total == 2, EXIT_FAILURE);
 
 	array_remove_at(&array, 0);
 	assert_return(array.count == 0, EXIT_FAILURE);
+	assert_return(array.total == 2, EXIT_FAILURE);
 
 	array_append(&array, c1);
 	array_append(&array, c2);
@@ -146,6 +149,7 @@ static int test_array_remove_at(const struct test *t)
 	assert_return(array.count == 2, EXIT_FAILURE);
 	assert_return(array.array[0] == c1, EXIT_FAILURE);
 	assert_return(array.array[1] == c3, EXIT_FAILURE);
+	assert_return(array.total == 4, EXIT_FAILURE);
 
 	array_free_array(&array);
 
@@ -174,6 +178,10 @@ static int test_array_pop(const struct test *t)
 	assert_return(array.array[1] == c2, EXIT_FAILURE);
 
 	array_pop(&array);
+	array_pop(&array);
+
+	assert_return(array.count == 0, EXIT_FAILURE);
+
 	array_pop(&array);
 
 	assert_return(array.count == 0, EXIT_FAILURE);
