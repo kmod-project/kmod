@@ -749,7 +749,7 @@ static uint64_t kmod_elf_resolve_crc(const struct kmod_elf *elf, uint64_t crc, u
 
 	err = elf_get_section_info(elf, shndx, &off, &size, &nameoff);
 	if (err < 0) {
-		ELFDBG("Cound not find section index %"PRIu16" for crc", shndx);
+		ELFDBG("Could not find section index %"PRIu16" for crc", shndx);
 		return (uint64_t)-1;
 	}
 

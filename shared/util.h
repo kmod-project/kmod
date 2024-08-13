@@ -59,7 +59,7 @@ unsigned long long get_backoff_delta_msec(unsigned long long t0,
 					  unsigned long long *delta);
 
 
-/* endianess and alignments                                                 */
+/* endianness and alignments                                                */
 /* ************************************************************************ */
 #define get_unaligned(ptr)			\
 ({						\
