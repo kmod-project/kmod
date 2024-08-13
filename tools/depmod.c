@@ -1384,7 +1384,7 @@ static int depmod_modules_search(struct depmod *depmod)
 	for (ext = depmod->cfg->externals; ext != NULL; ext = ext->next) {
 		err = depmod_modules_search_path(depmod, ext->path);
 		if (err < 0 && err == -ENOENT)
-			/* ignore external dir absense */
+			/* ignore external dir absence */
 			continue;
 	}
 

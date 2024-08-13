@@ -117,7 +117,7 @@
  * We still use arrays of child pointers indexed by a single character;
  * the remaining characters of the label are stored as a "prefix" in the child.
  *
- * The paper describing the original Patrica trie works on individiual bits -
+ * The paper describing the original Patrica trie works on individual bits -
  * each node has a maximum of two children, which increases space efficiency.
  * However for this application it is simpler to use the ASCII character set.
  * Since the index file is read-only, it can be compressed by omitting null

@@ -39,7 +39,7 @@ See the COMMANDS section below for more.
 
 # CONFIGURATION DIRECTORIES AND PRECEDENCE
 
-Configuration files are read from directories in listed in SYNOPSYS in that
+Configuration files are read from directories in listed in SYNOPSIS in that
 order of precedence. Once a file of a given filename is loaded, any file of the
 same name in subsequent directories is ignored.
 

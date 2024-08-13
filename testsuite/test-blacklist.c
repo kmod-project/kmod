@@ -15,7 +15,7 @@
 
 #include <libkmod/libkmod.h>
 
-/* good luck bulding a kmod_list outside of the library... makes this blacklist
+/* good luck building a kmod_list outside of the library... makes this blacklist
  * function rather pointless */
 #include <libkmod/libkmod-internal.h>
 
