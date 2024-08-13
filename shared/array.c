@@ -78,7 +78,7 @@ void array_sort(struct array *array, int (*cmp)(const void *a, const void *b))
 	qsort(array->array, array->count, sizeof(void *), cmp);
 }
 
-int array_remove_at(struct array *array, unsigned int pos)
+int array_remove_at(struct array *array, size_t pos)
 {
 	if (array->count <= pos)
 		return -ENOENT;
