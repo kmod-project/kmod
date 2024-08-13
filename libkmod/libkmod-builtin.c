@@ -105,11 +105,11 @@ static off_t get_string(struct kmod_builtin_iter *iter, off_t offset,
 			char **line, size_t *size)
 {
 	int sv_errno;
+	char buf[BUFSIZ];
 	char *nullp = NULL;
 	size_t linesz = 0;
 
 	while (!nullp) {
-		char buf[BUFSIZ];
 		ssize_t sz;
 		size_t partsz;
 
