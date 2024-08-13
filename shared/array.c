@@ -5,6 +5,7 @@
 
 #include <assert.h>
 #include <errno.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -15,7 +16,11 @@
 
 static int array_realloc(struct array *array, size_t new_total)
 {
-	void *tmp = realloc(array->array, sizeof(void *) * new_total);
+	void *tmp;
+
+	if (SIZE_MAX / sizeof(void *) < new_total)
+		return -ENOMEM;
+	tmp = realloc(array->array, sizeof(void *) * new_total);
 	if (tmp == NULL)
 		return -ENOMEM;
 	array->array = tmp;
@@ -37,7 +42,11 @@ int array_append(struct array *array, const void *element)
 	size_t idx;
 
 	if (array->count + 1 >= array->total) {
-		int r = array_realloc(array, array->total + array->step);
+		int r;
+
+		if (SIZE_MAX - array->total < array->step)
+			return -ENOMEM;
+		r = array_realloc(array, array->total + array->step);
 		if (r < 0)
 			return r;
 	}
@@ -58,6 +67,8 @@ int array_append_unique(struct array *array, const void *element)
 }
 
 void array_pop(struct array *array) {
+	if (array->count == 0)
+		return;
 	array->count--;
 	if (array->count + array->step < array->total) {
 		int r = array_realloc(array, array->total - array->step);
@@ -68,6 +79,7 @@ void array_pop(struct array *array) {
 
 void array_free_array(struct array *array) {
 	free(array->array);
+	array->array = NULL;
 	array->count = 0;
 	array->total = 0;
 }
