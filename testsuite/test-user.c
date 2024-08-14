@@ -16,7 +16,7 @@
 #include "testsuite.h"
 
 #define TEST_USER_ROOTFS TESTSUITE_ROOTFS "test-user/"
-#define TEST_USER_KERNEL_DIR TEST_USER_ROOTFS "lib/modules/4.4.4/"
+#define TEST_USER_KERNEL_DIR TEST_USER_ROOTFS MODULE_DIRECTORY "/4.4.4/"
 
 static const char *const test_user_config_paths[] = {
 	TEST_USER_ROOTFS "etc/modprobe.d",
