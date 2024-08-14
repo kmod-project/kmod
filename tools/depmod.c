@@ -2960,7 +2960,7 @@ static int do_depmod(int argc, char *argv[])
 			out = stdout;
 			break;
 		case 'P':
-			if (optarg[1] != '\0') {
+			if (strlen(optarg) != 1) {
 				CRIT("-P only takes a single char\n");
 				goto cmdline_failed;
 			}
