@@ -2599,9 +2599,16 @@ static int depmod_output(struct depmod *depmod, FILE *out)
 			int flags = O_CREAT | O_EXCL | O_WRONLY;
 			int mode = 0644;
 			int fd;
+			int n;
 
-			snprintf(tmp, sizeof(tmp), "%s.%i.%lli.%lli", itr->name, getpid(),
+			n = snprintf(tmp, sizeof(tmp), "%s.%i.%lli.%lli", itr->name, getpid(),
 					(long long)tv.tv_usec, (long long)tv.tv_sec);
+			if (n >= (int)sizeof(tmp)) {
+				ERR("bad filename: %s.%i.%lli.%lli: path too long\n",
+					itr->name, getpid(), (long long)tv.tv_usec,
+					(long long)tv.tv_sec);
+				continue;
+			}
 			fd = openat(dfd, tmp, flags, mode);
 			if (fd < 0) {
 				ERR("openat(%s, %s, %o, %o): %m\n",
@@ -3013,10 +3020,21 @@ static int do_depmod(int argc, char *argv[])
 	cfg.dirnamelen = snprintf(cfg.dirname, PATH_MAX,
 				  "%s" MODULE_DIRECTORY "/%s",
 				  root ?: "", cfg.kversion);
+	if (cfg.dirnamelen >= PATH_MAX) {
+		ERR("Bad directory %s" MODULE_DIRECTORY
+		    "/%s: path too long\n", root ?: "", cfg.kversion);
+		goto cmdline_failed;
+	}
 
 	cfg.outdirnamelen = snprintf(cfg.outdirname, PATH_MAX,
 				     "%s" MODULE_DIRECTORY "/%s",
 				     out_root ?: (root ?: ""), cfg.kversion);
+	if (cfg.outdirnamelen >= PATH_MAX) {
+		ERR("Bad directory %s" MODULE_DIRECTORY
+		    "/%s: path too long\n", out_root ?: (root ?: ""),
+		    cfg.kversion);
+		goto cmdline_failed;
+	}
 
 	if (optind == argc)
 		all = 1;

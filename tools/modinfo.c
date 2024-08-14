@@ -441,6 +441,7 @@ static int do_modinfo(int argc, char *argv[])
 
 	if (root != NULL || kversion != NULL) {
 		struct utsname u;
+		int n;
 		if (root == NULL)
 			root = "";
 		if (kversion == NULL) {
@@ -450,8 +451,14 @@ static int do_modinfo(int argc, char *argv[])
 			}
 			kversion = u.release;
 		}
-		snprintf(dirname_buf, sizeof(dirname_buf), "%s" MODULE_DIRECTORY "/%s",
-			 root, kversion);
+
+		n = snprintf(dirname_buf, sizeof(dirname_buf),
+		             "%s" MODULE_DIRECTORY "/%s", root, kversion);
+		if (n >= (int)sizeof(dirname_buf)) {
+			ERR("bad directory %s" MODULE_DIRECTORY
+			    "/%s: path too long\n", root, kversion);
+			return EXIT_FAILURE;
+		}
 		dirname = dirname_buf;
 	}
 
