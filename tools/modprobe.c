@@ -976,6 +976,7 @@ static int do_modprobe(int argc, char **orig_argv)
 
 	if (root != NULL || kversion != NULL) {
 		struct utsname u;
+		int n;
 		if (root == NULL)
 			root = "";
 		if (kversion == NULL) {
@@ -986,9 +987,14 @@ static int do_modprobe(int argc, char **orig_argv)
 			}
 			kversion = u.release;
 		}
-		snprintf(dirname_buf, sizeof(dirname_buf),
-				"%s" MODULE_DIRECTORY "/%s", root,
-				kversion);
+		n = snprintf(dirname_buf, sizeof(dirname_buf),
+		             "%s" MODULE_DIRECTORY "/%s", root, kversion);
+		if (n >= (int)sizeof(dirname_buf)) {
+			ERR("bad directory %s" MODULE_DIRECTORY
+			    "/%s: path too long\n", root, kversion);
+			err = -1;
+			goto done;
+		}
 		dirname = dirname_buf;
 	}
 

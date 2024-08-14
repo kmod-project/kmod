@@ -200,7 +200,13 @@ static int do_static_nodes(int argc, char *argv[])
 		goto finish;
 	}
 
-	snprintf(modules, sizeof(modules), MODULE_DIRECTORY "/%s/modules.devname", kernel.release);
+	r = snprintf(modules, sizeof(modules), MODULE_DIRECTORY "/%s/modules.devname", kernel.release);
+	if (r >= (int)sizeof(modules)) {
+		fprintf(stderr, "Error: could not open " MODULE_DIRECTORY "/%s/modules.devname - path too long\n",
+			kernel.release);
+		ret = EXIT_FAILURE;
+		goto finish;
+	}
 	in = fopen(modules, "re");
 	if (in == NULL) {
 		if (errno == ENOENT) {
