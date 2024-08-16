@@ -108,10 +108,10 @@ map=(
     ["test-modinfo/mod-simple-sha256.ko"]="mod-simple.ko"
     ["test-modinfo/mod-simple-pkcs7.ko"]="mod-simple.ko"
     ["test-modinfo/external/lib/modules/external/mod-simple.ko"]="mod-simple.ko"
-    ["test-user$MODULE_DIRECTORY/4.4.4/kernel/mod-loop-a.ko"]="mod-loop-a.ko"
-    ["test-user$MODULE_DIRECTORY/4.4.4/kernel/mod-loop-b.ko"]="mod-loop-b.ko"
-    ["test-user$MODULE_DIRECTORY/4.4.4/kernel/mod-simple.ko"]="mod-simple.ko"
-    ["test-user$MODULE_DIRECTORY/4.4.4/kernel/mod-weakdep.ko"]="mod-weakdep.ko"
+    ["test-weakdep$MODULE_DIRECTORY/4.4.4/kernel/mod-loop-a.ko"]="mod-loop-a.ko"
+    ["test-weakdep$MODULE_DIRECTORY/4.4.4/kernel/mod-loop-b.ko"]="mod-loop-b.ko"
+    ["test-weakdep$MODULE_DIRECTORY/4.4.4/kernel/mod-simple.ko"]="mod-simple.ko"
+    ["test-weakdep$MODULE_DIRECTORY/4.4.4/kernel/mod-weakdep.ko"]="mod-weakdep.ko"
 )
 
 gzip_array=(

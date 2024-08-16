@@ -15,11 +15,11 @@
 
 #include "testsuite.h"
 
-#define TEST_USER_ROOTFS TESTSUITE_ROOTFS "test-user/"
-#define TEST_USER_KERNEL_DIR TEST_USER_ROOTFS MODULE_DIRECTORY "/4.4.4/"
+#define TEST_WEAKDEP_ROOTFS TESTSUITE_ROOTFS "test-weakdep/"
+#define TEST_WEAKDEP_KERNEL_DIR TEST_WEAKDEP_ROOTFS MODULE_DIRECTORY "/4.4.4/"
 
-static const char *const test_user_config_paths[] = {
-	TEST_USER_ROOTFS "etc/modprobe.d",
+static const char *const test_weakdep_config_paths[] = {
+	TEST_WEAKDEP_ROOTFS "etc/modprobe.d",
 	NULL
 };
 
@@ -29,13 +29,13 @@ static const char *const mod_name[] = {
 	NULL
 };
 
-static int test_user_weakdep(const struct test *t)
+static int test_weakdep(const struct test *t)
 {
 	struct kmod_ctx *ctx;
 	int mod_name_index = 0;
 	int err;
 
-	ctx = kmod_new(TEST_USER_KERNEL_DIR, test_user_config_paths);
+	ctx = kmod_new(TEST_WEAKDEP_KERNEL_DIR, test_weakdep_config_paths);
 	if (ctx == NULL)
 		exit(EXIT_FAILURE);
 
@@ -83,16 +83,16 @@ static int test_user_weakdep(const struct test *t)
 
 	return EXIT_SUCCESS;
 }
-DEFINE_TEST(test_user_weakdep,
-	.description = "check if modprobe breaks weakdep2",
+DEFINE_TEST(test_weakdep,
+	.description = "check if modprobe breaks weakdep",
 	.config = {
 		[TC_UNAME_R] = "4.4.4",
-		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-user",
+		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-weakdep",
 		[TC_INIT_MODULE_RETCODES] = "",
 	},
 	.need_spawn = true,
 	.output = {
-		.out = TESTSUITE_ROOTFS "test-user/correct-weakdep.txt",
+		.out = TESTSUITE_ROOTFS "test-weakdep/correct-weakdep.txt",
 	});
 
 TESTSUITE_MAIN();
