@@ -10,7 +10,7 @@ jobs:
   spellcheck:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: codespell-project/actions-codespell@v2
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+      - uses: codespell-project/actions-codespell@94259cd8be02ad2903ba34a22d9c13de21a74461 # v2.0
         with:
           ignore_words_file: .codespellignore
