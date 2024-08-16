@@ -1,0 +1,16 @@
+name: Check spelling with codespell
+
+on:
+  push:
+    branches: [master, ci-test]
+  pull_request:
+    branches: [master]
+
+jobs:
+  spellcheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: codespell-project/actions-codespell@v2
+        with:
+          ignore_words_file: .codespellignore
