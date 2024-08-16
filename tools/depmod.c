@@ -2934,8 +2934,7 @@ static int do_depmod(int argc, char *argv[])
 			maybe_all = 1;
 			break;
 		case 'b':
-			if (root)
-				free(root);
+			free(root);
 			root = path_make_absolute_cwd(optarg);
 			if (root == NULL) {
 				ERR("invalid image path %s\n", optarg);
@@ -2943,8 +2942,7 @@ static int do_depmod(int argc, char *argv[])
 			}
 			break;
 		case 'o':
-			if (out_root)
-				free(out_root);
+			free(out_root);
 			out_root = path_make_absolute_cwd(optarg);
 			if (out_root == NULL) {
 				ERR("invalid output directory %s\n", optarg);
