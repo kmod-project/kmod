@@ -276,7 +276,7 @@ TESTSUITE = \
 	testsuite/test-modinfo testsuite/test-util testsuite/test-new-module \
 	testsuite/test-modprobe testsuite/test-blacklist \
 	testsuite/test-dependencies testsuite/test-depmod \
-	testsuite/test-list testsuite/test-user
+	testsuite/test-list testsuite/test-weakdep
 
 check_PROGRAMS = $(TESTSUITE)
 TESTS = $(TESTSUITE)
@@ -319,8 +319,8 @@ testsuite_test_depmod_LDADD = $(TESTSUITE_LDADD)
 testsuite_test_depmod_CPPFLAGS = $(TESTSUITE_CPPFLAGS)
 testsuite_test_list_LDADD = $(TESTSUITE_LDADD)
 testsuite_test_list_CPPFLAGS = $(TESTSUITE_CPPFLAGS)
-testsuite_test_user_LDADD = $(TESTSUITE_LDADD)
-testsuite_test_user_CPPFLAGS = $(TESTSUITE_CPPFLAGS)
+testsuite_test_weakdep_LDADD = $(TESTSUITE_LDADD)
+testsuite_test_weakdep_CPPFLAGS = $(TESTSUITE_CPPFLAGS)
 
 testsuite-distclean:
 	$(RM) -r $(ROOTFS)
