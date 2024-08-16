@@ -2937,11 +2937,19 @@ static int do_depmod(int argc, char *argv[])
 			if (root)
 				free(root);
 			root = path_make_absolute_cwd(optarg);
+			if (root == NULL) {
+				ERR("invalid image path %s\n", optarg);
+				goto cmdline_failed;
+			}
 			break;
 		case 'o':
 			if (out_root)
 				free(out_root);
 			out_root = path_make_absolute_cwd(optarg);
+			if (out_root == NULL) {
+				ERR("invalid output directory %s\n", optarg);
+				goto cmdline_failed;
+			}
 			break;
 		case 'C': {
 			size_t bytes = sizeof(char *) * (n_config_paths + 2);

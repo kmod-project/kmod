@@ -288,6 +288,10 @@ KMOD_EXPORT struct kmod_ctx *kmod_new(const char *dirname,
 	ctx->log_priority = LOG_ERR;
 
 	ctx->dirname = get_kernel_release(dirname);
+	if (ctx->dirname == NULL) {
+		ERR(ctx, "could not retrieve directory\n");
+		goto fail;
+	}
 
 	/* environment overwrites config */
 	env = secure_getenv("KMOD_LOG");
