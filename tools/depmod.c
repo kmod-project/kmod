@@ -2865,7 +2865,7 @@ static int depfile_up_to_date_dir(DIR *d, time_t mtime, size_t baselen, char *pa
 	return err;
 }
 
-/* uptodate: 1, outdated: 0, errors < 0 */
+/* up-to-date: 1, outdated: 0, errors < 0 */
 static int depfile_up_to_date(const char *dirname)
 {
 	char path[PATH_MAX + 1];

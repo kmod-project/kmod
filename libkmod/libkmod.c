@@ -457,7 +457,7 @@ static int kmod_lookup_alias_from_alias_bin(struct kmod_ctx *ctx,
 	struct index_value *realnames, *realname;
 
 	if (ctx->indexes[index_number] != NULL) {
-		DBG(ctx, "use mmaped index '%s' for name=%s\n",
+		DBG(ctx, "use mmapped index '%s' for name=%s\n",
 			index_files[index_number].fn, name);
 		realnames = index_mm_searchwild(ctx->indexes[index_number],
 									name);
@@ -523,7 +523,7 @@ static char *lookup_builtin_file(struct kmod_ctx *ctx, const char *name)
 	char *line;
 
 	if (ctx->indexes[KMOD_INDEX_MODULES_BUILTIN]) {
-		DBG(ctx, "use mmaped index '%s' modname=%s\n",
+		DBG(ctx, "use mmapped index '%s' modname=%s\n",
 				index_files[KMOD_INDEX_MODULES_BUILTIN].fn,
 				name);
 		line = index_mm_search(ctx->indexes[KMOD_INDEX_MODULES_BUILTIN],
@@ -618,7 +618,7 @@ char *kmod_search_moddep(struct kmod_ctx *ctx, const char *name)
 	char *line;
 
 	if (ctx->indexes[KMOD_INDEX_MODULES_DEP]) {
-		DBG(ctx, "use mmaped index '%s' modname=%s\n",
+		DBG(ctx, "use mmapped index '%s' modname=%s\n",
 				index_files[KMOD_INDEX_MODULES_DEP].fn, name);
 		return index_mm_search(ctx->indexes[KMOD_INDEX_MODULES_DEP],
 									name);
@@ -874,7 +874,7 @@ KMOD_EXPORT int kmod_validate_resources(struct kmod_ctx *ctx)
  *
  * If user will do more than one or two lookups, insertions, deletions, most
  * likely it's good to call this function first. Particularly in a daemon like
- * udev that on bootup issues hundreds of calls to lookup the index, calling
+ * udev that on boot issues hundreds of calls to lookup the index, calling
  * this function will speedup the searches.
  *
  * Returns: 0 on success or < 0 otherwise.
@@ -977,7 +977,7 @@ KMOD_EXPORT int kmod_dump_index(struct kmod_ctx *ctx, enum kmod_index type,
 		return -ENOENT;
 
 	if (ctx->indexes[type] != NULL) {
-		DBG(ctx, "use mmaped index '%s'\n", index_files[type].fn);
+		DBG(ctx, "use mmapped index '%s'\n", index_files[type].fn);
 		index_mm_dump(ctx->indexes[type], fd,
 						index_files[type].prefix);
 	} else {

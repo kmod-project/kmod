@@ -91,7 +91,7 @@ kmod 32
 	  to update the mapping
 
 	- Teach kmod to load modprobe.d/depmod.d configuration from ${prefix}/lib
-	  and allow it to be overriden during build with --with-distconfdir=DIR
+	  and allow it to be overridden during build with --with-distconfdir=DIR
 
 	- Make kernel modules directory configurable. This allows distro to
 	  make kmod use only files from /usr regardless of having a compat
@@ -147,7 +147,7 @@ kmod 31
 	- Make modprobe fallback to syslog when stderr is not available, as was
 	  documented in the man page, but not implemented
 
-	- Better explaing `modprobe -r` and how it differentiates from rmmod
+	- Better explaining `modprobe -r` and how it differentiates from rmmod
 
 	- depmod learned a `-o <dir>` option to allow using a separate output
 	  directory. With this, it's possible to split the output files from
@@ -200,7 +200,7 @@ kmod 30
 	  module name, without considering the aliases. Other than that search
 	  order is similar to kmod_module_new_from_lookup().
 
-	- modinfo learned the --modname option to explicitely show information
+	- modinfo learned the --modname option to explicitly show information
 	  about the module, even if there is an alias with the same name. This
 	  allows showing information about e.g. kernel/lib/crc32.ko, even if
 	  kernel also exports a crc32 alias in modules.alias:
@@ -225,7 +225,7 @@ kmod 30
 	  The wait behavior provided by the kernel when not passing O_NONBLOCK
 	  to delete_module() was removed in v3.13 due to not be used and the
 	  consequences of having to support it in the kernel. However there may
-	  be some users, particularly on testsuites for individual susbsystems, that
+	  be some users, particularly on testsuites for individual subsystems, that
 	  would want that. So provide a userspace implementation inside modprobe for
 	  such users. "rmmod" doesn't have a --wait as it remains a bare minimal over
 	  the API provided by the kernel. In future the --wait behavior can be added
@@ -415,7 +415,7 @@ kmod 26
 		  sig_key:        51:C4:0C:6D:7E:A5:6C:D8:8F:B4:3A:DF:91:78:4F:18:BC:D5:E4:C5
 		  sig_hashalgo:   sha256
 
-	  If kmod is not linked to openssl we just start printing "unknonwn" in the
+	  If kmod is not linked to openssl we just start printing "unknown" in the
 	  sig_hashalgo field rather than the bogus value.
 
 
@@ -493,7 +493,7 @@ kmod 22
 =======
 
 - Tools:
-	- Change defaul log level for tools to WARNING rather than ERROR and update
+	- Change default log level for tools to WARNING rather than ERROR and update
 	  some log levels for current messages
 
 	- depmod doesn't fallback to uname if a bad version is passed in the command
@@ -958,7 +958,7 @@ matched more than one module.
   The only missing things are the options '--showconfig' and '-t / -l'. These
   last ones have been deprecated long ago and they will be removed from
   modprobe. A lot of effort has been put on kmod-modprobe to ensure it
-  maintains compabitility with modprobe.
+  maintains compatibility with modprobe.
 
 - linux-modules@vger.kernel.org became the official mailing list for kmod
 
