@@ -857,7 +857,7 @@ static int do_finit_module(struct kmod_module *mod, unsigned int flags,
 	/*
 	 * When module is not compressed or its compression type matches the
 	 * one in use by the kernel, there is no need to read the file
-	 * in userspace. Otherwise, re-use ENOSYS to trigger the same fallback
+	 * in userspace. Otherwise, reuse ENOSYS to trigger the same fallback
 	 * as when finit_module() is not supported.
 	 */
 	compression = kmod_file_get_compression(mod->file);
