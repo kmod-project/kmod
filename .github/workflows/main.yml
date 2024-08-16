@@ -27,6 +27,9 @@ jobs:
             test: 'yes'
           - container: 'alpine:latest'
             test: 'no'
+          - container: 'debian:unstable'
+            test: 'yes'
+            configure: '--disable-test-modules'
 
     container:
       image: ${{ matrix.container }}
@@ -42,12 +45,14 @@ jobs:
         if: ${{ startsWith(matrix.container, 'fedora') }}
       - uses: ./.github/actions/setup-alpine
         if: ${{ startsWith(matrix.container, 'alpine') }}
+      - uses: ./.github/actions/setup-debian
+        if: ${{ startsWith(matrix.container, 'debian') }}
 
       - name: configure
         run: |
           mkdir build
           cd build
-          ../autogen.sh c
+          ../autogen.sh c ${{ matrix.configure }}
 
       - name: build
         run: |
@@ -69,4 +74,4 @@ jobs:
         if: ${{ matrix.test == 'yes' }}
         run: |
           cd build
-          make KDIR=/usr/lib/modules/*/build distcheck
+          DISTCHECK_CONFIGURE_FLAGS=${{ matrix.configure }} make KDIR=/usr/lib/modules/*/build distcheck

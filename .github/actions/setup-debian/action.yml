@@ -1,0 +1,25 @@
+name: 'setup Debian'
+description: 'Setup a Debian container for running CI'
+runs:
+  using: 'composite'
+  steps:
+    - name: Install dependencies
+      shell: bash
+      run: |
+        apt-get update
+        apt-get install --yes \
+          build-essential \
+          autoconf \
+          automake \
+          gtk-doc-tools \
+          libssl-dev \
+          liblzma-dev \
+          libssl-dev \
+          libtool \
+          libzstd-dev \
+          scdoc \
+          zlib1g-dev \
+          zstd
+        # not used by default in Debian since it builds with --disable-test-modules
+        # developers should have it though
+        # apt-get install linux-headers-generic
