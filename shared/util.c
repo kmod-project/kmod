@@ -285,8 +285,8 @@ int read_str_ulong(int fd, unsigned long *value, int base)
  */
 char *freadline_wrapped(FILE *fp, unsigned int *linenum)
 {
-	int size = 256;
-	int i = 0, n = 0;
+	size_t i = 0, size = 256;
+	unsigned int n = 0;
 	_cleanup_free_ char *buf = malloc(size);
 
 	if (buf == NULL)
