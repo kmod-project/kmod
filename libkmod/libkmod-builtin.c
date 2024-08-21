@@ -127,13 +127,18 @@ static off_t get_string(struct kmod_builtin_iter *iter, off_t offset,
 		offset += (off_t) partsz;
 
 		if (iter->bufsz < linesz + partsz) {
-			iter->bufsz = linesz + partsz;
-			iter->buf = realloc(iter->buf, iter->bufsz);
+			void *tmp;
+			size_t s;
 
-			if (!iter->buf) {
+			s = linesz + partsz;
+			tmp = realloc(iter->buf, s);
+
+			if (!tmp) {
 				sv_errno = errno;
 				goto fail;
 			}
+			iter->bufsz = s;
+			iter->buf = tmp;
 		}
 
 		strncpy(iter->buf + linesz, buf, partsz);
