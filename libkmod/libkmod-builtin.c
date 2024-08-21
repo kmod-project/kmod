@@ -215,8 +215,10 @@ static bool kmod_builtin_iter_get_modname(struct kmod_builtin_iter *iter,
 	size_t linesz, len;
 	off_t offset;
 
-	if (iter->pos == iter->size)
-		return false;
+	if (iter->pos == iter->size) {
+		sv_errno = EINVAL;
+		goto fail;
+	}
 
 	line = NULL;
 
@@ -230,7 +232,7 @@ static bool kmod_builtin_iter_get_modname(struct kmod_builtin_iter *iter,
 
 	dot = strchr(line, '.');
 	if (!dot) {
-		sv_errno = errno;
+		sv_errno = EINVAL;
 		ERR(iter->ctx, "kmod_builtin_iter_get_modname: unexpected string without modname prefix\n");
 		goto fail;
 	}
