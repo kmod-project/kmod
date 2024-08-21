@@ -146,6 +146,10 @@ static off_t get_string(struct kmod_builtin_iter *iter, off_t offset,
 	}
 
 	if (linesz) {
+		if (iter->buf[linesz - 1] != '\0') {
+			sv_errno = EINVAL;
+			goto fail;
+		}
 		*line = iter->buf;
 		*size = linesz;
 	}
