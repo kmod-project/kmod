@@ -29,7 +29,6 @@ jobs:
             test: 'no'
           - container: 'debian:unstable'
             test: 'yes'
-            configure: '--disable-test-modules'
 
     container:
       image: ${{ matrix.container }}

@@ -168,14 +168,9 @@ build-module-playground:
 	$(AM_V_GEN)if test "$(top_srcdir)" != "$(top_builddir)"; then \
 		$(RM) -rf testsuite/module-playground && \
 		mkdir -p testsuite/ && \
-		cp -r $(top_srcdir)/$(MODULE_PLAYGROUND) $(top_builddir)/$(MODULE_PLAYGROUND) && \
-		find $(top_builddir)/$(MODULE_PLAYGROUND) -type d -exec chmod +w {} \; ; \
+		cp -r $(top_srcdir)/$(MODULE_PLAYGROUND) $(top_builddir)/$(MODULE_PLAYGROUND); \
 		fi
-if BUILD_MODULES
 	$(MAKE) -C $(MODULE_PLAYGROUND)
-else
-	$(MAKE) -C $(MODULE_PLAYGROUND) FAKE_BUILD=1
-endif
 
 
 rootfs: build-module-playground
@@ -197,7 +192,6 @@ check-am: rootfs
 
 
 EXTRA_DIST += \
-	testsuite/module-playground/cache \
 	testsuite/module-playground/dummy.pkcs7 \
 	testsuite/module-playground/dummy.sha1 \
 	testsuite/module-playground/dummy.sha256 \

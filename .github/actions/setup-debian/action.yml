@@ -17,9 +17,7 @@ runs:
           libssl-dev \
           libtool \
           libzstd-dev \
+          linux-headers-generic \
           scdoc \
           zlib1g-dev \
           zstd
-        # not used by default in Debian since it builds with --disable-test-modules
-        # developers should have it though
-        # apt-get install linux-headers-generic
