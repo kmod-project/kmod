@@ -192,7 +192,7 @@ TESTSUITE_OVERRIDE_LIBS = \
 	testsuite/init_module.la \
 	testsuite/delete_module.la
 TESTSUITE_OVERRIDE_LIBS_LDFLAGS = \
-	avoid-version -module -shared -export-dynamic -rpath /nowhere -ldl
+	-avoid-version -module -shared -rpath /nowhere -ldl
 
 check-am: rootfs
 
