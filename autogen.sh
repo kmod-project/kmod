@@ -23,12 +23,6 @@ if [ -f "$topdir/.config.args" ]; then
     args="$args $(cat $topdir/.config.args)"
 fi
 
-if [ ! -L /bin ]; then
-    args="$args \
-        --with-rootlibdir=$(libdir /lib) \
-        "
-fi
-
 cd $oldpwd
 
 hackargs="\

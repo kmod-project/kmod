@@ -86,11 +86,6 @@ AC_ARG_WITH([distconfdir], AS_HELP_STRING([--with-distconfdir=DIR], [directory t
         [], [with_distconfdir='${prefix}/lib'])
 AC_SUBST([distconfdir], [$with_distconfdir])
 
-AC_ARG_WITH([rootlibdir],
-        AS_HELP_STRING([--with-rootlibdir=DIR], [rootfs directory to install shared libraries]),
-        [], [with_rootlibdir=$libdir])
-AC_SUBST([rootlibdir], [$with_rootlibdir])
-
 # Ideally this would be $prefix/lib/modules but default to /lib/modules for compatibility with earlier versions
 AC_ARG_WITH([module_directory],
         AS_HELP_STRING([--with-module-directory=DIR], [directory in which to look for kernel modules @<:@default=/lib/modules@:>@]),
@@ -98,7 +93,7 @@ AC_ARG_WITH([module_directory],
 AC_SUBST([module_directory], [$with_module_directory])
 
 # Check all directory arguments for consistency.
-for ac_var in	distconfdir rootlibdir module_directory
+for ac_var in	distconfdir module_directory
 do
   eval ac_val=\$$ac_var
   # Remove trailing slashes.
@@ -330,7 +325,6 @@ AC_MSG_RESULT([
 	sysconfdir:		${sysconfdir}
 	distconfdir:		${distconfdir}
 	libdir:			${libdir}
-	rootlibdir:		${rootlibdir}
 	includedir:		${includedir}
 	bindir:			${bindir}
 	Bash completions dir:   ${with_bashcompletiondir}

@@ -117,13 +117,6 @@ dist_bashcompletion_DATA = \
 	shell-completion/bash/kmod
 
 install-exec-hook:
-	if test "$(libdir)" != "$(rootlibdir)"; then \
-		$(MKDIR_P) $(DESTDIR)$(rootlibdir) && \
-		so_img_name=$$(readlink $(DESTDIR)$(libdir)/libkmod.so) && \
-		so_img_rel_target_prefix=$$(echo $(libdir) | sed 's,\(^/\|\)[^/][^/]*,..,g') && \
-		ln -sf $$so_img_rel_target_prefix$(rootlibdir)/$$so_img_name $(DESTDIR)$(libdir)/libkmod.so && \
-		mv $(DESTDIR)$(libdir)/libkmod.so.* $(DESTDIR)$(rootlibdir); \
-	fi
 if BUILD_TOOLS
 	for tool in insmod lsmod rmmod depmod modprobe modinfo; do \
 		$(LN_S) -f kmod $(DESTDIR)$(bindir)/$$tool; \
@@ -131,7 +124,6 @@ if BUILD_TOOLS
 endif
 
 uninstall-hook:
-	rm -f $(DESTDIR)$(rootlibdir)/libkmod.so*
 if BUILD_TOOLS
 	for tool in insmod lsmod rmmod depmod modprobe modinfo; do \
 		rm -f $(DESTDIR)$(bindir)/$$tool; \
