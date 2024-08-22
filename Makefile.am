@@ -258,17 +258,23 @@ testsuite_libtestsuite_la_CPPFLAGS = $(TESTSUITE_CPPFLAGS)
 testsuite_libtestsuite_la_LIBADD = -lrt
 
 TESTSUITE = \
-	testsuite/test-hash \
 	testsuite/test-array \
-	testsuite/test-scratchbuf \
-	testsuite/test-strbuf \
+	testsuite/test-blacklist \
+	testsuite/test-dependencies \
+	testsuite/test-depmod \
+	testsuite/test-hash \
 	testsuite/test-init \
 	testsuite/test-initstate \
-	testsuite/test-testsuite testsuite/test-loaded \
-	testsuite/test-modinfo testsuite/test-util testsuite/test-new-module \
-	testsuite/test-modprobe testsuite/test-blacklist \
-	testsuite/test-dependencies testsuite/test-depmod \
-	testsuite/test-list testsuite/test-weakdep
+	testsuite/test-list \
+	testsuite/test-loaded \
+	testsuite/test-modinfo \
+	testsuite/test-modprobe \
+	testsuite/test-new-module \
+	testsuite/test-scratchbuf \
+	testsuite/test-strbuf \
+	testsuite/test-testsuite \
+	testsuite/test-util \
+	testsuite/test-weakdep
 
 check_PROGRAMS = $(TESTSUITE)
 TESTS = $(TESTSUITE)
