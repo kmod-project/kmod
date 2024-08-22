@@ -58,13 +58,3 @@ static inline const char *basename(const char *s)
 	return p ? p + 1 : s;
 }
 #endif
-
-#if !HAVE_DECL_BE32TOH
-#include <endian.h>
-#include <byteswap.h>
-#if __BYTE_ORDER == __LITTLE_ENDIAN
-#define be32toh(x) bswap_32 (x)
-#else
-#define be32toh(x) (x)
-#endif
-#endif
