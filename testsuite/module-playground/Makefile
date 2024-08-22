@@ -50,7 +50,6 @@ endif
 else
 # normal makefile
 KDIR ?= $(module_prefix)/lib/modules/`uname -r`/build
-KVER ?= `uname -r`
 
 ARCH_SPECIFIC_MODULES := mod-simple-x86_64.ko mod-simple-i386.ko mod-simple-sparc64.ko
 MY_MODULES := $(filter-out $(ARCH_SPECIFIC_MODULES),$(wildcard *.ko))
