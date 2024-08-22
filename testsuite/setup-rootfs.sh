@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+set -euo pipefail
 
 ROOTFS_PRISTINE=$1
 ROOTFS=$2
