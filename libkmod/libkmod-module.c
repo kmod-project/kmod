@@ -21,9 +21,6 @@
 #include <sys/syscall.h>
 #include <sys/types.h>
 #include <sys/wait.h>
-#ifdef HAVE_LINUX_MODULE_H
-#include <linux/module.h>
-#endif
 
 #include <shared/util.h>
 

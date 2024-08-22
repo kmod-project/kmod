@@ -55,9 +55,6 @@ AC_CHECK_MEMBERS([struct stat.st_mtim], [], [], [#include <sys/stat.h>])
 # not desired here
 AC_CHECK_DECLS_ONCE([[strndupa], [basename]], [], [], [[#include <string.h>]])
 
-# Check kernel headers
-AC_CHECK_HEADERS_ONCE([linux/module.h])
-
 AC_MSG_CHECKING([whether _Static_assert() is supported])
 AC_COMPILE_IFELSE(
 	[AC_LANG_SOURCE([[_Static_assert(1, "Test");]])],
