@@ -7,6 +7,7 @@ ROOTFS=$2
 MODULE_PLAYGROUND=$3
 CONFIG_H=$4
 SYSCONFDIR=$5
+MODULE_DIRECTORY=$6
 
 # create rootfs from rootfs-pristine
 
