@@ -16,6 +16,7 @@
 /* ************************************************************************ */
 #define streq(a, b) (strcmp((a), (b)) == 0)
 #define strstartswith(a, b) (strncmp(a, b, strlen(b)) == 0)
+#define strnstartswith(a, b, n) (strncmp(a, b, n) == 0)
 char *strchr_replace(char *s, char c, char r);
 void *memdup(const void *p, size_t n) __attribute__((nonnull(1)));
 
