@@ -39,7 +39,6 @@ static const struct option options[] = {
 	{ NULL, 0, 0, 0 }
 };
 
-#define OVERRIDE_LIBDIR ABS_TOP_BUILDDIR "/testsuite/.libs/"
 #define TEST_TIMEOUT_USEC 2 * USEC_PER_SEC
 
 static const struct {
