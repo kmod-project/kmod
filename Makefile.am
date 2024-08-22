@@ -242,7 +242,7 @@ testsuite_init_module_la_LIBADD = libkmod/libkmod-internal.la
 
 TESTSUITE_CPPFLAGS = $(AM_CPPFLAGS) \
 	-DTESTSUITE_ROOTFS=\"$(abs_top_builddir)/$(ROOTFS)/\" \
-	-DABS_TOP_BUILDDIR=\"$(abs_top_builddir)\" \
+	-DTOOLS_DIR=\"$(abs_top_builddir)/tools\" \
 	-DOVERRIDE_LIBDIR=\"$(abs_top_builddir)/testsuite/.libs/\"
 TESTSUITE_LDADD = \
 	testsuite/libtestsuite.la libkmod/libkmod-internal.la \

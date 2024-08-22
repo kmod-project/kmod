@@ -13,7 +13,7 @@
 
 #include "testsuite.h"
 
-static const char *progname = ABS_TOP_BUILDDIR "/tools/modinfo";
+static const char *progname = TOOLS_DIR "/modinfo";
 
 #define DEFINE_MODINFO_TEST(_field, _flavor, ...) \
 static noreturn int test_modinfo_##_field(const struct test *t) \

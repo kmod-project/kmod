@@ -15,7 +15,7 @@
 
 static noreturn int modprobe_show_depends(const struct test *t)
 {
-	const char *progname = ABS_TOP_BUILDDIR "/tools/modprobe";
+	const char *progname = TOOLS_DIR "/modprobe";
 	const char *const args[] = {
 		progname,
 		"--show-depends", "mod-loop-a",
@@ -37,7 +37,7 @@ DEFINE_TEST(modprobe_show_depends,
 
 static noreturn int modprobe_show_depends2(const struct test *t)
 {
-	const char *progname = ABS_TOP_BUILDDIR "/tools/modprobe";
+	const char *progname = TOOLS_DIR "/modprobe";
 	const char *const args[] = {
 		progname,
 		"--show-depends", "mod-simple",
@@ -60,7 +60,7 @@ DEFINE_TEST(modprobe_show_depends2,
 
 static noreturn int modprobe_show_alias_to_none(const struct test *t)
 {
-	const char *progname = ABS_TOP_BUILDDIR "/tools/modprobe";
+	const char *progname = TOOLS_DIR "/modprobe";
 	const char *const args[] = {
 		progname,
 		"--show-depends", "--ignore-install", "--quiet", "mod-simple",
@@ -85,7 +85,7 @@ DEFINE_TEST(modprobe_show_alias_to_none,
 
 static noreturn int modprobe_show_exports(const struct test *t)
 {
-	const char *progname = ABS_TOP_BUILDDIR "/tools/modprobe";
+	const char *progname = TOOLS_DIR "/modprobe";
 	const char *const args[] = {
 		progname,
 		"--show-exports", "--quiet", "/mod-loop-a.ko",
@@ -108,7 +108,7 @@ DEFINE_TEST(modprobe_show_exports,
 
 static noreturn int modprobe_builtin(const struct test *t)
 {
-	const char *progname = ABS_TOP_BUILDDIR "/tools/modprobe";
+	const char *progname = TOOLS_DIR "/modprobe";
 	const char *const args[] = {
 		progname,
 		"unix",
@@ -127,7 +127,7 @@ DEFINE_TEST(modprobe_builtin,
 
 static noreturn int modprobe_builtin_lookup_only(const struct test *t)
 {
-	const char *progname = ABS_TOP_BUILDDIR "/tools/modprobe";
+	const char *progname = TOOLS_DIR "/modprobe";
 	const char *const args[] = {
 		progname,
 		"-R", "unix",
@@ -149,7 +149,7 @@ DEFINE_TEST(modprobe_builtin_lookup_only,
 
 static noreturn int modprobe_softdep_loop(const struct test *t)
 {
-	const char *progname = ABS_TOP_BUILDDIR "/tools/modprobe";
+	const char *progname = TOOLS_DIR "/modprobe";
 	const char *const args[] = {
 		progname,
 		"mod-loop-b",
@@ -171,7 +171,7 @@ DEFINE_TEST(modprobe_softdep_loop,
 
 static noreturn int modprobe_weakdep_loop(const struct test *t)
 {
-	const char *progname = ABS_TOP_BUILDDIR "/tools/modprobe";
+	const char *progname = TOOLS_DIR "/modprobe";
 	const char *const args[] = {
 		progname,
 		"mod-loop-b",
@@ -194,7 +194,7 @@ DEFINE_TEST(modprobe_weakdep_loop,
 
 static noreturn int modprobe_install_cmd_loop(const struct test *t)
 {
-	const char *progname = ABS_TOP_BUILDDIR "/tools/modprobe";
+	const char *progname = TOOLS_DIR "/modprobe";
 	const char *const args[] = {
 		progname,
 		"mod-loop-a",
@@ -212,7 +212,7 @@ DEFINE_TEST(modprobe_install_cmd_loop,
 		[TC_INIT_MODULE_RETCODES] = "",
 	},
 	.env_vars = (const struct keyval[]) {
-		{ "MODPROBE", ABS_TOP_BUILDDIR "/tools/modprobe" },
+		{ "MODPROBE", TOOLS_DIR "/modprobe" },
 		{ }
 		},
 	.modules_loaded = "mod-loop-b,mod-loop-a",
@@ -220,7 +220,7 @@ DEFINE_TEST(modprobe_install_cmd_loop,
 
 static noreturn int modprobe_param_kcmdline_show_deps(const struct test *t)
 {
-	const char *progname = ABS_TOP_BUILDDIR "/tools/modprobe";
+	const char *progname = TOOLS_DIR "/modprobe";
 	const char *const args[] = {
 		progname,
 		"--show-depends", "mod-simple",
@@ -244,7 +244,7 @@ DEFINE_TEST(modprobe_param_kcmdline_show_deps,
 
 static noreturn int modprobe_param_kcmdline(const struct test *t)
 {
-	const char *progname = ABS_TOP_BUILDDIR "/tools/modprobe";
+	const char *progname = TOOLS_DIR "/modprobe";
 	const char *const args[] = {
 		progname,
 		"-c",
@@ -341,7 +341,7 @@ DEFINE_TEST_WITH_FUNC(modprobe_param_kcmdline8, modprobe_param_kcmdline,
 
 static noreturn int modprobe_force(const struct test *t)
 {
-	const char *progname = ABS_TOP_BUILDDIR "/tools/modprobe";
+	const char *progname = TOOLS_DIR "/modprobe";
 	const char *const args[] = {
 		progname,
 		"--force", "mod-simple",
@@ -363,7 +363,7 @@ DEFINE_TEST(modprobe_force,
 
 static noreturn int modprobe_oldkernel(const struct test *t)
 {
-	const char *progname = ABS_TOP_BUILDDIR "/tools/modprobe";
+	const char *progname = TOOLS_DIR "/modprobe";
 	const char *const args[] = {
 		progname,
 		"mod-simple",
@@ -385,7 +385,7 @@ DEFINE_TEST(modprobe_oldkernel,
 
 static noreturn int modprobe_oldkernel_force(const struct test *t)
 {
-	const char *progname = ABS_TOP_BUILDDIR "/tools/modprobe";
+	const char *progname = TOOLS_DIR "/modprobe";
 	const char *const args[] = {
 		progname,
 		"--force", "mod-simple",
@@ -407,7 +407,7 @@ DEFINE_TEST(modprobe_oldkernel_force,
 
 static noreturn int modprobe_external(const struct test *t)
 {
-	const char *progname = ABS_TOP_BUILDDIR "/tools/modprobe";
+	const char *progname = TOOLS_DIR "/modprobe";
 	const char *const args[] = {
 		progname,
 		"mod-simple",
@@ -429,7 +429,7 @@ DEFINE_TEST(modprobe_external,
 
 static noreturn int modprobe_module_from_abspath(const struct test *t)
 {
-	const char *progname = ABS_TOP_BUILDDIR "/tools/modprobe";
+	const char *progname = TOOLS_DIR "/modprobe";
 	const char *const args[] = {
 		progname,
 		"/home/foo/mod-simple.ko",
@@ -451,7 +451,7 @@ DEFINE_TEST(modprobe_module_from_abspath,
 
 static noreturn int modprobe_module_from_relpath(const struct test *t)
 {
-	const char *progname = ABS_TOP_BUILDDIR "/tools/modprobe";
+	const char *progname = TOOLS_DIR "/modprobe";
 	const char *const args[] = {
 		progname,
 		"./mod-simple.ko",
