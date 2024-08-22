@@ -45,12 +45,12 @@ LIBKMOD_AGE=5
 
 noinst_LTLIBRARIES = shared/libshared.la
 shared_libshared_la_SOURCES = \
-	shared/macro.h \
-	shared/missing.h \
 	shared/array.c \
 	shared/array.h \
 	shared/hash.c \
 	shared/hash.h \
+	shared/macro.h \
+	shared/missing.h \
 	shared/scratchbuf.c \
 	shared/scratchbuf.h \
 	shared/strbuf.c \
@@ -62,18 +62,18 @@ include_HEADERS = libkmod/libkmod.h
 lib_LTLIBRARIES = libkmod/libkmod.la
 
 libkmod_libkmod_la_SOURCES = \
-	libkmod/libkmod.h \
-	libkmod/libkmod-internal-file.h \
-	libkmod/libkmod-internal.h \
-	libkmod/libkmod.c \
 	libkmod/libkmod-builtin.c \
-	libkmod/libkmod-list.c \
+	libkmod/libkmod.c \
 	libkmod/libkmod-config.c \
+	libkmod/libkmod-elf.c \
+	libkmod/libkmod-file.c \
+	libkmod/libkmod.h \
 	libkmod/libkmod-index.c \
 	libkmod/libkmod-index.h \
+	libkmod/libkmod-internal-file.h \
+	libkmod/libkmod-internal.h \
+	libkmod/libkmod-list.c \
 	libkmod/libkmod-module.c \
-	libkmod/libkmod-file.c \
-	libkmod/libkmod-elf.c \
 	libkmod/libkmod-signature.c
 
 if ENABLE_XZ
@@ -138,10 +138,16 @@ noinst_SCRIPTS = \
 	tools/modprobe tools/modinfo tools/depmod
 
 tools_kmod_SOURCES = \
-	tools/kmod.c tools/kmod.h tools/lsmod.c \
-	tools/rmmod.c tools/insmod.c \
-	tools/modinfo.c tools/modprobe.c \
-	tools/depmod.c tools/log.h tools/log.c \
+	tools/depmod.c \
+	tools/insmod.c \
+	tools/kmod.c \
+	tools/kmod.h \
+	tools/log.c \
+	tools/log.h \
+	tools/lsmod.c \
+	tools/modinfo.c \
+	tools/modprobe.c \
+	tools/rmmod.c \
 	tools/static-nodes.c
 
 tools_kmod_LDADD = \
