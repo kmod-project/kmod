@@ -387,9 +387,14 @@ static inline int is_dir(const char *path)
 
 int mkdir_p(const char *path, int len, mode_t mode)
 {
-	char *start, *end;
+	_cleanup_free_ char *start;
+	char *end;
 
-	start = strndupa(path, len);
+	start = memdup(path, len + 1);
+	if (!start)
+		return -ENOMEM;
+
+	start[len] = '\0';
 	end = start + len;
 
 	/*

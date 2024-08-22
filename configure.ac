@@ -50,10 +50,9 @@ CC_CHECK_FUNC_BUILTIN([__builtin_uaddll_overflow], [ ], [ ])
 # dietlibc doesn't have st.st_mtim struct member
 AC_CHECK_MEMBERS([struct stat.st_mtim], [], [], [#include <sys/stat.h>])
 
-# musl 1.0 and bionic 4.4 don't have strndupa
 # basename may be only available in libgen.h with the POSIX behavior,
 # not desired here
-AC_CHECK_DECLS_ONCE([[strndupa], [basename]], [], [], [[#include <string.h>]])
+AC_CHECK_DECLS_ONCE([[basename]], [], [], [[#include <string.h>]])
 
 AC_MSG_CHECKING([whether _Static_assert() is supported])
 AC_COMPILE_IFELSE(
