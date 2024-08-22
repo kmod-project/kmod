@@ -20,6 +20,7 @@
 #endif
 
 #ifndef __NR_finit_module
+# warning __NR_finit_module missing - kmod might not work correctly
 # define __NR_finit_module -1
 #endif
 
