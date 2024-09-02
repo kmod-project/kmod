@@ -176,7 +176,7 @@ build-module-playground:
 		mkdir -p testsuite/ && \
 		cp -r $(top_srcdir)/$(MODULE_PLAYGROUND) $(top_builddir)/$(MODULE_PLAYGROUND); \
 		fi
-	$(MAKE) -C $(MODULE_PLAYGROUND)
+	MODULE_DIRECTORY=$(module_directory) $(MAKE) -C $(MODULE_PLAYGROUND)
 
 
 rootfs: build-module-playground
