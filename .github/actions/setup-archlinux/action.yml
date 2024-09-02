@@ -17,4 +17,5 @@ runs:
         pacman --noconfirm -Su \
           linux-headers \
           scdoc \
+          git \
           gtk-doc

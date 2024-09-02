@@ -11,6 +11,7 @@ runs:
           build-essential \
           autoconf \
           automake \
+          git \
           gtk-doc-tools \
           libssl-dev \
           liblzma-dev \

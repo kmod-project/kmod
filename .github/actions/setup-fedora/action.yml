@@ -17,6 +17,7 @@ runs:
           xz-devel \
           libzstd-devel \
           openssl-devel \
+          git \
           gtk-doc \
           libtool \
           scdoc

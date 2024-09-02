@@ -34,7 +34,10 @@ jobs:
       image: ${{ matrix.container }}
 
     steps:
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+      - name: Sparse checkout the local actions
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        with:
+          sparse-checkout: .github
 
       - uses: ./.github/actions/setup-ubuntu
         if: ${{ startsWith(matrix.container, 'ubuntu') }}
@@ -46,6 +49,15 @@ jobs:
         if: ${{ startsWith(matrix.container, 'alpine') }}
       - uses: ./.github/actions/setup-debian
         if: ${{ startsWith(matrix.container, 'debian') }}
+
+      - name: Checkout the whole project
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+
+      - name: Set the environment
+        run: |
+          # The second checkout above claims to set safe.directory, yet it
+          # doesn't quite work. Perhaps our double/sparse checkout is to blame?
+          git config --global --add safe.directory '*'
 
       - name: configure
         run: |

@@ -12,6 +12,7 @@ runs:
           automake \
           bash \
           build-base \
+          git \
           gtk-doc \
           libtool \
           linux-edge-dev \
