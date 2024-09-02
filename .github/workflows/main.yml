@@ -59,6 +59,19 @@ jobs:
           # doesn't quite work. Perhaps our double/sparse checkout is to blame?
           git config --global --add safe.directory '*'
 
+          for moddir in /usr/lib/modules /lib/modules; do
+            if [ -e "$moddir" ]; then
+              kernel=$(find "$moddir" -maxdepth 1 -mindepth 1 -type d -exec basename {} \;)
+              break
+            fi
+          done
+
+          # There should be one entry - the kernel we installed
+          if [ $(echo "$kernel" | wc -l) -ne 1 ]; then
+            echo >&2 "Error: exactly one kernel must be installed"
+          fi
+          echo "KDIR=$moddir/$kernel/build" >> "$GITHUB_ENV"
+
       - name: configure
         run: |
           mkdir build
@@ -74,7 +87,7 @@ jobs:
         if: ${{ matrix.test == 'yes' }}
         run: |
           cd build
-          make KDIR=/usr/lib/modules/*/build -j$(nproc) check
+          make -j$(nproc) check
 
       - name: install
         run: |
@@ -85,4 +98,4 @@ jobs:
         if: ${{ matrix.test == 'yes' }}
         run: |
           cd build
-          make KDIR=/usr/lib/modules/*/build distcheck
+          make distcheck
