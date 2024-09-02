@@ -267,15 +267,29 @@ const char *kmod_get_dirname(const struct kmod_ctx *ctx);
  */
 struct kmod_list;
 
-#define kmod_list_foreach(list_entry, first_entry) \
-	for (list_entry = first_entry; \
-		list_entry != NULL; \
-		list_entry = kmod_list_next(first_entry, list_entry))
+/**
+ * kmod_list_foreach:
+ * @curr: the current node in the list
+ * @list: the head of the list
+ *
+ * Iterate over the list @list.
+ */
+#define kmod_list_foreach(curr, list) \
+	for (curr = list; \
+		curr != NULL; \
+		curr = kmod_list_next(list, curr))
 
-#define kmod_list_foreach_reverse(list_entry, first_entry) \
-	for (list_entry = kmod_list_last(first_entry); \
-		list_entry != NULL; \
-		list_entry = kmod_list_prev(first_entry, list_entry))
+/**
+ * kmod_list_foreach_reverse:
+ * @curr: the current node in the list
+ * @list: the head of the list
+ *
+ * Iterate in reverse over the list @list.
+ */
+#define kmod_list_foreach_reverse(curr, list) \
+	for (curr = kmod_list_last(list); \
+		curr != NULL; \
+		curr = kmod_list_prev(list, curr))
 
 /**
  * kmod_list_last:
