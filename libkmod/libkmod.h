@@ -655,11 +655,11 @@ enum kmod_insert {
 /**
  * kmod_module_insert_module:
  * @mod: kmod module
- * @flags: flags are not passed to Linux Kernel, but instead they dictate the
+ * @flags: flags are not passed to the kernel, but instead they dictate the
  * behavior of this function, valid flags #kmod_insert
- * @options: module's options to pass to Linux Kernel.
+ * @options: module's options to pass to the kernel.
  *
- * Insert a module in Linux kernel. It opens the file pointed by @mod,
+ * Insert a module in the kernel. It opens the file pointed by @mod,
  * mmap'ing it and passing to kernel.
  *
  * Returns: 0 on success or < 0 on failure. If module is already loaded it
@@ -710,7 +710,7 @@ enum kmod_probe {
  * @mod: kmod module
  * @flags: flags are not passed to the kernel, but instead they dictate the
  * behavior of this function, valid flags are #kmod_probe
- * @extra_options: module's options to pass to Linux Kernel. It applies only
+ * @extra_options: module's options to pass to the kernel. It applies only
  * to @mod, not to its dependencies.
  * @run_install: function to run when @mod is backed by an install command.
  * @data: data to give back to @run_install callback
@@ -718,7 +718,7 @@ enum kmod_probe {
  * insmod). It's useful for tools like modprobe when running with verbose
  * output or in dry-run mode.
  *
- * Insert a module in Linux kernel resolving dependencies, soft dependencies,
+ * Insert a module in the kernel resolving dependencies, soft dependencies,
  * install commands and applying blacklist.
  *
  * If @run_install is NULL, this function will fork and exec by calling
@@ -759,7 +759,7 @@ enum kmod_remove {
  * @mod: kmod module
  * @flags: flags used when removing the module, valid flags are #kmod_remove
  *
- * Remove a module from Linux kernel.
+ * Remove a module from the kernel.
  *
  * Returns: 0 on success or < 0 on failure.
  */
@@ -1013,7 +1013,7 @@ void kmod_module_dependency_symbols_free_list(struct kmod_list *list);
  * kmod_module_get_sections:
  * @mod: kmod module
  *
- * Get a list of kmod sections of this @mod, as returned by Linux Kernel. The
+ * Get a list of kmod sections of this @mod, as returned by the kernel. The
  * structure contained in this list is internal to libkmod and their fields
  * can be obtained by calling kmod_module_section_get_name() and
  * kmod_module_section_get_address().
@@ -1220,7 +1220,7 @@ enum kmod_symbol_bind {
  * SECTION:libkmod-loaded
  * @short_description: currently loaded modules
  *
- * Information about currently loaded modules, as reported by Linux kernel.
+ * Information about currently loaded modules, as reported by the kernel.
  * These information are not cached by libkmod and are always read from /sys
  * and /proc/modules.
  */
@@ -1270,7 +1270,7 @@ enum kmod_module_initstate {
  * kmod_module_get_initstate:
  * @mod: kmod module
  *
- * Get the initstate of this @mod, as returned by Linux Kernel, by reading
+ * Get the initstate of this @mod, as returned by the kernel, by reading
  * /sys filesystem.
  *
  * Returns: < 0 on error or module state if module is found in kernel, valid
@@ -1293,7 +1293,7 @@ const char *kmod_module_initstate_str(enum kmod_module_initstate state);
  * kmod_module_get_size:
  * @mod: kmod module
  *
- * Get the size of this kmod module as returned by Linux kernel. If supported,
+ * Get the size of this kmod module as returned by the kernel. If supported,
  * the size is read from the coresize attribute in /sys/module. For older
  * kernels, this falls back on /proc/modules and searches for the specified
  * module to get its size.
@@ -1306,7 +1306,7 @@ long kmod_module_get_size(const struct kmod_module *mod);
  * kmod_module_get_refcnt:
  * @mod: kmod module
  *
- * Get the ref count of this @mod, as returned by Linux Kernel, by reading
+ * Get the ref count of this @mod, as returned by the kernel, by reading
  * /sys filesystem.
  *
  * Returns: the reference count on success or < 0 on failure.
