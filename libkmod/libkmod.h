@@ -743,24 +743,27 @@ int kmod_module_probe_insert_module(struct kmod_module *mod,
 			void (*print_action)(struct kmod_module *m, bool install,
 						const char *options));
 
-/* Removal flags */
+/**
+ * kmod_remove:
+ * @KMOD_REMOVE_FORCE: force remove module regardless if it's still in
+ * use by a kernel subsystem or other process; passed directly to the kernel
+ * @KMOD_REMOVE_NOWAIT: always set, pass O_NONBLOCK to delete_module(2);
+ * passed directly to the kernel
+ * @KMOD_REMOVE_NOLOG: when module removal fails, do not log anything; not
+ * passed to the kernel
+ *
+ * Removal flags, used by kmod_module_remove_module().
+ */
 enum kmod_remove {
 	KMOD_REMOVE_FORCE = O_TRUNC,
-	KMOD_REMOVE_NOWAIT = O_NONBLOCK, /* always set */
-	/* libkmod-only defines, not passed to kernel */
+	KMOD_REMOVE_NOWAIT = O_NONBLOCK,
 	KMOD_REMOVE_NOLOG = 1,
 };
 
 /**
  * kmod_module_remove_module:
  * @mod: kmod module
- * @flags: flags used when removing the module.
- * KMOD_REMOVE_FORCE: force remove module regardless if it's still in
- * use by a kernel subsystem or other process; passed directly to Linux kernel
- * KMOD_REMOVE_NOWAIT: is always enforced, causing us to pass O_NONBLOCK to
- * delete_module(2).
- * KMOD_REMOVE_NOLOG: when module removal fails, do not log anything as the
- * caller may want to handle retries and log when appropriate.
+ * @flags: flags used when removing the module, valid flags are #kmod_remove
  *
  * Remove a module from Linux kernel.
  *
