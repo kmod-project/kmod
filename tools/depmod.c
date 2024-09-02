@@ -39,12 +39,8 @@ static int verbose = DEFAULT_VERBOSE;
 static const char CFG_BUILTIN_KEY[] = "built-in";
 static const char CFG_EXTERNAL_KEY[] = "external";
 static const char *const default_cfg_paths[] = {
-	SYSCONFDIR "/depmod.d",
-	"/run/depmod.d",
-	"/usr/local/lib/depmod.d",
-	DISTCONFDIR "/depmod.d",
-	"/lib/depmod.d",
-	NULL
+	SYSCONFDIR "/depmod.d",	 "/run/depmod.d", "/usr/local/lib/depmod.d",
+	DISTCONFDIR "/depmod.d", "/lib/depmod.d", NULL
 };
 
 static const char cmdopts_s[] = "aAb:o:C:E:F:euqrvnP:wmVh";
@@ -68,42 +64,41 @@ static const struct option cmdopts[] = {
 	{ "map", no_argument, 0, 'm' }, /* deprecated */
 	{ "version", no_argument, 0, 'V' },
 	{ "help", no_argument, 0, 'h' },
-	{ }
+	{}
 };
 
 static void help(void)
 {
 	printf("Usage:\n"
-		"\t%s -[aA] [options] [forced_version]\n"
-		"\n"
-		"If no arguments (except options) are given, \"depmod -a\" is assumed\n"
-		"\n"
-		"depmod will output a dependency list suitable for the modprobe utility.\n"
-		"\n"
-		"Options:\n"
-		"\t-a, --all            Probe all modules\n"
-		"\t-A, --quick          Only does the work if there's a new module\n"
-		"\t-e, --errsyms        Report not supplied symbols\n"
-		"\t-n, --show           Write the dependency file on stdout only\n"
-		"\t-P, --symbol-prefix  Architecture symbol prefix\n"
-		"\t-C, --config=PATH    Read configuration from PATH\n"
-		"\t-v, --verbose        Enable verbose mode\n"
-		"\t-w, --warn           Warn on duplicates\n"
-		"\t-V, --version        show version\n"
-		"\t-h, --help           show this help\n"
-		"\n"
-		"The following options are useful for people managing distributions:\n"
-		"\t-b, --basedir=DIR    Use an image of a module tree.\n"
-		"\t-o, --outdir=DIR     Output directory for generated files.\n"
-		"\t-F, --filesyms=FILE  Use the file instead of the\n"
-		"\t                     current kernel symbols.\n"
-		"\t-E, --symvers=FILE   Use Module.symvers file to check\n"
-		"\t                     symbol versions.\n",
-		program_invocation_short_name);
+	       "\t%s -[aA] [options] [forced_version]\n"
+	       "\n"
+	       "If no arguments (except options) are given, \"depmod -a\" is assumed\n"
+	       "\n"
+	       "depmod will output a dependency list suitable for the modprobe utility.\n"
+	       "\n"
+	       "Options:\n"
+	       "\t-a, --all            Probe all modules\n"
+	       "\t-A, --quick          Only does the work if there's a new module\n"
+	       "\t-e, --errsyms        Report not supplied symbols\n"
+	       "\t-n, --show           Write the dependency file on stdout only\n"
+	       "\t-P, --symbol-prefix  Architecture symbol prefix\n"
+	       "\t-C, --config=PATH    Read configuration from PATH\n"
+	       "\t-v, --verbose        Enable verbose mode\n"
+	       "\t-w, --warn           Warn on duplicates\n"
+	       "\t-V, --version        show version\n"
+	       "\t-h, --help           show this help\n"
+	       "\n"
+	       "The following options are useful for people managing distributions:\n"
+	       "\t-b, --basedir=DIR    Use an image of a module tree.\n"
+	       "\t-o, --outdir=DIR     Output directory for generated files.\n"
+	       "\t-F, --filesyms=FILE  Use the file instead of the\n"
+	       "\t                     current kernel symbols.\n"
+	       "\t-E, --symvers=FILE   Use Module.symvers file to check\n"
+	       "\t                     symbol versions.\n",
+	       program_invocation_short_name);
 }
 
-_printf_format_(1, 2)
-static inline void _show(const char *fmt, ...)
+_printf_format_(1, 2) static inline void _show(const char *fmt, ...)
 {
 	va_list args;
 
@@ -117,12 +112,11 @@ static inline void _show(const char *fmt, ...)
 }
 #define SHOW(...) _show(__VA_ARGS__)
 
-
 /* see documentation in libkmod/libkmod-index.c */
 #define INDEX_MAGIC 0xB007F457
 #define INDEX_VERSION_MAJOR 0x0002
 #define INDEX_VERSION_MINOR 0x0001
-#define INDEX_VERSION ((INDEX_VERSION_MAJOR<<16)|INDEX_VERSION_MINOR)
+#define INDEX_VERSION ((INDEX_VERSION_MAJOR << 16) | INDEX_VERSION_MINOR)
 #define INDEX_CHILDMAX 128
 
 struct index_value {
@@ -133,22 +127,21 @@ struct index_value {
 
 /* In-memory index (depmod only) */
 struct index_node {
-	char *prefix;		/* path compression */
+	char *prefix; /* path compression */
 	struct index_value *values;
-	unsigned char first;	/* range of child nodes */
+	unsigned char first; /* range of child nodes */
 	unsigned char last;
 	struct index_node *children[INDEX_CHILDMAX]; /* indexed by character */
 };
 
-
 /* Format of node offsets within index file */
 enum node_offset {
-	INDEX_NODE_FLAGS    = 0xF0000000, /* Flags in high nibble */
-	INDEX_NODE_PREFIX   = 0x80000000,
+	INDEX_NODE_FLAGS = 0xF0000000, /* Flags in high nibble */
+	INDEX_NODE_PREFIX = 0x80000000,
 	INDEX_NODE_VALUES = 0x40000000,
-	INDEX_NODE_CHILDS   = 0x20000000,
+	INDEX_NODE_CHILDS = 0x20000000,
 
-	INDEX_NODE_MASK     = 0x0FFFFFFF, /* Offset value */
+	INDEX_NODE_MASK = 0x0FFFFFFF, /* Offset value */
 };
 
 static struct index_node *index_create(void)
@@ -196,12 +189,13 @@ static void index__checkstring(const char *str)
 
 		if (ch >= INDEX_CHILDMAX)
 			CRIT("Module index: bad character '%c'=0x%x - only 7-bit ASCII is supported:"
-			      "\n%s\n", (char) ch, (int) ch, str);
+			     "\n%s\n",
+			     (char)ch, (int)ch, str);
 	}
 }
 
-static int index_add_value(struct index_value **values,
-				const char *value, unsigned int priority)
+static int index_add_value(struct index_value **values, const char *value,
+			   unsigned int priority)
 {
 	struct index_value *v;
 	int duplicate = 0;
@@ -227,8 +221,8 @@ static int index_add_value(struct index_value **values,
 	return duplicate;
 }
 
-static int index_insert(struct index_node *node, const char *key,
-			const char *value, unsigned int priority)
+static int index_insert(struct index_node *node, const char *key, const char *value,
+			unsigned int priority)
 {
 	int i = 0; /* index within str */
 	int ch;
@@ -236,7 +230,7 @@ static int index_insert(struct index_node *node, const char *key,
 	index__checkstring(key);
 	index__checkstring(value);
 
-	while(1) {
+	while (1) {
 		int j; /* index within node->prefix */
 
 		/* Ensure node->prefix is a prefix of &str[i].
@@ -244,14 +238,14 @@ static int index_insert(struct index_node *node, const char *key,
 		for (j = 0; node->prefix[j]; j++) {
 			ch = node->prefix[j];
 
-			if (ch != key[i+j]) {
+			if (ch != key[i + j]) {
 				char *prefix = node->prefix;
 				struct index_node *n;
 
 				/* New child is copy of node with prefix[j+1..N] */
 				n = NOFAIL(calloc(1, sizeof(struct index_node)));
 				memcpy(n, node, sizeof(struct index_node));
-				n->prefix = NOFAIL(strdup(&prefix[j+1]));
+				n->prefix = NOFAIL(strdup(&prefix[j + 1]));
 
 				/* Parent has prefix[0..j], child at prefix[j] */
 				memset(node, 0, sizeof(struct index_node));
@@ -268,7 +262,7 @@ static int index_insert(struct index_node *node, const char *key,
 		i += j;
 
 		ch = key[i];
-		if(ch == '\0')
+		if (ch == '\0')
 			return index_add_value(&node->values, value, priority);
 
 		if (!node->children[ch]) {
@@ -281,7 +275,7 @@ static int index_insert(struct index_node *node, const char *key,
 			node->children[ch] = NOFAIL(calloc(1, sizeof(struct index_node)));
 
 			child = node->children[ch];
-			child->prefix = NOFAIL(strdup(&key[i+1]));
+			child->prefix = NOFAIL(strdup(&key[i + 1]));
 			child->first = INDEX_CHILDMAX;
 			index_add_value(&child->values, value, priority);
 
@@ -404,11 +398,7 @@ struct cfg_override {
 	char path[];
 };
 
-enum search_type {
-	SEARCH_PATH,
-	SEARCH_BUILTIN,
-	SEARCH_EXTERNAL
-};
+enum search_type { SEARCH_PATH, SEARCH_BUILTIN, SEARCH_EXTERNAL };
 
 struct cfg_search {
 	struct cfg_search *next;
@@ -498,8 +488,7 @@ static int cfg_override_add(struct cfg *cfg, const char *modname, const char *su
 	size_t subdirlen = strlen(subdir);
 	size_t i;
 
-	o = malloc(sizeof(struct cfg_override) + subdirlen + 1
-		   + modnamelen + 1);
+	o = malloc(sizeof(struct cfg_override) + subdirlen + 1 + modnamelen + 1);
 	if (o == NULL) {
 		ERR("override add: out of memory\n");
 		return -ENOMEM;
@@ -586,7 +575,7 @@ static int cfg_kernel_matches(const struct cfg *cfg, const char *pattern)
 	if (streq(pattern, "*"))
 		return 1;
 
-	if (regcomp(&re, pattern, REG_EXTENDED|REG_NOSUB) != 0)
+	if (regcomp(&re, pattern, REG_EXTENDED | REG_NOSUB) != 0)
 		return 0;
 
 	status = regexec(&re, cfg->kversion, 0, NULL, 0);
@@ -629,13 +618,12 @@ static int cfg_file_parse(struct cfg *cfg, const char *filename)
 			const char *version = strtok_r(NULL, "\t ", &saveptr);
 			const char *subdir = strtok_r(NULL, "\t ", &saveptr);
 
-			if (modname == NULL || version == NULL ||
-					subdir == NULL)
+			if (modname == NULL || version == NULL || subdir == NULL)
 				goto syntax_error;
 
 			if (!cfg_kernel_matches(cfg, version)) {
-				INF("%s:%u: override kernel did not match %s\n",
-				    filename, linenum, version);
+				INF("%s:%u: override kernel did not match %s\n", filename,
+				    linenum, version);
 				goto done_next;
 			}
 
@@ -659,14 +647,13 @@ static int cfg_file_parse(struct cfg *cfg, const char *filename)
 			while ((sp = strtok_r(NULL, "\t ", &saveptr)) != NULL) {
 				cfg_exclude_add(cfg, sp);
 			}
-		} else if (streq(cmd, "include")
-				|| streq(cmd, "make_map_files")) {
-			INF("%s:%u: command %s not implemented yet\n",
-			    filename, linenum, cmd);
+		} else if (streq(cmd, "include") || streq(cmd, "make_map_files")) {
+			INF("%s:%u: command %s not implemented yet\n", filename, linenum,
+			    cmd);
 		} else {
 syntax_error:
-			ERR("%s:%u: ignoring bad line starting with '%s'\n",
-			    filename, linenum, cmd);
+			ERR("%s:%u: ignoring bad line starting with '%s'\n", filename,
+			    linenum, cmd);
 		}
 
 done_next:
@@ -693,8 +680,8 @@ static int cfg_files_filter_out(DIR *d, const char *dir, const char *name)
 
 	fstatat(dirfd(d), name, &st, 0);
 	if (S_ISDIR(st.st_mode)) {
-		ERR("Directories inside directories are not supported: %s/%s\n",
-		    dir, name);
+		ERR("Directories inside directories are not supported: %s/%s\n", dir,
+		    name);
 		return 1;
 	}
 
@@ -714,7 +701,7 @@ static void cfg_file_free(struct cfg_file *f)
 }
 
 static int cfg_files_insert_sorted(struct cfg_file ***p_files, size_t *p_n_files,
-					const char *dir, const char *name)
+				   const char *dir, const char *name)
 {
 	struct cfg_file **files, *f;
 	size_t i, n_files, namelen, dirlen;
@@ -734,8 +721,8 @@ static int cfg_files_insert_sorted(struct cfg_file ***p_files, size_t *p_n_files
 	for (i = 0; i < n_files; i++) {
 		int cmp = strcmp(name, files[i]->name);
 		if (cmp == 0) {
-			DBG("Ignoring duplicate config file: %.*s/%s\n",
-			    (int)dirlen, dir, name);
+			DBG("Ignoring duplicate config file: %.*s/%s\n", (int)dirlen, dir,
+			    name);
 			return -EEXIST;
 		} else if (cmp < 0)
 			break;
@@ -776,8 +763,7 @@ static int cfg_files_insert_sorted(struct cfg_file ***p_files, size_t *p_n_files
 /*
  * Insert configuration files ignoring duplicates
  */
-static int cfg_files_list(struct cfg_file ***p_files, size_t *p_n_files,
-				const char *path)
+static int cfg_files_list(struct cfg_file ***p_files, size_t *p_n_files, const char *path)
 {
 	struct dirent *dent;
 	DIR *d;
@@ -813,7 +799,7 @@ static int cfg_files_list(struct cfg_file ***p_files, size_t *p_n_files,
 	return err;
 }
 
-static int cfg_load(struct cfg *cfg, const char * const *cfg_paths)
+static int cfg_load(struct cfg *cfg, const char *const *cfg_paths)
 {
 	size_t i, n_files = 0;
 	struct cfg_file **files = NULL;
@@ -866,7 +852,6 @@ static void cfg_free(struct cfg *cfg)
 		cfg_exclude_free(tmp);
 	}
 }
-
 
 /* depmod calculations ***********************************************/
 struct vertex;
@@ -930,8 +915,8 @@ static int mod_add_dependency(struct mod *mod, struct symbol *sym)
 	if (err == -EEXIST)
 		return 0;
 	if (err < 0) {
-		CRIT("failed to add symbol %s to module %s: %s\n",
-		    sym->name, mod->path, strerror(-err));
+		CRIT("failed to add symbol %s to module %s: %s\n", sym->name, mod->path,
+		     strerror(-err));
 		return err;
 	}
 
@@ -947,8 +932,7 @@ static void symbol_free(struct symbol *sym)
 	free(sym);
 }
 
-static int depmod_init(struct depmod *depmod, struct cfg *cfg,
-							struct kmod_ctx *ctx)
+static int depmod_init(struct depmod *depmod, struct cfg *cfg, struct kmod_ctx *ctx)
 {
 	int err = 0;
 
@@ -1028,7 +1012,7 @@ static int depmod_module_add(struct depmod *depmod, struct kmod_module *kmod)
 	lastslash = strrchr(mod->path, '/');
 	mod->baselen = lastslash - mod->path;
 	if (strncmp(mod->path, cfg->dirname, cfg->dirnamelen) == 0 &&
-			mod->path[cfg->dirnamelen] == '/')
+	    mod->path[cfg->dirnamelen] == '/')
 		mod->relpath = mod->path + cfg->dirnamelen + 1;
 	else
 		mod->relpath = NULL;
@@ -1040,15 +1024,13 @@ static int depmod_module_add(struct depmod *depmod, struct kmod_module *kmod)
 	}
 
 	if (mod->relpath != NULL) {
-		size_t uncrelpathlen = lastslash - mod->relpath + modnamesz
-				       + strlen(KMOD_EXTENSION_UNCOMPRESSED);
+		size_t uncrelpathlen = lastslash - mod->relpath + modnamesz +
+				       strlen(KMOD_EXTENSION_UNCOMPRESSED);
 		mod->uncrelpath = memdup(mod->relpath, uncrelpathlen + 1);
 		mod->uncrelpath[uncrelpathlen] = '\0';
-		err = hash_add_unique(depmod->modules_by_uncrelpath,
-				      mod->uncrelpath, mod);
+		err = hash_add_unique(depmod->modules_by_uncrelpath, mod->uncrelpath, mod);
 		if (err < 0) {
-			ERR("hash_add_unique %s: %s\n",
-			    mod->uncrelpath, strerror(-err));
+			ERR("hash_add_unique %s: %s\n", mod->uncrelpath, strerror(-err));
 			hash_del(depmod->modules_by_name, mod->modname);
 			goto fail;
 		}
@@ -1079,7 +1061,7 @@ static int depmod_module_del(struct depmod *depmod, struct mod *mod)
 
 static const char *search_to_string(const struct cfg_search *s)
 {
-	switch(s->type) {
+	switch (s->type) {
 	case SEARCH_EXTERNAL:
 		return "external";
 	case SEARCH_BUILTIN:
@@ -1089,10 +1071,8 @@ static const char *search_to_string(const struct cfg_search *s)
 	}
 }
 
-static bool depmod_is_path_starts_with(const char *path,
-				       size_t pathlen,
-				       const char *prefix,
-				       size_t prefix_len)
+static bool depmod_is_path_starts_with(const char *path, size_t pathlen,
+				       const char *prefix, size_t prefix_len)
 {
 	if (pathlen <= prefix_len)
 		return false;
@@ -1107,7 +1087,10 @@ static bool depmod_is_path_starts_with(const char *path,
 /* returns if existing module @mod is higher priority than newpath.
  * note this is the inverse of module-init-tools is_higher_priority()
  */
-static int depmod_module_is_higher_priority(const struct depmod *depmod, const struct mod *mod, size_t baselen, size_t namelen, size_t modnamelen, const char *newpath)
+static int depmod_module_is_higher_priority(const struct depmod *depmod,
+					    const struct mod *mod, size_t baselen,
+					    size_t namelen, size_t modnamelen,
+					    const char *newpath)
 {
 	const struct cfg *cfg = depmod->cfg;
 	const struct cfg_override *ov;
@@ -1126,8 +1109,7 @@ static int depmod_module_is_higher_priority(const struct depmod *depmod, const s
 	const char *relnewpath = NULL;
 	const char *reloldpath = NULL;
 
-	DBG("comparing priorities of %s and %s\n",
-	    oldpath, newpath);
+	DBG("comparing priorities of %s and %s\n", oldpath, newpath);
 
 	if (strncmp(newpath, cfg->dirname, cfg->dirnamelen) == 0) {
 		relnewpath = newpath + cfg->dirnamelen + 1;
@@ -1140,11 +1122,9 @@ static int depmod_module_is_higher_priority(const struct depmod *depmod, const s
 
 	for (ov = cfg->overrides; ov != NULL; ov = ov->next) {
 		DBG("override %s\n", ov->path);
-		if (relnewlen == ov->len &&
-		    memcmp(ov->path, relnewpath, relnewlen) == 0)
+		if (relnewlen == ov->len && memcmp(ov->path, relnewpath, relnewlen) == 0)
 			return 0;
-		if (reloldlen == ov->len &&
-		    memcmp(ov->path, reloldpath, reloldlen) == 0)
+		if (reloldlen == ov->len && memcmp(ov->path, reloldpath, reloldlen) == 0)
 			return 1;
 	}
 
@@ -1154,19 +1134,15 @@ static int depmod_module_is_higher_priority(const struct depmod *depmod, const s
 			bprio = i;
 		else if (se->type == SEARCH_EXTERNAL) {
 			for (ext = cfg->externals; ext != NULL; ext = ext->next, i++) {
-				if (depmod_is_path_starts_with(newpath,
-							       newlen,
-							       ext->path,
+				if (depmod_is_path_starts_with(newpath, newlen, ext->path,
 							       ext->len))
 					newprio = i;
-				if (depmod_is_path_starts_with(oldpath,
-							       oldlen,
-							       ext->path,
+				if (depmod_is_path_starts_with(oldpath, oldlen, ext->path,
 							       ext->len))
 					oldprio = i;
 			}
 		} else if (relnewlen > se->len && relnewpath[se->len] == '/' &&
-			 memcmp(se->path, relnewpath, se->len) == 0)
+			   memcmp(se->path, relnewpath, se->len) == 0)
 			newprio = i;
 		else if (reloldlen > se->len && reloldpath[se->len] == '/' &&
 			 memcmp(se->path, reloldpath, se->len) == 0)
@@ -1178,13 +1154,13 @@ static int depmod_module_is_higher_priority(const struct depmod *depmod, const s
 	if (oldprio < 0)
 		oldprio = bprio;
 
-	DBG("priorities: built-in: %d, old: %d, new: %d\n",
-	    bprio, oldprio, newprio);
+	DBG("priorities: built-in: %d, old: %d, new: %d\n", bprio, oldprio, newprio);
 
 	return newprio <= oldprio;
 }
 
-static int depmod_modules_search_file(struct depmod *depmod, size_t baselen, size_t namelen, const char *path)
+static int depmod_modules_search_file(struct depmod *depmod, size_t baselen,
+				      size_t namelen, const char *path)
 {
 	struct kmod_module *kmod;
 	struct mod *mod;
@@ -1208,15 +1184,13 @@ static int depmod_modules_search_file(struct depmod *depmod, size_t baselen, siz
 	if (mod == NULL)
 		goto add;
 
-	if (depmod_module_is_higher_priority(depmod, mod, baselen,
-						namelen, modnamelen, path)) {
-		DBG("Ignored lower priority: %s, higher: %s\n",
-		    path, mod->path);
+	if (depmod_module_is_higher_priority(depmod, mod, baselen, namelen, modnamelen,
+					     path)) {
+		DBG("Ignored lower priority: %s, higher: %s\n", path, mod->path);
 		return 0;
 	}
 
-	DBG("Replace lower priority %s with new module %s\n",
-	    mod->relpath, relpath);
+	DBG("Replace lower priority %s with new module %s\n", mod->relpath, relpath);
 	err = depmod_module_del(depmod, mod);
 	if (err < 0) {
 		ERR("could not del module %s: %s\n", mod->path, strerror(-err));
@@ -1232,8 +1206,7 @@ add:
 
 	err = depmod_module_add(depmod, kmod);
 	if (err < 0) {
-		ERR("could not add module %s: %s\n",
-		    path, strerror(-err));
+		ERR("could not add module %s: %s\n", path, strerror(-err));
 		kmod_module_unref(kmod);
 		return err;
 	}
@@ -1244,8 +1217,7 @@ static bool should_exclude_dir(const struct cfg *cfg, const char *name)
 {
 	struct cfg_exclude *exc;
 
-	if (name[0] == '.' && (name[1] == '\0' ||
-			(name[1] == '.' && name[2] == '\0')))
+	if (name[0] == '.' && (name[1] == '\0' || (name[1] == '.' && name[2] == '\0')))
 		return true;
 
 	if (streq(name, "build") || streq(name, "source"))
@@ -1259,7 +1231,8 @@ static bool should_exclude_dir(const struct cfg *cfg, const char *name)
 	return false;
 }
 
-static int depmod_modules_search_dir(struct depmod *depmod, DIR *d, size_t baselen, struct scratchbuf *s_path)
+static int depmod_modules_search_dir(struct depmod *depmod, DIR *d, size_t baselen,
+				     struct scratchbuf *s_path)
 {
 	struct dirent *de;
 	int err = 0, dfd = dirfd(d);
@@ -1297,8 +1270,8 @@ static int depmod_modules_search_dir(struct depmod *depmod, DIR *d, size_t basel
 			else if (S_ISDIR(st.st_mode))
 				is_dir = 1;
 			else {
-				ERR("unsupported file type %s: %o\n",
-				    path, st.st_mode & S_IFMT);
+				ERR("unsupported file type %s: %o\n", path,
+				    st.st_mode & S_IFMT);
 				continue;
 			}
 		}
@@ -1308,8 +1281,7 @@ static int depmod_modules_search_dir(struct depmod *depmod, DIR *d, size_t basel
 			DIR *subdir;
 			fd = openat(dfd, name, O_RDONLY);
 			if (fd < 0) {
-				ERR("openat(%d, %s, O_RDONLY): %m\n",
-				    dfd, name);
+				ERR("openat(%d, %s, O_RDONLY): %m\n", dfd, name);
 				continue;
 			}
 			subdir = fdopendir(fd);
@@ -1321,12 +1293,10 @@ static int depmod_modules_search_dir(struct depmod *depmod, DIR *d, size_t basel
 			path[baselen + namelen] = '/';
 			path[baselen + namelen + 1] = '\0';
 			err = depmod_modules_search_dir(depmod, subdir,
-							baselen + namelen + 1,
-							s_path);
+							baselen + namelen + 1, s_path);
 			closedir(subdir);
 		} else {
-			err = depmod_modules_search_file(depmod, baselen,
-							 namelen, path);
+			err = depmod_modules_search_file(depmod, baselen, namelen, path);
 		}
 
 		if (err < 0) {
@@ -1338,8 +1308,7 @@ static int depmod_modules_search_dir(struct depmod *depmod, DIR *d, size_t basel
 	return err;
 }
 
-static int depmod_modules_search_path(struct depmod *depmod,
-				      const char *path)
+static int depmod_modules_search_path(struct depmod *depmod, const char *path)
 {
 	char buf[256];
 	_cleanup_(scratchbuf_release) struct scratchbuf s_path_buf =
@@ -1394,7 +1363,8 @@ static int depmod_modules_search(struct depmod *depmod)
 	return 0;
 }
 
-static int mod_cmp(const void *pa, const void *pb) {
+static int mod_cmp(const void *pa, const void *pb)
+{
 	const struct mod *a = *(const struct mod **)pa;
 	const struct mod *b = *(const struct mod **)pb;
 	return a->sort_idx - b->sort_idx;
@@ -1408,7 +1378,7 @@ static int depmod_modules_build_array(struct depmod *depmod)
 
 	hash_iter_init(depmod->modules_by_name, &module_iter);
 	while (hash_iter_next(&module_iter, NULL, &v)) {
-		struct mod *mod = (struct mod *) v;
+		struct mod *mod = (struct mod *)v;
 		mod->idx = depmod->modules.count;
 		err = array_append(&depmod->modules, mod);
 		if (err < 0)
@@ -1418,8 +1388,7 @@ static int depmod_modules_build_array(struct depmod *depmod)
 	return 0;
 }
 
-static FILE *dfdopen(const char *dname, const char *filename, int flags,
-		     const char *mode)
+static FILE *dfdopen(const char *dname, const char *filename, int flags, const char *mode)
 {
 	int fd, dfd;
 	FILE *ret;
@@ -1445,8 +1414,6 @@ static FILE *dfdopen(const char *dname, const char *filename, int flags,
 	return ret;
 }
 
-
-
 static void depmod_modules_sort(struct depmod *depmod)
 {
 	char line[PATH_MAX];
@@ -1465,7 +1432,7 @@ static void depmod_modules_sort(struct depmod *depmod)
 			continue;
 		if (line[len - 1] != '\n') {
 			ERR("%s/%s:%u corrupted line misses '\\n'\n",
-				depmod->cfg->dirname, order_file, idx);
+			    depmod->cfg->dirname, order_file, idx);
 			goto corrupted;
 		}
 	}
@@ -1497,9 +1464,8 @@ corrupted:
 	fclose(fp);
 }
 
-static int depmod_symbol_add(struct depmod *depmod, const char *name,
-					bool prefix_skipped, uint64_t crc,
-					const struct mod *owner)
+static int depmod_symbol_add(struct depmod *depmod, const char *name, bool prefix_skipped,
+			     uint64_t crc, const struct mod *owner)
 {
 	size_t namelen;
 	int err;
@@ -1529,8 +1495,7 @@ static int depmod_symbol_add(struct depmod *depmod, const char *name,
 	return 0;
 }
 
-static struct symbol *depmod_symbol_find(const struct depmod *depmod,
-							const char *name)
+static struct symbol *depmod_symbol_find(const struct depmod *depmod, const char *name)
 {
 	if (name[0] == '.') /* PPC64 needs this: .foo == foo */
 		name++;
@@ -1555,8 +1520,8 @@ static int depmod_load_modules(struct depmod *depmod)
 			if (err == -ENODATA)
 				DBG("ignoring %s: no symbols\n", mod->path);
 			else
-				ERR("failed to load symbols from %s: %s\n",
-						mod->path, strerror(-err));
+				ERR("failed to load symbols from %s: %s\n", mod->path,
+				    strerror(-err));
 			goto load_info;
 		}
 		kmod_list_foreach(l, list) {
@@ -1568,14 +1533,13 @@ static int depmod_load_modules(struct depmod *depmod)
 
 load_info:
 		kmod_module_get_info(mod->kmod, &mod->info_list);
-		kmod_module_get_dependency_symbols(mod->kmod,
-						   &mod->dep_sym_list);
+		kmod_module_get_dependency_symbols(mod->kmod, &mod->dep_sym_list);
 		kmod_module_unref(mod->kmod);
 		mod->kmod = NULL;
 	}
 
-	DBG("loaded symbols (%zd modules, %u symbols)\n",
-	    depmod->modules.count, hash_get_count(depmod->symbols));
+	DBG("loaded symbols (%zd modules, %u symbols)\n", depmod->modules.count,
+	    hash_get_count(depmod->symbols));
 
 	return 0;
 }
@@ -1596,16 +1560,15 @@ static int depmod_load_module_dependencies(struct depmod *depmod, struct mod *mo
 		int err;
 
 		if (sym == NULL) {
-			DBG("%s needs (%c) unknown symbol %s\n",
-			    mod->path, bindtype, name);
+			DBG("%s needs (%c) unknown symbol %s\n", mod->path, bindtype,
+			    name);
 			if (cfg->print_unknown && !is_weak)
-				WRN("%s needs unknown symbol %s\n",
-				    mod->path, name);
+				WRN("%s needs unknown symbol %s\n", mod->path, name);
 			continue;
 		}
 
 		if (cfg->check_symvers && sym->crc != crc && !is_weak) {
-			DBG("symbol %s (%#"PRIx64") module %s (%#"PRIx64")\n",
+			DBG("symbol %s (%#" PRIx64 ") module %s (%#" PRIx64 ")\n",
 			    sym->name, sym->crc, mod->path, crc);
 			if (cfg->print_unknown)
 				WRN("%s disagrees about version of symbol %s\n",
@@ -1625,8 +1588,8 @@ static int depmod_load_dependencies(struct depmod *depmod)
 	struct mod **itr, **itr_end;
 	int ret = 0;
 
-	DBG("load dependencies (%zd modules, %u symbols)\n",
-	    depmod->modules.count, hash_get_count(depmod->symbols));
+	DBG("load dependencies (%zd modules, %u symbols)\n", depmod->modules.count,
+	    hash_get_count(depmod->symbols));
 
 	itr = (struct mod **)depmod->modules.array;
 	itr_end = itr + depmod->modules.count;
@@ -1644,8 +1607,8 @@ static int depmod_load_dependencies(struct depmod *depmod)
 			ret = err;
 	}
 
-	DBG("loaded dependencies (%zd modules, %u symbols)\n",
-	    depmod->modules.count, hash_get_count(depmod->symbols));
+	DBG("loaded dependencies (%zd modules, %u symbols)\n", depmod->modules.count,
+	    hash_get_count(depmod->symbols));
 
 	return ret;
 }
@@ -1695,10 +1658,8 @@ static void depmod_list_remove_data(struct kmod_list **list, void *data)
 	*list = l;
 }
 
-static int depmod_report_one_cycle(struct depmod *depmod,
-				   struct vertex *vertex,
-				   struct kmod_list **roots,
-				   struct hash *loop_set)
+static int depmod_report_one_cycle(struct depmod *depmod, struct vertex *vertex,
+				   struct kmod_list **roots, struct hash *loop_set)
 {
 	const char sep[] = " -> ";
 	size_t sz;
@@ -1712,10 +1673,7 @@ static int depmod_report_one_cycle(struct depmod *depmod,
 	array_init(&reverse, 3);
 
 	sz = 0;
-	for (v = vertex->parent, n = 0;
-	     v != NULL;
-	     v = v->parent, n++) {
-
+	for (v = vertex->parent, n = 0; v != NULL; v = v->parent, n++) {
 		sz += v->mod->modnamesz - 1;
 		rc = array_append(&reverse, v);
 		if (rc < 0)
@@ -1752,12 +1710,9 @@ static int depmod_report_one_cycle(struct depmod *depmod,
 	return 0;
 }
 
-static int depmod_report_cycles_from_root(struct depmod *depmod,
-					  struct mod *root_mod,
-					  struct kmod_list **roots,
-					  void **stack,
-					  size_t stack_size,
-					  struct hash *loop_set)
+static int depmod_report_cycles_from_root(struct depmod *depmod, struct mod *root_mod,
+					  struct kmod_list **roots, void **stack,
+					  size_t stack_size, struct hash *loop_set)
 {
 	struct kmod_list *free_list = NULL; /* struct vertex */
 	struct kmod_list *l;
@@ -1794,8 +1749,7 @@ static int depmod_report_cycles_from_root(struct depmod *depmod,
 		 */
 		if (m->visited && m == root->mod) {
 			int rc;
-			rc = depmod_report_one_cycle(depmod, vertex,
-						     roots, loop_set);
+			rc = depmod_report_one_cycle(depmod, vertex, roots, loop_set);
 			if (rc != 0) {
 				ret = rc;
 				goto out;
@@ -1819,7 +1773,7 @@ static int depmod_report_cycles_from_root(struct depmod *depmod,
 			continue;
 		}
 
-		itr = (struct mod **) m->deps.array;
+		itr = (struct mod **)m->deps.array;
 		itr_end = itr + m->deps.count;
 		for (; itr < itr_end; itr++) {
 			struct mod *dep = *itr;
@@ -1837,7 +1791,6 @@ static int depmod_report_cycles_from_root(struct depmod *depmod,
 				goto out;
 			}
 			free_list = l;
-
 		}
 	}
 	ret = 0;
@@ -1853,8 +1806,7 @@ out:
 	return ret;
 }
 
-static void depmod_report_cycles(struct depmod *depmod, uint16_t n_mods,
-				 uint16_t *users)
+static void depmod_report_cycles(struct depmod *depmod, uint16_t n_mods, uint16_t *users)
 {
 	int num_cyclic = 0;
 	struct kmod_list *roots = NULL; /* struct mod */
@@ -1896,10 +1848,8 @@ static void depmod_report_cycles(struct depmod *depmod, uint16_t n_mods,
 		root = roots->data;
 		l = kmod_list_remove(roots);
 		roots = l;
-		err = depmod_report_cycles_from_root(depmod,
-						     root,
-						     &roots,
-						     stack, n_r, loop_set);
+		err = depmod_report_cycles_from_root(depmod, root, &roots, stack, n_r,
+						     loop_set);
 		if (err < 0)
 			goto out_hash;
 	}
@@ -2013,7 +1963,9 @@ static size_t mod_count_all_dependencies(const struct mod *mod)
 	return count;
 }
 
-static int mod_fill_all_unique_dependencies(const struct mod *mod, const struct mod **deps, size_t n_deps, size_t *last)
+static int mod_fill_all_unique_dependencies(const struct mod *mod,
+					    const struct mod **deps, size_t n_deps,
+					    size_t *last)
 {
 	size_t i;
 	int err = 0;
@@ -2043,7 +1995,8 @@ static int mod_fill_all_unique_dependencies(const struct mod *mod, const struct 
 	return err;
 }
 
-static const struct mod **mod_get_all_sorted_dependencies(const struct mod *mod, size_t *n_deps)
+static const struct mod **mod_get_all_sorted_dependencies(const struct mod *mod,
+							  size_t *n_deps)
 {
 	const struct mod **deps;
 	size_t last = 0;
@@ -2098,7 +2051,7 @@ static int output_deps(struct depmod *depmod, FILE *out)
 			fprintf(out, " %s", mod_get_compressed_path(d));
 		}
 		free(deps);
-	end:
+end:
 		putc('\n', out);
 	}
 
@@ -2233,11 +2186,10 @@ static int output_aliases_bin(struct depmod *depmod, FILE *out)
 			}
 			alias = buf;
 
-			duplicate = index_insert(idx, alias, mod->modname,
-						 mod->idx);
+			duplicate = index_insert(idx, alias, mod->modname, mod->idx);
 			if (duplicate && depmod->cfg->warn_dups)
-				WRN("duplicate module alias:\n%s %s\n",
-				    alias, mod->modname);
+				WRN("duplicate module alias:\n%s %s\n", alias,
+				    mod->modname);
 		}
 	}
 
@@ -2309,8 +2261,7 @@ static int output_symbols(struct depmod *depmod, FILE *out)
 		if (sym->owner == NULL)
 			continue;
 
-		fprintf(out, "alias symbol:%s %s\n",
-					sym->name, sym->owner->modname);
+		fprintf(out, "alias symbol:%s %s\n", sym->name, sym->owner->modname);
 	}
 
 	return 0;
@@ -2353,12 +2304,11 @@ static int output_symbols_bin(struct depmod *depmod, FILE *out)
 			goto err_scratchbuf;
 		}
 		memcpy(scratchbuf_str(&salias) + baselen, sym->name, len + 1);
-		duplicate = index_insert(idx, alias, sym->owner->modname,
-							sym->owner->idx);
+		duplicate =
+			index_insert(idx, alias, sym->owner->modname, sym->owner->idx);
 
 		if (duplicate && depmod->cfg->warn_dups)
-			WRN("duplicate module syms:\n%s %s\n",
-						alias, sym->owner->modname);
+			WRN("duplicate module syms:\n%s %s\n", alias, sym->owner->modname);
 	}
 
 	index_write(idx, out);
@@ -2413,9 +2363,7 @@ static int flush_stream(FILE *in, int endchar)
 	size_t i = 0;
 	int c;
 
-	for (c = fgetc(in);
-	     c != EOF && c != endchar && c != '\0';
-	     c = fgetc(in))
+	for (c = fgetc(in); c != EOF && c != endchar && c != '\0'; c = fgetc(in))
 		;
 
 	return c == endchar ? i : 0;
@@ -2426,14 +2374,13 @@ static int flush_stream_to(FILE *in, int endchar, char *dst, size_t dst_sz)
 	size_t i = 0;
 	int c;
 
-	for (c = fgetc(in);
-	     c != EOF && c != endchar && c != '\0' && i < dst_sz;
+	for (c = fgetc(in); c != EOF && c != endchar && c != '\0' && i < dst_sz;
 	     c = fgetc(in))
 		dst[i++] = c;
 
 	if (i == dst_sz) {
-		WRN("Could not flush stream: %d. Partial content: %.*s\n",
-		    ENOSPC, (int) dst_sz, dst);
+		WRN("Could not flush stream: %d. Partial content: %.*s\n", ENOSPC,
+		    (int)dst_sz, dst);
 		i--;
 	}
 
@@ -2527,13 +2474,11 @@ static int output_devname(struct depmod *depmod, FILE *out)
 
 			if (strstartswith(value, "devname:"))
 				devname = value + sizeof("devname:") - 1;
-			else if (sscanf(value, "char-major-%u-%u",
-						&maj, &min) == 2) {
+			else if (sscanf(value, "char-major-%u-%u", &maj, &min) == 2) {
 				type = 'c';
 				major = maj;
 				minor = min;
-			} else if (sscanf(value, "block-major-%u-%u",
-						&maj, &min) == 2) {
+			} else if (sscanf(value, "block-major-%u-%u", &maj, &min) == 2) {
 				type = 'b';
 				major = maj;
 				minor = min;
@@ -2550,12 +2495,13 @@ static int output_devname(struct depmod *depmod, FILE *out)
 					      out);
 					empty = false;
 				}
-				fprintf(out, "%s %s %c%u:%u\n", mod->modname,
-					devname, type, major, minor);
-                        } else
+				fprintf(out, "%s %s %c%u:%u\n", mod->modname, devname,
+					type, major, minor);
+			} else
 				ERR("Module '%s' has devname (%s) but "
 				    "lacks major and minor information. "
-				    "Ignoring.\n", mod->modname, devname);
+				    "Ignoring.\n",
+				    mod->modname, devname);
 		}
 	}
 
@@ -2567,20 +2513,18 @@ static int depmod_output(struct depmod *depmod, FILE *out)
 	static const struct depfile {
 		const char *name;
 		int (*cb)(struct depmod *depmod, FILE *out);
-	} *itr, depfiles[] = {
-		{ "modules.dep", output_deps },
-		{ "modules.dep.bin", output_deps_bin },
-		{ "modules.alias", output_aliases },
-		{ "modules.alias.bin", output_aliases_bin },
-		{ "modules.softdep", output_softdeps },
-		{ "modules.weakdep", output_weakdeps },
-		{ "modules.symbols", output_symbols },
-		{ "modules.symbols.bin", output_symbols_bin },
-		{ "modules.builtin.bin", output_builtin_bin },
-		{ "modules.builtin.alias.bin", output_builtin_alias_bin },
-		{ "modules.devname", output_devname },
-		{ }
-	};
+	} *itr, depfiles[] = { { "modules.dep", output_deps },
+			       { "modules.dep.bin", output_deps_bin },
+			       { "modules.alias", output_aliases },
+			       { "modules.alias.bin", output_aliases_bin },
+			       { "modules.softdep", output_softdeps },
+			       { "modules.weakdep", output_weakdeps },
+			       { "modules.symbols", output_symbols },
+			       { "modules.symbols.bin", output_symbols_bin },
+			       { "modules.builtin.bin", output_builtin_bin },
+			       { "modules.builtin.alias.bin", output_builtin_alias_bin },
+			       { "modules.devname", output_devname },
+			       {} };
 	const char *dname = depmod->cfg->outdirname;
 	int dfd, err = 0;
 	struct timeval tv;
@@ -2614,11 +2558,11 @@ static int depmod_output(struct depmod *depmod, FILE *out)
 			int fd;
 
 			snprintf(tmp, sizeof(tmp), "%s.%i.%lli.%lli", itr->name, getpid(),
-					(long long)tv.tv_usec, (long long)tv.tv_sec);
+				 (long long)tv.tv_usec, (long long)tv.tv_sec);
 			fd = openat(dfd, tmp, flags, mode);
 			if (fd < 0) {
-				ERR("openat(%s, %s, %o, %o): %m\n",
-				    dname, tmp, flags, mode);
+				ERR("openat(%s, %s, %o, %o): %m\n", dname, tmp, flags,
+				    mode);
 				continue;
 			}
 			fp = fdopen(fd, "wb");
@@ -2639,23 +2583,22 @@ static int depmod_output(struct depmod *depmod, FILE *out)
 			if (unlinkat(dfd, tmp, 0) != 0)
 				ERR("unlinkat(%s, %s): %m\n", dname, tmp);
 
-			ERR("Could not write index '%s': %s\n", itr->name,
-								strerror(-r));
+			ERR("Could not write index '%s': %s\n", itr->name, strerror(-r));
 			err = -errno;
 			break;
 		}
 
 		if (renameat(dfd, tmp, dfd, itr->name) != 0) {
 			err = -errno;
-			CRIT("renameat(%s, %s, %s, %s): %m\n",
-					dname, tmp, dname, itr->name);
+			CRIT("renameat(%s, %s, %s, %s): %m\n", dname, tmp, dname,
+			     itr->name);
 			break;
 		}
 
 		if (ferr) {
 			err = -ENOSPC;
 			ERR("Could not create index '%s'. Output is truncated: %s\n",
-						itr->name, strerror(-err));
+			    itr->name, strerror(-err));
 			break;
 		}
 	}
@@ -2710,8 +2653,8 @@ static int depmod_load_symvers(struct depmod *depmod, const char *filename)
 
 		crc = strtoull(ver, &verend, 16);
 		if (verend[0] != '\0') {
-			ERR("%s:%u Invalid symbol version %s: %m\n",
-			    filename, linenum, ver);
+			ERR("%s:%u Invalid symbol version %s: %m\n", filename, linenum,
+			    ver);
 			continue;
 		}
 
@@ -2771,7 +2714,7 @@ static int depmod_load_system_map(struct depmod *depmod, const char *filename)
 		depmod_symbol_add(depmod, p + ksymstr_len, true, 0, NULL);
 		continue;
 
-	invalid_syntax:
+invalid_syntax:
 		ERR("%s:%u: invalid line: %s\n", filename, linenum, line);
 	}
 	depmod_add_fake_syms(depmod);
@@ -2781,7 +2724,6 @@ static int depmod_load_system_map(struct depmod *depmod, const char *filename)
 	fclose(fp);
 	return 0;
 }
-
 
 static int depfile_up_to_date_dir(DIR *d, time_t mtime, size_t baselen, char *path)
 {
@@ -2793,8 +2735,8 @@ static int depfile_up_to_date_dir(DIR *d, time_t mtime, size_t baselen, char *pa
 		size_t namelen;
 		struct stat st;
 
-		if (name[0] == '.' && (name[1] == '\0' ||
-				       (name[1] == '.' && name[2] == '\0')))
+		if (name[0] == '.' &&
+		    (name[1] == '\0' || (name[1] == '.' && name[2] == '\0')))
 			continue;
 		if (streq(name, "build") || streq(name, "source"))
 			continue;
@@ -2820,8 +2762,7 @@ static int depfile_up_to_date_dir(DIR *d, time_t mtime, size_t baselen, char *pa
 			}
 			fd = openat(dfd, name, O_RDONLY);
 			if (fd < 0) {
-				ERR("openat(%d, %s, O_RDONLY): %m\n",
-				    dfd, name);
+				ERR("openat(%d, %s, O_RDONLY): %m\n", dfd, name);
 				continue;
 			}
 			subdir = fdopendir(fd);
@@ -2832,8 +2773,7 @@ static int depfile_up_to_date_dir(DIR *d, time_t mtime, size_t baselen, char *pa
 			}
 			path[baselen + namelen] = '/';
 			path[baselen + namelen + 1] = '\0';
-			err = depfile_up_to_date_dir(subdir, mtime,
-						     baselen + namelen + 1,
+			err = depfile_up_to_date_dir(subdir, mtime, baselen + namelen + 1,
 						     path);
 			closedir(subdir);
 		} else if (S_ISREG(st.st_mode)) {
@@ -2843,13 +2783,11 @@ static int depfile_up_to_date_dir(DIR *d, time_t mtime, size_t baselen, char *pa
 			memcpy(path + baselen, name, namelen + 1);
 			err = st.st_mtime <= mtime;
 			if (err == 0) {
-				DBG("%s %"PRIu64" is newer than %"PRIu64"\n",
-				    path, (uint64_t)st.st_mtime,
-				    (uint64_t)mtime);
+				DBG("%s %" PRIu64 " is newer than %" PRIu64 "\n", path,
+				    (uint64_t)st.st_mtime, (uint64_t)mtime);
 			}
 		} else {
-			ERR("unsupported file type %s: %o\n",
-			    path, st.st_mode & S_IFMT);
+			ERR("unsupported file type %s: %o\n", path, st.st_mode & S_IFMT);
 			continue;
 		}
 
@@ -2993,8 +2931,7 @@ static int do_depmod(int argc, char *argv[])
 		case 'r':
 		case 'm':
 			if (idx > 0)
-				WRN("Ignored deprecated option --%s\n",
-				    cmdopts[idx].name);
+				WRN("Ignored deprecated option --%s\n", cmdopts[idx].name);
 			else
 				WRN("Ignored deprecated option -%c\n", c);
 
@@ -3029,8 +2966,7 @@ static int do_depmod(int argc, char *argv[])
 		cfg.kversion = un.release;
 	}
 
-	cfg.dirnamelen = snprintf(cfg.dirname, PATH_MAX,
-				  "%s" MODULE_DIRECTORY "/%s",
+	cfg.dirnamelen = snprintf(cfg.dirname, PATH_MAX, "%s" MODULE_DIRECTORY "/%s",
 				  root ?: "", cfg.kversion);
 
 	cfg.outdirnamelen = snprintf(cfg.outdirname, PATH_MAX,
@@ -3067,15 +3003,13 @@ static int do_depmod(int argc, char *argv[])
 	if (module_symvers != NULL) {
 		err = depmod_load_symvers(&depmod, module_symvers);
 		if (err < 0) {
-			CRIT("could not load %s: %s\n", module_symvers,
-			     strerror(-err));
+			CRIT("could not load %s: %s\n", module_symvers, strerror(-err));
 			goto cmdline_failed;
 		}
 	} else if (system_map != NULL) {
 		err = depmod_load_system_map(&depmod, system_map);
 		if (err < 0) {
-			CRIT("could not load %s: %s\n", system_map,
-			     strerror(-err));
+			CRIT("could not load %s: %s\n", system_map, strerror(-err));
 			goto cmdline_failed;
 		}
 	} else if (cfg.print_unknown) {
@@ -3108,15 +3042,15 @@ static int do_depmod(int argc, char *argv[])
 
 			err = kmod_module_new_from_path(depmod.ctx, path, &mod);
 			if (err < 0) {
-				CRIT("could not create module %s: %s\n",
-				     path, strerror(-err));
+				CRIT("could not create module %s: %s\n", path,
+				     strerror(-err));
 				goto cmdline_modules_failed;
 			}
 
 			err = depmod_module_add(&depmod, mod);
 			if (err < 0) {
-				CRIT("could not add module %s: %s\n",
-				     path, strerror(-err));
+				CRIT("could not add module %s: %s\n", path,
+				     strerror(-err));
 				kmod_module_unref(mod);
 				goto cmdline_modules_failed;
 			}
@@ -3125,8 +3059,7 @@ static int do_depmod(int argc, char *argv[])
 
 	err = depmod_modules_build_array(&depmod);
 	if (err < 0) {
-		CRIT("could not build module array: %s\n",
-		     strerror(-err));
+		CRIT("could not build module array: %s\n", strerror(-err));
 		goto cmdline_modules_failed;
 	}
 

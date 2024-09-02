@@ -17,11 +17,9 @@
 #include "kmod.h"
 
 static const char options_s[] = "+hV";
-static const struct option options[] = {
-	{ "help", no_argument, NULL, 'h' },
-	{ "version", no_argument, NULL, 'V' },
-	{}
-};
+static const struct option options[] = { { "help", no_argument, NULL, 'h' },
+					 { "version", no_argument, NULL, 'V' },
+					 {} };
 
 static const struct kmod_cmd kmod_cmd_help;
 
@@ -32,12 +30,8 @@ static const struct kmod_cmd *kmod_cmds[] = {
 };
 
 static const struct kmod_cmd *kmod_compat_cmds[] = {
-	&kmod_cmd_compat_lsmod,
-	&kmod_cmd_compat_rmmod,
-	&kmod_cmd_compat_insmod,
-	&kmod_cmd_compat_modinfo,
-	&kmod_cmd_compat_modprobe,
-	&kmod_cmd_compat_depmod,
+	&kmod_cmd_compat_lsmod,	  &kmod_cmd_compat_rmmod,    &kmod_cmd_compat_insmod,
+	&kmod_cmd_compat_modinfo, &kmod_cmd_compat_modprobe, &kmod_cmd_compat_depmod,
 };
 
 static int kmod_help(int argc, char *argv[])
@@ -45,17 +39,17 @@ static int kmod_help(int argc, char *argv[])
 	size_t i;
 
 	printf("kmod - Manage kernel modules: list, load, unload, etc\n"
-			"Usage:\n"
-			"\t%s [options] command [command_options]\n\n"
-			"Options:\n"
-			"\t-V, --version     show version\n"
-			"\t-h, --help        show this help\n\n"
-			"Commands:\n", basename(argv[0]));
+	       "Usage:\n"
+	       "\t%s [options] command [command_options]\n\n"
+	       "Options:\n"
+	       "\t-V, --version     show version\n"
+	       "\t-h, --help        show this help\n\n"
+	       "Commands:\n",
+	       basename(argv[0]));
 
 	for (i = 0; i < ARRAY_SIZE(kmod_cmds); i++) {
 		if (kmod_cmds[i]->help != NULL) {
-			printf("  %-12s %s\n", kmod_cmds[i]->name,
-							kmod_cmds[i]->help);
+			printf("  %-12s %s\n", kmod_cmds[i]->name, kmod_cmds[i]->help);
 		}
 	}
 
@@ -64,7 +58,7 @@ static int kmod_help(int argc, char *argv[])
 	for (i = 0; i < ARRAY_SIZE(kmod_compat_cmds); i++) {
 		if (kmod_compat_cmds[i]->help != NULL) {
 			printf("  %-12s %s\n", kmod_compat_cmds[i]->name,
-						kmod_compat_cmds[i]->help);
+			       kmod_compat_cmds[i]->help);
 		}
 	}
 
@@ -101,7 +95,8 @@ static int handle_kmod_commands(int argc, char *argv[])
 		case '?':
 			return EXIT_FAILURE;
 		default:
-			fprintf(stderr, "Error: unexpected getopt_long() value '%c'.\n", c);
+			fprintf(stderr, "Error: unexpected getopt_long() value '%c'.\n",
+				c);
 			return EXIT_FAILURE;
 		}
 	}
@@ -131,7 +126,6 @@ fail:
 	kmod_help(argc, argv);
 	return EXIT_FAILURE;
 }
-
 
 static int handle_kmod_compat_commands(int argc, char *argv[])
 {

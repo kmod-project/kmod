@@ -23,15 +23,14 @@ extern "C" {
  * environment, user variables, allows custom logging
  */
 struct kmod_ctx;
-struct kmod_ctx *kmod_new(const char *dirname, const char * const *config_paths);
+struct kmod_ctx *kmod_new(const char *dirname, const char *const *config_paths);
 struct kmod_ctx *kmod_ref(struct kmod_ctx *ctx);
 struct kmod_ctx *kmod_unref(struct kmod_ctx *ctx);
 void kmod_set_log_fn(struct kmod_ctx *ctx,
-			void (*log_fn)(void *log_data,
-					int priority, const char *file, int line,
-					const char *fn, const char *format,
-					va_list args),
-			const void *data);
+		     void (*log_fn)(void *log_data, int priority, const char *file,
+				    int line, const char *fn, const char *format,
+				    va_list args),
+		     const void *data);
 int kmod_get_log_priority(const struct kmod_ctx *ctx);
 void kmod_set_log_priority(struct kmod_ctx *ctx, int priority);
 void *kmod_get_userdata(const struct kmod_ctx *ctx);
@@ -70,20 +69,18 @@ int kmod_dump_index(struct kmod_ctx *ctx, enum kmod_index type, int fd);
  */
 struct kmod_list;
 struct kmod_list *kmod_list_next(const struct kmod_list *list,
-						const struct kmod_list *curr);
+				 const struct kmod_list *curr);
 struct kmod_list *kmod_list_prev(const struct kmod_list *list,
-						const struct kmod_list *curr);
+				 const struct kmod_list *curr);
 struct kmod_list *kmod_list_last(const struct kmod_list *list);
 
-#define kmod_list_foreach(list_entry, first_entry) \
-	for (list_entry = first_entry; \
-		list_entry != NULL; \
-		list_entry = kmod_list_next(first_entry, list_entry))
+#define kmod_list_foreach(list_entry, first_entry)         \
+	for (list_entry = first_entry; list_entry != NULL; \
+	     list_entry = kmod_list_next(first_entry, list_entry))
 
-#define kmod_list_foreach_reverse(list_entry, first_entry) \
-	for (list_entry = kmod_list_last(first_entry); \
-		list_entry != NULL; \
-		list_entry = kmod_list_prev(first_entry, list_entry))
+#define kmod_list_foreach_reverse(list_entry, first_entry)                 \
+	for (list_entry = kmod_list_last(first_entry); list_entry != NULL; \
+	     list_entry = kmod_list_prev(first_entry, list_entry))
 
 /*
  * kmod_config_iter
@@ -111,22 +108,19 @@ void kmod_config_iter_free_iter(struct kmod_config_iter *iter);
  */
 struct kmod_module;
 int kmod_module_new_from_name(struct kmod_ctx *ctx, const char *name,
-						struct kmod_module **mod);
+			      struct kmod_module **mod);
 int kmod_module_new_from_path(struct kmod_ctx *ctx, const char *path,
-						struct kmod_module **mod);
+			      struct kmod_module **mod);
 int kmod_module_new_from_lookup(struct kmod_ctx *ctx, const char *given_alias,
-						struct kmod_list **list);
-int kmod_module_new_from_name_lookup(struct kmod_ctx *ctx,
-				     const char *modname,
+				struct kmod_list **list);
+int kmod_module_new_from_name_lookup(struct kmod_ctx *ctx, const char *modname,
 				     struct kmod_module **mod);
-int kmod_module_new_from_loaded(struct kmod_ctx *ctx,
-						struct kmod_list **list);
+int kmod_module_new_from_loaded(struct kmod_ctx *ctx, struct kmod_list **list);
 
 struct kmod_module *kmod_module_ref(struct kmod_module *mod);
 struct kmod_module *kmod_module_unref(struct kmod_module *mod);
 int kmod_module_unref_list(struct kmod_list *list);
 struct kmod_module *kmod_module_get_module(const struct kmod_list *entry);
-
 
 /* Removal flags */
 enum kmod_remove {
@@ -144,17 +138,17 @@ enum kmod_insert {
 
 /* Flags to kmod_module_probe_insert_module() */
 enum kmod_probe {
-	KMOD_PROBE_FORCE_VERMAGIC =		0x00001,
-	KMOD_PROBE_FORCE_MODVERSION =		0x00002,
-	KMOD_PROBE_IGNORE_COMMAND =		0x00004,
-	KMOD_PROBE_IGNORE_LOADED =		0x00008,
-	KMOD_PROBE_DRY_RUN =			0x00010,
-	KMOD_PROBE_FAIL_ON_LOADED =		0x00020,
+	KMOD_PROBE_FORCE_VERMAGIC = 0x00001,
+	KMOD_PROBE_FORCE_MODVERSION = 0x00002,
+	KMOD_PROBE_IGNORE_COMMAND = 0x00004,
+	KMOD_PROBE_IGNORE_LOADED = 0x00008,
+	KMOD_PROBE_DRY_RUN = 0x00010,
+	KMOD_PROBE_FAIL_ON_LOADED = 0x00020,
 
 	/* codes below can be used in return value, too */
-	KMOD_PROBE_APPLY_BLACKLIST_ALL =	0x10000,
-	KMOD_PROBE_APPLY_BLACKLIST =		0x20000,
-	KMOD_PROBE_APPLY_BLACKLIST_ALIAS_ONLY =	0x40000,
+	KMOD_PROBE_APPLY_BLACKLIST_ALL = 0x10000,
+	KMOD_PROBE_APPLY_BLACKLIST = 0x20000,
+	KMOD_PROBE_APPLY_BLACKLIST_ALIAS_ONLY = 0x40000,
 };
 
 /* Flags to kmod_module_apply_filter() */
@@ -165,15 +159,12 @@ enum kmod_filter {
 
 int kmod_module_remove_module(struct kmod_module *mod, unsigned int flags);
 int kmod_module_insert_module(struct kmod_module *mod, unsigned int flags,
-							const char *options);
-int kmod_module_probe_insert_module(struct kmod_module *mod,
-			unsigned int flags, const char *extra_options,
-			int (*run_install)(struct kmod_module *m,
-						const char *cmdline, void *data),
-			const void *data,
-			void (*print_action)(struct kmod_module *m, bool install,
-						const char *options));
-
+			      const char *options);
+int kmod_module_probe_insert_module(
+	struct kmod_module *mod, unsigned int flags, const char *extra_options,
+	int (*run_install)(struct kmod_module *m, const char *cmdline, void *data),
+	const void *data,
+	void (*print_action)(struct kmod_module *m, bool install, const char *options));
 
 const char *kmod_module_get_name(const struct kmod_module *mod);
 const char *kmod_module_get_path(const struct kmod_module *mod);
@@ -181,19 +172,15 @@ const char *kmod_module_get_options(const struct kmod_module *mod);
 const char *kmod_module_get_install_commands(const struct kmod_module *mod);
 const char *kmod_module_get_remove_commands(const struct kmod_module *mod);
 struct kmod_list *kmod_module_get_dependencies(const struct kmod_module *mod);
-int kmod_module_get_softdeps(const struct kmod_module *mod,
-				struct kmod_list **pre, struct kmod_list **post);
-int kmod_module_get_weakdeps(const struct kmod_module *mod,
-				struct kmod_list **weak);
+int kmod_module_get_softdeps(const struct kmod_module *mod, struct kmod_list **pre,
+			     struct kmod_list **post);
+int kmod_module_get_weakdeps(const struct kmod_module *mod, struct kmod_list **weak);
 int kmod_module_get_filtered_blacklist(const struct kmod_ctx *ctx,
-					const struct kmod_list *input,
-					struct kmod_list **output) __attribute__ ((deprecated));
-int kmod_module_apply_filter(const struct kmod_ctx *ctx,
-					enum kmod_filter filter_type,
-					const struct kmod_list *input,
-					struct kmod_list **output);
-
-
+				       const struct kmod_list *input,
+				       struct kmod_list **output)
+	__attribute__((deprecated));
+int kmod_module_apply_filter(const struct kmod_ctx *ctx, enum kmod_filter filter_type,
+			     const struct kmod_list *input, struct kmod_list **output);
 
 /*
  * Information regarding "live information" from module's state, as returned
@@ -217,8 +204,6 @@ const char *kmod_module_section_get_name(const struct kmod_list *entry);
 unsigned long kmod_module_section_get_address(const struct kmod_list *entry);
 void kmod_module_section_free_list(struct kmod_list *list);
 long kmod_module_get_size(const struct kmod_module *mod);
-
-
 
 /*
  * Information retrieved from ELF headers and sections
@@ -247,7 +232,8 @@ enum kmod_symbol_bind {
 	KMOD_SYMBOL_UNDEF = 'U'
 };
 
-int kmod_module_get_dependency_symbols(const struct kmod_module *mod, struct kmod_list **list);
+int kmod_module_get_dependency_symbols(const struct kmod_module *mod,
+				       struct kmod_list **list);
 const char *kmod_module_dependency_symbol_get_symbol(const struct kmod_list *entry);
 int kmod_module_dependency_symbol_get_bind(const struct kmod_list *entry);
 uint64_t kmod_module_dependency_symbol_get_crc(const struct kmod_list *entry);

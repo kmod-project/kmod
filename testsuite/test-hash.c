@@ -29,9 +29,7 @@ static int test_hash_new(const struct test *t)
 	hash_free(h);
 	return 0;
 }
-DEFINE_TEST(test_hash_new,
-		.description = "test hash_new");
-
+DEFINE_TEST(test_hash_new, .description = "test hash_new");
 
 static int test_hash_get_count(const struct test *t)
 {
@@ -48,9 +46,7 @@ static int test_hash_get_count(const struct test *t)
 	hash_free(h);
 	return 0;
 }
-DEFINE_TEST(test_hash_get_count,
-		.description = "test hash_add / hash_get_count");
-
+DEFINE_TEST(test_hash_get_count, .description = "test hash_add / hash_get_count");
 
 static int test_hash_replace(const struct test *t)
 {
@@ -78,9 +74,7 @@ static int test_hash_replace(const struct test *t)
 	hash_free(h);
 	return 0;
 }
-DEFINE_TEST(test_hash_replace,
-		.description = "test hash_add replacing existing value");
-
+DEFINE_TEST(test_hash_replace, .description = "test hash_add replacing existing value");
 
 static int test_hash_replace_failing(const struct test *t)
 {
@@ -110,8 +104,7 @@ static int test_hash_replace_failing(const struct test *t)
 	return 0;
 }
 DEFINE_TEST(test_hash_replace_failing,
-		.description = "test hash_add_unique failing to replace existing value");
-
+	    .description = "test hash_add_unique failing to replace existing value");
 
 static int test_hash_iter(const struct test *t)
 {
@@ -129,8 +122,7 @@ static int test_hash_iter(const struct test *t)
 	hash_add(h, k3, v3);
 	hash_add(h2, k3, v3);
 
-	for (hash_iter_init(h, &iter);
-	     hash_iter_next(&iter, &k, (const void **) &v);) {
+	for (hash_iter_init(h, &iter); hash_iter_next(&iter, &k, (const void **)&v);) {
 		v2 = hash_find(h2, k);
 		assert_return(v2 != NULL, EXIT_FAILURE);
 		hash_del(h2, k);
@@ -143,9 +135,7 @@ static int test_hash_iter(const struct test *t)
 	hash_free(h2);
 	return 0;
 }
-DEFINE_TEST(test_hash_iter,
-		.description = "test hash_iter");
-
+DEFINE_TEST(test_hash_iter, .description = "test hash_iter");
 
 static int test_hash_iter_after_del(const struct test *t)
 {
@@ -165,8 +155,7 @@ static int test_hash_iter_after_del(const struct test *t)
 
 	hash_del(h, k1);
 
-	for (hash_iter_init(h, &iter);
-	     hash_iter_next(&iter, &k, (const void **) &v);) {
+	for (hash_iter_init(h, &iter); hash_iter_next(&iter, &k, (const void **)&v);) {
 		v2 = hash_find(h2, k);
 		assert_return(v2 != NULL, EXIT_FAILURE);
 		hash_del(h2, k);
@@ -180,8 +169,7 @@ static int test_hash_iter_after_del(const struct test *t)
 	return 0;
 }
 DEFINE_TEST(test_hash_iter_after_del,
-		.description = "test hash_iter, after deleting element");
-
+	    .description = "test hash_iter, after deleting element");
 
 static int test_hash_free(const struct test *t)
 {
@@ -206,8 +194,7 @@ static int test_hash_free(const struct test *t)
 	return 0;
 }
 DEFINE_TEST(test_hash_free,
-		.description = "test hash_free calling free function for all values");
-
+	    .description = "test hash_free calling free function for all values");
 
 static int test_hash_add_unique(const struct test *t)
 {
@@ -232,8 +219,7 @@ static int test_hash_add_unique(const struct test *t)
 	return 0;
 }
 DEFINE_TEST(test_hash_add_unique,
-		.description = "test hash_add_unique with different key orders")
-
+	    .description = "test hash_add_unique with different key orders")
 
 static int test_hash_massive_add_del(const struct test *t)
 {
@@ -265,6 +251,6 @@ static int test_hash_massive_add_del(const struct test *t)
 	return 0;
 }
 DEFINE_TEST(test_hash_massive_add_del,
-		.description = "test multiple adds followed by multiple dels")
+	    .description = "test multiple adds followed by multiple dels")
 
 TESTSUITE_MAIN();

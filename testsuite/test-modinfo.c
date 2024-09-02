@@ -15,18 +15,16 @@
 
 static const char *progname = TOOLS_DIR "/modinfo";
 
-#define DEFINE_MODINFO_TEST(_field, _flavor, ...) \
-static noreturn int test_modinfo_##_field(const struct test *t) \
-{ \
-	const char *const args[] = { \
-		progname, "-F", #_field ,\
-		__VA_ARGS__ , \
-		NULL, \
-	}; \
-	test_spawn_prog(progname, args); \
-	exit(EXIT_FAILURE); \
-} \
-DEFINE_TEST(test_modinfo_##_field, \
+#define DEFINE_MODINFO_TEST(_field, _flavor, ...)                       \
+	static noreturn int test_modinfo_##_field(const struct test *t) \
+	{                                                               \
+		const char *const args[] = {                            \
+			progname, "-F", #_field, __VA_ARGS__, NULL,     \
+		};                                                      \
+		test_spawn_prog(progname, args);                        \
+		exit(EXIT_FAILURE);                                     \
+	}                                                               \
+	DEFINE_TEST(test_modinfo_##_field, \
 	.description = "check " #_field " output of modinfo for different architectures", \
 	.config = { \
 		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-modinfo/", \
@@ -35,23 +33,17 @@ DEFINE_TEST(test_modinfo_##_field, \
 		.out = TESTSUITE_ROOTFS "test-modinfo/correct-" #_field #_flavor ".txt", \
 	})
 
-#define DEFINE_MODINFO_GENERIC_TEST(_field) \
-	DEFINE_MODINFO_TEST(_field, , \
-			    "/mod-simple-i386.ko", \
-			    "/mod-simple-x86_64.ko", \
+#define DEFINE_MODINFO_GENERIC_TEST(_field)                                           \
+	DEFINE_MODINFO_TEST(_field, , "/mod-simple-i386.ko", "/mod-simple-x86_64.ko", \
 			    "/mod-simple-sparc64.ko")
 
 #ifdef ENABLE_OPENSSL
-#define DEFINE_MODINFO_SIGN_TEST(_field) \
-	DEFINE_MODINFO_TEST(_field, -openssl, \
-			    "/mod-simple-sha1.ko", \
-			    "/mod-simple-sha256.ko",	\
-			    "/mod-simple-pkcs7.ko")
+#define DEFINE_MODINFO_SIGN_TEST(_field)                             \
+	DEFINE_MODINFO_TEST(_field, -openssl, "/mod-simple-sha1.ko", \
+			    "/mod-simple-sha256.ko", "/mod-simple-pkcs7.ko")
 #else
-#define DEFINE_MODINFO_SIGN_TEST(_field) \
-	DEFINE_MODINFO_TEST(_field, , \
-			    "/mod-simple-sha1.ko", \
-			    "/mod-simple-sha256.ko",	\
+#define DEFINE_MODINFO_SIGN_TEST(_field)                                              \
+	DEFINE_MODINFO_TEST(_field, , "/mod-simple-sha1.ko", "/mod-simple-sha256.ko", \
 			    "/mod-simple-pkcs7.ko")
 #endif
 
@@ -90,9 +82,7 @@ DEFINE_TEST(test_modinfo_signature,
 static noreturn int test_modinfo_external(const struct test *t)
 {
 	const char *const args[] = {
-		progname, "-F", "filename",
-		"mod-simple",
-		NULL,
+		progname, "-F", "filename", "mod-simple", NULL,
 	};
 	test_spawn_prog(progname, args);
 	exit(EXIT_FAILURE);

@@ -50,8 +50,8 @@ static int xz_uncompress(lzma_stream *strm, struct kmod_file *file)
 	void *p = NULL;
 	size_t total = 0;
 
-	strm->avail_in  = 0;
-	strm->next_out  = out_buf;
+	strm->avail_in = 0;
+	strm->next_out = out_buf;
 	strm->avail_out = sizeof(out_buf);
 
 	while (true) {
@@ -61,7 +61,7 @@ static int xz_uncompress(lzma_stream *strm, struct kmod_file *file)
 				ret = -errno;
 				goto out;
 			}
-			strm->next_in  = in_buf;
+			strm->next_in = in_buf;
 			strm->avail_in = rdret;
 			if (rdret == 0)
 				action = LZMA_FINISH;
@@ -91,7 +91,7 @@ static int xz_uncompress(lzma_stream *strm, struct kmod_file *file)
 	file->memory = p;
 	file->size = total;
 	return 0;
- out:
+out:
 	free(p);
 	return ret;
 }

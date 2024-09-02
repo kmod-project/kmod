@@ -19,9 +19,9 @@
 #include "libkmod-internal.h"
 #include "libkmod-internal-file.h"
 
-static const char magic_zstd[] = {0x28, 0xB5, 0x2F, 0xFD};
-static const char magic_xz[] = {0xfd, '7', 'z', 'X', 'Z', 0};
-static const char magic_zlib[] = {0x1f, 0x8b};
+static const char magic_zstd[] = { 0x28, 0xB5, 0x2F, 0xFD };
+static const char magic_xz[] = { 0xfd, '7', 'z', 'X', 'Z', 0 };
+static const char magic_zlib[] = { 0x1f, 0x8b };
 
 static int load_reg(struct kmod_file *file)
 {
@@ -31,8 +31,7 @@ static int load_reg(struct kmod_file *file)
 		return -errno;
 
 	file->size = st.st_size;
-	file->memory = mmap(NULL, file->size, PROT_READ, MAP_PRIVATE,
-			    file->fd, 0);
+	file->memory = mmap(NULL, file->size, PROT_READ, MAP_PRIVATE, file->fd, 0);
 	if (file->memory == MAP_FAILED) {
 		file->memory = NULL;
 		return -errno;
@@ -46,12 +45,13 @@ static const struct comp_type {
 	enum kmod_file_compression_type compression;
 	const char *magic_bytes;
 	int (*load)(struct kmod_file *file);
-} comp_types[] = {
-	{sizeof(magic_zstd),	KMOD_FILE_COMPRESSION_ZSTD, magic_zstd, kmod_file_load_zstd},
-	{sizeof(magic_xz),	KMOD_FILE_COMPRESSION_XZ, magic_xz, kmod_file_load_xz},
-	{sizeof(magic_zlib),	KMOD_FILE_COMPRESSION_ZLIB, magic_zlib, kmod_file_load_zlib},
-	{0,			KMOD_FILE_COMPRESSION_NONE, NULL, load_reg}
-};
+} comp_types[] = { { sizeof(magic_zstd), KMOD_FILE_COMPRESSION_ZSTD, magic_zstd,
+		     kmod_file_load_zstd },
+		   { sizeof(magic_xz), KMOD_FILE_COMPRESSION_XZ, magic_xz,
+		     kmod_file_load_xz },
+		   { sizeof(magic_zlib), KMOD_FILE_COMPRESSION_ZLIB, magic_zlib,
+		     kmod_file_load_zlib },
+		   { 0, KMOD_FILE_COMPRESSION_NONE, NULL, load_reg } };
 
 struct kmod_elf *kmod_file_get_elf(struct kmod_file *file)
 {
@@ -70,8 +70,7 @@ struct kmod_elf *kmod_file_get_elf(struct kmod_file *file)
 	return file->elf;
 }
 
-struct kmod_file *kmod_file_open(const struct kmod_ctx *ctx,
-						const char *filename)
+struct kmod_file *kmod_file_open(const struct kmod_ctx *ctx, const char *filename)
 {
 	struct kmod_file *file;
 	char buf[7];
@@ -85,7 +84,7 @@ struct kmod_file *kmod_file_open(const struct kmod_ctx *ctx,
 	if (file == NULL)
 		return NULL;
 
-	file->fd = open(filename, O_RDONLY|O_CLOEXEC);
+	file->fd = open(filename, O_RDONLY | O_CLOEXEC);
 	if (file->fd < 0) {
 		free(file);
 		return NULL;

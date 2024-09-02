@@ -78,7 +78,7 @@ static void parse_retcodes(struct mod *_modules, const char *s)
 		l = strtol(p, &end, 0);
 		if (end == p || *end != ':')
 			break;
-		ret = (int) l;
+		ret = (int)l;
 		p = end + 1;
 
 		l = strtol(p, &end, 0);
@@ -87,7 +87,7 @@ static void parse_retcodes(struct mod *_modules, const char *s)
 		else if (*end != '\0')
 			break;
 
-		errcode = (int) l;
+		errcode = (int)l;
 
 		mod = malloc(sizeof(*mod) + modnamelen + 1);
 		if (mod == NULL)
@@ -104,35 +104,35 @@ static void parse_retcodes(struct mod *_modules, const char *s)
 
 static int write_one_line_file(const char *fn, const char *line, int len)
 {
-        FILE *f;
-        int r;
+	FILE *f;
+	int r;
 
-        assert(fn);
-        assert(line);
+	assert(fn);
+	assert(line);
 
-        f = fopen(fn, "we");
-        if (!f)
-                return -errno;
+	f = fopen(fn, "we");
+	if (!f)
+		return -errno;
 
-        errno = 0;
-        if (fputs(line, f) < 0) {
-                r = -errno;
-                goto finish;
-        }
+	errno = 0;
+	if (fputs(line, f) < 0) {
+		r = -errno;
+		goto finish;
+	}
 
-        fflush(f);
+	fflush(f);
 
-        if (ferror(f)) {
-                if (errno != 0)
-                        r = -errno;
-                else
-                        r = -EIO;
-        } else
-                r = 0;
+	if (ferror(f)) {
+		if (errno != 0)
+			r = -errno;
+		else
+			r = -EIO;
+	} else
+		r = 0;
 
 finish:
-        fclose(f);
-        return r;
+	fclose(f);
+	return r;
 }
 
 static int create_sysfs_files(const char *modname)
@@ -174,7 +174,7 @@ static void init_retcodes(void)
 	s = getenv(S_TC_INIT_MODULE_RETCODES);
 	if (s == NULL) {
 		fprintf(stderr, "TRAP init_module(): missing export %s?\n",
-						S_TC_INIT_MODULE_RETCODES);
+			S_TC_INIT_MODULE_RETCODES);
 	}
 
 	ctx = kmod_new(NULL, NULL);
@@ -193,8 +193,7 @@ static inline bool module_is_inkernel(const char *modname)
 
 	state = kmod_module_get_initstate(mod);
 
-	if (state == KMOD_MODULE_LIVE ||
-			state == KMOD_MODULE_BUILTIN)
+	if (state == KMOD_MODULE_LIVE || state == KMOD_MODULE_BUILTIN)
 		ret = true;
 	else
 		ret = false;
@@ -238,8 +237,7 @@ long init_module(void *mem, unsigned long len, const char *args)
 	if (elf == NULL)
 		return 0;
 
-	err = kmod_elf_get_section(elf, ".gnu.linkonce.this_module", &buf,
-								&bufsize);
+	err = kmod_elf_get_section(elf, ".gnu.linkonce.this_module", &buf, &bufsize);
 	kmod_elf_unref(elf);
 
 	/* We couldn't parse the ELF file. Just exit as if it was successful */
@@ -287,7 +285,6 @@ static int check_kernel_version(int major, int minor)
 		return true;
 	return false;
 }
-
 
 TS_EXPORT int finit_module(const int fd, const char *args, const int flags);
 
@@ -355,7 +352,8 @@ TS_EXPORT long int syscall(long int __sysno, ...)
 #endif
 			nextlib_syscall = dlsym(nextlib, "syscall");
 			if (nextlib_syscall == NULL) {
-				fprintf(stderr, "FIXME FIXME FIXME: could not load syscall symbol: %s\n",
+				fprintf(stderr,
+					"FIXME FIXME FIXME: could not load syscall symbol: %s\n",
 					dlerror());
 				abort();
 			}
@@ -370,7 +368,8 @@ TS_EXPORT long int syscall(long int __sysno, ...)
 	 * this may fail if a library or process is trying to call syscall()
 	 * directly, for example to implement gettid().
 	 */
-	fprintf(stderr, "FIXME FIXME FIXME: could not wrap call to syscall(%ld), this should not happen\n",
+	fprintf(stderr,
+		"FIXME FIXME FIXME: could not wrap call to syscall(%ld), this should not happen\n",
 		__sysno);
 
 	abort();

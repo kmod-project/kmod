@@ -16,20 +16,18 @@
 #include "kmod.h"
 
 static const char cmdopts_s[] = "psfVh";
-static const struct option cmdopts[] = {
-	{"version", no_argument, 0, 'V'},
-	{"help", no_argument, 0, 'h'},
-	{NULL, 0, 0, 0}
-};
+static const struct option cmdopts[] = { { "version", no_argument, 0, 'V' },
+					 { "help", no_argument, 0, 'h' },
+					 { NULL, 0, 0, 0 } };
 
 static void help(void)
 {
 	printf("Usage:\n"
-		"\t%s [options] filename [args]\n"
-		"Options:\n"
-		"\t-V, --version     show version\n"
-		"\t-h, --help        show this help\n",
-		program_invocation_short_name);
+	       "\t%s [options] filename [args]\n"
+	       "Options:\n"
+	       "\t-V, --version     show version\n"
+	       "\t-h, --help        show this help\n",
+	       program_invocation_short_name);
 }
 
 static const char *mod_strerror(int err)
@@ -83,8 +81,7 @@ static int do_insmod(int argc, char *argv[])
 		case '?':
 			return EXIT_FAILURE;
 		default:
-			ERR("unexpected getopt_long() value '%c'.\n",
-				c);
+			ERR("unexpected getopt_long() value '%c'.\n", c);
 			return EXIT_FAILURE;
 		}
 	}
@@ -127,15 +124,13 @@ static int do_insmod(int argc, char *argv[])
 
 	err = kmod_module_new_from_path(ctx, filename, &mod);
 	if (err < 0) {
-		ERR("could not load module %s: %s\n", filename,
-		    strerror(-err));
+		ERR("could not load module %s: %s\n", filename, strerror(-err));
 		goto end;
 	}
 
 	err = kmod_module_insert_module(mod, flags, opts);
 	if (err < 0) {
-		ERR("could not insert module %s: %s\n", filename,
-		    mod_strerror(-err));
+		ERR("could not insert module %s: %s\n", filename, mod_strerror(-err));
 	}
 	kmod_module_unref(mod);
 

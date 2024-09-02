@@ -27,9 +27,7 @@ static int test_array_append1(const struct test *t)
 
 	return 0;
 }
-DEFINE_TEST(test_array_append1,
-		.description = "test simple array append");
-
+DEFINE_TEST(test_array_append1, .description = "test simple array append");
 
 static int test_array_append2(const struct test *t)
 {
@@ -50,8 +48,7 @@ static int test_array_append2(const struct test *t)
 
 	return 0;
 }
-DEFINE_TEST(test_array_append2,
-		.description = "test array append over step");
+DEFINE_TEST(test_array_append2, .description = "test array append over step");
 
 static int test_array_append_unique(const struct test *t)
 {
@@ -75,10 +72,10 @@ static int test_array_append_unique(const struct test *t)
 
 	return 0;
 }
-DEFINE_TEST(test_array_append_unique,
-		.description = "test array append unique");
+DEFINE_TEST(test_array_append_unique, .description = "test array append unique");
 
-static int strptrcmp(const void *pa, const void *pb) {
+static int strptrcmp(const void *pa, const void *pb)
+{
 	const char *a = *(const char **)pa;
 	const char *b = *(const char **)pb;
 
@@ -111,8 +108,7 @@ static int test_array_sort(const struct test *t)
 
 	return 0;
 }
-DEFINE_TEST(test_array_sort,
-		.description = "test array sort");
+DEFINE_TEST(test_array_sort, .description = "test array sort");
 
 static int test_array_remove_at(const struct test *t)
 {
@@ -155,8 +151,7 @@ static int test_array_remove_at(const struct test *t)
 
 	return 0;
 }
-DEFINE_TEST(test_array_remove_at,
-		.description = "test array remove at");
+DEFINE_TEST(test_array_remove_at, .description = "test array remove at");
 
 static int test_array_pop(const struct test *t)
 {
@@ -169,7 +164,6 @@ static int test_array_pop(const struct test *t)
 	array_append(&array, c1);
 	array_append(&array, c2);
 	array_append(&array, c3);
-
 
 	array_pop(&array);
 
@@ -191,7 +185,6 @@ static int test_array_pop(const struct test *t)
 	return 0;
 }
 
-DEFINE_TEST(test_array_pop,
-		.description = "test array pop");
+DEFINE_TEST(test_array_pop, .description = "test array pop");
 
 TESTSUITE_MAIN();

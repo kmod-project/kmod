@@ -78,4 +78,3 @@ error:
 	gzclose(gzf); /* closes the gzfd */
 	return err;
 }
-

@@ -68,8 +68,7 @@ static noreturn int test_initlib(const struct test *t)
 
 	exit(EXIT_SUCCESS);
 }
-DEFINE_TEST(test_initlib,
-		.description = "test if libkmod's init function work");
+DEFINE_TEST(test_initlib, .description = "test if libkmod's init function work");
 
 static noreturn int test_insert(const struct test *t)
 {

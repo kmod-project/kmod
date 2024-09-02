@@ -18,7 +18,8 @@ static noreturn int modprobe_show_depends(const struct test *t)
 	const char *progname = TOOLS_DIR "/modprobe";
 	const char *const args[] = {
 		progname,
-		"--show-depends", "mod-loop-a",
+		"--show-depends",
+		"mod-loop-a",
 		NULL,
 	};
 
@@ -40,7 +41,8 @@ static noreturn int modprobe_show_depends2(const struct test *t)
 	const char *progname = TOOLS_DIR "/modprobe";
 	const char *const args[] = {
 		progname,
-		"--show-depends", "mod-simple",
+		"--show-depends",
+		"mod-simple",
 		NULL,
 	};
 
@@ -57,14 +59,12 @@ DEFINE_TEST(modprobe_show_depends2,
 		.out = TESTSUITE_ROOTFS "test-modprobe/show-depends/correct-mod-simple.txt",
 	});
 
-
 static noreturn int modprobe_show_alias_to_none(const struct test *t)
 {
 	const char *progname = TOOLS_DIR "/modprobe";
 	const char *const args[] = {
-		progname,
-		"--show-depends", "--ignore-install", "--quiet", "mod-simple",
-		NULL,
+		progname,  "--show-depends", "--ignore-install",
+		"--quiet", "mod-simple",     NULL,
 	};
 
 	test_spawn_prog(progname, args);
@@ -82,14 +82,11 @@ DEFINE_TEST(modprobe_show_alias_to_none,
 	.modules_loaded = "",
 	);
 
-
 static noreturn int modprobe_show_exports(const struct test *t)
 {
 	const char *progname = TOOLS_DIR "/modprobe";
 	const char *const args[] = {
-		progname,
-		"--show-exports", "--quiet", "/mod-loop-a.ko",
-		NULL,
+		progname, "--show-exports", "--quiet", "/mod-loop-a.ko", NULL,
 	};
 
 	test_spawn_prog(progname, args);
@@ -105,7 +102,6 @@ DEFINE_TEST(modprobe_show_exports,
 		.regex = true,
 	});
 
-
 static noreturn int modprobe_builtin(const struct test *t)
 {
 	const char *progname = TOOLS_DIR "/modprobe";
@@ -118,19 +114,19 @@ static noreturn int modprobe_builtin(const struct test *t)
 	test_spawn_prog(progname, args);
 	exit(EXIT_FAILURE);
 }
-DEFINE_TEST(modprobe_builtin,
-	.description = "check if modprobe return 0 for builtin",
-	.config = {
-		[TC_UNAME_R] = "4.4.4",
-		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-modprobe/builtin",
-	});
+DEFINE_TEST(modprobe_builtin, .description = "check if modprobe return 0 for builtin",
+	    .config = {
+		    [TC_UNAME_R] = "4.4.4",
+		    [TC_ROOTFS] = TESTSUITE_ROOTFS "test-modprobe/builtin",
+	    });
 
 static noreturn int modprobe_builtin_lookup_only(const struct test *t)
 {
 	const char *progname = TOOLS_DIR "/modprobe";
 	const char *const args[] = {
 		progname,
-		"-R", "unix",
+		"-R",
+		"unix",
 		NULL,
 	};
 
@@ -223,7 +219,8 @@ static noreturn int modprobe_param_kcmdline_show_deps(const struct test *t)
 	const char *progname = TOOLS_DIR "/modprobe";
 	const char *const args[] = {
 		progname,
-		"--show-depends", "mod-simple",
+		"--show-depends",
+		"mod-simple",
 		NULL,
 	};
 
@@ -338,13 +335,13 @@ DEFINE_TEST_WITH_FUNC(modprobe_param_kcmdline8, modprobe_param_kcmdline,
 	.modules_loaded = "",
 	);
 
-
 static noreturn int modprobe_force(const struct test *t)
 {
 	const char *progname = TOOLS_DIR "/modprobe";
 	const char *const args[] = {
 		progname,
-		"--force", "mod-simple",
+		"--force",
+		"mod-simple",
 		NULL,
 	};
 
@@ -388,7 +385,8 @@ static noreturn int modprobe_oldkernel_force(const struct test *t)
 	const char *progname = TOOLS_DIR "/modprobe";
 	const char *const args[] = {
 		progname,
-		"--force", "mod-simple",
+		"--force",
+		"mod-simple",
 		NULL,
 	};
 

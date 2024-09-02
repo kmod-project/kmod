@@ -18,12 +18,9 @@
 static int from_name(const struct test *t)
 {
 	static const char *const modnames[] = {
-		"ext4",
-		"balbalbalbbalbalbalbalbalbalbal",
-		"snd-hda-intel",
-		"snd-timer",
-		"iTCO_wdt",
-		NULL,
+		"ext4",		 "balbalbalbbalbalbalbalbalbalbal",
+		"snd-hda-intel", "snd-timer",
+		"iTCO_wdt",	 NULL,
 	};
 	const char *const *p;
 	struct kmod_ctx *ctx;

@@ -94,9 +94,8 @@ static int zstd_decompress_block(struct kmod_file *file, ZSTD_DStream *dstr,
 		}
 		if (dsret > 0)
 			*next_block_size = (size_t)dsret;
-	} while (input->pos < input->size
-		 || output->pos > output->size
-		 || output->size - output->pos < out_buf_min_size);
+	} while (input->pos < input->size || output->pos > output->size ||
+		 output->size - output->pos < out_buf_min_size);
 
 	return ret;
 }
@@ -120,8 +119,7 @@ int kmod_file_load_zstd(struct kmod_file *file)
 	next_block_size = ZSTD_initDStream(dstr);
 
 	while (true) {
-		ret = zstd_read_block(file, next_block_size, &zst_inb,
-				      &zst_inb_capacity);
+		ret = zstd_read_block(file, next_block_size, &zst_inb, &zst_inb_capacity);
 		if (ret != 0)
 			goto out;
 		if (zst_inb.size == 0) /* EOF */

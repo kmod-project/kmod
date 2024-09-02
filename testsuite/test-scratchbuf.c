@@ -34,8 +34,7 @@ static int test_scratchbuf_onlystack(const struct test *t)
 	return 0;
 }
 DEFINE_TEST(test_scratchbuf_onlystack,
-		.description = "test scratchbuf for buffer on stack only");
-
+	    .description = "test scratchbuf for buffer on stack only");
 
 static int test_scratchbuf_heap(const struct test *t)
 {
@@ -72,6 +71,6 @@ static int test_scratchbuf_heap(const struct test *t)
 	return 0;
 }
 DEFINE_TEST(test_scratchbuf_heap,
-		.description = "test scratchbuf for buffer on that grows to heap");
+	    .description = "test scratchbuf for buffer on that grows to heap");
 
 TESTSUITE_MAIN();

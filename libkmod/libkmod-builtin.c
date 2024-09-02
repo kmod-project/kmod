@@ -58,7 +58,7 @@ static struct kmod_builtin_iter *kmod_builtin_iter_new(struct kmod_ctx *ctx)
 
 	snprintf(path, PATH_MAX, "%s/%s", dirname, MODULES_BUILTIN_MODINFO);
 
-	file = open(path, O_RDONLY|O_CLOEXEC);
+	file = open(path, O_RDONLY | O_CLOEXEC);
 	if (file < 0) {
 		sv_errno = errno;
 		goto fail;
@@ -101,8 +101,8 @@ static void kmod_builtin_iter_free(struct kmod_builtin_iter *iter)
 	free(iter);
 }
 
-static off_t get_string(struct kmod_builtin_iter *iter, off_t offset,
-			char **line, size_t *size)
+static off_t get_string(struct kmod_builtin_iter *iter, off_t offset, char **line,
+			size_t *size)
 {
 	int sv_errno;
 	char buf[BUFSIZ];
@@ -122,9 +122,9 @@ static off_t get_string(struct kmod_builtin_iter *iter, off_t offset,
 			break;
 		}
 
-		nullp = memchr(buf, '\0', (size_t) sz);
+		nullp = memchr(buf, '\0', (size_t)sz);
 		partsz = (size_t)((nullp) ? (nullp - buf) + 1 : sz);
-		offset += (off_t) partsz;
+		offset += (off_t)partsz;
 
 		if (iter->bufsz < linesz + partsz) {
 			void *tmp;
@@ -162,7 +162,7 @@ fail:
 
 static bool kmod_builtin_iter_next(struct kmod_builtin_iter *iter)
 {
-	char *line,  *modname;
+	char *line, *modname;
 	size_t linesz;
 	off_t pos, offset, modlen;
 
@@ -185,7 +185,8 @@ static bool kmod_builtin_iter_next(struct kmod_builtin_iter *iter)
 
 		dot = strchr(line, '.');
 		if (!dot) {
-			ERR(iter->ctx, "kmod_builtin_iter_next: unexpected string without modname prefix\n");
+			ERR(iter->ctx,
+			    "kmod_builtin_iter_next: unexpected string without modname prefix\n");
 			pos = iter->size;
 			break;
 		}
@@ -212,7 +213,7 @@ static bool kmod_builtin_iter_next(struct kmod_builtin_iter *iter)
 }
 
 static bool kmod_builtin_iter_get_modname(struct kmod_builtin_iter *iter,
-				char modname[static PATH_MAX])
+					  char modname[static PATH_MAX])
 {
 	int sv_errno;
 	char *line, *dot;
@@ -237,7 +238,8 @@ static bool kmod_builtin_iter_get_modname(struct kmod_builtin_iter *iter,
 	dot = strchr(line, '.');
 	if (!dot) {
 		sv_errno = EINVAL;
-		ERR(iter->ctx, "kmod_builtin_iter_get_modname: unexpected string without modname prefix\n");
+		ERR(iter->ctx,
+		    "kmod_builtin_iter_get_modname: unexpected string without modname prefix\n");
 		goto fail;
 	}
 
@@ -259,7 +261,7 @@ fail:
 
 /* array will be allocated with strings in a single malloc, just free *array */
 ssize_t kmod_builtin_get_modinfo(struct kmod_ctx *ctx, const char *modname,
-				char ***modinfo)
+				 char ***modinfo)
 {
 	ssize_t count = 0;
 	char *s, *line = NULL;

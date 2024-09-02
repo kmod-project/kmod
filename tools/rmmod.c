@@ -26,30 +26,28 @@ static int use_syslog;
 
 static const char cmdopts_s[] = "fsvVwh";
 static const struct option cmdopts[] = {
-	{"force", no_argument, 0, 'f'},
-	{"syslog", no_argument, 0, 's'},
-	{"verbose", no_argument, 0, 'v'},
-	{"version", no_argument, 0, 'V'},
-	{"help", no_argument, 0, 'h'},
-	{NULL, 0, 0, 0}
+	{ "force", no_argument, 0, 'f' },   { "syslog", no_argument, 0, 's' },
+	{ "verbose", no_argument, 0, 'v' }, { "version", no_argument, 0, 'V' },
+	{ "help", no_argument, 0, 'h' },    { NULL, 0, 0, 0 }
 };
 
 static void help(void)
 {
 	printf("Usage:\n"
-		"\t%s [options] modulename ...\n"
-		"Options:\n"
-		"\t-f, --force       forces a module unload and may crash your\n"
-		"\t                  machine. This requires Forced Module Removal\n"
-		"\t                  option in your kernel. DANGEROUS\n"
-		"\t-s, --syslog      print to syslog, not stderr\n"
-		"\t-v, --verbose     enables more messages\n"
-		"\t-V, --version     show version\n"
-		"\t-h, --help        show this help\n",
-		program_invocation_short_name);
+	       "\t%s [options] modulename ...\n"
+	       "Options:\n"
+	       "\t-f, --force       forces a module unload and may crash your\n"
+	       "\t                  machine. This requires Forced Module Removal\n"
+	       "\t                  option in your kernel. DANGEROUS\n"
+	       "\t-s, --syslog      print to syslog, not stderr\n"
+	       "\t-v, --verbose     enables more messages\n"
+	       "\t-V, --version     show version\n"
+	       "\t-h, --help        show this help\n",
+	       program_invocation_short_name);
 }
 
-static int check_module_inuse(struct kmod_module *mod) {
+static int check_module_inuse(struct kmod_module *mod)
+{
 	struct kmod_list *holders;
 	int state, ret;
 
@@ -59,8 +57,7 @@ static int check_module_inuse(struct kmod_module *mod) {
 		ERR("Module %s is builtin.\n", kmod_module_get_name(mod));
 		return -ENOENT;
 	} else if (state < 0) {
-		ERR("Module %s is not currently loaded\n",
-				kmod_module_get_name(mod));
+		ERR("Module %s is not currently loaded\n", kmod_module_get_name(mod));
 		return -ENOENT;
 	}
 
@@ -156,8 +153,7 @@ static int do_rmmod(int argc, char *argv[])
 			err = kmod_module_new_from_name(ctx, arg, &mod);
 
 		if (err < 0) {
-			ERR("could not use module %s: %s\n", arg,
-			    strerror(-err));
+			ERR("could not use module %s: %s\n", arg, strerror(-err));
 			break;
 		}
 
@@ -168,8 +164,7 @@ static int do_rmmod(int argc, char *argv[])
 
 		err = kmod_module_remove_module(mod, flags);
 		if (err < 0) {
-			ERR("could not remove module %s: %s\n", arg,
-			    strerror(-err));
+			ERR("could not remove module %s: %s\n", arg, strerror(-err));
 			r++;
 		}
 next:
