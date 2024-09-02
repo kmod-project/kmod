@@ -223,9 +223,6 @@ EXTRA_DIST += \
 	testsuite/module-playground/mod-loop-k.c \
 	testsuite/module-playground/mod-loop.h \
 	testsuite/module-playground/mod-simple.c \
-	testsuite/module-playground/mod-simple-i386.ko \
-	testsuite/module-playground/mod-simple-sparc64.ko \
-	testsuite/module-playground/mod-simple-x86_64.ko \
 	testsuite/module-playground/mod-weakdep.c \
 	testsuite/module-playground/README
 

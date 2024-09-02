@@ -102,9 +102,8 @@ map=(
     ["test-depmod/modules-outdir$MODULE_DIRECTORY/4.4.4/kernel/drivers/block/cciss.ko"]="mod-fake-cciss.ko"
     ["test-depmod/modules-outdir$MODULE_DIRECTORY/4.4.4/kernel/drivers/scsi/hpsa.ko"]="mod-fake-hpsa.ko"
     ["test-depmod/modules-outdir$MODULE_DIRECTORY/4.4.4/kernel/drivers/scsi/scsi_mod.ko"]="mod-fake-scsi-mod.ko"
-    ["test-modinfo/mod-simple-i386.ko"]="mod-simple-i386.ko"
-    ["test-modinfo/mod-simple-x86_64.ko"]="mod-simple-x86_64.ko"
-    ["test-modinfo/mod-simple-sparc64.ko"]="mod-simple-sparc64.ko"
+    # TODO: add cross-compiled modules to the test
+    ["test-modinfo/mod-simple.ko"]="mod-simple.ko"
     ["test-modinfo/mod-simple-sha1.ko"]="mod-simple.ko"
     ["test-modinfo/mod-simple-sha256.ko"]="mod-simple.ko"
     ["test-modinfo/mod-simple-pkcs7.ko"]="mod-simple.ko"

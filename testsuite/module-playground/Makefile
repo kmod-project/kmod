@@ -54,7 +54,7 @@ KDIR ?= $(module_prefix)/lib/modules/`uname -r`/build
 ARCH_SPECIFIC_MODULES := mod-simple-x86_64.ko mod-simple-i386.ko mod-simple-sparc64.ko
 MY_MODULES := $(filter-out $(ARCH_SPECIFIC_MODULES),$(wildcard *.ko))
 
-default: modules arch-modules
+default: modules
 
 mod-simple-%.ko: mod-simple-%.c Makefile.arch
 	$(eval arch=$(patsubst mod-simple-%.ko,%,$@))

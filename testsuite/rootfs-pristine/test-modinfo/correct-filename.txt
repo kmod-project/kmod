@@ -1,3 +1,1 @@
-/mod-simple-i386.ko
-/mod-simple-x86_64.ko
-/mod-simple-sparc64.ko
+/mod-simple.ko

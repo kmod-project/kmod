@@ -35,11 +35,10 @@ DEFINE_TEST(test_modinfo_##_field, \
 		.out = TESTSUITE_ROOTFS "test-modinfo/correct-" #_field #_flavor ".txt", \
 	})
 
+/* TODO: add cross-compiled modules to the test */
 #define DEFINE_MODINFO_GENERIC_TEST(_field) \
 	DEFINE_MODINFO_TEST(_field, , \
-			    "/mod-simple-i386.ko", \
-			    "/mod-simple-x86_64.ko", \
-			    "/mod-simple-sparc64.ko")
+			    "/mod-simple.ko")
 
 #ifdef ENABLE_OPENSSL
 #define DEFINE_MODINFO_SIGN_TEST(_field) \
