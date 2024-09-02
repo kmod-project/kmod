@@ -153,6 +153,9 @@ add_project_link_arguments(
 # Options
 ################################################################################
 
+module_compressions = ''
+module_signatures = ''
+
 features = []
 
 #-------------------------------------------------------------------------------
@@ -177,6 +180,22 @@ if moduledir == ''
 endif
 cdata.set_quoted('MODULE_DIRECTORY', moduledir)
 
+bashcompletiondir = get_option('bashcompletiondir')
+if bashcompletiondir == ''
+  bashcompletion = dependency('bash-completion', required : false)
+  if bashcompletion.found()
+    bashcompletiondir = bashcompletion.get_variable(pkgconfig : 'completionsdir')
+  else
+    bashcompletiondir = join_paths(get_option('prefix'), get_option('datadir'),
+                                   'bash-completion/completions')
+  endif
+endif
+
+install_data(
+  files('shell-completion/bash/kmod'),
+  install_dir : bashcompletiondir,
+)
+
 #-------------------------------------------------------------------------------
 # Compression support
 #-------------------------------------------------------------------------------
@@ -184,18 +203,21 @@ cdata.set_quoted('MODULE_DIRECTORY', moduledir)
 zstd = dependency('libzstd', version : '>= 1.4.4', required : get_option('zstd'))
 if zstd.found()
   cdata.set('ENABLE_ZSTD', true)
+  module_compressions += 'zstd '
 endif
 features += ['@0@ZSTD'.format(zstd.found() ? '+' : '-')]
 
 xz = dependency('liblzma', version : '>= 4.99', required : get_option('xz'))
 if xz.found()
   cdata.set('ENABLE_XZ', true)
+  module_compressions += 'xz '
 endif
 features += ['@0@XZ'.format(xz.found() ? '+' : '-')]
 
 zlib = dependency('zlib', required : get_option('zlib'))
 if zlib.found()
   cdata.set('ENABLE_ZLIB', true)
+  module_compressions += 'zlib '
 endif
 features += ['@0@ZLIB'.format(zlib.found() ? '+' : '-')]
 
@@ -206,6 +228,9 @@ features += ['@0@ZLIB'.format(zlib.found() ? '+' : '-')]
 crypto = dependency('libcrypto', version : '>= 1.1.0', required : get_option('openssl'))
 if crypto.found()
   cdata.set('ENABLE_OPENSSL', true)
+  module_signatures = 'PKCS7 legacy'
+else
+  module_signatures = 'legacy'
 endif
 features += ['@0@LIBCRYPTO'.format(crypto.found() ? '+' : '-')]
 
@@ -301,6 +326,73 @@ pkg.generate(
   requires_private : libkmod_deps,
 )
 
+libkmod_internal = static_library(
+  'kmod-internal',
+  objects : libkmod.extract_all_objects(recursive : true),
+  dependencies : libkmod_deps,
+  install : false,
+)
+
+kmod_sources = files(
+  'tools/depmod.c',
+  'tools/insmod.c',
+  'tools/kmod.c',
+  'tools/kmod.h',
+  'tools/log.c',
+  'tools/log.h',
+  'tools/lsmod.c',
+  'tools/modinfo.c',
+  'tools/modprobe.c',
+  'tools/rmmod.c',
+  'tools/static-nodes.c',
+)
+
+kmod = executable(
+  'kmod',
+  kmod_sources,
+  link_with : [libshared, libkmod_internal],
+  gnu_symbol_visibility : 'hidden',
+  build_by_default : get_option('tools'),
+  install : get_option('tools'),
+)
+
+_kmod_variables = [
+  'sysconfdir=' + sysconfdir,
+  'distconfdir=' + distconfdir,
+  'module_directory=' + moduledir,
+  'module_signatures=' + module_signatures,
+]
+
+# XXX: Support for empty variables was added in meson v1.4.0.
+# pkgconf behaves identically on missing and empty variable.
+if module_compressions != ''
+  _kmod_variables += ['module_compressions=' + module_compressions]
+endif
+
+pkg.generate(
+  name : 'kmod',
+  description : 'Tools to deal with kernel modules',
+  install_dir : join_paths(get_option('datadir'), 'pkgconfig'),
+  variables : _kmod_variables,
+)
+
+_tools = [
+  'depmod',
+  'insmod',
+  'lsmod',
+  'modinfo',
+  'modprobe',
+  'rmmod',
+]
+
+kmod_symlink = find_program('scripts/kmod-symlink.sh')
+foreach tool : _tools
+  if get_option('tools')
+    symlink = join_paths(get_option('bindir'), tool)
+    meson.add_install_script(kmod_symlink, symlink)
+  endif
+endforeach
+
 summary({
   'moduledir'   : moduledir,
   'prefix'      : get_option('prefix'),
@@ -312,6 +404,7 @@ summary({
 }, section : 'Directories')
 
 summary({
+  'tools'       : get_option('tools'),
   'logging'     : get_option('logging'),
   'debug'       : get_option('debug-messages'),
 }, section : 'Options')

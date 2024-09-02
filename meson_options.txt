@@ -12,6 +12,12 @@ option(
   description : 'Directory to look for kernel modules. Default: /lib/modules',
 )
 
+option(
+  'bashcompletiondir',
+  type : 'string',
+  description : 'Bash completions directory.',
+)
+
 # Compression options
 option(
   'zstd',
@@ -40,6 +46,13 @@ option(
   type : 'feature',
   value : 'disabled',
   description : 'Openssl support, PKCS7 signatures. Default: disabled',
+)
+
+option(
+  'tools',
+  type : 'boolean',
+  value : true,
+  description : 'Build the tools - kmod, depmod, lsmod ... Default: true',
 )
 
 option(

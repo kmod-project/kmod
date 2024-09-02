@@ -18,7 +18,8 @@ export GCC_COLORS
 # meson bits
 EXTRA_DIST += \
 	meson.build \
-	meson_options.txt
+	meson_options.txt \
+	scripts/kmod-symlink.sh
 
 AM_CPPFLAGS = \
 	-include $(top_builddir)/config.h \
