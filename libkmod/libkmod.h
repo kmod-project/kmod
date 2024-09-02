@@ -640,21 +640,6 @@ struct kmod_module *kmod_module_unref(struct kmod_module *mod);
 int kmod_module_unref_list(struct kmod_list *list);
 
 
-/* Flags to kmod_module_probe_insert_module() */
-enum kmod_probe {
-	KMOD_PROBE_FORCE_VERMAGIC =		0x00001,
-	KMOD_PROBE_FORCE_MODVERSION =		0x00002,
-	KMOD_PROBE_IGNORE_COMMAND =		0x00004,
-	KMOD_PROBE_IGNORE_LOADED =		0x00008,
-	KMOD_PROBE_DRY_RUN =			0x00010,
-	KMOD_PROBE_FAIL_ON_LOADED =		0x00020,
-
-	/* codes below can be used in return value, too */
-	KMOD_PROBE_APPLY_BLACKLIST_ALL =	0x10000,
-	KMOD_PROBE_APPLY_BLACKLIST =		0x20000,
-	KMOD_PROBE_APPLY_BLACKLIST_ALIAS_ONLY =	0x40000,
-};
-
 /* Flags to kmod_module_apply_filter() */
 enum kmod_filter {
 	KMOD_FILTER_BLACKLIST = 0x00001,
@@ -690,28 +675,47 @@ int kmod_module_insert_module(struct kmod_module *mod, unsigned int flags,
 							const char *options);
 
 /**
+ * kmod_probe:
+ * @KMOD_PROBE_FORCE_VERMAGIC: ignore kernel version magic
+ * @KMOD_PROBE_FORCE_MODVERSION: ignore symbol version hashes
+ * @KMOD_PROBE_IGNORE_COMMAND: ignore install commands and softdeps configured
+ * in the system
+ * @KMOD_PROBE_IGNORE_LOADED: do not check whether the module is already
+ * live in kernel or not
+ * @KMOD_PROBE_DRY_RUN: dry run, do not insert module, just call the
+ * associated callback function
+ * @KMOD_PROBE_FAIL_ON_LOADED: probe will fail if KMOD_PROBE_IGNORE_LOADED is
+ * not specified and the module is already live in kernel
+ * @KMOD_PROBE_APPLY_BLACKLIST_ALL: prior to probe, apply KMOD_FILTER_BLACKLIST
+ * filter to this module and its dependencies. If any of them are blacklisted
+ * and the blacklisted module is not live in the kernel, the function returns
+ * early with thus enum
+ * @KMOD_PROBE_APPLY_BLACKLIST: probe will return early with this enum, if the
+ * module is blacklisted
+ * @KMOD_PROBE_APPLY_BLACKLIST_ALIAS_ONLY: probe will return early with this
+ * enum, if the module is an alias and is blacklisted
+ *
+ * Bitmask which defines the behaviour of kmod_module_probe_insert_module().
+ */
+enum kmod_probe {
+	KMOD_PROBE_FORCE_VERMAGIC =		0x00001,
+	KMOD_PROBE_FORCE_MODVERSION =		0x00002,
+	KMOD_PROBE_IGNORE_COMMAND =		0x00004,
+	KMOD_PROBE_IGNORE_LOADED =		0x00008,
+	KMOD_PROBE_DRY_RUN =			0x00010,
+	KMOD_PROBE_FAIL_ON_LOADED =		0x00020,
+
+	/* codes below can be used in return value, too */
+	KMOD_PROBE_APPLY_BLACKLIST_ALL =	0x10000,
+	KMOD_PROBE_APPLY_BLACKLIST =		0x20000,
+	KMOD_PROBE_APPLY_BLACKLIST_ALIAS_ONLY =	0x40000,
+};
+
+/**
  * kmod_module_probe_insert_module:
  * @mod: kmod module
- * @flags: flags are not passed to Linux Kernel, but instead they dictate the
- * behavior of this function, valid flags are
- * KMOD_PROBE_FORCE_VERMAGIC: ignore kernel version magic;
- * KMOD_PROBE_FORCE_MODVERSION: ignore symbol version hashes;
- * KMOD_PROBE_IGNORE_COMMAND: whether the probe should ignore install
- * commands and softdeps configured in the system;
- * KMOD_PROBE_IGNORE_LOADED: do not check whether the module is already
- * live in kernel or not;
- * KMOD_PROBE_DRY_RUN: dry run, do not insert module, just call the
- * associated callback function;
- * KMOD_PROBE_FAIL_ON_LOADED: if KMOD_PROBE_IGNORE_LOADED is not specified
- * and the module is already live in kernel, the function will fail if this
- * flag is specified;
- * KMOD_PROBE_APPLY_BLACKLIST_ALL: probe will apply KMOD_FILTER_BLACKLIST
- * filter to this module and its dependencies. If any of the dependencies (or
- * the module) is blacklisted, the probe will fail, unless the blacklisted
- * module is already live in kernel;
- * KMOD_PROBE_APPLY_BLACKLIST: probe will fail if the module is blacklisted;
- * KMOD_PROBE_APPLY_BLACKLIST_ALIAS_ONLY: probe will fail if the module is an
- * alias and is blacklisted.
+ * @flags: flags are not passed to the kernel, but instead they dictate the
+ * behavior of this function, valid flags are #kmod_probe
  * @extra_options: module's options to pass to Linux Kernel. It applies only
  * to @mod, not to its dependencies.
  * @run_install: function to run when @mod is backed by an install command.
