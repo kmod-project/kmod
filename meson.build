@@ -6,6 +6,7 @@ project(
   meson_version : '>=0.60.0',
   default_options : [
     'c_std=gnu11',
+    'b_pie=true',
     'warning_level=2',
     'prefix=/usr',
     'sysconfdir=/etc',
