@@ -1215,23 +1215,6 @@ static struct kmod_config_iter *kmod_config_iter_new(const struct kmod_ctx* ctx,
 	return iter;
 }
 
-/**
- * SECTION:libkmod-config
- * @short_description: retrieve current libkmod configuration
- */
-
-/**
- * kmod_config_get_blacklists:
- * @ctx: kmod library context
- *
- * Retrieve an iterator to deal with the blacklist maintained inside the
- * library. See kmod_config_iter_get_key(), kmod_config_iter_get_value() and
- * kmod_config_iter_next(). At least one call to kmod_config_iter_next() must
- * be made to initialize the iterator and check if it's valid.
- *
- * Returns: a new iterator over the blacklists or NULL on failure. Free it
- * with kmod_config_iter_free_iter().
- */
 KMOD_EXPORT struct kmod_config_iter *kmod_config_get_blacklists(const struct kmod_ctx *ctx)
 {
 	if (ctx == NULL)
@@ -1240,18 +1223,6 @@ KMOD_EXPORT struct kmod_config_iter *kmod_config_get_blacklists(const struct kmo
 	return kmod_config_iter_new(ctx, CONFIG_TYPE_BLACKLIST);
 }
 
-/**
- * kmod_config_get_install_commands:
- * @ctx: kmod library context
- *
- * Retrieve an iterator to deal with the install commands maintained inside the
- * library. See kmod_config_iter_get_key(), kmod_config_iter_get_value() and
- * kmod_config_iter_next(). At least one call to kmod_config_iter_next() must
- * be made to initialize the iterator and check if it's valid.
- *
- * Returns: a new iterator over the install commands or NULL on failure. Free
- * it with kmod_config_iter_free_iter().
- */
 KMOD_EXPORT struct kmod_config_iter *kmod_config_get_install_commands(const struct kmod_ctx *ctx)
 {
 	if (ctx == NULL)
@@ -1260,18 +1231,6 @@ KMOD_EXPORT struct kmod_config_iter *kmod_config_get_install_commands(const stru
 	return kmod_config_iter_new(ctx, CONFIG_TYPE_INSTALL);
 }
 
-/**
- * kmod_config_get_remove_commands:
- * @ctx: kmod library context
- *
- * Retrieve an iterator to deal with the remove commands maintained inside the
- * library. See kmod_config_iter_get_key(), kmod_config_iter_get_value() and
- * kmod_config_iter_next(). At least one call to kmod_config_iter_next() must
- * be made to initialize the iterator and check if it's valid.
- *
- * Returns: a new iterator over the remove commands or NULL on failure. Free
- * it with kmod_config_iter_free_iter().
- */
 KMOD_EXPORT struct kmod_config_iter *kmod_config_get_remove_commands(const struct kmod_ctx *ctx)
 {
 	if (ctx == NULL)
@@ -1280,18 +1239,6 @@ KMOD_EXPORT struct kmod_config_iter *kmod_config_get_remove_commands(const struc
 	return kmod_config_iter_new(ctx, CONFIG_TYPE_REMOVE);
 }
 
-/**
- * kmod_config_get_aliases:
- * @ctx: kmod library context
- *
- * Retrieve an iterator to deal with the aliases maintained inside the
- * library. See kmod_config_iter_get_key(), kmod_config_iter_get_value() and
- * kmod_config_iter_next(). At least one call to kmod_config_iter_next() must
- * be made to initialize the iterator and check if it's valid.
- *
- * Returns: a new iterator over the aliases or NULL on failure. Free it with
- * kmod_config_iter_free_iter().
- */
 KMOD_EXPORT struct kmod_config_iter *kmod_config_get_aliases(const struct kmod_ctx *ctx)
 {
 	if (ctx == NULL)
@@ -1300,18 +1247,6 @@ KMOD_EXPORT struct kmod_config_iter *kmod_config_get_aliases(const struct kmod_c
 	return kmod_config_iter_new(ctx, CONFIG_TYPE_ALIAS);
 }
 
-/**
- * kmod_config_get_options:
- * @ctx: kmod library context
- *
- * Retrieve an iterator to deal with the options maintained inside the
- * library. See kmod_config_iter_get_key(), kmod_config_iter_get_value() and
- * kmod_config_iter_next(). At least one call to kmod_config_iter_next() must
- * be made to initialize the iterator and check if it's valid.
- *
- * Returns: a new iterator over the options or NULL on failure. Free it with
- * kmod_config_iter_free_iter().
- */
 KMOD_EXPORT struct kmod_config_iter *kmod_config_get_options(const struct kmod_ctx *ctx)
 {
 	if (ctx == NULL)
@@ -1320,18 +1255,6 @@ KMOD_EXPORT struct kmod_config_iter *kmod_config_get_options(const struct kmod_c
 	return kmod_config_iter_new(ctx, CONFIG_TYPE_OPTION);
 }
 
-/**
- * kmod_config_get_softdeps:
- * @ctx: kmod library context
- *
- * Retrieve an iterator to deal with the softdeps maintained inside the
- * library. See kmod_config_iter_get_key(), kmod_config_iter_get_value() and
- * kmod_config_iter_next(). At least one call to kmod_config_iter_next() must
- * be made to initialize the iterator and check if it's valid.
- *
- * Returns: a new iterator over the softdeps or NULL on failure. Free it with
- * kmod_config_iter_free_iter().
- */
 KMOD_EXPORT struct kmod_config_iter *kmod_config_get_softdeps(const struct kmod_ctx *ctx)
 {
 	if (ctx == NULL)
@@ -1340,18 +1263,6 @@ KMOD_EXPORT struct kmod_config_iter *kmod_config_get_softdeps(const struct kmod_
 	return kmod_config_iter_new(ctx, CONFIG_TYPE_SOFTDEP);
 }
 
-/**
- * kmod_config_get_weakdeps:
- * @ctx: kmod library context
- *
- * Retrieve an iterator to deal with the weakdeps maintained inside the
- * library. See kmod_config_iter_get_key(), kmod_config_iter_get_value() and
- * kmod_config_iter_next(). At least one call to kmod_config_iter_next() must
- * be made to initialize the iterator and check if it's valid.
- *
- * Returns: a new iterator over the weakdeps or NULL on failure. Free it with
- * kmod_config_iter_free_iter().
- */
 KMOD_EXPORT struct kmod_config_iter *kmod_config_get_weakdeps(const struct kmod_ctx *ctx)
 {
 	if (ctx == NULL)
@@ -1360,16 +1271,6 @@ KMOD_EXPORT struct kmod_config_iter *kmod_config_get_weakdeps(const struct kmod_
 	return kmod_config_iter_new(ctx, CONFIG_TYPE_WEAKDEP);
 }
 
-/**
- * kmod_config_iter_get_key:
- * @iter: iterator over a certain configuration
- *
- * When using a new allocated iterator, user must perform a call to
- * kmod_config_iter_next() to initialize iterator's position and check if it's
- * valid.
- *
- * Returns: the key of the current configuration pointed by @iter.
- */
 KMOD_EXPORT const char *kmod_config_iter_get_key(const struct kmod_config_iter *iter)
 {
 	if (iter == NULL || iter->curr == NULL)
@@ -1378,16 +1279,6 @@ KMOD_EXPORT const char *kmod_config_iter_get_key(const struct kmod_config_iter *
 	return iter->get_key(iter->curr);
 }
 
-/**
- * kmod_config_iter_get_value:
- * @iter: iterator over a certain configuration
- *
- * When using a new allocated iterator, user must perform a call to
- * kmod_config_iter_next() to initialize iterator's position and check if it's
- * valid.
- *
- * Returns: the value of the current configuration pointed by @iter.
- */
 KMOD_EXPORT const char *kmod_config_iter_get_value(const struct kmod_config_iter *iter)
 {
 	const char *s;
@@ -1409,18 +1300,6 @@ KMOD_EXPORT const char *kmod_config_iter_get_value(const struct kmod_config_iter
 	return s;
 }
 
-/**
- * kmod_config_iter_next:
- * @iter: iterator over a certain configuration
- *
- * Make @iter point to the next item of a certain configuration. It's an
- * automatically recycling iterator. When it reaches the end, false is
- * returned; then if user wants to iterate again, it's sufficient to call this
- * function once more.
- *
- * Returns: true if next position of @iter is valid or false if its end is
- * reached.
- */
 KMOD_EXPORT bool kmod_config_iter_next(struct kmod_config_iter *iter)
 {
 	if (iter == NULL)
@@ -1436,12 +1315,6 @@ KMOD_EXPORT bool kmod_config_iter_next(struct kmod_config_iter *iter)
 	return iter->curr != NULL;
 }
 
-/**
- * kmod_config_iter_free_iter:
- * @iter: iterator over a certain configuration
- *
- * Free resources used by the iterator.
- */
 KMOD_EXPORT void kmod_config_iter_free_iter(struct kmod_config_iter *iter)
 {
 	free(iter->data);
