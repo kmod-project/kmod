@@ -260,6 +260,11 @@ const char *kmod_get_dirname(const struct kmod_ctx *ctx);
  * Access to kmod generated lists.
  */
 
+/**
+ * kmod_list:
+ *
+ * Opaque object for a circular (doubly linked) list.
+ */
 struct kmod_list;
 
 #define kmod_list_foreach(list_entry, first_entry) \
@@ -329,6 +334,11 @@ struct kmod_list *kmod_list_prev(const struct kmod_list *list,
  * key/value stored by kmod.
  */
 
+/**
+ * kmod_config_iter:
+ *
+ * Opaque object for iterating and retrieving configuration information.
+ */
 struct kmod_config_iter;
 
 /**
