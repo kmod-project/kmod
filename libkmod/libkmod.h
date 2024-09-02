@@ -977,12 +977,13 @@ const char *kmod_module_get_path(const struct kmod_module *mod);
 /**
  * kmod_module_get_dependency_symbols:
  * @mod: kmod module
- * @list: where to return list of module dependency_symbols. Use
- *        kmod_module_dependency_symbol_get_symbol() and
- *        kmod_module_dependency_symbol_get_crc(). Release this list with
- *        kmod_module_dependency_symbols_free_list()
+ * @list: where to return list of module dependency_symbols
  *
  * Get a list of entries in ELF section ".symtab" or "__ksymtab_strings".
+ *
+ * The structure contained in this list is internal to libkmod and its fields
+ * can be obtainsed by calling kmod_module_dependency_symbol_get_crc() and
+ * kmod_module_dependency_symbol_get_symbol().
  *
  * After use, free the @list by calling
  * kmod_module_dependency_symbols_free_list().
@@ -1099,12 +1100,13 @@ void kmod_module_section_free_list(struct kmod_list *list);
 /**
  * kmod_module_get_symbols:
  * @mod: kmod module
- * @list: where to return list of module symbols. Use
- *        kmod_module_symbol_get_symbol() and
- *        kmod_module_symbol_get_crc(). Release this list with
- *        kmod_module_symbols_free_list()
+ * @list: where to return list of module symbols
  *
  * Get a list of entries in ELF section ".symtab" or "__ksymtab_strings".
+ *
+ * The structure contained in this list is internal to libkmod and its fields
+ * can be obtainsed by calling kmod_module_symbol_get_crc() and
+ * kmod_module_symbol_get_symbol().
  *
  * After use, free the @list by calling kmod_module_symbols_free_list().
  *
@@ -1149,12 +1151,13 @@ void kmod_module_symbols_free_list(struct kmod_list *list);
 /**
  * kmod_module_get_versions:
  * @mod: kmod module
- * @list: where to return list of module versions. Use
- *        kmod_module_version_get_symbol() and
- *        kmod_module_version_get_crc(). Release this list with
- *        kmod_module_versions_free_list()
+ * @list: where to return list of module versions
  *
  * Get a list of entries in ELF section "__versions".
+ *
+ * The structure contained in this list is internal to libkmod and its fields
+ * can be obtainsed by calling kmod_module_version_get_crc() and
+ * kmod_module_version_get_symbol().
  *
  * After use, free the @list by calling kmod_module_versions_free_list().
  *
@@ -1195,16 +1198,17 @@ void kmod_module_versions_free_list(struct kmod_list *list);
 /**
  * kmod_module_get_info:
  * @mod: kmod module
- * @list: where to return list of module information. Use
- *        kmod_module_info_get_key() and
- *        kmod_module_info_get_value(). Release this list with
- *        kmod_module_info_free_list()
+ * @list: where to return list of module information
  *
  * Get a list of entries in ELF section ".modinfo", these contain
  * alias, license, depends, vermagic and other keys with respective
  * values. If the module is signed (CONFIG_MODULE_SIG), information
  * about the module signature is included as well: signer,
  * sig_key and sig_hashalgo.
+ *
+ * The structure contained in this list is internal to libkmod and its fields
+ * can be obtainsed by calling kmod_module_info_get_key() and
+ * kmod_module_info_get_value().
  *
  * After use, free the @list by calling kmod_module_info_free_list().
  *
