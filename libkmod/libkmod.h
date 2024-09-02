@@ -675,11 +675,11 @@ int kmod_module_insert_module(struct kmod_module *mod, unsigned int flags,
  * @KMOD_PROBE_IGNORE_COMMAND: ignore install commands and softdeps configured
  * in the system
  * @KMOD_PROBE_IGNORE_LOADED: do not check whether the module is already
- * live in kernel or not
+ * live in the kernel or not
  * @KMOD_PROBE_DRY_RUN: dry run, do not insert module, just call the
  * associated callback function
  * @KMOD_PROBE_FAIL_ON_LOADED: probe will fail if KMOD_PROBE_IGNORE_LOADED is
- * not specified and the module is already live in kernel
+ * not specified and the module is already live in the kernel
  * @KMOD_PROBE_APPLY_BLACKLIST_ALL: prior to probe, apply KMOD_FILTER_BLACKLIST
  * filter to this module and its dependencies. If any of them are blacklisted
  * and the blacklisted module is not live in the kernel, the function returns
@@ -1250,7 +1250,7 @@ int kmod_module_new_from_loaded(struct kmod_ctx *ctx,
 /**
  * kmod_module_initstate:
  * @KMOD_MODULE_BUILTIN: module is builtin
- * @KMOD_MODULE_LIVE: module is live in kernel
+ * @KMOD_MODULE_LIVE: module is live in the kernel
  * @KMOD_MODULE_COMING: module is being loaded
  * @KMOD_MODULE_GOING: module is being unloaded
  * @_KMOD_MODULE_PAD: DO NOT USE; padding to make sure enum is not mapped to char
@@ -1273,7 +1273,7 @@ enum kmod_module_initstate {
  * Get the initstate of this @mod, as returned by the kernel, by reading
  * /sys filesystem.
  *
- * Returns: < 0 on error or module state if module is found in kernel, valid
+ * Returns: < 0 on error or module state if module is found in the kernel, valid
  * states are #kmod_module_initstate.
  */
 int kmod_module_get_initstate(const struct kmod_module *mod);
