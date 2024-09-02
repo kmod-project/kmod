@@ -58,6 +58,7 @@ kmod_module_ref
 kmod_module_unref
 kmod_module_unref_list
 
+kmod_insert
 kmod_module_insert_module
 kmod_module_probe_insert_module
 kmod_module_remove_module

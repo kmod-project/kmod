@@ -640,12 +640,6 @@ struct kmod_module *kmod_module_unref(struct kmod_module *mod);
 int kmod_module_unref_list(struct kmod_list *list);
 
 
-/* Insertion flags */
-enum kmod_insert {
-	KMOD_INSERT_FORCE_VERMAGIC = 0x1,
-	KMOD_INSERT_FORCE_MODVERSION = 0x2,
-};
-
 /* Flags to kmod_module_probe_insert_module() */
 enum kmod_probe {
 	KMOD_PROBE_FORCE_VERMAGIC =		0x00001,
@@ -668,12 +662,22 @@ enum kmod_filter {
 };
 
 /**
+ * kmod_insert:
+ * @KMOD_INSERT_FORCE_VERMAGIC: ignore kernel version magic
+ * @KMOD_INSERT_FORCE_MODVERSION: ignore symbol version hashes
+ *
+ * Insertion flags, used by kmod_module_insert_module().
+ */
+enum kmod_insert {
+	KMOD_INSERT_FORCE_VERMAGIC = 0x1,
+	KMOD_INSERT_FORCE_MODVERSION = 0x2,
+};
+
+/**
  * kmod_module_insert_module:
  * @mod: kmod module
  * @flags: flags are not passed to Linux Kernel, but instead they dictate the
- * behavior of this function, valid flags are
- * KMOD_INSERT_FORCE_VERMAGIC: ignore kernel version magic;
- * KMOD_INSERT_FORCE_MODVERSION: ignore symbol version hashes.
+ * behavior of this function, valid flags #kmod_insert
  * @options: module's options to pass to Linux Kernel.
  *
  * Insert a module in Linux kernel. It opens the file pointed by @mod,
