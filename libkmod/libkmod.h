@@ -1010,7 +1010,7 @@ struct kmod_list *kmod_module_get_sections(const struct kmod_module *mod);
 unsigned long kmod_module_section_get_address(const struct kmod_list *entry);
 
 /**
- * kmod_module_section_get_module_name:
+ * kmod_module_section_get_name:
  * @entry: a list entry representing a kmod module section
  *
  * Get the name of a kmod module section.
