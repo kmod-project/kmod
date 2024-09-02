@@ -1187,6 +1187,35 @@ enum kmod_symbol_bind {
 };
 
 
+
+/**
+ * SECTION:libkmod-loaded
+ * @short_description: currently loaded modules
+ *
+ * Information about currently loaded modules, as reported by Linux kernel.
+ * These information are not cached by libkmod and are always read from /sys
+ * and /proc/modules.
+ */
+
+/**
+ * kmod_module_new_from_loaded:
+ * @ctx: kmod library context
+ * @list: where to save the list of loaded modules
+ *
+ * Create a new list of kmod modules with all modules currently loaded in
+ * kernel. It uses /proc/modules to get the names of loaded modules and to
+ * create kmod modules by calling kmod_module_new_from_name() in each of them.
+ * They are put in @list in no particular order.
+ *
+ * The initial refcount is 1, and needs to be decremented to release the
+ * resources of the kmod_module. The returned @list must be released by
+ * calling kmod_module_unref_list(). Since libkmod keeps track of all
+ * kmod_modules created, they are all released upon @ctx destruction too. Do
+ * not unref @ctx before all the desired operations with the returned list are
+ * completed.
+ *
+ * Returns: 0 on success or < 0 on error.
+ */
 int kmod_module_new_from_loaded(struct kmod_ctx *ctx,
 						struct kmod_list **list);
 
@@ -1203,13 +1232,67 @@ enum kmod_module_initstate {
 	/* Padding to make sure enum is not mapped to char */
 	_KMOD_MODULE_PAD = 1U << 31,
 };
-const char *kmod_module_initstate_str(enum kmod_module_initstate state);
+
+/**
+ * kmod_module_get_initstate:
+ * @mod: kmod module
+ *
+ * Get the initstate of this @mod, as returned by Linux Kernel, by reading
+ * /sys filesystem.
+ *
+ * Returns: < 0 on error or module state if module is found in kernel, valid states are
+ * KMOD_MODULE_BUILTIN: module is builtin;
+ * KMOD_MODULE_LIVE: module is live in kernel;
+ * KMOD_MODULE_COMING: module is being loaded;
+ * KMOD_MODULE_GOING: module is being unloaded.
+ */
 int kmod_module_get_initstate(const struct kmod_module *mod);
+
+/**
+ * kmod_module_initstate_str:
+ * @state: the state as returned by kmod_module_get_initstate()
+ *
+ * Translate a initstate to a string.
+ *
+ * Returns: the string associated to the @state. This string is statically
+ * allocated, do not free it.
+ */
+const char *kmod_module_initstate_str(enum kmod_module_initstate state);
+
+/**
+ * kmod_module_get_size:
+ * @mod: kmod module
+ *
+ * Get the size of this kmod module as returned by Linux kernel. If supported,
+ * the size is read from the coresize attribute in /sys/module. For older
+ * kernels, this falls back on /proc/modules and searches for the specified
+ * module to get its size.
+ *
+ * Returns: the size of this kmod module.
+ */
 long kmod_module_get_size(const struct kmod_module *mod);
+
+/**
+ * kmod_module_get_refcnt:
+ * @mod: kmod module
+ *
+ * Get the ref count of this @mod, as returned by Linux Kernel, by reading
+ * /sys filesystem.
+ *
+ * Returns: the reference count on success or < 0 on failure.
+ */
 int kmod_module_get_refcnt(const struct kmod_module *mod);
+
+/**
+ * kmod_module_get_holders:
+ * @mod: kmod module
+ *
+ * Get a list of kmod modules that are holding this @mod, as returned by Linux
+ * Kernel. After use, free the @list by calling kmod_module_unref_list().
+ *
+ * Returns: a new list of kmod modules on success or NULL on failure.
+ */
 struct kmod_list *kmod_module_get_holders(const struct kmod_module *mod);
-
-
 
 #ifdef __cplusplus
 } /* extern "C" */
