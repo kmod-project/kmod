@@ -12,14 +12,15 @@ MODULE_DIRECTORY=$6
 # create rootfs from rootfs-pristine
 
 create_rootfs() {
+	local -r SED_PATTERN="s|/lib/modules|$MODULE_DIRECTORY|g;s|$MODULE_DIRECTORY/external|/lib/modules/external|g"
+
 	rm -rf "$ROOTFS"
 	mkdir -p "$(dirname "$ROOTFS")"
 	cp -r "$ROOTFS_PRISTINE" "$ROOTFS"
 	find "$ROOTFS" -type d -exec chmod +w {} \;
 	find "$ROOTFS" -type f -name .gitignore -exec rm -f {} \;
 	if [ "$MODULE_DIRECTORY" != "/lib/modules" ] ; then
-		sed -i -e "s|/lib/modules|$MODULE_DIRECTORY|g" $(find "$ROOTFS" -name \*.txt -o -name \*.conf -o -name \*.dep)
-		sed -i -e "s|$MODULE_DIRECTORY/external|/lib/modules/external|g" $(find "$ROOTFS" -name \*.txt -o -name \*.conf -o -name \*.dep)
+		find "$ROOTFS" \( -name '*.txt' -o -name '*.conf' -o -name '*.dep' \) -exec sed -i -e "$SED_PATTERN" {} +
 		for i in "$ROOTFS"/*/lib/modules/* "$ROOTFS"/*/*/lib/modules/* ; do
 			version="$(basename "$i")"
 			[ "$version" != 'external' ] || continue
