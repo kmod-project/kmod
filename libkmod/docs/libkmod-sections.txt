@@ -79,9 +79,9 @@ kmod_module_dependency_symbol_get_symbol
 kmod_module_dependency_symbols_free_list
 
 kmod_module_get_sections
-kmod_module_section_free_list
 kmod_module_section_get_address
 kmod_module_section_get_name
+kmod_module_section_free_list
 
 kmod_module_get_symbols
 kmod_module_symbol_get_crc
@@ -94,9 +94,9 @@ kmod_module_version_get_symbol
 kmod_module_versions_free_list
 
 kmod_module_get_info
-kmod_module_info_free_list
 kmod_module_info_get_key
 kmod_module_info_get_value
+kmod_module_info_free_list
 </SECTION>
 
 <SECTION>
