@@ -795,7 +795,7 @@ struct kmod_list *kmod_module_get_dependencies(const struct kmod_module *mod);
 int kmod_module_get_softdeps(const struct kmod_module *mod,
 				struct kmod_list **pre, struct kmod_list **post);
 
-/*
+/**
  * kmod_module_get_weakdeps:
  * @mod: kmod module
  * @weak: where to save the list of weak dependencies.
