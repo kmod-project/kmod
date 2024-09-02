@@ -815,7 +815,7 @@ int kmod_module_get_weakdeps(const struct kmod_module *mod,
 				struct kmod_list **weak);
 
 /**
- * kmod_module_apply_filter
+ * kmod_module_apply_filter:
  * @ctx: kmod library context
  * @filter_type: bitmask to filter modules out, valid types are
  * KMOD_FILTER_BLACKLIST: filter modules in blacklist out;
