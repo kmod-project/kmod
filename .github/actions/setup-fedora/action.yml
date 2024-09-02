@@ -16,6 +16,7 @@ runs:
           zlib-devel \
           xz-devel \
           libzstd-devel \
+          meson \
           openssl-devel \
           git \
           gtk-doc \

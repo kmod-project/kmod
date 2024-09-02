@@ -16,6 +16,7 @@ runs:
           gtk-doc \
           libtool \
           linux-edge-dev \
+          meson \
           openssl-dev \
           scdoc \
           xz-dev \

@@ -16,22 +16,23 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        include:
-          - container: 'ubuntu:22.04'
-            test: 'yes'
-          - container: 'ubuntu:24.04'
-            test: 'yes'
-          - container: 'archlinux:base-devel'
-            test: 'yes'
-          - container: 'fedora:latest'
-            test: 'yes'
-          - container: 'alpine:latest'
-            test: 'no'
-          - container: 'debian:unstable'
-            test: 'yes'
+        build: ['meson', 'autotools']
+        container:
+          - name: 'ubuntu:22.04'
+            test: 'true'
+          - name: 'ubuntu:24.04'
+            test: 'true'
+          - name: 'archlinux:base-devel'
+            test: 'true'
+          - name: 'fedora:latest'
+            test: 'true'
+          - name: 'alpine:latest'
+            test: 'false'
+          - name: 'debian:unstable'
+            test: 'true'
 
     container:
-      image: ${{ matrix.container }}
+      image: ${{ matrix.container.name }}
 
     steps:
       - name: Sparse checkout the local actions
@@ -40,15 +41,15 @@ jobs:
           sparse-checkout: .github
 
       - uses: ./.github/actions/setup-ubuntu
-        if: ${{ startsWith(matrix.container, 'ubuntu') }}
+        if: ${{ startsWith(matrix.container.name, 'ubuntu') }}
       - uses: ./.github/actions/setup-archlinux
-        if: ${{ startsWith(matrix.container, 'archlinux') }}
+        if: ${{ startsWith(matrix.container.name, 'archlinux') }}
       - uses: ./.github/actions/setup-fedora
-        if: ${{ startsWith(matrix.container, 'fedora') }}
+        if: ${{ startsWith(matrix.container.name, 'fedora') }}
       - uses: ./.github/actions/setup-alpine
-        if: ${{ startsWith(matrix.container, 'alpine') }}
+        if: ${{ startsWith(matrix.container.name, 'alpine') }}
       - uses: ./.github/actions/setup-debian
-        if: ${{ startsWith(matrix.container, 'debian') }}
+        if: ${{ startsWith(matrix.container.name, 'debian') }}
 
       - name: Checkout the whole project
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
@@ -72,30 +73,42 @@ jobs:
           fi
           echo "KDIR=$moddir/$kernel/build" >> "$GITHUB_ENV"
 
-      - name: configure
-        run: |
-          mkdir build
-          cd build
-          ../autogen.sh c
+      - name: configure (meson)
+        if: ${{ matrix.build == 'meson' }}
+        run: mkdir build && cd build && meson setup --native-file ../build-dev.ini -D build-tests=${{ matrix.container.test }} . ..
 
-      - name: build
-        run: |
-          cd build
-          make -j$(nproc)
+      - name: configure (autotools)
+        if: ${{ matrix.build == 'autotools' }}
+        run: mkdir build && cd build && ../autogen.sh c
 
-      - name: test
-        if: ${{ matrix.test == 'yes' }}
-        run: |
-          cd build
-          make -j$(nproc) check
+      - name: build (meson)
+        if: ${{ matrix.build == 'meson' }}
+        run: cd build && meson compile
 
-      - name: install
-        run: |
-          cd build
-          DESTDIR=$PWD/inst make install
+      - name: build (autotools)
+        if: ${{ matrix.build == 'autotools' }}
+        run: cd build && make -j$(nproc)
 
-      - name: distcheck
-        if: ${{ matrix.test == 'yes' }}
-        run: |
-          cd build
-          make distcheck
+      - name: test (meson)
+        if: ${{ matrix.test == 'true' && matrix.build == 'meson' }}
+        run: cd build && meson test
+
+      - name: test (autotools)
+        if: ${{ matrix.test == 'true' && matrix.build == 'autotools' }}
+        run: cd build && make -j$(nproc) check
+
+      - name: install (meson)
+        if: ${{ matrix.build == 'meson' }}
+        run: cd build && DESTDIR=$PWD/inst meson install
+
+      - name: install (autotools)
+        if: ${{ matrix.build == 'autotools' }}
+        run: cd build && DESTDIR=$PWD/inst make install
+
+      - name: distcheck (meson)
+        if: ${{ matrix.test == 'true' && matrix.build == 'meson' }}
+        run: cd build && meson dist
+
+      - name: distcheck (autotools)
+        if: ${{ matrix.test == 'true' && matrix.build == 'autotools' }}
+        run: cd build && make distcheck

@@ -19,6 +19,7 @@ runs:
           libtool \
           libzstd-dev \
           linux-headers-generic \
+          meson \
           scdoc \
           zlib1g-dev \
           zstd
