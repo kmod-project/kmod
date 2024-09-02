@@ -108,6 +108,7 @@ kmod_module_info_free_list
 <SECTION>
 <FILE>libkmod-loaded</FILE>
 kmod_module_new_from_loaded
+kmod_module_initstate
 kmod_module_get_initstate
 kmod_module_initstate_str
 kmod_module_get_size

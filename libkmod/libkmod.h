@@ -1247,17 +1247,22 @@ enum kmod_symbol_bind {
 int kmod_module_new_from_loaded(struct kmod_ctx *ctx,
 						struct kmod_list **list);
 
-/*
- * Information regarding "live information" from module's state, as returned
- * by kernel
+/**
+ * kmod_module_initstate:
+ * @KMOD_MODULE_BUILTIN: module is builtin
+ * @KMOD_MODULE_LIVE: module is live in kernel
+ * @KMOD_MODULE_COMING: module is being loaded
+ * @KMOD_MODULE_GOING: module is being unloaded
+ * @_KMOD_MODULE_PAD: DO NOT USE; padding to make sure enum is not mapped to char
+ *
+ * The module "live information" as reported by the kernel, see
+ * kmod_module_get_initstate().
  */
-
 enum kmod_module_initstate {
 	KMOD_MODULE_BUILTIN = 0,
 	KMOD_MODULE_LIVE,
 	KMOD_MODULE_COMING,
 	KMOD_MODULE_GOING,
-	/* Padding to make sure enum is not mapped to char */
 	_KMOD_MODULE_PAD = 1U << 31,
 };
 
@@ -1268,11 +1273,8 @@ enum kmod_module_initstate {
  * Get the initstate of this @mod, as returned by Linux Kernel, by reading
  * /sys filesystem.
  *
- * Returns: < 0 on error or module state if module is found in kernel, valid states are
- * KMOD_MODULE_BUILTIN: module is builtin;
- * KMOD_MODULE_LIVE: module is live in kernel;
- * KMOD_MODULE_COMING: module is being loaded;
- * KMOD_MODULE_GOING: module is being unloaded.
+ * Returns: < 0 on error or module state if module is found in kernel, valid
+ * states are #kmod_module_initstate.
  */
 int kmod_module_get_initstate(const struct kmod_module *mod);
 
