@@ -16,33 +16,110 @@
 extern "C" {
 #endif
 
+/**
+ * SECTION:libkmod
+ * @short_description: libkmod context
+ *
+ * The context contains the default values for the library user,
+ * and is passed to all library operations.
+ */
+
 /*
  * kmod_ctx
  *
  * library user context - reads the config and system
  * environment, user variables, allows custom logging
  */
-struct kmod_ctx;
-struct kmod_ctx *kmod_new(const char *dirname, const char * const *config_paths);
-struct kmod_ctx *kmod_ref(struct kmod_ctx *ctx);
-struct kmod_ctx *kmod_unref(struct kmod_ctx *ctx);
-void kmod_set_log_fn(struct kmod_ctx *ctx,
-			void (*log_fn)(void *log_data,
-					int priority, const char *file, int line,
-					const char *fn, const char *format,
-					va_list args),
-			const void *data);
-int kmod_get_log_priority(const struct kmod_ctx *ctx);
-void kmod_set_log_priority(struct kmod_ctx *ctx, int priority);
-void *kmod_get_userdata(const struct kmod_ctx *ctx);
-void kmod_set_userdata(struct kmod_ctx *ctx, const void *userdata);
 
-const char *kmod_get_dirname(const struct kmod_ctx *ctx);
+/**
+ * kmod_ctx:
+ *
+ * Opaque object representing the library context.
+ */
+struct kmod_ctx;
+
+/**
+ * kmod_new:
+ * @dirname: what to consider as linux module's directory, if NULL
+ *           defaults to $MODULE_DIRECTORY/`uname -r`. If it's relative,
+ *           it's treated as relative to the current working directory.
+ *           Otherwise, give an absolute dirname.
+ * @config_paths: ordered array of paths (directories or files) where
+ *                to load from user-defined configuration parameters such as
+ *                alias, blacklists, commands (install, remove). If NULL
+ *                defaults to /etc/modprobe.d, /run/modprobe.d,
+ *                /usr/local/lib/modprobe.d, DISTCONFDIR/modprobe.d, and
+ *                /lib/modprobe.d. Give an empty vector if configuration should
+ *                not be read. This array must be null terminated.
+ *
+ * Create kmod library context. This reads the kmod configuration
+ * and fills in the default values.
+ *
+ * The initial refcount is 1, and needs to be decremented to
+ * release the resources of the kmod library context.
+ *
+ * Returns: a new kmod library context
+ */
+struct kmod_ctx *kmod_new(const char *dirname, const char * const *config_paths);
+
+/**
+ * kmod_ref:
+ * @ctx: kmod library context
+ *
+ * Take a reference of the kmod library context.
+ *
+ * Returns: the passed kmod library context
+ */
+struct kmod_ctx *kmod_ref(struct kmod_ctx *ctx);
+
+/**
+ * kmod_unref:
+ * @ctx: kmod library context
+ *
+ * Drop a reference of the kmod library context. If the refcount
+ * reaches zero, the resources of the context will be released.
+ *
+ * Returns: the passed kmod library context or NULL if it's freed
+ */
+struct kmod_ctx *kmod_unref(struct kmod_ctx *ctx);
+
 
 /*
  * Management of libkmod's resources
  */
+
+/**
+ * kmod_load_resources:
+ * @ctx: kmod library context
+ *
+ * Load indexes and keep them open in @ctx. This way it's faster to lookup
+ * information within the indexes. If this function is not called before a
+ * search, the necessary index is always opened and closed.
+ *
+ * If user will do more than one or two lookups, insertions, deletions, most
+ * likely it's good to call this function first. Particularly in a daemon like
+ * udev that on boot issues hundreds of calls to lookup the index, calling
+ * this function will speedup the searches.
+ *
+ * Returns: 0 on success or < 0 otherwise.
+ */
 int kmod_load_resources(struct kmod_ctx *ctx);
+
+/**
+ * kmod_unload_resources:
+ * @ctx: kmod library context
+ *
+ * Unload all the indexes. This will free the resources to maintain the index
+ * open and all subsequent searches will need to open and close the index.
+ *
+ * User is free to call kmod_load_resources() and kmod_unload_resources() as
+ * many times as wanted during the lifecycle of @ctx. For example, if a daemon
+ * knows that when starting up it will lookup a lot of modules, it could call
+ * kmod_load_resources() and after the first burst of searches is gone, it
+ * could free the resources by calling kmod_unload_resources().
+ *
+ * Returns: 0 on success or < 0 otherwise.
+ */
 void kmod_unload_resources(struct kmod_ctx *ctx);
 
 enum kmod_resources {
@@ -50,6 +127,19 @@ enum kmod_resources {
 	KMOD_RESOURCES_MUST_RELOAD = 1,
 	KMOD_RESOURCES_MUST_RECREATE = 2,
 };
+
+/**
+ * kmod_validate_resources:
+ * @ctx: kmod library context
+ *
+ * Check if indexes and configuration files changed on disk and the current
+ * context is not valid anymore.
+ *
+ * Returns: KMOD_RESOURCES_OK if resources are still valid,
+ * KMOD_RESOURCES_MUST_RELOAD if it's sufficient to call
+ * kmod_unload_resources() and kmod_load_resources() or
+ * KMOD_RESOURCES_MUST_RECREATE if @ctx must be re-created.
+ */
 int kmod_validate_resources(struct kmod_ctx *ctx);
 
 enum kmod_index {
@@ -61,7 +151,90 @@ enum kmod_index {
 	/* Padding to make sure enum is not mapped to char */
 	_KMOD_INDEX_PAD = 1U << 31,
 };
+
+/**
+ * kmod_dump_index:
+ * @ctx: kmod library context
+ * @type: index to dump, valid indexes are
+ * KMOD_INDEX_MODULES_DEP: index of module dependencies;
+ * KMOD_INDEX_MODULES_ALIAS: index of module aliases;
+ * KMOD_INDEX_MODULES_SYMBOL: index of symbol aliases;
+ * KMOD_INDEX_MODULES_BUILTIN_ALIAS: index of builtin module aliases.
+ * KMOD_INDEX_MODULES_BUILTIN: index of builtin module.
+ * @fd: file descriptor to dump index to
+ *
+ * Dump index to file descriptor. Note that this function doesn't use stdio.h
+ * so call fflush() before calling this function to be sure data is written in
+ * order.
+ *
+ * Returns: 0 on success or < 0 otherwise.
+ */
 int kmod_dump_index(struct kmod_ctx *ctx, enum kmod_index type, int fd);
+
+
+/**
+ * kmod_set_log_priority:
+ * @ctx: kmod library context
+ * @priority: the new logging priority
+ *
+ * Set the current logging priority. The value controls which messages
+ * are logged.
+ */
+void kmod_set_log_priority(struct kmod_ctx *ctx, int priority);
+
+/**
+ * kmod_get_log_priority:
+ * @ctx: kmod library context
+ *
+ * Returns: the current logging priority
+ */
+int kmod_get_log_priority(const struct kmod_ctx *ctx);
+
+/**
+ * kmod_set_log_fn:
+ * @ctx: kmod library context
+ * @log_fn: function to be called for logging messages
+ * @data: data to pass to log function
+ *
+ * The built-in logging writes to stderr. It can be
+ * overridden by a custom function, to plug log messages
+ * into the user's logging functionality.
+ */
+void kmod_set_log_fn(struct kmod_ctx *ctx,
+			void (*log_fn)(void *log_data,
+					int priority, const char *file, int line,
+					const char *fn, const char *format,
+					va_list args),
+			const void *data);
+
+/**
+ * kmod_set_userdata:
+ * @ctx: kmod library context
+ * @userdata: data pointer
+ *
+ * Store custom @userdata in the library context.
+ */
+void kmod_set_userdata(struct kmod_ctx *ctx, const void *userdata);
+
+/**
+ * kmod_get_userdata:
+ * @ctx: kmod library context
+ *
+ * Retrieve stored data pointer from library context. This might be useful
+ * to access from callbacks.
+ *
+ * Returns: stored userdata
+ */
+void *kmod_get_userdata(const struct kmod_ctx *ctx);
+
+/**
+ * kmod_get_dirname:
+ * @ctx: kmod library context
+ *
+ * Retrieve the absolute path used for linux modules in this context. The path
+ * is computed from the arguments to kmod_new().
+ */
+const char *kmod_get_dirname(const struct kmod_ctx *ctx);
 
 
 
