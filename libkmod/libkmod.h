@@ -1071,8 +1071,6 @@ struct kmod_list *kmod_module_get_sections(const struct kmod_module *mod);
  *
  * Get the address of a kmod module section.
  *
- * After use, free the @list by calling kmod_module_section_free_list().
- *
  * Returns: the address of this kmod module section on success or ULONG_MAX
  * on failure.
  */
@@ -1083,8 +1081,6 @@ unsigned long kmod_module_section_get_address(const struct kmod_list *entry);
  * @entry: a list entry representing a kmod module section
  *
  * Get the name of a kmod module section.
- *
- * After use, free the @list by calling kmod_module_section_free_list().
  *
  * Returns: the name of this kmod module section on success or NULL on
  * failure. The string is owned by the section, do not free it.
