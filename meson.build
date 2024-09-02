@@ -407,6 +407,15 @@ if get_option('build-tests')
   subdir('testsuite')
 endif
 
+# ------------------------------------------------------------------
+# documentation
+# ------------------------------------------------------------------
+
+if get_option('manpages')
+  build_scdoc = find_program('scripts/build-scdoc.sh')
+  subdir('man')
+endif
+
 summary({
   'moduledir'   : moduledir,
   'prefix'      : get_option('prefix'),
@@ -422,6 +431,7 @@ summary({
   'logging'     : get_option('logging'),
   'debug'       : get_option('debug-messages'),
   'build-tests' : get_option('build-tests'),
+  'man'         : get_option('manpages'),
 }, section : 'Options')
 
 summary({

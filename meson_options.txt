@@ -78,3 +78,10 @@ option(
   value : false,
   description : 'Always build the test suite. Default: false',
 )
+
+option(
+  'manpages',
+  type : 'boolean',
+  value : true,
+  description : 'Build the manpages. Default: true',
+)
