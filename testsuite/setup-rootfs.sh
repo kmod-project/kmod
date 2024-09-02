@@ -13,7 +13,7 @@ MODULE_DIRECTORY=$6
 
 create_rootfs() {
 	rm -rf "$ROOTFS"
-	mkdir -p $(dirname "$ROOTFS")
+	mkdir -p "$(dirname "$ROOTFS")"
 	cp -r "$ROOTFS_PRISTINE" "$ROOTFS"
 	find "$ROOTFS" -type d -exec chmod +w {} \;
 	find "$ROOTFS" -type f -name .gitignore -exec rm -f {} \;
@@ -21,11 +21,11 @@ create_rootfs() {
 		sed -i -e "s|/lib/modules|$MODULE_DIRECTORY|g" $(find "$ROOTFS" -name \*.txt -o -name \*.conf -o -name \*.dep)
 		sed -i -e "s|$MODULE_DIRECTORY/external|/lib/modules/external|g" $(find "$ROOTFS" -name \*.txt -o -name \*.conf -o -name \*.dep)
 		for i in "$ROOTFS"/*/lib/modules/* "$ROOTFS"/*/*/lib/modules/* ; do
-			version="$(basename $i)"
-			[ $version != 'external' ] || continue
-			mod="$(dirname $i)"
-			lib="$(dirname $mod)"
-			up="$(dirname $lib)$MODULE_DIRECTORY"
+			version="$(basename "$i")"
+			[ "$version" != 'external' ] || continue
+			mod="$(dirname "$i")"
+			lib="$(dirname "$mod")"
+			up="$(dirname "$lib")$MODULE_DIRECTORY"
 			mkdir -p "$up"
 			mv "$i" "$up"
 		done
@@ -33,15 +33,15 @@ create_rootfs() {
 
 	if [ "$SYSCONFDIR" != "/etc" ]; then
 		find "$ROOTFS" -type d -name etc -printf "%h\n" | while read -r e; do
-			mkdir -p "$(dirname $e/$SYSCONFDIR)"
-			mv $e/{etc,$SYSCONFDIR}
+			mkdir -p "$(dirname "$e/$SYSCONFDIR")"
+			mv "$e"/{etc,"$SYSCONFDIR"}
 		done
 	fi
 }
 
 feature_enabled() {
 	local feature=$1
-	grep KMOD_FEATURES  $CONFIG_H | head -n 1 | grep -q \+$feature
+	grep KMOD_FEATURES "$CONFIG_H" | head -n 1 | grep -q \+"$feature"
 }
 
 declare -A map
@@ -169,7 +169,7 @@ fi
 
 if feature_enabled ZSTD; then
 	for m in "${zstd_array[@]}"; do
-	    zstd --rm $ROOTFS/$m
+	    zstd --rm "$ROOTFS/$m"
 	done
 fi
 
