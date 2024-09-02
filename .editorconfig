@@ -15,6 +15,10 @@ max_line_length = 80
 [{Makefile*,*.mk}]
 indent_style = tab
 
+[*.sh]
+indent_style = space
+indent_size = 4
+
 [*.yml]
 indent_style = space
 indent_size = 2
