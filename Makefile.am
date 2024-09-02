@@ -19,6 +19,7 @@ export GCC_COLORS
 EXTRA_DIST += \
 	meson.build \
 	meson_options.txt \
+	testsuite/meson.build \
 	scripts/kmod-symlink.sh
 
 AM_CPPFLAGS = \

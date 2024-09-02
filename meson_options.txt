@@ -68,3 +68,13 @@ option(
   value : false,
   description : 'Enable debug messages. Default: false',
 )
+
+# XXX: workaround a meson bug, where the tests are always build even
+# when explicitly annotated as "build_by_default: false"
+# See: https://github.com/mesonbuild/meson/issues/2518
+option(
+  'build-tests',
+  type : 'boolean',
+  value : false,
+  description : 'Always build the test suite. Default: false',
+)

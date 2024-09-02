@@ -396,6 +396,17 @@ foreach tool : _tools
   endif
 endforeach
 
+# ------------------------------------------------------------------------------
+# TESTSUITE
+# ------------------------------------------------------------------------------
+
+if get_option('build-tests')
+  setup_modules = find_program('scripts/setup-modules.sh')
+  setup_rootfs = find_program('scripts/setup-rootfs.sh')
+  top_include = include_directories('.')
+  subdir('testsuite')
+endif
+
 summary({
   'moduledir'   : moduledir,
   'prefix'      : get_option('prefix'),
@@ -410,6 +421,7 @@ summary({
   'tools'       : get_option('tools'),
   'logging'     : get_option('logging'),
   'debug'       : get_option('debug-messages'),
+  'build-tests' : get_option('build-tests'),
 }, section : 'Options')
 
 summary({
