@@ -17,6 +17,7 @@ export GCC_COLORS
 
 # meson bits
 EXTRA_DIST += \
+	libkmod/docs/meson.build \
 	man/meson.build \
 	meson.build \
 	meson_options.txt \
