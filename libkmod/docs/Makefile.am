@@ -18,8 +18,10 @@ MKHTML_OPTIONS = --path=$(abs_srcdir)/doc --path=$(abs_builddir)/doc
 HFILE_GLOB = $(top_srcdir)/libkmod/libkmod.h
 CFILE_GLOB = $(top_srcdir)/libkmod/libkmod.c $(top_srcdir)/libkmod/libkmod-module.c $(top_srcdir)/libkmod/libkmod-list.c
 
-IGNORE_HFILES = libkmod-internal.h \
-		libkmod-index.h
+IGNORE_HFILES = \
+	libkmod-index.h \
+	libkmod-internal-file.h \
+	libkmod-internal.h
 
 content_files = version.xml
 
