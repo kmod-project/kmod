@@ -9,7 +9,7 @@ DOC_MAIN_SGML_FILE = $(DOC_MODULE)-docs.xml
 
 DOC_SOURCE_DIR = $(top_srcdir)/libkmod
 
-SCAN_OPTIONS = --ignore-decorators="__must_check|KMOD_EXPORT"
+SCAN_OPTIONS = --ignore-decorators="KMOD_EXPORT"
 
 MKDB_OPTIONS = --xml-mode --output-format=xml --name-space kmod
 
