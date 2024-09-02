@@ -192,10 +192,12 @@ if bashcompletiondir == ''
   endif
 endif
 
-install_data(
-  files('shell-completion/bash/kmod'),
-  install_dir : bashcompletiondir,
-)
+if bashcompletiondir != 'no'
+  install_data(
+    files('shell-completion/bash/kmod'),
+    install_dir : bashcompletiondir,
+  )
+endif
 
 #-------------------------------------------------------------------------------
 # Compression support

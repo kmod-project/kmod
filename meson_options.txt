@@ -15,7 +15,7 @@ option(
 option(
   'bashcompletiondir',
   type : 'string',
-  description : 'Bash completions directory.',
+  description : 'Bash completions directory. Use "no" to disable.',
 )
 
 # Compression options
