@@ -11,9 +11,7 @@ DOC_SOURCE_DIR = $(top_srcdir)/libkmod
 
 SCAN_OPTIONS = --ignore-decorators="__must_check|KMOD_EXPORT"
 
-MKDB_OPTIONS = --xml-mode --output-format=xml --name-space kmod --tmpl-dir=.
-
-MKTMPL_OPTIONS = --output-dir=.
+MKDB_OPTIONS = --xml-mode --output-format=xml --name-space kmod
 
 MKHTML_OPTIONS = --path=$(abs_srcdir)/doc --path=$(abs_builddir)/doc
 
