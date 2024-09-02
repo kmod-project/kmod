@@ -150,25 +150,30 @@ enum kmod_resources {
  */
 int kmod_validate_resources(struct kmod_ctx *ctx);
 
+/**
+ * kmod_index:
+ * @KMOD_INDEX_MODULES_DEP: index of module dependencies
+ * @KMOD_INDEX_MODULES_ALIAS: index of module aliases
+ * @KMOD_INDEX_MODULES_SYMBOL: index of symbol aliases
+ * @KMOD_INDEX_MODULES_BUILTIN_ALIAS: index of builtin module aliases
+ * @KMOD_INDEX_MODULES_BUILTIN: index of builtin module
+ * @_KMOD_INDEX_PAD: DO NOT USE; padding to make sure enum is not mapped to char
+ *
+ * The (module) index type, used by kmod_dump_index().
+ */
 enum kmod_index {
 	KMOD_INDEX_MODULES_DEP = 0,
 	KMOD_INDEX_MODULES_ALIAS,
 	KMOD_INDEX_MODULES_SYMBOL,
 	KMOD_INDEX_MODULES_BUILTIN_ALIAS,
 	KMOD_INDEX_MODULES_BUILTIN,
-	/* Padding to make sure enum is not mapped to char */
 	_KMOD_INDEX_PAD = 1U << 31,
 };
 
 /**
  * kmod_dump_index:
  * @ctx: kmod library context
- * @type: index to dump, valid indexes are
- * KMOD_INDEX_MODULES_DEP: index of module dependencies;
- * KMOD_INDEX_MODULES_ALIAS: index of module aliases;
- * KMOD_INDEX_MODULES_SYMBOL: index of symbol aliases;
- * KMOD_INDEX_MODULES_BUILTIN_ALIAS: index of builtin module aliases.
- * KMOD_INDEX_MODULES_BUILTIN: index of builtin module.
+ * @type: index to dump, valid indexes are #kmod_index
  * @fd: file descriptor to dump index to
  *
  * Dump index to file descriptor. Note that this function doesn't use stdio.h

@@ -9,6 +9,7 @@ kmod_load_resources
 kmod_unload_resources
 kmod_resources
 kmod_validate_resources
+kmod_index
 kmod_dump_index
 
 kmod_set_log_priority
