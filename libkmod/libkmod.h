@@ -969,13 +969,31 @@ const char *kmod_module_get_path(const struct kmod_module *mod);
 int kmod_module_get_dependency_symbols(const struct kmod_module *mod, struct kmod_list **list);
 
 /**
+ * kmod_symbol_bind:
+ * @KMOD_SYMBOL_NONE: no or unknown symbol type
+ * @KMOD_SYMBOL_LOCAL: local symbol, accessible only within the module
+ * @KMOD_SYMBOL_GLOBAL: global symbol, accessible by all modules
+ * @KMOD_SYMBOL_WEAK: weak symbol, a lower precedence global symbols
+ * @KMOD_SYMBOL_UNDEF: undefined or not yet resolved symbol
+ *
+ * The symbol bind type, see kmod_module_dependency_symbol_get_bind().
+ */
+enum kmod_symbol_bind {
+	KMOD_SYMBOL_NONE = '\0',
+	KMOD_SYMBOL_LOCAL = 'L',
+	KMOD_SYMBOL_GLOBAL = 'G',
+	KMOD_SYMBOL_WEAK = 'W',
+	KMOD_SYMBOL_UNDEF = 'U'
+};
+
+/**
  * kmod_module_dependency_symbol_get_bind:
  * @entry: a list entry representing a kmod module dependency_symbol
  *
  * Get the bind type of a kmod module dependency_symbol.
  *
- * Returns: the bind of this kmod module dependency_symbol on success
- * or < 0 on failure.
+ * Returns: the bind of this kmod module dependency_symbol on success,
+ * or < 0 on failure. Valid bind types are #kmod_symbol_bind.
  */
 int kmod_module_dependency_symbol_get_bind(const struct kmod_list *entry);
 
@@ -1204,15 +1222,6 @@ const char *kmod_module_info_get_value(const struct kmod_list *entry);
  * Release the resources taken by @list
  */
 void kmod_module_info_free_list(struct kmod_list *list);
-
-
-enum kmod_symbol_bind {
-	KMOD_SYMBOL_NONE = '\0',
-	KMOD_SYMBOL_LOCAL = 'L',
-	KMOD_SYMBOL_GLOBAL = 'G',
-	KMOD_SYMBOL_WEAK = 'W',
-	KMOD_SYMBOL_UNDEF = 'U'
-};
 
 
 

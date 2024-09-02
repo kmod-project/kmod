@@ -79,6 +79,7 @@ kmod_module_get_options
 kmod_module_get_path
 
 kmod_module_get_dependency_symbols
+kmod_symbol_bind
 kmod_module_dependency_symbol_get_bind
 kmod_module_dependency_symbol_get_crc
 kmod_module_dependency_symbol_get_symbol
