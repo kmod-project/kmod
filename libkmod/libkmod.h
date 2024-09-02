@@ -640,12 +640,6 @@ struct kmod_module *kmod_module_unref(struct kmod_module *mod);
 int kmod_module_unref_list(struct kmod_list *list);
 
 
-/* Flags to kmod_module_apply_filter() */
-enum kmod_filter {
-	KMOD_FILTER_BLACKLIST = 0x00001,
-	KMOD_FILTER_BUILTIN = 0x00002,
-};
-
 /**
  * kmod_insert:
  * @KMOD_INSERT_FORCE_VERMAGIC: ignore kernel version magic
@@ -839,11 +833,21 @@ int kmod_module_get_weakdeps(const struct kmod_module *mod,
 				struct kmod_list **weak);
 
 /**
+ * kmod_filter:
+ * @KMOD_FILTER_BLACKLIST: filter modules in blacklist out
+ * @KMOD_FILTER_BUILTIN: filter builtin modules out
+ *
+ * Bitmask defining what gets filtered out, used by kmod_module_apply_filter().
+ */
+enum kmod_filter {
+	KMOD_FILTER_BLACKLIST = 0x00001,
+	KMOD_FILTER_BUILTIN = 0x00002,
+};
+
+/**
  * kmod_module_apply_filter:
  * @ctx: kmod library context
- * @filter_type: bitmask to filter modules out, valid types are
- * KMOD_FILTER_BLACKLIST: filter modules in blacklist out;
- * KMOD_FILTER_BUILTIN: filter builtin modules out.
+ * @filter_type: bitmask to filter modules out, valid types are #kmod_filter
  * @input: list of kmod_module to be filtered
  * @output: where to save the new list
  *
