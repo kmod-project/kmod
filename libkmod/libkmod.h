@@ -63,17 +63,19 @@ enum kmod_index {
 };
 int kmod_dump_index(struct kmod_ctx *ctx, enum kmod_index type, int fd);
 
+
+
+/**
+ * SECTION:libkmod-list
+ * @short_description: general purpose list
+ */
+
 /*
  * kmod_list
  *
  * access to kmod generated lists
  */
 struct kmod_list;
-struct kmod_list *kmod_list_next(const struct kmod_list *list,
-						const struct kmod_list *curr);
-struct kmod_list *kmod_list_prev(const struct kmod_list *list,
-						const struct kmod_list *curr);
-struct kmod_list *kmod_list_last(const struct kmod_list *list);
 
 #define kmod_list_foreach(list_entry, first_entry) \
 	for (list_entry = first_entry; \
@@ -84,6 +86,53 @@ struct kmod_list *kmod_list_last(const struct kmod_list *list);
 	for (list_entry = kmod_list_last(first_entry); \
 		list_entry != NULL; \
 		list_entry = kmod_list_prev(first_entry, list_entry))
+
+/**
+ * kmod_list_last:
+ * @list: the head of the list
+ *
+ * Get the last element of the @list. As @list is a circular list,
+ * this is a cheap operation O(1) with the last element being the
+ * previous element.
+ *
+ * If the list has a single element it will return the list itself (as
+ * expected, and this is what differentiates from kmod_list_prev()).
+ *
+ * Returns: last node at @list or NULL if the list is empty.
+ */
+struct kmod_list *kmod_list_last(const struct kmod_list *list);
+
+/**
+ * kmod_list_next:
+ * @list: the head of the list
+ * @curr: the current node in the list
+ *
+ * Get the next node in @list relative to @curr as if @list was not a circular
+ * list. I.e. calling this function in the last node of the list returns
+ * NULL.. It can be used to iterate a list by checking for NULL return to know
+ * when all elements were iterated.
+ *
+ * Returns: node next to @curr or NULL if either this node is the last of or
+ * list is empty.
+ */
+struct kmod_list *kmod_list_next(const struct kmod_list *list,
+						const struct kmod_list *curr);
+
+/**
+ * kmod_list_prev:
+ * @list: the head of the list
+ * @curr: the current node in the list
+ *
+ * Get the previous node in @list relative to @curr as if @list was not a
+ * circular list. I.e.: the previous of the head is NULL. It can be used to
+ * iterate a list by checking for NULL return to know when all elements were
+ * iterated.
+ *
+ * Returns: node previous to @curr or NULL if either this node is the head of
+ * the list or the list is empty.
+ */
+struct kmod_list *kmod_list_prev(const struct kmod_list *list,
+						const struct kmod_list *curr);
 
 
 
