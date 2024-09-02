@@ -122,6 +122,17 @@ int kmod_load_resources(struct kmod_ctx *ctx);
  */
 void kmod_unload_resources(struct kmod_ctx *ctx);
 
+/**
+ * kmod_resources:
+ * @KMOD_RESOURCES_OK: resources are valid
+ * @KMOD_RESOURCES_MUST_RELOAD: resources are not valid; to resolve call
+ * kmod_unload_resources() and kmod_load_resources()
+ * @KMOD_RESOURCES_MUST_RECREATE: resources are not valid; to resolve @ctx must
+ * be re-created.
+ *
+ * The validity state of the current libkmod resources, returned by
+ * kmod_validate_resources().
+ */
 enum kmod_resources {
 	KMOD_RESOURCES_OK = 0,
 	KMOD_RESOURCES_MUST_RELOAD = 1,
@@ -135,10 +146,7 @@ enum kmod_resources {
  * Check if indexes and configuration files changed on disk and the current
  * context is not valid anymore.
  *
- * Returns: KMOD_RESOURCES_OK if resources are still valid,
- * KMOD_RESOURCES_MUST_RELOAD if it's sufficient to call
- * kmod_unload_resources() and kmod_load_resources() or
- * KMOD_RESOURCES_MUST_RECREATE if @ctx must be re-created.
+ * Returns: the resources state, valid states are #kmod_resources.
  */
 int kmod_validate_resources(struct kmod_ctx *ctx);
 
