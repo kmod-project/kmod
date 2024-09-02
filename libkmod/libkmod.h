@@ -1055,8 +1055,9 @@ void kmod_module_dependency_symbols_free_list(struct kmod_list *list);
  * kmod_module_get_sections:
  * @mod: kmod module
  *
- * Get a list of kmod sections of this @mod, as returned by the kernel. The
- * structure contained in this list is internal to libkmod and their fields
+ * Get a list of kmod sections of this @mod, as returned by the kernel.
+ *
+ * The structure contained in this list is internal to libkmod and its fields
  * can be obtained by calling kmod_module_section_get_name() and
  * kmod_module_section_get_address().
  *
