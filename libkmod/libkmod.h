@@ -24,13 +24,6 @@ extern "C" {
  * and is passed to all library operations.
  */
 
-/*
- * kmod_ctx
- *
- * library user context - reads the config and system
- * environment, user variables, allows custom logging
- */
-
 /**
  * kmod_ctx:
  *
@@ -83,10 +76,6 @@ struct kmod_ctx *kmod_ref(struct kmod_ctx *ctx);
  */
 struct kmod_ctx *kmod_unref(struct kmod_ctx *ctx);
 
-
-/*
- * Management of libkmod's resources
- */
 
 /**
  * kmod_load_resources:
@@ -506,12 +495,6 @@ void kmod_config_iter_free_iter(struct kmod_config_iter *iter);
  *
  * Wide range of function to operate on kernel modules - loading, unloading,
  * reference counting, retrieving a list of module dependencies and more.
- */
-
-/*
- * kmod_module
- *
- * Operate on kernel modules
  */
 
 /**
@@ -1144,10 +1127,6 @@ const char *kmod_module_symbol_get_symbol(const struct kmod_list *entry);
  */
 void kmod_module_symbols_free_list(struct kmod_list *list);
 
-
-/*
- * Information retrieved from ELF headers and sections
- */
 
 /**
  * kmod_module_get_versions:
