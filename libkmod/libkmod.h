@@ -254,13 +254,10 @@ const char *kmod_get_dirname(const struct kmod_ctx *ctx);
 /**
  * SECTION:libkmod-list
  * @short_description: general purpose list
+ *
+ * Access to kmod generated lists.
  */
 
-/*
- * kmod_list
- *
- * access to kmod generated lists
- */
 struct kmod_list;
 
 #define kmod_list_foreach(list_entry, first_entry) \
@@ -325,14 +322,11 @@ struct kmod_list *kmod_list_prev(const struct kmod_list *list,
 /**
  * SECTION:libkmod-config
  * @short_description: retrieve current libkmod configuration
+ *
+ * Access to configuration lists - it allows to get each configuration's
+ * key/value stored by kmod.
  */
 
-/*
- * kmod_config_iter
- *
- * access to configuration lists - it allows to get each configuration's
- * key/value stored by kmod
- */
 struct kmod_config_iter;
 
 /**
@@ -483,6 +477,9 @@ void kmod_config_iter_free_iter(struct kmod_config_iter *iter);
 /**
  * SECTION:libkmod-module
  * @short_description: operate on kernel modules
+ *
+ * Wide range of function to operate on kernel modules - loading, unloading,
+ * reference counting, retrieving a list of module dependencies and more.
  */
 
 /*
