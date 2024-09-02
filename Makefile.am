@@ -201,6 +201,7 @@ EXTRA_DIST += \
 	testsuite/module-playground/dummy.pkcs7 \
 	testsuite/module-playground/dummy.sha1 \
 	testsuite/module-playground/dummy.sha256 \
+	testsuite/module-playground/Kbuild \
 	testsuite/module-playground/Makefile \
 	testsuite/module-playground/Makefile.arch \
 	testsuite/module-playground/mod-fake-cciss.c \
@@ -319,7 +320,7 @@ testsuite_test_weakdep_CPPFLAGS = $(TESTSUITE_CPPFLAGS)
 testsuite-distclean:
 	$(RM) -r $(ROOTFS)
 	$(RM) testsuite/stamp-rootfs
-	$(MAKE) -C testsuite/module-playground/ clean
+	$(MAKE) -C $(MODULE_PLAYGROUND) clean
 	if test "$(top_srcdir)" != "$(top_builddir)"; then \
 		$(RM) -rf testsuite/module-playground; \
 	fi
