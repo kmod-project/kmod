@@ -190,14 +190,16 @@ int kmod_dump_index(struct kmod_ctx *ctx, enum kmod_index type, int fd);
  * @ctx: kmod library context
  * @priority: the new logging priority
  *
- * Set the current logging priority. The value controls which messages
- * are logged.
+ * Set the current logging priority, as defined in syslog.h(0P). The value
+ * controls which messages are logged.
  */
 void kmod_set_log_priority(struct kmod_ctx *ctx, int priority);
 
 /**
  * kmod_get_log_priority:
  * @ctx: kmod library context
+ *
+ * Get the current logging priority, as defined in syslog.h(0P).
  *
  * Returns: the current logging priority
  */
