@@ -85,3 +85,10 @@ option(
   value : true,
   description : 'Build the manpages. Default: true',
 )
+
+option(
+  'docs',
+  type : 'boolean',
+  value : false,
+  description : 'Build the documentation. Default: false',
+)

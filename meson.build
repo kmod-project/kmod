@@ -422,6 +422,10 @@ if get_option('manpages')
   subdir('man')
 endif
 
+if get_option('docs')
+  subdir('libkmod/docs')
+endif
+
 summary({
   'moduledir'   : moduledir,
   'prefix'      : get_option('prefix'),
@@ -438,6 +442,7 @@ summary({
   'debug-messages'  : get_option('debug-messages'),
   'build-tests'     : get_option('build-tests'),
   'manpages'        : get_option('manpages'),
+  'docs'            : get_option('docs'),
 }, section : 'Options')
 
 summary({
