@@ -1,0 +1,321 @@
+project(
+  'kmod',
+  'c',
+  version : '33',
+  license : ['LGPLv2.1', 'GPL-2.0-or-later'],
+  meson_version : '>=0.60.0',
+  default_options : [
+    'c_std=gnu11',
+    'warning_level=2',
+    'prefix=/usr',
+    'sysconfdir=/etc',
+    'localstatedir=/var',
+  ]
+)
+
+cdata = configuration_data()
+cdata.set_quoted('PACKAGE', meson.project_name())
+cdata.set_quoted('VERSION', meson.project_version())
+
+cdata.set10('ENABLE_LOGGING', get_option('logging'))
+cdata.set10('ENABLE_DEBUG', get_option('debug-messages'))
+
+pkg = import('pkgconfig')
+cc = meson.get_compiler('c')
+
+# We rely on the glibc variant of basename, et al.
+cdata.set10('_GNU_SOURCE', true)
+
+# TODO: Once meson-only, adjust all #ifdef X to if X and convert .set to .set10
+
+################################################################################
+# Function and structure checks
+################################################################################
+
+foreach decl : ['__xstat', '__secure_getenv', 'secure_getenv']
+  if cc.has_function(decl, args : '-D_GNU_SOURCE')
+    cdata.set('HAVE_@0@'.format(decl.to_upper()), true)
+  endif
+endforeach
+
+# Meson has some amount of support for finding builtins by passing the symbol
+# name without the "__builtin_" prefix to cc.has_function(). In practice, it
+# doesn't seem to detect everything we need.
+_builtins = [
+  ['__builtin_clz', '0', true],
+  ['__builtin_types_compatible_p', 'int, int', true],
+  ['__builtin_uaddl_overflow', '0UL, 0UL, (void*)0', false],
+  ['__builtin_uaddll_overflow', '0ULL, 0ULL, (void*)0', false],
+]
+foreach tuple : _builtins
+  builtin = tuple[0]
+  args = tuple[1]
+  required = tuple[2]
+  # XXX: meson 1.5.0 has links(... required ) flag
+  have = cc.links('int main(void){@0@(@1@);return 0;}'.format(builtin, args))
+  if required and not have
+    error('required builtin function not found: @0@'.format(builtin))
+  endif
+
+  cdata.set10('HAVE_@0@'.format(builtin.to_upper()), have)
+endforeach
+
+# dietlibc doesn't have st.st_mtim struct member
+# XXX: we use both st_mtim and st_mtime ... unify and test
+foreach tuple : [['struct stat', 'st_mtim', '#include <sys/stat.h>']]
+  struct = tuple[0]
+  member = tuple[1]
+  prefix = tuple[2]
+  if cc.has_member(struct, member, prefix : prefix, args : '-D_GNU_SOURCE')
+    cdata.set('HAVE_@0@_@1@'.format(struct.underscorify().to_upper(),
+                                    member.to_upper()), true)
+  endif
+endforeach
+
+# basename may be only available in libgen.h with the POSIX behavior,
+# not desired here
+_decls = [
+  ['basename', '#include <string.h>'],
+]
+foreach tuple : _decls
+  decl = tuple[0]
+  prefix = tuple[1]
+  have = cc.has_function(decl, prefix : prefix, args : '-D_GNU_SOURCE')
+  cdata.set10('HAVE_DECL_@0@'.format(decl.to_upper()), have)
+endforeach
+
+if cc.compiles('_Static_assert(1, "Test");', name : '_Static_assert')
+  cdata.set('HAVE_STATIC_ASSERT', true)
+endif
+
+if cc.compiles('''
+    #include <stdlib.h>
+    _Noreturn int foo(void) { exit(0); }
+    ''',
+    name : '_Noreturn')
+  cdata.set('HAVE_NORETURN', true)
+endif
+
+################################################################################
+# Default CFLAGS and LDFLAGS
+################################################################################
+
+add_project_arguments(
+  cc.get_supported_arguments([
+    '-Wno-inline',
+    '-Wvla',
+    '-Wundef',
+    '-Wformat=2',
+    '-Wlogical-op',
+    '-Wsign-compare',
+    '-Wformat-security',
+    '-Wmissing-include-dirs',
+    '-Wformat-nonliteral',
+    '-Wold-style-definition',
+    '-Wpointer-arith',
+    '-Winit-self',
+    '-Wdeclaration-after-statement',
+    '-Wfloat-equal',
+    '-Wmissing-prototypes',
+    '-Wstrict-prototypes',
+    '-Wredundant-decls',
+    '-Wmissing-declarations',
+    '-Wmissing-noreturn',
+    '-Wshadow',
+    '-Wendif-labels',
+    '-Wstrict-aliasing=3',
+    '-Wwrite-strings',
+    '-Wno-long-long',
+    '-Wno-overlength-strings',
+    '-Wno-unused-parameter',
+    '-Wno-missing-field-initializers',
+    '-Wno-unused-result',
+    '-Wnested-externs',
+    '-Wchar-subscripts',
+    '-Wtype-limits',
+    '-Wuninitialized',
+    '-fno-common',
+    '-fdiagnostics-show-option',
+    '-ffunction-sections',
+    '-fdata-sections',
+  ]),
+  language : 'c'
+)
+
+add_project_link_arguments(
+  cc.get_supported_link_arguments([
+    '-Wl,--gc-sections',
+  ]),
+  language : 'c'
+)
+
+################################################################################
+# Options
+################################################################################
+
+features = []
+
+#-------------------------------------------------------------------------------
+# Directories
+#-------------------------------------------------------------------------------
+
+sysconfdir = get_option('sysconfdir')
+cdata.set_quoted('SYSCONFDIR', sysconfdir)
+
+libdir = join_paths(get_option('prefix'), get_option('libdir'))
+
+distconfdir = get_option('distconfdir')
+if distconfdir == ''
+  distconfdir = libdir
+endif
+cdata.set_quoted('DISTCONFDIR', distconfdir)
+
+# The default moduledir is hard-coded due to historical reasons
+moduledir = get_option('moduledir')
+if moduledir == ''
+  moduledir = '/lib/modules'
+endif
+cdata.set_quoted('MODULE_DIRECTORY', moduledir)
+
+#-------------------------------------------------------------------------------
+# Compression support
+#-------------------------------------------------------------------------------
+
+zstd = dependency('libzstd', version : '>= 1.4.4', required : get_option('zstd'))
+if zstd.found()
+  cdata.set('ENABLE_ZSTD', true)
+endif
+features += ['@0@ZSTD'.format(zstd.found() ? '+' : '-')]
+
+xz = dependency('liblzma', version : '>= 4.99', required : get_option('xz'))
+if xz.found()
+  cdata.set('ENABLE_XZ', true)
+endif
+features += ['@0@XZ'.format(xz.found() ? '+' : '-')]
+
+zlib = dependency('zlib', required : get_option('zlib'))
+if zlib.found()
+  cdata.set('ENABLE_ZLIB', true)
+endif
+features += ['@0@ZLIB'.format(zlib.found() ? '+' : '-')]
+
+#-------------------------------------------------------------------------------
+# Signed modules
+#-------------------------------------------------------------------------------
+
+crypto = dependency('libcrypto', version : '>= 1.1.0', required : get_option('openssl'))
+if crypto.found()
+  cdata.set('ENABLE_OPENSSL', true)
+endif
+features += ['@0@LIBCRYPTO'.format(crypto.found() ? '+' : '-')]
+
+cdata.set_quoted('KMOD_FEATURES', ' '.join(features))
+
+config_h = configure_file(
+  output : 'config.h',
+  configuration : cdata
+)
+
+add_project_arguments('-include', 'config.h', language : 'c')
+
+################################################################################
+# libraries and binaries
+################################################################################
+
+libshared = static_library(
+  'shared',
+  files(
+    'shared/array.c',
+    'shared/array.h',
+    'shared/hash.c',
+    'shared/hash.h',
+    'shared/macro.h',
+    'shared/missing.h',
+    'shared/scratchbuf.c',
+    'shared/scratchbuf.h',
+    'shared/strbuf.c',
+    'shared/strbuf.h',
+    'shared/util.c',
+    'shared/util.h',
+  ),
+  gnu_symbol_visibility : 'hidden',
+  install : false,
+)
+
+libkmod_files = files(
+  'libkmod/libkmod-builtin.c',
+  'libkmod/libkmod.c',
+  'libkmod/libkmod-config.c',
+  'libkmod/libkmod-elf.c',
+  'libkmod/libkmod-file.c',
+  'libkmod/libkmod.h',
+  'libkmod/libkmod-index.c',
+  'libkmod/libkmod-index.h',
+  'libkmod/libkmod-internal-file.h',
+  'libkmod/libkmod-internal.h',
+  'libkmod/libkmod-list.c',
+  'libkmod/libkmod-module.c',
+  'libkmod/libkmod-signature.c',
+)
+
+libkmod_deps = []
+
+if zstd.found()
+  libkmod_files += files('libkmod/libkmod-file-zstd.c')
+  libkmod_deps += zstd
+endif
+
+if xz.found()
+  libkmod_files += files('libkmod/libkmod-file-xz.c')
+  libkmod_deps += xz
+endif
+
+if zlib.found()
+  libkmod_files += files('libkmod/libkmod-file-zlib.c')
+  libkmod_deps += zlib
+endif
+
+if crypto.found()
+  libkmod_deps += crypto
+endif
+
+install_headers('libkmod/libkmod.h')
+
+libkmod = shared_library(
+  'kmod',
+  libkmod_files,
+  dependencies : libkmod_deps,
+  link_with : libshared,
+  link_args : ['-Wl,--version-script', join_paths(meson.current_source_dir(),
+                                                  'libkmod/libkmod.sym')],
+  link_depends : files('libkmod/libkmod.sym'),
+  gnu_symbol_visibility : 'hidden',
+  version : '2.5.0',
+  install : true,
+)
+
+pkg.generate(
+  name : 'libkmod',
+  description : 'Library to deal with kernel modules',
+  libraries : libkmod,
+  requires_private : libkmod_deps,
+)
+
+summary({
+  'moduledir'   : moduledir,
+  'prefix'      : get_option('prefix'),
+  'sysconfdir'  : sysconfdir,
+  'distconfdir' : distconfdir,
+  'libdir'      : libdir,
+  'includedir'  : join_paths(get_option('prefix'), get_option('includedir')),
+  'bindir'      : join_paths(get_option('prefix'), get_option('bindir')),
+}, section : 'Directories')
+
+summary({
+  'logging'     : get_option('logging'),
+  'debug'       : get_option('debug-messages'),
+}, section : 'Options')
+
+summary({
+  'features'    : ' '.join(features)
+}, section : '')

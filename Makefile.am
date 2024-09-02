@@ -15,6 +15,11 @@ AM_MAKEFLAGS = --no-print-directory
 GCC_COLORS ?= 'yes'
 export GCC_COLORS
 
+# meson bits
+EXTRA_DIST += \
+	meson.build \
+	meson_options.txt
+
 AM_CPPFLAGS = \
 	-include $(top_builddir)/config.h \
 	-I$(top_srcdir) \

@@ -1,0 +1,57 @@
+# Directories
+option(
+  'distconfdir',
+  type : 'string',
+  description : 'Directory to search for distribution configuration files. ' +
+                'Default: $prefix/lib',
+)
+
+option(
+  'moduledir',
+  type : 'string',
+  description : 'Directory to look for kernel modules. Default: /lib/modules',
+)
+
+# Compression options
+option(
+  'zstd',
+  type : 'feature',
+  value : 'disabled',
+  description : 'Handle Zstandard-compressed modulesi. Default: disabled',
+)
+
+option(
+  'xz',
+  type : 'feature',
+  value : 'disabled',
+  description : 'Handle Xz-compressed modules. Default: disabled',
+)
+
+option(
+  'zlib',
+  type : 'feature',
+  value : 'disabled',
+  description : 'Handle gzip-compressed modules. Default: disabled',
+)
+
+# Signed modules
+option(
+  'openssl',
+  type : 'feature',
+  value : 'disabled',
+  description : 'Openssl support, PKCS7 signatures. Default: disabled',
+)
+
+option(
+  'logging',
+  type : 'boolean',
+  value : true,
+  description : 'Build with system logging. Default: true',
+)
+
+option(
+  'debug-messages',
+  type : 'boolean',
+  value : false,
+  description : 'Enable debug messages. Default: false',
+)
