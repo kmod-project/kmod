@@ -7,6 +7,7 @@
 #include <sys/stat.h>
 
 #include <unistd.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -66,6 +67,11 @@ static struct kmod_builtin_iter *kmod_builtin_iter_new(struct kmod_ctx *ctx)
 
 	if (fstat(file, &sb) < 0) {
 		sv_errno = errno;
+		goto fail;
+	}
+
+	if (sb.st_size > INTPTR_MAX) {
+		sv_errno = ENOMEM;
 		goto fail;
 	}
 

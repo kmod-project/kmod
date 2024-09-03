@@ -8,6 +8,7 @@
 #include <errno.h>
 #include <fnmatch.h>
 #include <inttypes.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -778,15 +779,20 @@ int index_mm_open(const struct kmod_ctx *ctx, const char *filename,
 		goto fail_open;
 	}
 
-	if (fstat(fd, &st) < 0 || (size_t) st.st_size < sizeof(hdr)) {
+	if (fstat(fd, &st) < 0 || st.st_size < (off_t) sizeof(hdr)) {
 		err = -EINVAL;
+		goto fail_nommap;
+	}
+
+	if ((uintmax_t)st.st_size > SIZE_MAX) {
+		err = -ENOMEM;
 		goto fail_nommap;
 	}
 
 	idx->mm = mmap(NULL, st.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
 	if (idx->mm == MAP_FAILED) {
-		ERR(ctx, "mmap(NULL, %"PRIu64", PROT_READ, %d, MAP_PRIVATE, 0): %m\n",
-							st.st_size, fd);
+		ERR(ctx, "mmap(NULL, %"PRIu64", PROT_READ, MAP_PRIVATE, %d, 0): %m\n",
+							(uint64_t) st.st_size, fd);
 		err = -errno;
 		goto fail_nommap;
 	}
