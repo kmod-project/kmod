@@ -19,17 +19,11 @@ jobs:
         build: ['meson', 'autotools']
         container:
           - name: 'ubuntu:22.04'
-            test: 'true'
           - name: 'ubuntu:24.04'
-            test: 'true'
           - name: 'archlinux:base-devel'
-            test: 'true'
           - name: 'fedora:latest'
-            test: 'true'
           - name: 'alpine:latest'
-            test: 'false'
           - name: 'debian:unstable'
-            test: 'true'
 
     container:
       image: ${{ matrix.container.name }}
@@ -75,7 +69,7 @@ jobs:
 
       - name: configure (meson)
         if: ${{ matrix.build == 'meson' }}
-        run: mkdir build && cd build && meson setup --native-file ../build-dev.ini -D build-tests=${{ matrix.container.test }} . ..
+        run: mkdir build && cd build && meson setup --native-file ../build-dev.ini -D build-tests=true . ..
 
       - name: configure (autotools)
         if: ${{ matrix.build == 'autotools' }}
@@ -90,11 +84,11 @@ jobs:
         run: cd build && make -j$(nproc)
 
       - name: test (meson)
-        if: ${{ matrix.test == 'true' && matrix.build == 'meson' }}
+        if: ${{ matrix.build == 'meson' }}
         run: cd build && meson test
 
       - name: test (autotools)
-        if: ${{ matrix.test == 'true' && matrix.build == 'autotools' }}
+        if: ${{ matrix.build == 'autotools' }}
         run: cd build && make -j$(nproc) check
 
       - name: install (meson)
@@ -106,9 +100,9 @@ jobs:
         run: cd build && DESTDIR=$PWD/inst make install
 
       - name: distcheck (meson)
-        if: ${{ matrix.test == 'true' && matrix.build == 'meson' }}
+        if: ${{ matrix.build == 'meson' }}
         run: cd build && meson dist
 
       - name: distcheck (autotools)
-        if: ${{ matrix.test == 'true' && matrix.build == 'autotools' }}
+        if: ${{ matrix.build == 'autotools' }}
         run: cd build && make distcheck
