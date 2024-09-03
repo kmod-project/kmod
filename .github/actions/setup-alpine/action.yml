@@ -19,6 +19,7 @@ runs:
           meson \
           openssl-dev \
           scdoc \
+          tar \
           xz-dev \
           zlib-dev \
           zstd-dev
