@@ -4,6 +4,7 @@
  */
 
 #include <errno.h>
+#include <limits.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -31,6 +32,9 @@ static int load_reg(struct kmod_file *file)
 		return -errno;
 
 	file->size = st.st_size;
+	if ((uintmax_t)file->size > SIZE_MAX)
+		return -ENOMEM;
+
 	file->memory = mmap(NULL, file->size, PROT_READ, MAP_PRIVATE,
 			    file->fd, 0);
 	if (file->memory == MAP_FAILED) {
