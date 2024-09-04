@@ -146,6 +146,9 @@ static void log_filep(void *data,
  */
 KMOD_EXPORT const char *kmod_get_dirname(const struct kmod_ctx *ctx)
 {
+	if (ctx == NULL)
+		return NULL;
+
 	return ctx->dirname;
 }
 
