@@ -929,7 +929,10 @@ static bool conf_files_filter_out(struct kmod_ctx *ctx, DIR *d,
 	if (len < 6 || !streq(&fn[len - 5], ".conf"))
 		return true;
 
-	fstatat(dirfd(d), fn, &st, 0);
+	if (fstatat(dirfd(d), fn, &st, 0) < 0) {
+		ERR(ctx, "Cannot stat directory entry: %s/%s\n", path, fn);
+		return true;
+	}
 
 	if (S_ISDIR(st.st_mode)) {
 		ERR(ctx, "Directories inside directories are not supported: "
