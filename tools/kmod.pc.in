@@ -4,6 +4,7 @@ distconfdir=@distconfdir@
 module_directory=@module_directory@
 module_compressions=@module_compressions@
 module_signatures=@module_signatures@
+depmod_module_directory_override=true
 
 Name: kmod
 Description: Tools to deal with kernel modules

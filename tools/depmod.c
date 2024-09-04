@@ -36,6 +36,7 @@
 #define DEFAULT_VERBOSE LOG_WARNING
 static int verbose = DEFAULT_VERBOSE;
 
+static const char *module_directory = MODULE_DIRECTORY;
 static const char CFG_BUILTIN_KEY[] = "built-in";
 static const char CFG_EXTERNAL_KEY[] = "external";
 static const char *const default_cfg_paths[] = {
@@ -49,11 +50,12 @@ static const char *const default_cfg_paths[] = {
 	// clang-format on
 };
 
-static const char cmdopts_s[] = "aAb:o:C:E:F:evnP:wVh";
+static const char cmdopts_s[] = "aAb:m:o:C:E:F:evnP:wVh";
 static const struct option cmdopts[] = {
 	{ "all", no_argument, 0, 'a' },
 	{ "quick", no_argument, 0, 'A' },
 	{ "basedir", required_argument, 0, 'b' },
+	{ "moduledir", required_argument, 0, 'm' },
 	{ "outdir", required_argument, 0, 'o' },
 	{ "config", required_argument, 0, 'C' },
 	{ "symvers", required_argument, 0, 'E' },
@@ -92,6 +94,7 @@ static void help(void)
 		"\n"
 		"The following options are useful for people managing distributions:\n"
 		"\t-b, --basedir=DIR    Use an image of a module tree.\n"
+		"\t-m, --moduledir=DIR  Override MODULE_DIRECTORY.\n"
 		"\t-o, --outdir=DIR     Output directory for generated files.\n"
 		"\t-F, --filesyms=FILE  Use the file instead of the\n"
 		"\t                     current kernel symbols.\n"
@@ -2939,6 +2942,9 @@ static int do_depmod(int argc, char *argv[])
 				goto cmdline_failed;
 			}
 			break;
+		case 'm':
+			module_directory = optarg;
+			break;
 		case 'o':
 			free(out_root);
 			out_root = path_make_absolute_cwd(optarg);
@@ -3017,12 +3023,12 @@ static int do_depmod(int argc, char *argv[])
 	}
 
 	cfg.dirnamelen = snprintf(cfg.dirname, PATH_MAX,
-				  "%s" MODULE_DIRECTORY "/%s",
-				  root ?: "", cfg.kversion);
+				  "%s%s/%s",
+				  root ?: "", module_directory, cfg.kversion);
 
 	cfg.outdirnamelen = snprintf(cfg.outdirname, PATH_MAX,
-				     "%s" MODULE_DIRECTORY "/%s",
-				     out_root ?: (root ?: ""), cfg.kversion);
+				     "%s%s/%s",
+				     out_root ?: (root ?: ""), module_directory, cfg.kversion);
 
 	if (optind == argc)
 		all = 1;
