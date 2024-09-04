@@ -352,7 +352,8 @@ static void index_dump_node(struct index_node_f *node, struct strbuf *buf,
 								int fd)
 {
 	struct index_value *v;
-	int ch, pushed;
+	size_t pushed;
+	int ch;
 
 	pushed = strbuf_pushchars(buf, node->prefix);
 
@@ -472,7 +473,7 @@ static void index_searchwild__all(struct index_node_f *node, int j,
 				  const char *subkey,
 				  struct index_value **out)
 {
-	int pushed = 0;
+	size_t pushed = 0;
 	int ch;
 
 	while (node->prefix[j]) {
@@ -831,7 +832,8 @@ static void index_mm_dump_node(struct index_mm_node *node, struct strbuf *buf,
 								int fd)
 {
 	struct index_mm_value *itr, *itr_end;
-	int ch, pushed;
+	size_t pushed;
+	int ch;
 
 	pushed = strbuf_pushchars(buf, node->prefix);
 
@@ -954,7 +956,7 @@ static void index_mm_searchwild_all(struct index_mm_node *node, int j,
 					  const char *subkey,
 					  struct index_value **out)
 {
-	int pushed = 0;
+	size_t pushed = 0;
 	int ch;
 
 	while (node->prefix[j]) {

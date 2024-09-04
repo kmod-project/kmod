@@ -77,9 +77,9 @@ bool strbuf_pushchar(struct strbuf *buf, char ch)
 	return true;
 }
 
-unsigned strbuf_pushchars(struct strbuf *buf, const char *str)
+size_t strbuf_pushchars(struct strbuf *buf, const char *str)
 {
-	unsigned int len;
+	size_t len;
 
 	assert(str != NULL);
 	assert(buf != NULL);
@@ -101,7 +101,7 @@ void strbuf_popchar(struct strbuf *buf)
 	buf->used--;
 }
 
-void strbuf_popchars(struct strbuf *buf, unsigned n)
+void strbuf_popchars(struct strbuf *buf, size_t n)
 {
 	assert(buf->used >= n);
 	buf->used -= n;

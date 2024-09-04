@@ -7,8 +7,8 @@
  */
 struct strbuf {
 	char *bytes;
-	unsigned size;
-	unsigned used;
+	size_t size;
+	size_t used;
 };
 
 void strbuf_init(struct strbuf *buf);
@@ -25,6 +25,6 @@ char *strbuf_steal(struct strbuf *buf);
 const char *strbuf_str(struct strbuf *buf);
 
 bool strbuf_pushchar(struct strbuf *buf, char ch);
-unsigned strbuf_pushchars(struct strbuf *buf, const char *str);
+size_t strbuf_pushchars(struct strbuf *buf, const char *str);
 void strbuf_popchar(struct strbuf *buf);
-void strbuf_popchars(struct strbuf *buf, unsigned n);
+void strbuf_popchars(struct strbuf *buf, size_t n);
