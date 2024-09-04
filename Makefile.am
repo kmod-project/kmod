@@ -23,6 +23,7 @@ EXTRA_DIST += \
 	meson_options.txt \
 	testsuite/meson.build \
 	scripts/build-scdoc.sh \
+	scripts/check-gtkdoc.sh \
 	scripts/kmod-symlink.sh
 
 AM_CPPFLAGS = \

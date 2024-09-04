@@ -6,7 +6,7 @@ version_file = configure_file(
   configuration: cdata,
 )
 
-gnome.gtkdoc(
+built_docs = gnome.gtkdoc(
   'libkmod',
   content_files : version_file,
   ignore_headers : [
@@ -19,4 +19,11 @@ gnome.gtkdoc(
   namespace : 'kmod',
   module_version : '3',
   main_xml : 'libkmod-docs.xml',
+)
+
+test(
+  'test-gtkdoc',
+  check_gtkdoc,
+  args : meson.current_build_dir(),
+  depends : built_docs,
 )

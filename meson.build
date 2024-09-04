@@ -423,6 +423,7 @@ if get_option('manpages')
 endif
 
 if get_option('docs')
+  check_gtkdoc = find_program('scripts/check-gtkdoc.sh')
   subdir('libkmod/docs')
 endif
 
