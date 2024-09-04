@@ -6,11 +6,13 @@ depmod - Generate modules.dep and map files.
 
 # SYNOPSIS
 
-*depmod* [*-b* _basedir_] [*-o* _outdir_] [*-e*] [*-E* _Module.symvers_]
+*depmod* [*-b* _basedir_] [*-m* _moduledir_] [*-o* _outdir_][*-o* _outdir_] [*-e*] [*-E* _Module.symvers_]
 \ \ \ \ \ \ \ \[*-F* _System.map_] [*-n*] [*-v*] [*-A*] [*-P* _prefix_] [*-w*] [_version_]
 
 *depmod* [*-e*] [*-E* _Module.symvers_] [*-F* _System.map_] [*-n*] [*-v*] [*-P* _prefix_]
 \ \ \ \ \ \ \ \[*-w*] [_version_] [_filename_...]
+
+*depmod* *-M*
 
 # DESCRIPTION
 
@@ -55,6 +57,17 @@ rather than the current kernel version (as returned by *uname -r*).
 	moved into the normal location. Use this option if you are a
 	distribution vendor who needs to pre-generate the meta-data files rather
 	than running *depmod* again later.
+
+*-m* _moduledir_
+*--moduledir* _moduledir_
+	Override the @MODULE_DIRECTORY@ prefix set at build time. This is useful
+	when building *modules.dep* file in _basedir_ for a system that uses a
+	different prefix. The alternative is to move the modules and
+	*modules.dep* inside _basedir_ to adjust for the different prefix.
+
+*-M*
+*--moduledir-defualt*
+	Print the moduledir prefix @MODULE_DIRECTORY@ set at compile time.
 
 *-o* _outdir_
 *--outdir* _outdir_
