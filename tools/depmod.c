@@ -49,7 +49,7 @@ static const char *const default_cfg_paths[] = {
 	// clang-format on
 };
 
-static const char cmdopts_s[] = "aAb:o:C:E:F:euqrvnP:wmVh";
+static const char cmdopts_s[] = "aAb:o:C:E:F:evnP:wVh";
 static const struct option cmdopts[] = {
 	{ "all", no_argument, 0, 'a' },
 	{ "quick", no_argument, 0, 'A' },
@@ -59,15 +59,11 @@ static const struct option cmdopts[] = {
 	{ "symvers", required_argument, 0, 'E' },
 	{ "filesyms", required_argument, 0, 'F' },
 	{ "errsyms", no_argument, 0, 'e' },
-	{ "unresolved-error", no_argument, 0, 'u' }, /* deprecated */
-	{ "quiet", no_argument, 0, 'q' }, /* deprecated */
-	{ "root", no_argument, 0, 'r' }, /* deprecated */
 	{ "verbose", no_argument, 0, 'v' },
 	{ "show", no_argument, 0, 'n' },
 	{ "dry-run", no_argument, 0, 'n' },
 	{ "symbol-prefix", required_argument, 0, 'P' },
 	{ "warn", no_argument, 0, 'w' },
-	{ "map", no_argument, 0, 'm' }, /* deprecated */
 	{ "version", no_argument, 0, 'V' },
 	{ "help", no_argument, 0, 'h' },
 	{ },
@@ -2989,17 +2985,6 @@ static int do_depmod(int argc, char *argv[])
 			break;
 		case 'w':
 			cfg.warn_dups = 1;
-			break;
-		case 'u':
-		case 'q':
-		case 'r':
-		case 'm':
-			if (idx > 0)
-				WRN("Ignored deprecated option --%s\n",
-				    cmdopts[idx].name);
-			else
-				WRN("Ignored deprecated option -%c\n", c);
-
 			break;
 		case 'h':
 			help();
