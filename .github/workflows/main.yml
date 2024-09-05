@@ -69,7 +69,7 @@ jobs:
 
       - name: configure (meson)
         if: ${{ matrix.build == 'meson' }}
-        run: mkdir build && cd build && meson setup --native-file ../build-dev.ini -D build-tests=true . ..
+        run: mkdir build && cd build && meson setup --native-file ../build-dev.ini . ..
 
       - name: configure (autotools)
         if: ${{ matrix.build == 'autotools' }}
