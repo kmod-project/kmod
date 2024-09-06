@@ -1317,6 +1317,7 @@ KMOD_EXPORT bool kmod_config_iter_next(struct kmod_config_iter *iter)
 
 KMOD_EXPORT void kmod_config_iter_free_iter(struct kmod_config_iter *iter)
 {
-	free(iter->data);
+	if (iter)
+		free(iter->data);
 	free(iter);
 }
