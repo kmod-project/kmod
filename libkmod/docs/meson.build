@@ -23,7 +23,7 @@ built_docs = gnome.gtkdoc(
 
 test(
   'test-gtkdoc',
-  check_gtkdoc,
+  test_gtkdoc,
   args : meson.current_build_dir(),
   depends : built_docs,
 )
