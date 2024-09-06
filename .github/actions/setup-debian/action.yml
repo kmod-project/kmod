@@ -15,7 +15,6 @@ runs:
           gtk-doc-tools \
           libssl-dev \
           liblzma-dev \
-          libssl-dev \
           libtool \
           libzstd-dev \
           linux-headers-generic \
