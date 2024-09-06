@@ -23,6 +23,7 @@ jobs:
           - name: 'archlinux:base-devel'
           - name: 'fedora:latest'
           - name: 'alpine:latest'
+            meson_setup: '-D docs=false'
           - name: 'debian:unstable'
 
     container:
@@ -69,7 +70,7 @@ jobs:
 
       - name: configure (meson)
         if: ${{ matrix.build == 'meson' }}
-        run: mkdir build && cd build && meson setup --native-file ../build-dev.ini . ..
+        run: mkdir build && cd build && meson setup --native-file ../build-dev.ini ${{ matrix.container.meson_setup }} . ..
 
       - name: configure (autotools)
         if: ${{ matrix.build == 'autotools' }}

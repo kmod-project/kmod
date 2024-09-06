@@ -27,6 +27,7 @@ cd $oldpwd
 
 hackargs="\
 --enable-debug \
+--enable-gtk-doc \
 --with-zstd \
 --with-xz \
 --with-zlib \
