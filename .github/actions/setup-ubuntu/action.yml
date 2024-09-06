@@ -11,6 +11,7 @@ runs:
           build-essential \
           autoconf \
           automake \
+          gcc-multilib \
           git \
           gtk-doc-tools \
           libssl-dev \
