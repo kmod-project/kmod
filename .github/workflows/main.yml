@@ -19,12 +19,16 @@ jobs:
         build: ['meson', 'autotools']
         container:
           - name: 'ubuntu:22.04'
+            multilib: 'true'
           - name: 'ubuntu:24.04'
+            multilib: 'true'
           - name: 'archlinux:base-devel'
+            multilib: 'true'
           - name: 'fedora:latest'
           - name: 'alpine:latest'
             meson_setup: '-D docs=false'
           - name: 'debian:unstable'
+            multilib: 'true'
 
     container:
       image: ${{ matrix.container.name }}
@@ -107,3 +111,15 @@ jobs:
       - name: distcheck (autotools)
         if: ${{ matrix.build == 'autotools' }}
         run: cd build && make distcheck
+
+      - name: configure (32bit) (meson)
+        if: ${{ matrix.build == 'meson' && matrix.container.multilib == 'true' }}
+        run: mkdir build32 && cd build32 && CC='gcc -m32' meson setup . ..
+
+      - name: build (32bit) (meson)
+        if: ${{ matrix.build == 'meson' && matrix.container.multilib == 'true' }}
+        run: cd build32 && meson compile
+
+      - name: test (32bit) (meson)
+        if: ${{ matrix.build == 'meson' && matrix.container.multilib == 'true' }}
+        run: cd build32 && meson test
