@@ -754,9 +754,9 @@ KMOD_EXPORT int kmod_module_insert_module(struct kmod_module *mod,
 	return err;
 }
 
-static bool module_is_blacklisted(struct kmod_module *mod)
+static bool module_is_blacklisted(const struct kmod_module *mod)
 {
-	struct kmod_ctx *ctx = mod->ctx;
+	const struct kmod_ctx *ctx = mod->ctx;
 	const struct kmod_config *config = kmod_get_config(ctx);
 	const struct kmod_list *bl = config->blacklists;
 	const struct kmod_list *l;
