@@ -433,11 +433,11 @@ summary({
 }, section : 'Directories')
 
 summary({
-  'tools'       : get_option('tools'),
-  'logging'     : get_option('logging'),
-  'debug'       : get_option('debug-messages'),
-  'build-tests' : get_option('build-tests'),
-  'man'         : get_option('manpages'),
+  'tools'           : get_option('tools'),
+  'logging'         : get_option('logging'),
+  'debug-messages'  : get_option('debug-messages'),
+  'build-tests'     : get_option('build-tests'),
+  'manpages'        : get_option('manpages'),
 }, section : 'Options')
 
 summary({
