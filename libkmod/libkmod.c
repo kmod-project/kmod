@@ -30,13 +30,13 @@
 
 static const struct {
 	const char *fn;
-	const char *prefix;
+	bool is_alias;
 } index_files[] = {
-	[KMOD_INDEX_MODULES_DEP] = { .fn = "modules.dep", .prefix = "" },
-	[KMOD_INDEX_MODULES_ALIAS] = { .fn = "modules.alias", .prefix = "alias " },
-	[KMOD_INDEX_MODULES_SYMBOL] = { .fn = "modules.symbols", .prefix = "alias "},
-	[KMOD_INDEX_MODULES_BUILTIN_ALIAS] = { .fn = "modules.builtin.alias", .prefix = "" },
-	[KMOD_INDEX_MODULES_BUILTIN] = { .fn = "modules.builtin", .prefix = ""},
+	[KMOD_INDEX_MODULES_DEP] = { .fn = "modules.dep", },
+	[KMOD_INDEX_MODULES_ALIAS] = { .fn = "modules.alias", .is_alias = true, },
+	[KMOD_INDEX_MODULES_SYMBOL] = { .fn = "modules.symbols", .is_alias = true},
+	[KMOD_INDEX_MODULES_BUILTIN_ALIAS] = { .fn = "modules.builtin.alias", },
+	[KMOD_INDEX_MODULES_BUILTIN] = { .fn = "modules.builtin", },
 };
 
 static const char *const default_config_paths[] = {
@@ -827,7 +827,7 @@ KMOD_EXPORT int kmod_dump_index(struct kmod_ctx *ctx, enum kmod_index type,
 	if (ctx->indexes[type] != NULL) {
 		DBG(ctx, "use mmapped index '%s'\n", index_files[type].fn);
 		index_mm_dump(ctx->indexes[type], fd,
-						index_files[type].prefix);
+						index_files[type].is_alias);
 	} else {
 		char fn[PATH_MAX];
 		struct index_file *idx;
@@ -841,7 +841,7 @@ KMOD_EXPORT int kmod_dump_index(struct kmod_ctx *ctx, enum kmod_index type,
 		if (idx == NULL)
 			return -ENOSYS;
 
-		index_dump(idx, fd, index_files[type].prefix);
+		index_dump(idx, fd, index_files[type].is_alias);
 		index_file_close(idx);
 	}
 

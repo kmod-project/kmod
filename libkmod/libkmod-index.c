@@ -379,7 +379,7 @@ static void index_dump_node(struct index_node_f *node, struct strbuf *buf,
 	index_close(node);
 }
 
-void index_dump(struct index_file *in, int fd, const char *prefix)
+void index_dump(struct index_file *in, int fd, bool is_alias)
 {
 	struct index_node_f *root;
 	struct strbuf buf;
@@ -389,7 +389,7 @@ void index_dump(struct index_file *in, int fd, const char *prefix)
 		return;
 
 	strbuf_init(&buf);
-	strbuf_pushchars(&buf, prefix);
+	strbuf_pushchars(&buf, is_alias ? "alias " : "");
 	index_dump_node(root, &buf, fd);
 	strbuf_release(&buf);
 }
@@ -861,7 +861,7 @@ static void index_mm_dump_node(struct index_mm_node *node, struct strbuf *buf,
 	index_mm_free_node(node);
 }
 
-void index_mm_dump(struct index_mm *idx, int fd, const char *prefix)
+void index_mm_dump(struct index_mm *idx, int fd, bool is_alias)
 {
 	struct index_mm_node *root;
 	struct strbuf buf;
@@ -871,7 +871,7 @@ void index_mm_dump(struct index_mm *idx, int fd, const char *prefix)
 		return;
 
 	strbuf_init(&buf);
-	strbuf_pushchars(&buf, prefix);
+	strbuf_pushchars(&buf, is_alias ? "alias " : "");
 	index_mm_dump_node(root, &buf, fd);
 	strbuf_release(&buf);
 }
