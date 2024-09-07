@@ -50,7 +50,7 @@ static int test_strbuf_pushchars(const struct test *t)
 	struct strbuf buf;
 	char *result1, *saveptr = NULL, *str, *result2;
 	const char *c;
-	int lastwordlen = 0;
+	size_t lastwordlen = 0;
 
 	strbuf_init(&buf);
 	str = strdup(TEXT);
