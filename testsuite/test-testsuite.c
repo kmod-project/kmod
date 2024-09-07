@@ -54,7 +54,7 @@ static int testsuite_rootfs_fopen(const struct test *t)
 
 	fp = fopen(MODULE_DIRECTORY "/a", "r");
 	if (fp == NULL)
-		return EXIT_FAILURE;;
+		return EXIT_FAILURE;
 
 	n = fscanf(fp, "%s", s);
 	if (n != 1)
