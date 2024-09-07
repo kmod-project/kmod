@@ -225,7 +225,7 @@ void *hash_find(const struct hash *hash, const char *key)
 	const struct hash_bucket *bucket = hash->buckets + pos;
 	const struct hash_entry se = {
 		.key = key,
-		.value = NULL
+		.value = NULL,
 	};
 	const struct hash_entry *entry;
 
@@ -248,7 +248,7 @@ int hash_del(struct hash *hash, const char *key)
 	struct hash_entry *entry, *entry_end;
 	const struct hash_entry se = {
 		.key = key,
-		.value = NULL
+		.value = NULL,
 	};
 
 	entry = bsearch(&se, bucket->entries, bucket->used,
