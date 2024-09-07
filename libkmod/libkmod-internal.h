@@ -48,9 +48,9 @@ static _always_inline_ _printf_format_(2, 3) void
 #  endif
 #endif
 
-void kmod_log(const struct kmod_ctx *ctx,
+_printf_format_(6, 7) void kmod_log(const struct kmod_ctx *ctx,
 		int priority, const char *file, int line, const char *fn,
-		const char *format, ...) __attribute__((format(printf, 6, 7))) __attribute__((nonnull(1, 3, 5)));
+		const char *format, ...) __attribute__((nonnull(1, 3, 5)));
 
 struct list_node {
 	struct list_node *next, *prev;
