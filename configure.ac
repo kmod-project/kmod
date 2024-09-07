@@ -266,7 +266,6 @@ CC_CHECK_FLAGS_APPEND(with_cflags, [CFLAGS], [\
 		       -Wno-overlength-strings \
 		       -Wno-unused-parameter \
 		       -Wno-missing-field-initializers \
-		       -Wno-unused-result \
 		       -Wnested-externs \
 		       -Wchar-subscripts \
 		       -Wtype-limits \

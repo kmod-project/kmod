@@ -136,7 +136,6 @@ add_project_arguments(
     '-Wno-overlength-strings',
     '-Wno-unused-parameter',
     '-Wno-missing-field-initializers',
-    '-Wno-unused-result',
     '-Wnested-externs',
     '-Wchar-subscripts',
     '-Wtype-limits',
