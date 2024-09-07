@@ -18,7 +18,7 @@
 #define strstartswith(a, b) (strncmp(a, b, strlen(b)) == 0)
 #define strnstartswith(a, b, n) (strncmp(a, b, n) == 0)
 char *strchr_replace(char *s, char c, char r);
-void *memdup(const void *p, size_t n) __attribute__((nonnull(1)));
+_nonnull_all_ void *memdup(const void *p, size_t n);
 
 /* module-related functions                                                 */
 /* ************************************************************************ */
@@ -28,7 +28,7 @@ _must_check_ int alias_normalize(const char *alias, char buf[static PATH_MAX], s
 _must_check_ int underscores(char *s);
 char *modname_normalize(const char *modname, char buf[static PATH_MAX], size_t *len) __attribute__((nonnull(1, 2)));
 char *path_to_modname(const char *path, char buf[static PATH_MAX], size_t *len) __attribute__((nonnull(2)));
-bool path_ends_with_kmod_ext(const char *path, size_t len) __attribute__((nonnull(1)));
+_nonnull_all_ bool path_ends_with_kmod_ext(const char *path, size_t len);
 
 /* read-like and fread-like functions                                       */
 /* ************************************************************************ */
@@ -40,7 +40,7 @@ char *freadline_wrapped(FILE *fp, unsigned int *linenum) __attribute__((nonnull(
 
 /* path handling functions                                                  */
 /* ************************************************************************ */
-_must_check_ char *path_make_absolute_cwd(const char *p) __attribute__((nonnull(1)));
+_must_check_ _nonnull_all_ char *path_make_absolute_cwd(const char *p);
 int mkdir_p(const char *path, int len, mode_t mode);
 int mkdir_parents(const char *path, mode_t mode);
 unsigned long long stat_mstamp(const struct stat *st);
