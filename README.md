@@ -37,25 +37,26 @@ Compilation and installation
 ============================
 
 In order to compile the source code you need the following software packages:
-	- GCC/CLANG compiler
-	- GNU C library / musl / uClibc
-	- rsync
-
+- GCC/CLANG compiler
+- GNU C library / musl / uClibc
+- rsync
 
 Optional dependencies:
-	- ZLIB library
-	- LZMA library
-	- ZSTD library
-	- OPENSSL library (signature handling in modinfo)
+- ZLIB library
+- LZMA library
+- ZSTD library
+- OPENSSL library (signature handling in modinfo)
 
 Typical configuration:
-	./configure CFLAGS="-g -O2" --prefix=/usr \
-			--sysconfdir=/etc --libdir=/usr/lib
+
+    ./configure CFLAGS="-g -O2" --prefix=/usr \
+                --sysconfdir=/etc --libdir=/usr/lib
 
 Configure automatically searches for all required components and packages.
 
 To compile and install run:
-	make && make install
+
+    make && make install
 
 Hacking
 =======
