@@ -171,10 +171,3 @@ int test_run(const struct test *t);
 		exit(EXIT_SUCCESS);								\
 	}											\
 
-#ifdef noreturn
-# define __noreturn noreturn
-#elif __STDC_VERSION__ >= 201112L
-# define __noreturn _Noreturn
-#else
-# define __noreturn __attribute__((noreturn))
-#endif
