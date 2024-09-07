@@ -45,7 +45,7 @@ static const char *const default_config_paths[] = {
 	"/usr/local/lib/modprobe.d",
 	DISTCONFDIR "/modprobe.d",
 	"/lib/modprobe.d",
-	NULL
+	NULL,
 };
 
 struct kmod_ctx {
