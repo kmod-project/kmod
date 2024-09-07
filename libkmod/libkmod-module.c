@@ -411,7 +411,7 @@ KMOD_EXPORT struct kmod_module *kmod_module_ref(struct kmod_module *mod)
 	return mod;
 }
 
-typedef int (*lookup_func)(struct kmod_ctx *ctx, const char *name, struct kmod_list **list) __attribute__((nonnull(1, 2, 3)));
+typedef _nonnull_all_ int (*lookup_func)(struct kmod_ctx *ctx, const char *name, struct kmod_list **list);
 
 static int __kmod_module_new_from_lookup(struct kmod_ctx *ctx, const lookup_func lookup[],
 					 size_t lookup_count, const char *s,

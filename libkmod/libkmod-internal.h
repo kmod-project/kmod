@@ -94,25 +94,25 @@ struct kmod_list *kmod_list_append_list(struct kmod_list *list1, struct kmod_lis
 		container_of(list_entry->node.prev, struct kmod_list, node)))
 
 /* libkmod.c */
-int kmod_lookup_alias_from_config(struct kmod_ctx *ctx, const char *name, struct kmod_list **list) __attribute__((nonnull(1, 2, 3)));
-int kmod_lookup_alias_from_symbols_file(struct kmod_ctx *ctx, const char *name, struct kmod_list **list) __attribute__((nonnull(1, 2, 3)));
-int kmod_lookup_alias_from_aliases_file(struct kmod_ctx *ctx, const char *name, struct kmod_list **list) __attribute__((nonnull(1, 2, 3)));
-int kmod_lookup_alias_from_moddep_file(struct kmod_ctx *ctx, const char *name, struct kmod_list **list) __attribute__((nonnull(1, 2, 3)));
-int kmod_lookup_alias_from_kernel_builtin_file(struct kmod_ctx *ctx, const char *name, struct kmod_list **list) __attribute__((nonnull(1, 2, 3)));
-int kmod_lookup_alias_from_builtin_file(struct kmod_ctx *ctx, const char *name, struct kmod_list **list) __attribute__((nonnull(1, 2, 3)));
-bool kmod_lookup_alias_is_builtin(struct kmod_ctx *ctx, const char *name) __attribute__((nonnull(1, 2)));
-int kmod_lookup_alias_from_commands(struct kmod_ctx *ctx, const char *name, struct kmod_list **list) __attribute__((nonnull(1, 2, 3)));
+_nonnull_all_ int kmod_lookup_alias_from_config(struct kmod_ctx *ctx, const char *name, struct kmod_list **list);
+_nonnull_all_ int kmod_lookup_alias_from_symbols_file(struct kmod_ctx *ctx, const char *name, struct kmod_list **list);
+_nonnull_all_ int kmod_lookup_alias_from_aliases_file(struct kmod_ctx *ctx, const char *name, struct kmod_list **list);
+_nonnull_all_ int kmod_lookup_alias_from_moddep_file(struct kmod_ctx *ctx, const char *name, struct kmod_list **list);
+_nonnull_all_ int kmod_lookup_alias_from_kernel_builtin_file(struct kmod_ctx *ctx, const char *name, struct kmod_list **list);
+_nonnull_all_ int kmod_lookup_alias_from_builtin_file(struct kmod_ctx *ctx, const char *name, struct kmod_list **list);
+_nonnull_all_ bool kmod_lookup_alias_is_builtin(struct kmod_ctx *ctx, const char *name);
+_nonnull_all_ int kmod_lookup_alias_from_commands(struct kmod_ctx *ctx, const char *name, struct kmod_list **list);
 void kmod_set_modules_visited(struct kmod_ctx *ctx, bool visited) __attribute__((nonnull((1))));
 void kmod_set_modules_required(struct kmod_ctx *ctx, bool required) __attribute__((nonnull((1))));
 
-char *kmod_search_moddep(struct kmod_ctx *ctx, const char *name) __attribute__((nonnull(1,2)));
+_nonnull_all_ char *kmod_search_moddep(struct kmod_ctx *ctx, const char *name);
 
-struct kmod_module *kmod_pool_get_module(struct kmod_ctx *ctx, const char *key) __attribute__((nonnull(1,2)));
-void kmod_pool_add_module(struct kmod_ctx *ctx, struct kmod_module *mod, const char *key) __attribute__((nonnull(1, 2, 3)));
-void kmod_pool_del_module(struct kmod_ctx *ctx, struct kmod_module *mod, const char *key) __attribute__((nonnull(1, 2, 3)));
+_nonnull_all_ struct kmod_module *kmod_pool_get_module(struct kmod_ctx *ctx, const char *key);
+_nonnull_all_ void kmod_pool_add_module(struct kmod_ctx *ctx, struct kmod_module *mod, const char *key);
+_nonnull_all_ void kmod_pool_del_module(struct kmod_ctx *ctx, struct kmod_module *mod, const char *key);
 
-const struct kmod_config *kmod_get_config(const struct kmod_ctx *ctx) __attribute__((nonnull(1)));
-enum kmod_file_compression_type kmod_get_kernel_compression(const struct kmod_ctx *ctx) __attribute__((nonnull(1)));
+_nonnull_all_ const struct kmod_config *kmod_get_config(const struct kmod_ctx *ctx);
+_nonnull_all_ enum kmod_file_compression_type kmod_get_kernel_compression(const struct kmod_ctx *ctx);
 
 /* libkmod-config.c */
 struct kmod_config_path {
@@ -133,42 +133,42 @@ struct kmod_config {
 	struct kmod_list *paths;
 };
 
-int kmod_config_new(struct kmod_ctx *ctx, struct kmod_config **config, const char * const *config_paths) __attribute__((nonnull(1, 2,3)));
-void kmod_config_free(struct kmod_config *config) __attribute__((nonnull(1)));
-const char *kmod_blacklist_get_modname(const struct kmod_list *l) __attribute__((nonnull(1)));
-const char *kmod_alias_get_name(const struct kmod_list *l) __attribute__((nonnull(1)));
-const char *kmod_alias_get_modname(const struct kmod_list *l) __attribute__((nonnull(1)));
-const char *kmod_option_get_options(const struct kmod_list *l) __attribute__((nonnull(1)));
-const char *kmod_option_get_modname(const struct kmod_list *l) __attribute__((nonnull(1)));
-const char *kmod_command_get_command(const struct kmod_list *l) __attribute__((nonnull(1)));
-const char *kmod_command_get_modname(const struct kmod_list *l) __attribute__((nonnull(1)));
+_nonnull_all_ int kmod_config_new(struct kmod_ctx *ctx, struct kmod_config **config, const char * const *config_paths);
+_nonnull_all_ void kmod_config_free(struct kmod_config *config);
+_nonnull_all_ const char *kmod_blacklist_get_modname(const struct kmod_list *l);
+_nonnull_all_ const char *kmod_alias_get_name(const struct kmod_list *l);
+_nonnull_all_ const char *kmod_alias_get_modname(const struct kmod_list *l);
+_nonnull_all_ const char *kmod_option_get_options(const struct kmod_list *l);
+_nonnull_all_ const char *kmod_option_get_modname(const struct kmod_list *l);
+_nonnull_all_ const char *kmod_command_get_command(const struct kmod_list *l);
+_nonnull_all_ const char *kmod_command_get_modname(const struct kmod_list *l);
 
-const char *kmod_softdep_get_name(const struct kmod_list *l) __attribute__((nonnull(1)));
-const char * const *kmod_softdep_get_pre(const struct kmod_list *l, unsigned int *count) __attribute__((nonnull(1, 2)));
+_nonnull_all_ const char *kmod_softdep_get_name(const struct kmod_list *l);
+_nonnull_all_ const char * const *kmod_softdep_get_pre(const struct kmod_list *l, unsigned int *count);
 const char * const *kmod_softdep_get_post(const struct kmod_list *l, unsigned int *count);
 
-const char *kmod_weakdep_get_name(const struct kmod_list *l) __attribute__((nonnull(1)));
-const char * const *kmod_weakdep_get_weak(const struct kmod_list *l, unsigned int *count) __attribute__((nonnull(1, 2)));
+_nonnull_all_ const char * kmod_weakdep_get_name(const struct kmod_list *l);
+_nonnull_all_ const char * const *kmod_weakdep_get_weak(const struct kmod_list *l, unsigned int *count);
 
 /* libkmod-module.c */
 int kmod_module_new_from_alias(struct kmod_ctx *ctx, const char *alias, const char *name, struct kmod_module **mod);
-int kmod_module_parse_depline(struct kmod_module *mod, char *line) __attribute__((nonnull(1, 2)));
+_nonnull_all_ int kmod_module_parse_depline(struct kmod_module *mod, char *line);
 void kmod_module_set_install_commands(struct kmod_module *mod, const char *cmd) __attribute__((nonnull(1)));
 void kmod_module_set_remove_commands(struct kmod_module *mod, const char *cmd) __attribute__((nonnull(1)));
 void kmod_module_set_visited(struct kmod_module *mod, bool visited) __attribute__((nonnull(1)));
 void kmod_module_set_builtin(struct kmod_module *mod, bool builtin) __attribute__((nonnull((1))));
 void kmod_module_set_required(struct kmod_module *mod, bool required) __attribute__((nonnull(1)));
-bool kmod_module_is_builtin(struct kmod_module *mod) __attribute__((nonnull(1)));
+_nonnull_all_ bool kmod_module_is_builtin(struct kmod_module *mod);
 
 /* libkmod-file.c */
-struct kmod_file *kmod_file_open(const struct kmod_ctx *ctx, const char *filename) __attribute__((nonnull(1,2)));
-struct kmod_elf *kmod_file_get_elf(struct kmod_file *file) __attribute__((nonnull(1)));
-int kmod_file_load_contents(struct kmod_file *file) __attribute__((nonnull(1)));
-void *kmod_file_get_contents(const struct kmod_file *file) __attribute__((nonnull(1)));
-off_t kmod_file_get_size(const struct kmod_file *file) __attribute__((nonnull(1)));
-enum kmod_file_compression_type kmod_file_get_compression(const struct kmod_file *file) __attribute__((nonnull(1)));
-int kmod_file_get_fd(const struct kmod_file *file) __attribute__((nonnull(1)));
-void kmod_file_unref(struct kmod_file *file) __attribute__((nonnull(1)));
+_nonnull_all_ struct kmod_file *kmod_file_open(const struct kmod_ctx *ctx, const char *filename);
+_nonnull_all_ struct kmod_elf *kmod_file_get_elf(struct kmod_file *file);
+_nonnull_all_ int kmod_file_load_contents(struct kmod_file *file);
+_nonnull_all_ void *kmod_file_get_contents(const struct kmod_file *file);
+_nonnull_all_ off_t kmod_file_get_size(const struct kmod_file *file);
+_nonnull_all_ enum kmod_file_compression_type kmod_file_get_compression(const struct kmod_file *file);
+_nonnull_all_ int kmod_file_get_fd(const struct kmod_file *file);
+_nonnull_all_ void kmod_file_unref(struct kmod_file *file);
 
 /* libkmod-elf.c */
 struct kmod_elf;
@@ -179,20 +179,20 @@ struct kmod_modversion {
 };
 
 struct kmod_elf *kmod_elf_new(const void *memory, off_t size);
-void kmod_elf_unref(struct kmod_elf *elf) __attribute__((nonnull(1)));
-const void *kmod_elf_get_memory(const struct kmod_elf *elf) __attribute__((nonnull(1)));
-int kmod_elf_get_strings(const struct kmod_elf *elf, const char *section, char ***array) __attribute__((nonnull(1,2,3)));
-int kmod_elf_get_modversions(const struct kmod_elf *elf, struct kmod_modversion **array) __attribute__((nonnull(1,2)));
-int kmod_elf_get_symbols(const struct kmod_elf *elf, struct kmod_modversion **array) __attribute__((nonnull(1,2)));
-int kmod_elf_get_dependency_symbols(const struct kmod_elf *elf, struct kmod_modversion **array) __attribute__((nonnull(1,2)));
-int kmod_elf_strip_section(struct kmod_elf *elf, const char *section) __attribute__((nonnull(1,2)));
-int kmod_elf_strip_vermagic(struct kmod_elf *elf) __attribute__((nonnull(1)));
+_nonnull_all_ void kmod_elf_unref(struct kmod_elf *elf);
+_nonnull_all_ const void *kmod_elf_get_memory(const struct kmod_elf *elf);
+_nonnull_all_ int kmod_elf_get_strings(const struct kmod_elf *elf, const char *section, char ***array);
+_nonnull_all_ int kmod_elf_get_modversions(const struct kmod_elf *elf, struct kmod_modversion **array);
+_nonnull_all_ int kmod_elf_get_symbols(const struct kmod_elf *elf, struct kmod_modversion **array);
+_nonnull_all_ int kmod_elf_get_dependency_symbols(const struct kmod_elf *elf, struct kmod_modversion **array);
+_nonnull_all_ int kmod_elf_strip_section(struct kmod_elf *elf, const char *section);
+_nonnull_all_ int kmod_elf_strip_vermagic(struct kmod_elf *elf);
 
 /*
  * Debug mock lib need to find section ".gnu.linkonce.this_module" in order to
  * get modname
  */
-int kmod_elf_get_section(const struct kmod_elf *elf, const char *section, const void **buf, uint64_t *buf_size) __attribute__((nonnull(1,2,3,4)));
+_nonnull_all_ int kmod_elf_get_section(const struct kmod_elf *elf, const char *section, const void **buf, uint64_t *buf_size);
 
 /* libkmod-signature.c */
 struct kmod_signature_info {
@@ -206,8 +206,8 @@ struct kmod_signature_info {
 	void (*free)(void *);
 	void *private;
 };
-bool kmod_module_signature_info(const struct kmod_file *file, struct kmod_signature_info *sig_info) __attribute__((nonnull(1, 2)));
-void kmod_module_signature_info_free(struct kmod_signature_info *sig_info) __attribute__((nonnull));
+_nonnull_all_ bool kmod_module_signature_info(const struct kmod_file *file, struct kmod_signature_info *sig_info);
+_nonnull_all_ void kmod_module_signature_info_free(struct kmod_signature_info *sig_info);
 
 /* libkmod-builtin.c */
-ssize_t kmod_builtin_get_modinfo(struct kmod_ctx *ctx, const char *modname, char ***modinfo) __attribute__((nonnull(1, 2, 3)));
+_nonnull_all_ ssize_t kmod_builtin_get_modinfo(struct kmod_ctx *ctx, const char *modname, char ***modinfo);
