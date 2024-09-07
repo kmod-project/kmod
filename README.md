@@ -1,34 +1,5 @@
 ## kmod - Linux kernel module handling
 
-Information
-===========
-
-Mailing list:
-	linux-modules@vger.kernel.org (no subscription needed)
-	https://lore.kernel.org/linux-modules/
-
-Signed packages:
-	http://www.kernel.org/pub/linux/utils/kernel/kmod/
-
-Git:
-	git://git.kernel.org/pub/scm/utils/kernel/kmod/kmod.git
-	http://git.kernel.org/pub/scm/utils/kernel/kmod/kmod.git
-	https://git.kernel.org/pub/scm/utils/kernel/kmod/kmod.git
-
-Gitweb:
-	http://git.kernel.org/?p=utils/kernel/kmod/kmod.git
-	https://github.com/kmod-project/kmod
-
-Irc:
-	#kmod on irc.freenode.org
-
-License:
-	LGPLv2.1+ for libkmod, testsuite and helper libraries
-	GPLv2+ for tools/*
-
-Issues:
-    https://github.com/kmod-project/kmod/issues
-
 OVERVIEW
 ========
 
@@ -39,6 +10,28 @@ These tools are designed on top of libkmod, a library that is shipped with
 kmod. See libkmod/README for more details on this library and how to use it.
 The aim is to be compatible with tools, configurations and indexes from
 module-init-tools project.
+
+
+Links
+=====
+- Mailing list (no subscription needed): linux-modules@vger.kernel.org
+- Mailing list archives: https://lore.kernel.org/linux-modules/
+
+- Signed packages: http://www.kernel.org/pub/linux/utils/kernel/kmod/
+
+- Git:
+  - Official: https://git.kernel.org/pub/scm/utils/kernel/kmod/kmod.git
+  - Mirror: https://github.com/kmod-project/kmod
+  - Mirror: https://kernel.googlesource.com/pub/scm/utils/kernel/kmod/kmod.git
+
+- License:
+  - LGPLv2.1+ for libkmod, testsuite and helper libraries
+  - GPLv2+ for tools/*
+
+- Irc: `#kmod` on irc.oftc.net
+
+- Issues: https://github.com/kmod-project/kmod/issues
+
 
 Compilation and installation
 ============================
