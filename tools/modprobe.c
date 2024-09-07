@@ -84,7 +84,7 @@ static const struct option cmdopts[] = {
 	{"verbose", no_argument, 0, 'v'},
 	{"version", no_argument, 0, 'V'},
 	{"help", no_argument, 0, 'h'},
-	{NULL, 0, 0, 0}
+	{NULL, 0, 0, 0},
 };
 
 static void help(void)
