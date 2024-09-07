@@ -18,7 +18,7 @@ enum kmod_elf_class {
 	KMOD_ELF_32 = (1 << 1),
 	KMOD_ELF_64 = (1 << 2),
 	KMOD_ELF_LSB = (1 << 3),
-	KMOD_ELF_MSB = (1 << 4)
+	KMOD_ELF_MSB = (1 << 4),
 };
 
 /* as defined in module-init-tools */

@@ -990,7 +990,7 @@ enum kmod_symbol_bind {
 	KMOD_SYMBOL_LOCAL = 'L',
 	KMOD_SYMBOL_GLOBAL = 'G',
 	KMOD_SYMBOL_WEAK = 'W',
-	KMOD_SYMBOL_UNDEF = 'U'
+	KMOD_SYMBOL_UNDEF = 'U',
 };
 
 /**
