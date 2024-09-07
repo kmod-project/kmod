@@ -35,7 +35,7 @@ static const struct kmod_ext {
 #ifdef ENABLE_ZSTD
 	{".ko.zst", sizeof(".ko.zst") - 1},
 #endif
-	{ }
+	{ },
 };
 
 /* string handling functions and memory allocations                         */
