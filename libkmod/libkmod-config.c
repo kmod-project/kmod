@@ -1218,7 +1218,7 @@ static struct kmod_config_iter *kmod_config_iter_new(const struct kmod_ctx* ctx,
 KMOD_EXPORT struct kmod_config_iter *kmod_config_get_blacklists(const struct kmod_ctx *ctx)
 {
 	if (ctx == NULL)
-		return NULL;;
+		return NULL;
 
 	return kmod_config_iter_new(ctx, CONFIG_TYPE_BLACKLIST);
 }
@@ -1226,7 +1226,7 @@ KMOD_EXPORT struct kmod_config_iter *kmod_config_get_blacklists(const struct kmo
 KMOD_EXPORT struct kmod_config_iter *kmod_config_get_install_commands(const struct kmod_ctx *ctx)
 {
 	if (ctx == NULL)
-		return NULL;;
+		return NULL;
 
 	return kmod_config_iter_new(ctx, CONFIG_TYPE_INSTALL);
 }
@@ -1234,7 +1234,7 @@ KMOD_EXPORT struct kmod_config_iter *kmod_config_get_install_commands(const stru
 KMOD_EXPORT struct kmod_config_iter *kmod_config_get_remove_commands(const struct kmod_ctx *ctx)
 {
 	if (ctx == NULL)
-		return NULL;;
+		return NULL;
 
 	return kmod_config_iter_new(ctx, CONFIG_TYPE_REMOVE);
 }
@@ -1242,7 +1242,7 @@ KMOD_EXPORT struct kmod_config_iter *kmod_config_get_remove_commands(const struc
 KMOD_EXPORT struct kmod_config_iter *kmod_config_get_aliases(const struct kmod_ctx *ctx)
 {
 	if (ctx == NULL)
-		return NULL;;
+		return NULL;
 
 	return kmod_config_iter_new(ctx, CONFIG_TYPE_ALIAS);
 }
@@ -1250,7 +1250,7 @@ KMOD_EXPORT struct kmod_config_iter *kmod_config_get_aliases(const struct kmod_c
 KMOD_EXPORT struct kmod_config_iter *kmod_config_get_options(const struct kmod_ctx *ctx)
 {
 	if (ctx == NULL)
-		return NULL;;
+		return NULL;
 
 	return kmod_config_iter_new(ctx, CONFIG_TYPE_OPTION);
 }
@@ -1258,7 +1258,7 @@ KMOD_EXPORT struct kmod_config_iter *kmod_config_get_options(const struct kmod_c
 KMOD_EXPORT struct kmod_config_iter *kmod_config_get_softdeps(const struct kmod_ctx *ctx)
 {
 	if (ctx == NULL)
-		return NULL;;
+		return NULL;
 
 	return kmod_config_iter_new(ctx, CONFIG_TYPE_SOFTDEP);
 }
@@ -1266,7 +1266,7 @@ KMOD_EXPORT struct kmod_config_iter *kmod_config_get_softdeps(const struct kmod_
 KMOD_EXPORT struct kmod_config_iter *kmod_config_get_weakdeps(const struct kmod_ctx *ctx)
 {
 	if (ctx == NULL)
-		return NULL;;
+		return NULL;
 
 	return kmod_config_iter_new(ctx, CONFIG_TYPE_WEAKDEP);
 }
