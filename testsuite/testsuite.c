@@ -36,7 +36,7 @@ static const char options_short[] = "lhn";
 static const struct option options[] = {
 	{ "list", no_argument, 0, 'l' },
 	{ "help", no_argument, 0, 'h' },
-	{ NULL, 0, 0, 0 }
+	{ NULL, 0, 0, 0 },
 };
 
 #define TEST_TIMEOUT_USEC 2 * USEC_PER_SEC

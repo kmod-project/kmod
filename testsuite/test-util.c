@@ -116,7 +116,7 @@ static int test_underscores(const struct test *t)
 		{ strdup("-aa-[bb]-cc-"), "_aa_[bb]_cc_" },
 		{ strdup("-aa-[b-b]-cc-"), "_aa_[b-b]_cc_" },
 		{ strdup("-aa-b[-]b-cc"), "_aa_b[-]b_cc" },
-		{ }
+		{ },
 	}, *iter;
 
 	for (iter = &teststr[0]; iter->val != NULL; iter++) {
@@ -152,7 +152,7 @@ static int test_path_ends_with_kmod_ext(const struct test *t)
 		{ "/bla.ko.", false },
 		{ "/bla.koz", false },
 		{ "/b", false },
-		{ }
+		{ },
 	}, *iter;
 
 	for (iter = &teststr[0]; iter->val != NULL; iter++) {
@@ -193,7 +193,7 @@ DEFINE_TEST(test_write_str_safe,
 		.files = (const struct keyval[]) {
 			{ TEST_WRITE_STR_SAFE_PATH ".txt",
 			  TEST_WRITE_STR_SAFE_PATH "-correct.txt" },
-			{ }
+			{ },
 		},
 	});
 
