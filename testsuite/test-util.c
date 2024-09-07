@@ -121,7 +121,7 @@ static int test_underscores(const struct test *t)
 
 	for (iter = &teststr[0]; iter->val != NULL; iter++) {
 		_cleanup_free_ char *val = iter->val;
-		underscores(val);
+		assert_return(!underscores(val), EXIT_FAILURE);
 		assert_return(streq(val, iter->res), EXIT_FAILURE);
 	}
 
