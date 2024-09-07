@@ -50,7 +50,7 @@ static const struct comp_type {
 	{sizeof(magic_zstd),	KMOD_FILE_COMPRESSION_ZSTD, magic_zstd, kmod_file_load_zstd},
 	{sizeof(magic_xz),	KMOD_FILE_COMPRESSION_XZ, magic_xz, kmod_file_load_xz},
 	{sizeof(magic_zlib),	KMOD_FILE_COMPRESSION_ZLIB, magic_zlib, kmod_file_load_zlib},
-	{0,			KMOD_FILE_COMPRESSION_NONE, NULL, load_reg}
+	{0,			KMOD_FILE_COMPRESSION_NONE, NULL, load_reg},
 };
 
 struct kmod_elf *kmod_file_get_elf(struct kmod_file *file)
