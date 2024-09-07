@@ -20,7 +20,7 @@ static const char options_s[] = "+hV";
 static const struct option options[] = {
 	{ "help", no_argument, NULL, 'h' },
 	{ "version", no_argument, NULL, 'V' },
-	{}
+	{},
 };
 
 static const struct kmod_cmd kmod_cmd_help;

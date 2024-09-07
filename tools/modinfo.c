@@ -338,7 +338,7 @@ static const struct option cmdopts[] = {
 	{"basedir", required_argument, 0, 'b'},
 	{"version", no_argument, 0, 'V'},
 	{"help", no_argument, 0, 'h'},
-	{NULL, 0, 0, 0}
+	{NULL, 0, 0, 0},
 };
 
 static void help(void)

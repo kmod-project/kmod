@@ -44,7 +44,7 @@ static const char *const default_cfg_paths[] = {
 	"/usr/local/lib/depmod.d",
 	DISTCONFDIR "/depmod.d",
 	"/lib/depmod.d",
-	NULL
+	NULL,
 };
 
 static const char cmdopts_s[] = "aAb:o:C:E:F:euqrvnP:wmVh";
@@ -68,7 +68,7 @@ static const struct option cmdopts[] = {
 	{ "map", no_argument, 0, 'm' }, /* deprecated */
 	{ "version", no_argument, 0, 'V' },
 	{ "help", no_argument, 0, 'h' },
-	{ }
+	{ },
 };
 
 static void help(void)
@@ -2579,7 +2579,7 @@ static int depmod_output(struct depmod *depmod, FILE *out)
 		{ "modules.builtin.bin", output_builtin_bin },
 		{ "modules.builtin.alias.bin", output_builtin_alias_bin },
 		{ "modules.devname", output_devname },
-		{ }
+		{ },
 	};
 	const char *dname = depmod->cfg->outdirname;
 	int dfd, err = 0;
