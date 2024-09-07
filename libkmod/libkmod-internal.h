@@ -68,16 +68,16 @@ enum kmod_file_compression_type {
 	KMOD_FILE_COMPRESSION_ZLIB,
 };
 
-struct kmod_list *kmod_list_append(struct kmod_list *list, const void *data) _must_check_ __attribute__((nonnull(2)));
-struct kmod_list *kmod_list_prepend(struct kmod_list *list, const void *data) _must_check_ __attribute__((nonnull(2)));
-struct kmod_list *kmod_list_remove(struct kmod_list *list) _must_check_;
-struct kmod_list *kmod_list_remove_data(struct kmod_list *list,
-					const void *data) _must_check_ __attribute__((nonnull(2)));
-struct kmod_list *kmod_list_remove_n_latest(struct kmod_list *list,
-						unsigned int n) _must_check_;
+_must_check_ struct kmod_list *kmod_list_append(struct kmod_list *list, const void *data) __attribute__((nonnull(2)));
+_must_check_ struct kmod_list *kmod_list_prepend(struct kmod_list *list, const void *data) __attribute__((nonnull(2)));
+_must_check_ struct kmod_list *kmod_list_remove(struct kmod_list *list);
+_must_check_ struct kmod_list *kmod_list_remove_data(struct kmod_list *list,
+					const void *data) __attribute__((nonnull(2)));
+_must_check_ struct kmod_list *kmod_list_remove_n_latest(struct kmod_list *list,
+						unsigned int n);
 struct kmod_list *kmod_list_insert_after(struct kmod_list *list, const void *data) __attribute__((nonnull(2)));
 struct kmod_list *kmod_list_insert_before(struct kmod_list *list, const void *data) __attribute__((nonnull(2)));
-struct kmod_list *kmod_list_append_list(struct kmod_list *list1, struct kmod_list *list2) _must_check_;
+_must_check_ struct kmod_list *kmod_list_append_list(struct kmod_list *list1, struct kmod_list *list2);
 
 #undef kmod_list_foreach
 #define kmod_list_foreach(list_entry, first_entry) \
@@ -161,13 +161,13 @@ void kmod_module_set_required(struct kmod_module *mod, bool required) __attribut
 bool kmod_module_is_builtin(struct kmod_module *mod) __attribute__((nonnull(1)));
 
 /* libkmod-file.c */
-struct kmod_file *kmod_file_open(const struct kmod_ctx *ctx, const char *filename) _must_check_ __attribute__((nonnull(1,2)));
+_must_check_ struct kmod_file *kmod_file_open(const struct kmod_ctx *ctx, const char *filename) __attribute__((nonnull(1,2)));
 struct kmod_elf *kmod_file_get_elf(struct kmod_file *file) __attribute__((nonnull(1)));
 int kmod_file_load_contents(struct kmod_file *file) __attribute__((nonnull(1)));
-void *kmod_file_get_contents(const struct kmod_file *file) _must_check_ __attribute__((nonnull(1)));
-off_t kmod_file_get_size(const struct kmod_file *file) _must_check_ __attribute__((nonnull(1)));
-enum kmod_file_compression_type kmod_file_get_compression(const struct kmod_file *file) _must_check_ __attribute__((nonnull(1)));
-int kmod_file_get_fd(const struct kmod_file *file) _must_check_ __attribute__((nonnull(1)));
+_must_check_ void *kmod_file_get_contents(const struct kmod_file *file) __attribute__((nonnull(1)));
+_must_check_ off_t kmod_file_get_size(const struct kmod_file *file) __attribute__((nonnull(1)));
+_must_check_ enum kmod_file_compression_type kmod_file_get_compression(const struct kmod_file *file) __attribute__((nonnull(1)));
+_must_check_ int kmod_file_get_fd(const struct kmod_file *file) __attribute__((nonnull(1)));
 void kmod_file_unref(struct kmod_file *file) __attribute__((nonnull(1)));
 
 /* libkmod-elf.c */
@@ -178,21 +178,21 @@ struct kmod_modversion {
 	char *symbol;
 };
 
-struct kmod_elf *kmod_elf_new(const void *memory, off_t size) _must_check_;
+_must_check_ struct kmod_elf *kmod_elf_new(const void *memory, off_t size);
 void kmod_elf_unref(struct kmod_elf *elf) __attribute__((nonnull(1)));
-const void *kmod_elf_get_memory(const struct kmod_elf *elf) _must_check_ __attribute__((nonnull(1)));
-int kmod_elf_get_strings(const struct kmod_elf *elf, const char *section, char ***array) _must_check_ __attribute__((nonnull(1,2,3)));
-int kmod_elf_get_modversions(const struct kmod_elf *elf, struct kmod_modversion **array) _must_check_ __attribute__((nonnull(1,2)));
-int kmod_elf_get_symbols(const struct kmod_elf *elf, struct kmod_modversion **array) _must_check_ __attribute__((nonnull(1,2)));
-int kmod_elf_get_dependency_symbols(const struct kmod_elf *elf, struct kmod_modversion **array) _must_check_ __attribute__((nonnull(1,2)));
-int kmod_elf_strip_section(struct kmod_elf *elf, const char *section) _must_check_ __attribute__((nonnull(1,2)));
-int kmod_elf_strip_vermagic(struct kmod_elf *elf) _must_check_ __attribute__((nonnull(1)));
+_must_check_ const void *kmod_elf_get_memory(const struct kmod_elf *elf) __attribute__((nonnull(1)));
+_must_check_ int kmod_elf_get_strings(const struct kmod_elf *elf, const char *section, char ***array) __attribute__((nonnull(1,2,3)));
+_must_check_ int kmod_elf_get_modversions(const struct kmod_elf *elf, struct kmod_modversion **array) __attribute__((nonnull(1,2)));
+_must_check_ int kmod_elf_get_symbols(const struct kmod_elf *elf, struct kmod_modversion **array) __attribute__((nonnull(1,2)));
+_must_check_ int kmod_elf_get_dependency_symbols(const struct kmod_elf *elf, struct kmod_modversion **array) __attribute__((nonnull(1,2)));
+_must_check_ int kmod_elf_strip_section(struct kmod_elf *elf, const char *section) __attribute__((nonnull(1,2)));
+_must_check_ int kmod_elf_strip_vermagic(struct kmod_elf *elf) __attribute__((nonnull(1)));
 
 /*
  * Debug mock lib need to find section ".gnu.linkonce.this_module" in order to
  * get modname
  */
-int kmod_elf_get_section(const struct kmod_elf *elf, const char *section, const void **buf, uint64_t *buf_size) _must_check_ __attribute__((nonnull(1,2,3,4)));
+_must_check_ int kmod_elf_get_section(const struct kmod_elf *elf, const char *section, const void **buf, uint64_t *buf_size) __attribute__((nonnull(1,2,3,4)));
 
 /* libkmod-signature.c */
 struct kmod_signature_info {
@@ -206,7 +206,7 @@ struct kmod_signature_info {
 	void (*free)(void *);
 	void *private;
 };
-bool kmod_module_signature_info(const struct kmod_file *file, struct kmod_signature_info *sig_info) _must_check_ __attribute__((nonnull(1, 2)));
+_must_check_ bool kmod_module_signature_info(const struct kmod_file *file, struct kmod_signature_info *sig_info) __attribute__((nonnull(1, 2)));
 void kmod_module_signature_info_free(struct kmod_signature_info *sig_info) __attribute__((nonnull));
 
 /* libkmod-builtin.c */
