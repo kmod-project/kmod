@@ -407,7 +407,7 @@ struct cfg_override {
 enum search_type {
 	SEARCH_PATH,
 	SEARCH_BUILTIN,
-	SEARCH_EXTERNAL
+	SEARCH_EXTERNAL,
 };
 
 struct cfg_search {
