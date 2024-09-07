@@ -48,9 +48,9 @@ static _always_inline_ _printf_format_(2, 3) void
 #  endif
 #endif
 
-_printf_format_(6, 7) void kmod_log(const struct kmod_ctx *ctx,
+_printf_format_(6, 7) _nonnull_(1, 3, 5) void kmod_log(const struct kmod_ctx *ctx,
 		int priority, const char *file, int line, const char *fn,
-		const char *format, ...) __attribute__((nonnull(1, 3, 5)));
+		const char *format, ...);
 
 struct list_node {
 	struct list_node *next, *prev;
@@ -68,15 +68,15 @@ enum kmod_file_compression_type {
 	KMOD_FILE_COMPRESSION_ZLIB,
 };
 
-_must_check_ struct kmod_list *kmod_list_append(struct kmod_list *list, const void *data) __attribute__((nonnull(2)));
-_must_check_ struct kmod_list *kmod_list_prepend(struct kmod_list *list, const void *data) __attribute__((nonnull(2)));
+_must_check_ _nonnull_(2) struct kmod_list *kmod_list_append(struct kmod_list *list, const void *data);
+_must_check_ _nonnull_(2) struct kmod_list *kmod_list_prepend(struct kmod_list *list, const void *data);
 _must_check_ struct kmod_list *kmod_list_remove(struct kmod_list *list);
-_must_check_ struct kmod_list *kmod_list_remove_data(struct kmod_list *list,
-					const void *data) __attribute__((nonnull(2)));
+_must_check_ _nonnull_(2) struct kmod_list *kmod_list_remove_data(struct kmod_list *list,
+					const void *data);
 _must_check_ struct kmod_list *kmod_list_remove_n_latest(struct kmod_list *list,
 						unsigned int n);
-struct kmod_list *kmod_list_insert_after(struct kmod_list *list, const void *data) __attribute__((nonnull(2)));
-struct kmod_list *kmod_list_insert_before(struct kmod_list *list, const void *data) __attribute__((nonnull(2)));
+_nonnull_(2) struct kmod_list *kmod_list_insert_after(struct kmod_list *list, const void *data);
+_nonnull_(2) struct kmod_list *kmod_list_insert_before(struct kmod_list *list, const void *data);
 _must_check_ struct kmod_list *kmod_list_append_list(struct kmod_list *list1, struct kmod_list *list2);
 
 #undef kmod_list_foreach
@@ -102,8 +102,8 @@ _nonnull_all_ int kmod_lookup_alias_from_kernel_builtin_file(struct kmod_ctx *ct
 _nonnull_all_ int kmod_lookup_alias_from_builtin_file(struct kmod_ctx *ctx, const char *name, struct kmod_list **list);
 _nonnull_all_ bool kmod_lookup_alias_is_builtin(struct kmod_ctx *ctx, const char *name);
 _nonnull_all_ int kmod_lookup_alias_from_commands(struct kmod_ctx *ctx, const char *name, struct kmod_list **list);
-void kmod_set_modules_visited(struct kmod_ctx *ctx, bool visited) __attribute__((nonnull((1))));
-void kmod_set_modules_required(struct kmod_ctx *ctx, bool required) __attribute__((nonnull((1))));
+_nonnull_(1) void kmod_set_modules_visited(struct kmod_ctx *ctx, bool visited);
+_nonnull_(1) void kmod_set_modules_required(struct kmod_ctx *ctx, bool required);
 
 _nonnull_all_ char *kmod_search_moddep(struct kmod_ctx *ctx, const char *name);
 
@@ -153,11 +153,11 @@ _nonnull_all_ const char * const *kmod_weakdep_get_weak(const struct kmod_list *
 /* libkmod-module.c */
 int kmod_module_new_from_alias(struct kmod_ctx *ctx, const char *alias, const char *name, struct kmod_module **mod);
 _nonnull_all_ int kmod_module_parse_depline(struct kmod_module *mod, char *line);
-void kmod_module_set_install_commands(struct kmod_module *mod, const char *cmd) __attribute__((nonnull(1)));
-void kmod_module_set_remove_commands(struct kmod_module *mod, const char *cmd) __attribute__((nonnull(1)));
-void kmod_module_set_visited(struct kmod_module *mod, bool visited) __attribute__((nonnull(1)));
-void kmod_module_set_builtin(struct kmod_module *mod, bool builtin) __attribute__((nonnull((1))));
-void kmod_module_set_required(struct kmod_module *mod, bool required) __attribute__((nonnull(1)));
+_nonnull_(1) void kmod_module_set_install_commands(struct kmod_module *mod, const char *cmd);
+_nonnull_(1) void kmod_module_set_remove_commands(struct kmod_module *mod, const char *cmd);
+_nonnull_(1)void kmod_module_set_visited(struct kmod_module *mod, bool visited);
+_nonnull_(1) void kmod_module_set_builtin(struct kmod_module *mod, bool builtin);
+_nonnull_(1) void kmod_module_set_required(struct kmod_module *mod, bool required);
 _nonnull_all_ bool kmod_module_is_builtin(struct kmod_module *mod);
 
 /* libkmod-file.c */
