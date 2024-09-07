@@ -24,19 +24,19 @@ _nonnull_all_ void *memdup(const void *p, size_t n);
 /* ************************************************************************ */
 #define KMOD_EXTENSION_UNCOMPRESSED ".ko"
 
-_must_check_ int alias_normalize(const char *alias, char buf[static PATH_MAX], size_t *len) __attribute__((nonnull(1,2)));
+_must_check_ _nonnull_(1, 2) int alias_normalize(const char *alias, char buf[static PATH_MAX], size_t *len);
 _must_check_ int underscores(char *s);
-char *modname_normalize(const char *modname, char buf[static PATH_MAX], size_t *len) __attribute__((nonnull(1, 2)));
-char *path_to_modname(const char *path, char buf[static PATH_MAX], size_t *len) __attribute__((nonnull(2)));
+_nonnull_(1, 2) char *modname_normalize(const char *modname, char buf[static PATH_MAX], size_t *len);
+_nonnull_(2) char *path_to_modname(const char *path, char buf[static PATH_MAX], size_t *len);
 _nonnull_all_ bool path_ends_with_kmod_ext(const char *path, size_t len);
 
 /* read-like and fread-like functions                                       */
 /* ************************************************************************ */
-_must_check_ ssize_t read_str_safe(int fd, char *buf, size_t buflen) __attribute__((nonnull(2)));
-ssize_t write_str_safe(int fd, const char *buf, size_t buflen) __attribute__((nonnull(2)));
-_must_check_ int read_str_long(int fd, long *value, int base) __attribute__((nonnull(2)));
-_must_check_ int read_str_ulong(int fd, unsigned long *value, int base) __attribute__((nonnull(2)));
-char *freadline_wrapped(FILE *fp, unsigned int *linenum) __attribute__((nonnull(1)));
+_must_check_ _nonnull_(2) ssize_t read_str_safe(int fd, char *buf, size_t buflen);
+_nonnull_(2) ssize_t write_str_safe(int fd, const char *buf, size_t buflen);
+_must_check_ _nonnull_(2) int read_str_long(int fd, long *value, int base);
+_must_check_ _nonnull_(2) int read_str_ulong(int fd, unsigned long *value, int base);
+_nonnull_(1) char *freadline_wrapped(FILE *fp, unsigned int *linenum);
 
 /* path handling functions                                                  */
 /* ************************************************************************ */
