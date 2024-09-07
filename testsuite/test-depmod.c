@@ -38,7 +38,7 @@ DEFINE_TEST(depmod_modules_order_for_compressed,
 		.files = (const struct keyval[]) {
 			{ MODULES_ORDER_LIB_MODULES "/correct-modules.alias",
 			  MODULES_ORDER_LIB_MODULES "/modules.alias" },
-			{ }
+			{ },
 		},
 	});
 
@@ -70,7 +70,7 @@ DEFINE_TEST(depmod_modules_outdir,
 			  MODULES_OUTDIR_ROOTFS "/correct-modules.dep" },
 			{ MODULES_OUTDIR_LIB_MODULES_OUTPUT "/modules.alias",
 			  MODULES_OUTDIR_ROOTFS "/correct-modules.alias" },
-			{ }
+			{ },
 		},
 	});
 
@@ -97,7 +97,7 @@ DEFINE_TEST(depmod_search_order_simple,
 		.files = (const struct keyval[]) {
 			{ SEARCH_ORDER_SIMPLE_LIB_MODULES "/correct-modules.dep",
 			  SEARCH_ORDER_SIMPLE_LIB_MODULES "/modules.dep" },
-			{ }
+			{ },
 		},
 	});
 
@@ -124,7 +124,7 @@ DEFINE_TEST(depmod_search_order_same_prefix,
 		.files = (const struct keyval[]) {
 			{ SEARCH_ORDER_SAME_PREFIX_LIB_MODULES "/correct-modules.dep",
 			  SEARCH_ORDER_SAME_PREFIX_LIB_MODULES "/modules.dep" },
-			{ }
+			{ },
 		},
 	});
 
@@ -174,7 +174,7 @@ DEFINE_TEST(depmod_search_order_external_first,
 		.files = (const struct keyval[]) {
 			{ SEARCH_ORDER_EXTERNAL_FIRST_LIB_MODULES "/correct-modules.dep",
 			  SEARCH_ORDER_EXTERNAL_FIRST_LIB_MODULES "/modules.dep" },
-			{ }
+			{ },
 		},
 	});
 
@@ -201,7 +201,7 @@ DEFINE_TEST(depmod_search_order_external_last,
 		.files = (const struct keyval[]) {
 			{ SEARCH_ORDER_EXTERNAL_LAST_LIB_MODULES "/correct-modules.dep",
 			  SEARCH_ORDER_EXTERNAL_LAST_LIB_MODULES "/modules.dep" },
-			{ }
+			{ },
 		},
 	});
 
@@ -228,7 +228,7 @@ DEFINE_TEST(depmod_search_order_override,
 		.files = (const struct keyval[]) {
 			{ SEARCH_ORDER_OVERRIDE_LIB_MODULES "/correct-modules.dep",
 			  SEARCH_ORDER_OVERRIDE_LIB_MODULES "/modules.dep" },
-			{ }
+			{ },
 		},
 	});
 
@@ -255,7 +255,7 @@ DEFINE_TEST(depmod_check_weakdep,
 		.files = (const struct keyval[]) {
 			{ CHECK_WEAKDEP_LIB_MODULES "/correct-modules.weakdep",
 			  CHECK_WEAKDEP_LIB_MODULES "/modules.weakdep" },
-			{ }
+			{ },
 		},
 	});
 

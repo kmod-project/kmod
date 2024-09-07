@@ -20,13 +20,13 @@
 
 static const char *const test_weakdep_config_paths[] = {
 	TEST_WEAKDEP_ROOTFS "etc/modprobe.d",
-	NULL
+	NULL,
 };
 
 static const char *const mod_name[] = {
 	"mod-loop-b",
 	"mod-weakdep",
-	NULL
+	NULL,
 };
 
 static int test_weakdep(const struct test *t)
