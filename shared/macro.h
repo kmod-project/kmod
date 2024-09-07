@@ -50,6 +50,7 @@
 #define _unused_ __attribute__((unused))
 #define _always_inline_ __inline__ __attribute__((always_inline))
 #define _cleanup_(x) __attribute__((cleanup(x)))
+#define _nonnull_all_ __attribute__((nonnull))
 
 /* Define C11 noreturn without <stdnoreturn.h> and even on older gcc
  * compiler versions */
