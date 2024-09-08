@@ -39,12 +39,14 @@ static int verbose = DEFAULT_VERBOSE;
 static const char CFG_BUILTIN_KEY[] = "built-in";
 static const char CFG_EXTERNAL_KEY[] = "external";
 static const char *const default_cfg_paths[] = {
+	// clang-format off
 	SYSCONFDIR "/depmod.d",
 	"/run/depmod.d",
 	"/usr/local/lib/depmod.d",
 	DISTCONFDIR "/depmod.d",
 	"/lib/depmod.d",
 	NULL,
+	// clang-format on
 };
 
 static const char cmdopts_s[] = "aAb:o:C:E:F:euqrvnP:wmVh";

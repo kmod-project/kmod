@@ -32,12 +32,14 @@ static const struct kmod_cmd *kmod_cmds[] = {
 };
 
 static const struct kmod_cmd *kmod_compat_cmds[] = {
+	// clang-format off
 	&kmod_cmd_compat_lsmod,
 	&kmod_cmd_compat_rmmod,
 	&kmod_cmd_compat_insmod,
 	&kmod_cmd_compat_modinfo,
 	&kmod_cmd_compat_modprobe,
 	&kmod_cmd_compat_depmod,
+	// clang-format on
 };
 
 static int kmod_help(int argc, char *argv[])

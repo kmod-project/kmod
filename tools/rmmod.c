@@ -26,12 +26,14 @@ static int use_syslog;
 
 static const char cmdopts_s[] = "fsvVwh";
 static const struct option cmdopts[] = {
-	{"force", no_argument, 0, 'f'},
-	{"syslog", no_argument, 0, 's'},
-	{"verbose", no_argument, 0, 'v'},
-	{"version", no_argument, 0, 'V'},
-	{"help", no_argument, 0, 'h'},
-	{NULL, 0, 0, 0},
+	// clang-format off
+	{ "force", no_argument, 0, 'f' },
+	{ "syslog", no_argument, 0, 's' },
+	{ "verbose", no_argument, 0, 'v' },
+	{ "version", no_argument, 0, 'V' },
+	{ "help", no_argument, 0, 'h' },
+	{ NULL, 0, 0, 0 },
+	// clang-format on
 };
 
 static void help(void)
