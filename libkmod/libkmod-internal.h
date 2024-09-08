@@ -78,20 +78,6 @@ _nonnull_(2) struct kmod_list *kmod_list_insert_after(struct kmod_list *list, co
 _nonnull_(2) struct kmod_list *kmod_list_insert_before(struct kmod_list *list, const void *data);
 _must_check_ struct kmod_list *kmod_list_append_list(struct kmod_list *list1, struct kmod_list *list2);
 
-#undef kmod_list_foreach
-#define kmod_list_foreach(list_entry, first_entry) \
-	for (list_entry = ((first_entry) == NULL) ? NULL : (first_entry); \
-		list_entry != NULL; \
-		list_entry = (list_entry->node.next == &((first_entry)->node)) ? NULL : \
-		container_of(list_entry->node.next, struct kmod_list, node))
-
-#undef kmod_list_foreach_reverse
-#define kmod_list_foreach_reverse(list_entry, first_entry) \
-	for (list_entry = (((first_entry) == NULL) ? NULL : container_of(first_entry->node.prev, struct kmod_list, node)); \
-		list_entry != NULL; \
-		list_entry = ((list_entry == first_entry) ? NULL :	\
-		container_of(list_entry->node.prev, struct kmod_list, node)))
-
 /* libkmod.c */
 _nonnull_all_ int kmod_lookup_alias_from_config(struct kmod_ctx *ctx, const char *name, struct kmod_list **list);
 _nonnull_all_ int kmod_lookup_alias_from_symbols_file(struct kmod_ctx *ctx, const char *name, struct kmod_list **list);
