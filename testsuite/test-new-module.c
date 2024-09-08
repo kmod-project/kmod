@@ -18,12 +18,14 @@
 static int from_name(const struct test *t)
 {
 	static const char *const modnames[] = {
+		// clang-format off
 		"ext4",
 		"balbalbalbbalbalbalbalbalbalbal",
 		"snd-hda-intel",
 		"snd-timer",
 		"iTCO_wdt",
 		NULL,
+		// clang-format on
 	};
 	const char *const *p;
 	struct kmod_ctx *ctx;

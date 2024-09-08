@@ -20,12 +20,14 @@
 static int alias_1(const struct test *t)
 {
 	static const char *const input[] = {
+		// clang-format off
 		"test1234",
 		"test[abcfoobar]2211",
 		"bar[aaa][bbbb]sss",
 		"kmod[p.b]lib",
 		"[az]1234[AZ]",
 		NULL,
+		// clang-format on
 	};
 
 	char buf[PATH_MAX];
