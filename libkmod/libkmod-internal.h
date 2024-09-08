@@ -68,13 +68,12 @@ enum kmod_file_compression_type {
 	KMOD_FILE_COMPRESSION_ZLIB,
 };
 
+// clang-format off
 _must_check_ _nonnull_(2) struct kmod_list *kmod_list_append(struct kmod_list *list, const void *data);
 _must_check_ _nonnull_(2) struct kmod_list *kmod_list_prepend(struct kmod_list *list, const void *data);
 _must_check_ struct kmod_list *kmod_list_remove(struct kmod_list *list);
-_must_check_ _nonnull_(2) struct kmod_list *kmod_list_remove_data(struct kmod_list *list,
-					const void *data);
-_must_check_ struct kmod_list *kmod_list_remove_n_latest(struct kmod_list *list,
-						unsigned int n);
+_must_check_ _nonnull_(2) struct kmod_list *kmod_list_remove_data(struct kmod_list *list, const void *data);
+_must_check_ struct kmod_list *kmod_list_remove_n_latest(struct kmod_list *list, unsigned int n);
 _nonnull_(2) struct kmod_list *kmod_list_insert_after(struct kmod_list *list, const void *data);
 _nonnull_(2) struct kmod_list *kmod_list_insert_before(struct kmod_list *list, const void *data);
 _must_check_ struct kmod_list *kmod_list_append_list(struct kmod_list *list1, struct kmod_list *list2);
@@ -211,3 +210,4 @@ _nonnull_all_ void kmod_module_signature_info_free(struct kmod_signature_info *s
 
 /* libkmod-builtin.c */
 _nonnull_all_ ssize_t kmod_builtin_get_modinfo(struct kmod_ctx *ctx, const char *modname, char ***modinfo);
+// clang-format on

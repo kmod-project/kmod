@@ -2275,7 +2275,9 @@ struct kmod_module_dependency_symbol {
 	char symbol[];
 };
 
+// clang-format off
 static struct kmod_module_dependency_symbol *kmod_module_dependency_symbols_new(uint64_t crc, uint8_t bind, const char *symbol)
+// clang-format on
 {
 	struct kmod_module_dependency_symbol *mv;
 	size_t symbollen = strlen(symbol) + 1;
@@ -2346,7 +2348,9 @@ list_error:
 	return ret;
 }
 
+// clang-format off
 KMOD_EXPORT const char *kmod_module_dependency_symbol_get_symbol(const struct kmod_list *entry)
+// clang-format on
 {
 	struct kmod_module_dependency_symbol *dependency_symbol;
 
