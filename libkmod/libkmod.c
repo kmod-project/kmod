@@ -32,20 +32,24 @@ static const struct {
 	const char *fn;
 	const char *prefix;
 } index_files[] = {
+	// clang-format off
 	[KMOD_INDEX_MODULES_DEP] = { .fn = "modules.dep", .prefix = "" },
 	[KMOD_INDEX_MODULES_ALIAS] = { .fn = "modules.alias", .prefix = "alias " },
-	[KMOD_INDEX_MODULES_SYMBOL] = { .fn = "modules.symbols", .prefix = "alias "},
+	[KMOD_INDEX_MODULES_SYMBOL] = { .fn = "modules.symbols", .prefix = "alias " },
 	[KMOD_INDEX_MODULES_BUILTIN_ALIAS] = { .fn = "modules.builtin.alias", .prefix = "" },
-	[KMOD_INDEX_MODULES_BUILTIN] = { .fn = "modules.builtin", .prefix = ""},
+	[KMOD_INDEX_MODULES_BUILTIN] = { .fn = "modules.builtin", .prefix = "" },
+	// clang-format on
 };
 
 static const char *const default_config_paths[] = {
+	// clang-format off
 	SYSCONFDIR "/modprobe.d",
 	"/run/modprobe.d",
 	"/usr/local/lib/modprobe.d",
 	DISTCONFDIR "/modprobe.d",
 	"/lib/modprobe.d",
 	NULL,
+	// clang-format on
 };
 
 struct kmod_ctx {

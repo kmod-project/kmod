@@ -47,15 +47,17 @@ enum pkey_hash_algo {
 };
 
 const char *const pkey_hash_algo[PKEY_HASH__LAST] = {
-	[PKEY_HASH_MD4]		= "md4",
-	[PKEY_HASH_MD5]		= "md5",
-	[PKEY_HASH_SHA1]	= "sha1",
-	[PKEY_HASH_RIPE_MD_160]	= "rmd160",
-	[PKEY_HASH_SHA256]	= "sha256",
-	[PKEY_HASH_SHA384]	= "sha384",
-	[PKEY_HASH_SHA512]	= "sha512",
-	[PKEY_HASH_SHA224]	= "sha224",
-	[PKEY_HASH_SM3]		= "sm3",
+	// clang-format off
+	[PKEY_HASH_MD4] = "md4",
+	[PKEY_HASH_MD5] = "md5",
+	[PKEY_HASH_SHA1] = "sha1",
+	[PKEY_HASH_RIPE_MD_160] = "rmd160",
+	[PKEY_HASH_SHA256] = "sha256",
+	[PKEY_HASH_SHA384] = "sha384",
+	[PKEY_HASH_SHA512] = "sha512",
+	[PKEY_HASH_SHA224] = "sha224",
+	[PKEY_HASH_SM3] = "sm3",
+	// clang-format on
 };
 
 enum pkey_id_type {
