@@ -57,14 +57,16 @@ DEFINE_TEST(modprobe_show_depends2,
 		.out = TESTSUITE_ROOTFS "test-modprobe/show-depends/correct-mod-simple.txt",
 	});
 
-
 static noreturn int modprobe_show_alias_to_none(const struct test *t)
 {
 	const char *progname = TOOLS_DIR "/modprobe";
 	const char *const args[] = {
+		// clang-format off
 		progname,
-		"--show-depends", "--ignore-install", "--quiet", "mod-simple",
+		"--show-depends", "--ignore-install", "--quiet",
+		"mod-simple",
 		NULL,
+		// clang-format on
 	};
 
 	test_spawn_prog(progname, args);
@@ -82,14 +84,16 @@ DEFINE_TEST(modprobe_show_alias_to_none,
 	.modules_loaded = "",
 	);
 
-
 static noreturn int modprobe_show_exports(const struct test *t)
 {
 	const char *progname = TOOLS_DIR "/modprobe";
 	const char *const args[] = {
+		// clang-format off
 		progname,
-		"--show-exports", "--quiet", "/mod-loop-a.ko",
+		"--show-exports", "--quiet",
+		"/mod-loop-a.ko",
 		NULL,
+		// clang-format on
 	};
 
 	test_spawn_prog(progname, args);

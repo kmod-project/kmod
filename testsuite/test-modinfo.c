@@ -89,9 +89,12 @@ DEFINE_TEST(test_modinfo_signature,
 static noreturn int test_modinfo_external(const struct test *t)
 {
 	const char *const args[] = {
-		progname, "-F", "filename",
+		// clang-format off
+		progname,
+		"-F", "filename",
 		"mod-simple",
 		NULL,
+		// clang-format on
 	};
 	test_spawn_prog(progname, args);
 	exit(EXIT_FAILURE);

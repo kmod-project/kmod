@@ -49,9 +49,11 @@ static noreturn int depmod_modules_outdir(const struct test *t)
 {
 	const char *progname = TOOLS_DIR "/depmod";
 	const char *const args[] = {
+		// clang-format off
 		progname,
 		"--outdir", MODULES_OUTDIR_ROOTFS "/outdir/",
 		NULL,
+		// clang-format on
 	};
 
 	test_spawn_prog(progname, args);
