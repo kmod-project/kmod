@@ -59,12 +59,26 @@ rather than the current kernel version (as returned by *uname -r*).
 	distribution vendor who needs to pre-generate the meta-data files rather
 	than running *depmod* again later.
 
+	Example:
+		depmod -b /my/build/staging/dir/
+
+	This expects all input files under
+	_/my/build/staging/dir/@MODULE_DIRECTORY@/$(uname -r)_ and generates
+	index files under that same directory.
+
 *-m* _moduledir_
 *--moduledir* _moduledir_
 	Override the module directory <MODULEDIR>, which defaults to
 	@MODULE_DIRECTORY@ prefix set at build time. This is useful when
 	building *modules.dep* file in _basedir_ for a system that uses a
-	different prefix.
+	different prefix, e.g. _/usr/lib/modules_ vs _/lib/modules_.
+
+	Example:
+		depmod -b /tmp/build -m /kernel-modules
+
+	This expects all input files under
+	_/tmp/build/kernel-modules/$(uname -r)_ and generates index files under
+	that same directory.
 
 *-o* _outdir_
 *--outdir* _outdir_
@@ -73,6 +87,13 @@ rather than the current kernel version (as returned by *uname -r*).
 	used. Also this setting takes precedence and if used together with
 	_basedir_ it will result in the input being that directory, but the output
 	being the one set by _outdir_.
+
+	Example:
+		depmod -o /my/build/staging/dir/
+
+	This expects all input files under
+	_@MODULE_DIRECTORY@/$(uname -r)_ and generates index files under
+	_/my/build/staging/dir@MODULE_DIRECTORY@/$(uname -r)_.
 
 *-C*  _file_ _or_ _directory_
 *--config* _file_ _or_ _directory_
