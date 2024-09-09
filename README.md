@@ -47,7 +47,14 @@ Optional dependencies:
 - ZSTD library
 - OPENSSL library (signature handling in modinfo)
 
-Typical configuration:
+Typical configuration and installation
+
+    meson setup builddir/
+    meson compile -C builddir/
+    sudo meson install -C builddir/
+
+Alternatively you can try autotools build.
+NOTE: The autotools build is slated for removal with kmod v35
 
     ./configure CFLAGS="-g -O2" --prefix=/usr \
                 --sysconfdir=/etc --libdir=/usr/lib
@@ -61,8 +68,9 @@ To compile and install run:
 Hacking
 =======
 
-Run 'autogen.sh' script before configure. If you want to accept the recommended
-flags, you just need to run `autogen.sh c`.
+When working on kmod, use the included `build-dev.ini` file, as:
+
+    meson setup --native-file build-dev.ini builddir/
 
 Make sure to read the CODING-STYLE file and the other READMEs: libkmod/README
 and testsuite/README.
