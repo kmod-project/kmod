@@ -2,18 +2,6 @@ if not get_option('tools')
   error('The test suite requires also building the tools')
 endif
 
-test_kmod_symlinks = []
-
-foreach tool : _tools
-  test_kmod_symlinks += custom_target(
-    tool,
-    command : ['ln', '-sf', kmod, '@OUTPUT@'],
-    output : tool,
-    depends : kmod,
-    build_by_default : false,
-  )
-endforeach
-
 build_module_playground = custom_target(
   'build-module-playground',
   command : [
@@ -73,7 +61,7 @@ endforeach
 
 testsuite_c_args = [
   '-DTESTSUITE_ROOTFS="@0@/testsuite/rootfs/"'.format(meson.project_build_root()),
-  '-DTOOLS_DIR="@0@/testsuite/"'.format(meson.project_build_root()),
+  '-DTOOLS_DIR="@0@/"'.format(meson.project_build_root()),
   '-DOVERRIDE_LIBDIR="@0@/testsuite/"'.format(meson.project_build_root()),
 ]
 
@@ -118,6 +106,6 @@ foreach input : _testsuite
       link_with : [libshared, libkmod_internal, libtestsuite],
       build_by_default : false,
     ),
-    depends : [test_kmod_symlinks, create_rootfs, test_override_mods],
+    depends : [internal_kmod_symlinks, create_rootfs, test_override_mods],
   )
 endforeach
