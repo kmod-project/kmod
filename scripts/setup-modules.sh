@@ -10,9 +10,7 @@ export MODULE_DIRECTORY=$4
 
 # TODO: meson allows only out of tree builds
 if test "$SRCDIR" != "$BUILDDIR"; then
-    rm -rf "$MODULE_PLAYGROUND"
-    mkdir -p "$(dirname "$MODULE_PLAYGROUND")"
-    cp -r "$SRCDIR/$MODULE_PLAYGROUND" "$MODULE_PLAYGROUND"
+    rsync --recursive --times "$SRCDIR/$MODULE_PLAYGROUND/" "$MODULE_PLAYGROUND/"
 fi
 
 export MAKEFLAGS=${MAKEFLAGS-"-j$(nproc)"}
