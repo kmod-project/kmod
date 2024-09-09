@@ -22,15 +22,17 @@ uses this symbol, that second module clearly depends on the first module. These
 dependencies can get quite complex.
 
 *depmod* creates a list of module dependencies by reading each module under
-@MODULE_DIRECTORY@/_version_ and determining what symbols it exports and what
-symbols it needs. By default, this list is written to *modules.dep*, and a binary
-hashed version named modules.dep.bin, in the same directory. If filenames are
-given on the command line, only those modules are examined (which is rarely
-useful unless all modules are listed). * depmod* also creates a list of symbols
-provided by modules in the file named modules.symbols and its binary hashed
-version, modules.symbols.bin. Finally, *depmod* will output a file named
-modules.devname if modules supply special device names (devname) that should be
-populated in /dev on boot (by a utility such as systemd-tmpfiles).
+<BASEDIR>/<MODULEDIR>/_version_. By default <MODULE_DIRECTORY> is
+@MODULE_DIRECTORY@ and <BASEDIR> is empty. See options below to override when
+needed. It determines what symbols each module exports and needs.  This list is
+written to *modules.dep*, and a binary hashed version named modules.dep.bin, in
+the same directory. If filenames are given on the command line, only those
+modules are examined (which is rarely useful unless all modules are listed).
+*depmod* also creates a list of symbols provided by modules in the file named
+modules.symbols and its binary hashed version, modules.symbols.bin. Finally,
+*depmod* will output a file named modules.devname if modules supply special
+device names (devname) that should be populated in /dev on boot (by a utility
+such as systemd-tmpfiles).
 
 If a _version_ is provided, then that kernel version's module directory is used
 rather than the current kernel version (as returned by *uname -r*).
@@ -50,6 +52,7 @@ rather than the current kernel version (as returned by *uname -r*).
 
 *-b* _basedir_
 *--basedir* _basedir_
+	Override the base directory <BASEDIR> where modules are located.
 	If your modules are not currently in the (normal) directory
 	@MODULE_DIRECTORY@/_version_, but in a staging area, you can specify a
 	_basedir_ which is prepended to the directory name. This _basedir_ is
@@ -60,10 +63,10 @@ rather than the current kernel version (as returned by *uname -r*).
 
 *-m* _moduledir_
 *--moduledir* _moduledir_
-	Override the @MODULE_DIRECTORY@ prefix set at build time. This is useful
-	when building *modules.dep* file in _basedir_ for a system that uses a
-	different prefix. The alternative is to move the modules and
-	*modules.dep* inside _basedir_ to adjust for the different prefix.
+	Override the module directory <MODULEDIR>, which defaults to
+	@MODULE_DIRECTORY@ prefix set at build time. This is useful when
+	building *modules.dep* file in _basedir_ for a system that uses a
+	different prefix.
 
 *-M*
 *--moduledir-defualt*
