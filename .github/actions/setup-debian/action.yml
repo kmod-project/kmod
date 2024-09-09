@@ -20,6 +20,7 @@ runs:
           libzstd-dev \
           linux-headers-generic \
           meson \
+          rsync \
           scdoc \
           zlib1g-dev \
           zstd

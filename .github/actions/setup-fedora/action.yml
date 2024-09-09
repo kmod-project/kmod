@@ -21,6 +21,7 @@ runs:
           git \
           gtk-doc \
           libtool \
+          rsync \
           scdoc
         # CI builds with KDIR pointing to /usr/lib/modules/*/build
         # so just a foo/build pointing to the right place, assuming

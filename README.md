@@ -49,6 +49,8 @@ Compilation and installation
 In order to compile the source code you need the following software packages:
 	- GCC/CLANG compiler
 	- GNU C library / musl / uClibc
+	- rsync
+
 
 Optional dependencies:
 	- ZLIB library
