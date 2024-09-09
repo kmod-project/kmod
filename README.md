@@ -72,8 +72,8 @@ When working on kmod, use the included `build-dev.ini` file, as:
 
     meson setup --native-file build-dev.ini builddir/
 
-Make sure to read the CODING-STYLE file and the other READMEs: libkmod/README
-and testsuite/README.
+Make sure to read [our contributing guide](CONTRIBUTING.md) and the other
+READMEs: [libkmod](libkmod/README) and [testsuite](testsuite/README).
 
 Compatibility with module-init-tools
 ====================================
