@@ -401,6 +401,18 @@ foreach tool : _tools
   endif
 endforeach
 
+internal_kmod_symlinks = []
+
+foreach tool : _tools
+  internal_kmod_symlinks += custom_target(
+    tool,
+    command : ['ln', '-sf', kmod, '@OUTPUT@'],
+    output : tool,
+    depends : kmod,
+    build_by_default : true,
+  )
+endforeach
+
 # ------------------------------------------------------------------------------
 # TESTSUITE
 # ------------------------------------------------------------------------------
