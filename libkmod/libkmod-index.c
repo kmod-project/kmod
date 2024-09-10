@@ -196,7 +196,7 @@ static ssize_t buf_freadchars(struct strbuf *buf, FILE *in)
 	int ch;
 
 	while ((ch = read_char(in))) {
-		if (!strbuf_pushchar(buf, ch))
+		if (ch == EOF || !strbuf_pushchar(buf, ch))
 			return -1;
 		i++;
 	}
@@ -240,15 +240,19 @@ static struct index_node_f *index_read(FILE *in, uint32_t offset)
 		prefix = NOFAIL(strdup(""));
 
 	if (offset & INDEX_NODE_CHILDS) {
-		char first = read_char(in);
-		char last = read_char(in);
+		int first = read_char(in);
+		int last = read_char(in);
+
+		if (first == EOF || last == EOF)
+			goto err;
+
 		child_count = last - first + 1;
 
 		node = NOFAIL(malloc(sizeof(struct index_node_f) +
 				     sizeof(uint32_t) * child_count));
 
-		node->first = first;
-		node->last = last;
+		node->first = (unsigned char) first;
+		node->last = (unsigned char) last;
 
 		for (i = 0; i < child_count; i++)
 			if (read_long(in, &node->children[i]) < 0)
