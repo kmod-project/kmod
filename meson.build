@@ -377,17 +377,6 @@ kmod = executable(
   install : get_option('tools'),
 )
 
-_kmod_variables = [
-  'module_directory=' + moduledir,
-]
-
-pkg.generate(
-  name : 'kmod',
-  description : 'Tools to deal with kernel modules',
-  install_dir : join_paths(get_option('datadir'), 'pkgconfig'),
-  variables : _kmod_variables,
-)
-
 _tools = [
   'depmod',
   'insmod',
