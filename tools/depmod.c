@@ -1034,6 +1034,10 @@ static int depmod_module_add(struct depmod *depmod, struct kmod_module *kmod)
 	array_init(&mod->deps, 4);
 
 	mod->path = strdup(kmod_module_get_path(kmod));
+	if (mod->path == NULL) {
+		free(mod);
+		return -ENOMEM;
+	}
 	lastslash = strrchr(mod->path, '/');
 	mod->baselen = lastslash - mod->path;
 	if (strncmp(mod->path, cfg->dirname, cfg->dirnamelen) == 0 &&
