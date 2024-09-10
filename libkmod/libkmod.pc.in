@@ -2,6 +2,10 @@ prefix=@prefix@
 exec_prefix=@exec_prefix@
 libdir=@libdir@
 includedir=@includedir@
+sysconfdir=@sysconfdir@
+distconfdir=@distconfdir@
+module_signatures=@module_signatures@
+module_compressions=@module_compressions@
 
 Name: libkmod
 Description: Library to deal with kernel modules
