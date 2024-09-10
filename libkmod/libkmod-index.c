@@ -193,14 +193,14 @@ static uint32_t read_long(FILE *in)
 	return ntohl(l);
 }
 
-static unsigned buf_freadchars(struct strbuf *buf, FILE *in)
+static ssize_t buf_freadchars(struct strbuf *buf, FILE *in)
 {
-	unsigned i = 0;
+	ssize_t i = 0;
 	int ch;
 
 	while ((ch = read_char(in))) {
 		if (!strbuf_pushchar(buf, ch))
-			break;
+			return -1;
 		i++;
 	}
 
@@ -221,8 +221,8 @@ struct index_node_f {
 
 static struct index_node_f *index_read(FILE *in, uint32_t offset)
 {
-	struct index_node_f *node;
-	char *prefix;
+	struct index_node_f *node = NULL;
+	char *prefix = NULL;
 	int i, child_count = 0;
 
 	if ((offset & INDEX_NODE_MASK) == 0)
@@ -234,7 +234,10 @@ static struct index_node_f *index_read(FILE *in, uint32_t offset)
 	if (offset & INDEX_NODE_PREFIX) {
 		struct strbuf buf;
 		strbuf_init(&buf);
-		buf_freadchars(&buf, in);
+		if (buf_freadchars(&buf, in) < 0) {
+			strbuf_release(&buf);
+			return NULL;
+		}
 		prefix = strbuf_steal(&buf);
 	} else
 		prefix = NOFAIL(strdup(""));
@@ -270,7 +273,10 @@ static struct index_node_f *index_read(FILE *in, uint32_t offset)
 		strbuf_init(&buf);
 		while (value_count--) {
 			priority = read_long(in);
-			buf_freadchars(&buf, in);
+			if (buf_freadchars(&buf, in) < 0) {
+				strbuf_release(&buf);
+				goto err;
+			}
 			value = strbuf_str(&buf);
 			add_value(&node->values, value, buf.used, priority);
 			strbuf_clear(&buf);
@@ -281,6 +287,10 @@ static struct index_node_f *index_read(FILE *in, uint32_t offset)
 	node->prefix = prefix;
 	node->file = in;
 	return node;
+err:
+	free(prefix);
+	free(node);
+	return NULL;
 }
 
 static void index_close(struct index_node_f *node)
