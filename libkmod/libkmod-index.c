@@ -166,12 +166,6 @@ static int add_value(struct index_value **values,
 	return 0;
 }
 
-static void read_error(void)
-{
-	fatal("Module index: unexpected error: %s\n"
-			"Try re-running depmod\n", errno ? strerror(errno) : "EOF");
-}
-
 static int read_char(FILE *in)
 {
 	int ch;
@@ -179,7 +173,7 @@ static int read_char(FILE *in)
 	errno = 0;
 	ch = getc_unlocked(in);
 	if (ch == EOF)
-		read_error();
+		errno = EINVAL;
 	return ch;
 }
 
@@ -189,7 +183,7 @@ static int read_long(FILE *in, uint32_t *l)
 
 	errno = 0;
 	if (fread(&val, sizeof(uint32_t), 1, in) != 1) {
-		read_error();
+		errno = EINVAL;
 		return -1;
 	}
 	*l = ntohl(val);
