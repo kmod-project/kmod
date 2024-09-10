@@ -183,14 +183,17 @@ static int read_char(FILE *in)
 	return ch;
 }
 
-static uint32_t read_long(FILE *in)
+static int read_long(FILE *in, uint32_t *l)
 {
-	uint32_t l;
+	uint32_t val;
 
 	errno = 0;
-	if (fread(&l, sizeof(uint32_t), 1, in) != sizeof(uint32_t))
+	if (fread(&val, sizeof(uint32_t), 1, in) != 1) {
 		read_error();
-	return ntohl(l);
+		return -1;
+	}
+	*l = ntohl(val);
+	return 1;
 }
 
 static ssize_t buf_freadchars(struct strbuf *buf, FILE *in)
@@ -254,7 +257,8 @@ static struct index_node_f *index_read(FILE *in, uint32_t offset)
 		node->last = last;
 
 		for (i = 0; i < child_count; i++)
-			node->children[i] = read_long(in);
+			if (read_long(in, &node->children[i]) < 0)
+				goto err;
 	} else {
 		node = NOFAIL(malloc(sizeof(struct index_node_f)));
 		node->first = INDEX_CHILDMAX;
@@ -263,17 +267,18 @@ static struct index_node_f *index_read(FILE *in, uint32_t offset)
 
 	node->values = NULL;
 	if (offset & INDEX_NODE_VALUES) {
-		int value_count;
+		uint32_t value_count;
 		struct strbuf buf;
 		const char *value;
 		unsigned int priority;
 
-		value_count = read_long(in);
+		if (read_long(in, &value_count) < 0)
+			goto err;
 
 		strbuf_init(&buf);
 		while (value_count--) {
-			priority = read_long(in);
-			if (buf_freadchars(&buf, in) < 0) {
+			if (read_long(in, &priority) < 0 ||
+			    buf_freadchars(&buf, in) < 0) {
 				strbuf_release(&buf);
 				goto err;
 			}
@@ -316,24 +321,23 @@ struct index_file *index_file_open(const char *filename)
 		return NULL;
 	errno = EINVAL;
 
-	magic = read_long(file);
-	if (magic != INDEX_MAGIC) {
-		fclose(file);
-		return NULL;
-	}
+	if (read_long(file, &magic) < 0 || magic != INDEX_MAGIC)
+		goto err;
 
-	version = read_long(file);
-	if (version >> 16 != INDEX_VERSION_MAJOR) {
-		fclose(file);
-		return NULL;
-	}
+	if (read_long(file, &version) < 0 ||
+	    version >> 16 != INDEX_VERSION_MAJOR)
+		goto err;
 
 	new = NOFAIL(malloc(sizeof(struct index_file)));
 	new->file = file;
-	new->root_offset = read_long(new->file);
+	if (read_long(new->file, &new->root_offset) < 0)
+		goto err;
 
 	errno = 0;
 	return new;
+err:
+	fclose(file);
+	return NULL;
 }
 
 void index_file_close(struct index_file *idx)
