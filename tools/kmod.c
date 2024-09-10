@@ -147,7 +147,7 @@ static int handle_kmod_compat_commands(int argc, char *argv[])
 			return kmod_compat_cmds[i]->cmd(argc, argv);
 	}
 
-	return -ENOENT;
+	return EXIT_FAILURE;
 }
 
 int main(int argc, char *argv[])
