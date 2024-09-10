@@ -1,5 +1,0 @@
-module_directory=@module_directory@
-
-Name: kmod
-Description: Tools to deal with kernel modules
-Version: @VERSION@
