@@ -41,7 +41,6 @@
 
 /* Temporaries for importing index handling */
 #define NOFAIL(x) (x)
-#define fatal(x...) do { } while (0)
 
 /* Attributes */
 
