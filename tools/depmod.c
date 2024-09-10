@@ -156,8 +156,16 @@ static struct index_node *index_create(void)
 {
 	struct index_node *node;
 
-	node = NOFAIL(calloc(1, sizeof(struct index_node)));
-	node->prefix = NOFAIL(strdup(""));
+	node = calloc(1, sizeof(struct index_node));
+	if (node == NULL)
+		return NULL;
+
+	node->prefix = strdup("");
+	if (node->prefix == NULL) {
+		free(node);
+		return NULL;
+	}
+
 	node->first = INDEX_CHILDMAX;
 
 	return node;
