@@ -237,7 +237,10 @@ static struct index_node_f *index_read(FILE *in, uint32_t offset)
 		}
 		prefix = strbuf_steal(&buf);
 	} else
-		prefix = NOFAIL(strdup(""));
+		prefix = strdup("");
+
+	if (prefix == NULL)
+		goto err;
 
 	if (offset & INDEX_NODE_CHILDS) {
 		int first = read_char(in);
@@ -248,8 +251,10 @@ static struct index_node_f *index_read(FILE *in, uint32_t offset)
 
 		child_count = last - first + 1;
 
-		node = NOFAIL(malloc(sizeof(struct index_node_f) +
-				     sizeof(uint32_t) * child_count));
+		node = malloc(sizeof(struct index_node_f) +
+			      sizeof(uint32_t) * child_count);
+		if (node == NULL)
+			goto err;
 
 		node->first = (unsigned char) first;
 		node->last = (unsigned char) last;
@@ -258,7 +263,10 @@ static struct index_node_f *index_read(FILE *in, uint32_t offset)
 			if (read_long(in, &node->children[i]) < 0)
 				goto err;
 	} else {
-		node = NOFAIL(malloc(sizeof(struct index_node_f)));
+		node = malloc(sizeof(struct index_node_f));
+		if (node == NULL)
+			goto err;
+
 		node->first = INDEX_CHILDMAX;
 		node->last = 0;
 	}
@@ -326,7 +334,10 @@ struct index_file *index_file_open(const char *filename)
 	    version >> 16 != INDEX_VERSION_MAJOR)
 		goto err;
 
-	new = NOFAIL(malloc(sizeof(struct index_file)));
+	new = malloc(sizeof(struct index_file));
+	if (new == NULL)
+		goto err;
+
 	new->file = file;
 	if (read_long(new->file, &new->root_offset) < 0)
 		goto err;
