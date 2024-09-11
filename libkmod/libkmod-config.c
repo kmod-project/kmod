@@ -1236,7 +1236,7 @@ KMOD_EXPORT struct kmod_config_iter *kmod_config_get_install_commands(const stru
 	return kmod_config_iter_new(ctx, CONFIG_TYPE_INSTALL);
 }
 
-// clang-format ofr
+// clang-format off
 KMOD_EXPORT struct kmod_config_iter *kmod_config_get_remove_commands(const struct kmod_ctx *ctx)
 // clang-format on
 {
