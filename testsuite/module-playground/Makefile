@@ -1,4 +1,10 @@
-KDIR ?= $(MODULE_DIRECTORY)/$$(uname -r)/build
+ifndef KDIR
+  MODULE_DIRECTORY := $(shell pkg-config --variable module_directory kmod)
+  ifeq ($(MODULE_DIRECTORY),)
+    MODULE_DIRECTORY := /lib/modules
+  endif
+  KDIR := $(MODULE_DIRECTORY)/$$(uname -r)/build
+endif
 
 ARCH_SPECIFIC_MODULES := mod-simple-x86_64.ko mod-simple-i386.ko mod-simple-sparc64.ko
 
