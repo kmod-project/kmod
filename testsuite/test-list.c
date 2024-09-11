@@ -45,9 +45,7 @@ static int test_list_last(const struct test *t)
 
 	return 0;
 }
-DEFINE_TEST(test_list_last,
-	    .description = "test for the last element of a list");
-
+DEFINE_TEST(test_list_last, .description = "test for the last element of a list");
 
 static int test_list_prev(const struct test *t)
 {
@@ -76,9 +74,7 @@ static int test_list_prev(const struct test *t)
 
 	return 0;
 }
-DEFINE_TEST(test_list_prev,
-	    .description = "test list prev");
-
+DEFINE_TEST(test_list_prev, .description = "test list prev");
 
 static int test_list_remove_n_latest(const struct test *t)
 {
@@ -95,7 +91,7 @@ static int test_list_remove_n_latest(const struct test *t)
 	assert_return(len(list) == N - M, EXIT_FAILURE);
 
 	i = 0;
-	kmod_list_foreach (l, list) {
+	kmod_list_foreach(l, list) {
 		assert_return(l->data == v[i], EXIT_FAILURE);
 		i++;
 	}
@@ -106,7 +102,6 @@ static int test_list_remove_n_latest(const struct test *t)
 }
 DEFINE_TEST(test_list_remove_n_latest,
 	    .description = "test list function to remove n latest elements");
-
 
 static int test_list_remove_data(const struct test *t)
 {
@@ -122,7 +117,7 @@ static int test_list_remove_data(const struct test *t)
 	list = kmod_list_remove_data(list, removed);
 	assert_return(len(list) == N - 1, EXIT_FAILURE);
 
-	kmod_list_foreach (l, list)
+	kmod_list_foreach(l, list)
 		assert_return(l->data != removed, EXIT_FAILURE);
 
 	kmod_list_remove_all(list);
@@ -131,7 +126,6 @@ static int test_list_remove_data(const struct test *t)
 }
 DEFINE_TEST(test_list_remove_data,
 	    .description = "test list function to remove element by data");
-
 
 static int test_list_append_list(const struct test *t)
 {
@@ -158,7 +152,7 @@ static int test_list_append_list(const struct test *t)
 	assert_return(len(c) == N, EXIT_FAILURE);
 
 	i = 0;
-	kmod_list_foreach (l, c) {
+	kmod_list_foreach(l, c) {
 		assert_return(l->data == v[i], EXIT_FAILURE);
 		i++;
 	}
@@ -169,7 +163,6 @@ static int test_list_append_list(const struct test *t)
 }
 DEFINE_TEST(test_list_append_list,
 	    .description = "test list function to append another list");
-
 
 static int test_list_insert_before(const struct test *t)
 {
@@ -205,7 +198,6 @@ static int test_list_insert_before(const struct test *t)
 }
 DEFINE_TEST(test_list_insert_before,
 	    .description = "test list function to insert before element");
-
 
 static int test_list_insert_after(const struct test *t)
 {

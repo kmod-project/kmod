@@ -19,7 +19,6 @@
 
 #include "testsuite.h"
 
-
 static noreturn int test_initstate_from_lookup(const struct test *t)
 {
 	struct kmod_ctx *ctx;
@@ -107,8 +106,5 @@ DEFINE_TEST(test_initstate_from_name,
 		[TC_UNAME_R] = "4.4.4",
 	},
 	.need_spawn = true);
-
-
-
 
 TESTSUITE_MAIN();

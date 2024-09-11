@@ -63,7 +63,7 @@ static void parse_retcodes(struct mod **_modules, const char *s)
 		if (end == p || *end != ':')
 			break;
 
-		ret = (int) l;
+		ret = (int)l;
 		p = end + 1;
 
 		l = strtol(p, &end, 0);
@@ -72,7 +72,7 @@ static void parse_retcodes(struct mod **_modules, const char *s)
 		else if (*end != '\0')
 			break;
 
-		errcode = (int) l;
+		errcode = (int)l;
 
 		mod = malloc(sizeof(*mod) + modnamelen + 1);
 		if (mod == NULL)
@@ -111,15 +111,14 @@ static void init_retcodes(void)
 	s = getenv(S_TC_DELETE_MODULE_RETCODES);
 	if (s == NULL) {
 		ERR("TRAP delete_module(): missing export %s?\n",
-						S_TC_DELETE_MODULE_RETCODES);
+		    S_TC_DELETE_MODULE_RETCODES);
 	}
 
 	parse_retcodes(&modules, s);
 
 	for (mod = modules; mod != NULL; mod = mod->next) {
 		LOG("Added module to test delete_module:\n");
-		LOG("\tname=%s ret=%d errcode=%d\n",
-		    mod->name, mod->ret, mod->errcode);
+		LOG("\tname=%s ret=%d errcode=%d\n", mod->name, mod->ret, mod->errcode);
 	}
 }
 

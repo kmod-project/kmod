@@ -32,8 +32,8 @@ static size_t rootpathlen;
 
 static inline bool need_trap(const char *path)
 {
-	return path != NULL && path[0] == '/'
-		&& !strnstartswith(path, rootpath, rootpathlen);
+	return path != NULL && path[0] == '/' &&
+	       !strnstartswith(path, rootpath, rootpathlen);
 }
 
 static const char *trap_path(const char *path, char buf[PATH_MAX * 2])
@@ -91,105 +91,103 @@ static void *get_libc_func(const char *f)
 }
 
 /* wrapper template for a function with one "const char* path" argument */
-#define WRAP_1ARG(rettype, failret, name) \
-TS_EXPORT rettype name(const char *path) \
-{ \
-	const char *p;				\
-	char buf[PATH_MAX * 2];                 \
-	static rettype (*_fn)(const char*);	\
-						\
-	if (!get_rootpath(__func__))		\
-		return failret;			\
-	_fn = get_libc_func(#name);		\
-	p = trap_path(path, buf);		\
-	if (p == NULL)				\
-		return failret;			\
-	return (*_fn)(p);			\
-}
+#define WRAP_1ARG(rettype, failret, name)            \
+	TS_EXPORT rettype name(const char *path)     \
+	{                                            \
+		const char *p;                       \
+		char buf[PATH_MAX * 2];              \
+		static rettype (*_fn)(const char *); \
+                                                     \
+		if (!get_rootpath(__func__))         \
+			return failret;              \
+		_fn = get_libc_func(#name);          \
+		p = trap_path(path, buf);            \
+		if (p == NULL)                       \
+			return failret;              \
+		return (*_fn)(p);                    \
+	}
 
 /* wrapper template for a function with "const char* path" and another argument */
-#define WRAP_2ARGS(rettype, failret, name, arg2t)	\
-TS_EXPORT rettype name(const char *path, arg2t arg2)	\
-{ \
-	const char *p;					\
-	char buf[PATH_MAX * 2];				\
-	static rettype (*_fn)(const char*, arg2t arg2);	\
-							\
-	if (!get_rootpath(__func__))			\
-		return failret;				\
-	_fn = get_libc_func(#name);			\
-	p = trap_path(path, buf);			\
-	if (p == NULL)					\
-		return failret;				\
-	return (*_fn)(p, arg2);				\
-}
+#define WRAP_2ARGS(rettype, failret, name, arg2t)                \
+	TS_EXPORT rettype name(const char *path, arg2t arg2)     \
+	{                                                        \
+		const char *p;                                   \
+		char buf[PATH_MAX * 2];                          \
+		static rettype (*_fn)(const char *, arg2t arg2); \
+                                                                 \
+		if (!get_rootpath(__func__))                     \
+			return failret;                          \
+		_fn = get_libc_func(#name);                      \
+		p = trap_path(path, buf);                        \
+		if (p == NULL)                                   \
+			return failret;                          \
+		return (*_fn)(p, arg2);                          \
+	}
 
 /* wrapper template for open family */
-#define WRAP_OPEN(suffix)					\
-TS_EXPORT int open ## suffix (const char *path, int flags, ...)	\
-{ \
-	const char *p;						\
-	char buf[PATH_MAX * 2];					\
-	static int (*_fn)(const char *path, int flags, ...);	\
-								\
-	if (!get_rootpath(__func__))				\
-		return -1;					\
-	_fn = get_libc_func("open" #suffix);			\
-	p = trap_path(path, buf);				\
-	if (p == NULL)						\
-		return -1;					\
-								\
-	if (flags & O_CREAT) {					\
-		mode_t mode;					\
-		va_list ap;					\
-								\
-		va_start(ap, flags);				\
-		mode = va_arg(ap, mode_t);			\
-		va_end(ap);					\
-		return _fn(p, flags, mode);			\
-	}							\
-								\
-	return _fn(p, flags);					\
-}
+#define WRAP_OPEN(suffix)                                            \
+	TS_EXPORT int open##suffix(const char *path, int flags, ...) \
+	{                                                            \
+		const char *p;                                       \
+		char buf[PATH_MAX * 2];                              \
+		static int (*_fn)(const char *path, int flags, ...); \
+                                                                     \
+		if (!get_rootpath(__func__))                         \
+			return -1;                                   \
+		_fn = get_libc_func("open" #suffix);                 \
+		p = trap_path(path, buf);                            \
+		if (p == NULL)                                       \
+			return -1;                                   \
+                                                                     \
+		if (flags & O_CREAT) {                               \
+			mode_t mode;                                 \
+			va_list ap;                                  \
+                                                                     \
+			va_start(ap, flags);                         \
+			mode = va_arg(ap, mode_t);                   \
+			va_end(ap);                                  \
+			return _fn(p, flags, mode);                  \
+		}                                                    \
+                                                                     \
+		return _fn(p, flags);                                \
+	}
 
-#define WRAP_VERSTAT(prefix, suffix)			    \
-TS_EXPORT int prefix ## stat ## suffix (int ver,	    \
-			      const char *path,		    \
-	                      struct stat ## suffix *st)    \
-{ \
-	const char *p;					    \
-	char buf[PATH_MAX * 2];				    \
-	static int (*_fn)(int ver, const char *path,	    \
-		          struct stat ## suffix *);	    \
-	_fn = get_libc_func(#prefix "stat" #suffix);	    \
-							    \
-	if (!get_rootpath(__func__))			    \
-		return -1;				    \
-	p = trap_path(path, buf);			    \
-	if (p == NULL)					    \
-		return -1;				    \
-							    \
-	return _fn(ver, p, st);				    \
-}
+#define WRAP_VERSTAT(prefix, suffix)                                                 \
+	TS_EXPORT int prefix##stat##suffix(int ver, const char *path,                \
+					   struct stat##suffix *st)                  \
+	{                                                                            \
+		const char *p;                                                       \
+		char buf[PATH_MAX * 2];                                              \
+		static int (*_fn)(int ver, const char *path, struct stat##suffix *); \
+		_fn = get_libc_func(#prefix "stat" #suffix);                         \
+                                                                                     \
+		if (!get_rootpath(__func__))                                         \
+			return -1;                                                   \
+		p = trap_path(path, buf);                                            \
+		if (p == NULL)                                                       \
+			return -1;                                                   \
+                                                                                     \
+		return _fn(ver, p, st);                                              \
+	}
 
-WRAP_1ARG(DIR*, NULL, opendir);
+WRAP_1ARG(DIR *, NULL, opendir);
 WRAP_1ARG(int, -1, chdir);
 
-WRAP_2ARGS(FILE*, NULL, fopen, const char*);
+WRAP_2ARGS(FILE *, NULL, fopen, const char *);
 WRAP_2ARGS(int, -1, mkdir, mode_t);
-WRAP_2ARGS(int, -1, stat, struct stat*);
+WRAP_2ARGS(int, -1, stat, struct stat *);
 
 WRAP_OPEN();
 
 #ifdef HAVE_FOPEN64
-WRAP_2ARGS(FILE*, NULL, fopen64, const char*);
+WRAP_2ARGS(FILE *, NULL, fopen64, const char *);
 #endif
 #ifdef HAVE_STAT64
-WRAP_2ARGS(int, -1, stat64, struct stat64*);
+WRAP_2ARGS(int, -1, stat64, struct stat64 *);
 #endif
 
 #ifdef HAVE___STAT64_TIME64
-extern int __stat64_time64 (const char *file, void *buf);
+extern int __stat64_time64(const char *file, void *buf);
 WRAP_2ARGS(int, -1, __stat64_time64, void *);
 #endif
 
@@ -198,6 +196,6 @@ WRAP_OPEN(64);
 #endif
 
 #if HAVE_DECL___XSTAT
-WRAP_VERSTAT(__x,);
-WRAP_VERSTAT(__x,64);
+WRAP_VERSTAT(__x, );
+WRAP_VERSTAT(__x, 64);
 #endif

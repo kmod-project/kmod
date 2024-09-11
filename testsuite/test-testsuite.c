@@ -20,7 +20,6 @@
 
 #include "testsuite.h"
 
-
 #define TEST_UNAME "4.0.20-kmod"
 static noreturn int testsuite_uname(const struct test *t)
 {
