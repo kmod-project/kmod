@@ -247,7 +247,7 @@ static struct index_node_f *index_read(FILE *in, uint32_t offset)
 		int first = read_char(in);
 		int last = read_char(in);
 
-		if (first == EOF || last == EOF)
+		if (first == EOF || last == EOF || first > last)
 			goto err;
 
 		child_count = last - first + 1;
@@ -699,6 +699,10 @@ static struct index_mm_node *index_mm_read_node(struct index_mm *idx,
 	if (offset & INDEX_NODE_CHILDS) {
 		first = read_char_mm(&p);
 		last = read_char_mm(&p);
+
+		if (first > last)
+			return NULL;
+
 		child_count = last - first + 1;
 		for (i = 0; i < child_count; i++)
 			children[i] = read_u32_mm(&p);
