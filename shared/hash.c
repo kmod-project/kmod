@@ -30,14 +30,12 @@ struct hash {
 	struct hash_bucket buckets[];
 };
 
-struct hash *hash_new(unsigned int n_buckets,
-					void (*free_value)(void *value))
+struct hash *hash_new(unsigned int n_buckets, void (*free_value)(void *value))
 {
 	struct hash *hash;
 
 	n_buckets = ALIGN_POWER2(n_buckets);
-	hash = calloc(1, sizeof(struct hash) +
-		      n_buckets * sizeof(struct hash_bucket));
+	hash = calloc(1, sizeof(struct hash) + n_buckets * sizeof(struct hash_bucket));
 	if (hash == NULL)
 		return NULL;
 	hash->n_buckets = n_buckets;
@@ -84,7 +82,7 @@ static inline unsigned int hash_superfast(const char *key, unsigned int len)
 
 	/* Main loop */
 	for (; len > 0; len--) {
-		hash += get_unaligned((uint16_t *) key);
+		hash += get_unaligned((uint16_t *)key);
 		tmp = (get_unaligned((uint16_t *)(key + 2)) << 11) ^ hash;
 		hash = (hash << 16) ^ tmp;
 		key += 4;
@@ -94,14 +92,14 @@ static inline unsigned int hash_superfast(const char *key, unsigned int len)
 	/* Handle end cases */
 	switch (rem) {
 	case 3:
-		hash += get_unaligned((uint16_t *) key);
+		hash += get_unaligned((uint16_t *)key);
 		hash ^= hash << 16;
 		hash ^= key[2] << 18;
 		hash += hash >> 11;
 		break;
 
 	case 2:
-		hash += get_unaligned((uint16_t *) key);
+		hash += get_unaligned((uint16_t *)key);
 		hash ^= hash << 11;
 		hash += hash >> 17;
 		break;
@@ -232,8 +230,8 @@ void *hash_find(const struct hash *hash, const char *key)
 	if (!bucket->entries)
 		return NULL;
 
-	entry = bsearch(&se, bucket->entries, bucket->used,
-			sizeof(struct hash_entry), hash_entry_cmp);
+	entry = bsearch(&se, bucket->entries, bucket->used, sizeof(struct hash_entry),
+			hash_entry_cmp);
 
 	return entry ? (void *)entry->value : NULL;
 }
@@ -251,8 +249,8 @@ int hash_del(struct hash *hash, const char *key)
 		.value = NULL,
 	};
 
-	entry = bsearch(&se, bucket->entries, bucket->used,
-		sizeof(struct hash_entry), hash_entry_cmp);
+	entry = bsearch(&se, bucket->entries, bucket->used, sizeof(struct hash_entry),
+			hash_entry_cmp);
 	if (entry == NULL)
 		return -ENOENT;
 
@@ -260,8 +258,7 @@ int hash_del(struct hash *hash, const char *key)
 		hash->free_value((void *)entry->value);
 
 	entry_end = bucket->entries + bucket->used;
-	memmove(entry, entry + 1,
-		(entry_end - entry) * sizeof(struct hash_entry));
+	memmove(entry, entry + 1, (entry_end - entry) * sizeof(struct hash_entry));
 
 	bucket->used--;
 	hash->count--;
@@ -269,8 +266,7 @@ int hash_del(struct hash *hash, const char *key)
 	steps_used = bucket->used / hash->step;
 	steps_total = bucket->total / hash->step;
 	if (steps_used + 1 < steps_total) {
-		size_t size = (steps_used + 1) *
-			hash->step * sizeof(struct hash_entry);
+		size_t size = (steps_used + 1) * hash->step * sizeof(struct hash_entry);
 		struct hash_entry *tmp = realloc(bucket->entries, size);
 		if (tmp) {
 			bucket->entries = tmp;
@@ -293,8 +289,7 @@ void hash_iter_init(const struct hash *hash, struct hash_iter *iter)
 	iter->entry = -1;
 }
 
-bool hash_iter_next(struct hash_iter *iter, const char **key,
-							const void **value)
+bool hash_iter_next(struct hash_iter *iter, const char **key, const void **value)
 {
 	const struct hash_bucket *b = iter->hash->buckets + iter->bucket;
 	const struct hash_entry *e;
@@ -305,7 +300,7 @@ bool hash_iter_next(struct hash_iter *iter, const char **key,
 		iter->entry = 0;
 
 		for (iter->bucket++; iter->bucket < iter->hash->n_buckets;
-							iter->bucket++) {
+		     iter->bucket++) {
 			b = iter->hash->buckets + iter->bucket;
 
 			if (b->used > 0)

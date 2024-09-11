@@ -24,10 +24,13 @@ _nonnull_all_ void *memdup(const void *p, size_t n);
 /* ************************************************************************ */
 #define KMOD_EXTENSION_UNCOMPRESSED ".ko"
 
-_must_check_ _nonnull_(1, 2) int alias_normalize(const char *alias, char buf[static PATH_MAX], size_t *len);
+_must_check_ _nonnull_(1, 2) int alias_normalize(const char *alias,
+						 char buf[static PATH_MAX], size_t *len);
 _must_check_ int underscores(char *s);
-_nonnull_(1, 2) char *modname_normalize(const char *modname, char buf[static PATH_MAX], size_t *len);
-_nonnull_(2) char *path_to_modname(const char *path, char buf[static PATH_MAX], size_t *len);
+_nonnull_(1, 2) char *modname_normalize(const char *modname, char buf[static PATH_MAX],
+					size_t *len);
+_nonnull_(2) char *path_to_modname(const char *path, char buf[static PATH_MAX],
+				   size_t *len);
 _nonnull_all_ bool path_ends_with_kmod_ext(const char *path, size_t len);
 
 /* read-like and fread-like functions                                       */
@@ -47,36 +50,34 @@ unsigned long long stat_mstamp(const struct stat *st);
 
 /* time-related functions
  * ************************************************************************ */
-#define USEC_PER_SEC	1000000ULL
-#define USEC_PER_MSEC	1000ULL
-#define MSEC_PER_SEC	1000ULL
-#define NSEC_PER_MSEC	1000000ULL
+#define USEC_PER_SEC 1000000ULL
+#define USEC_PER_MSEC 1000ULL
+#define MSEC_PER_SEC 1000ULL
+#define NSEC_PER_MSEC 1000000ULL
 
 unsigned long long now_usec(void);
 unsigned long long now_msec(void);
 int sleep_until_msec(unsigned long long msec);
-unsigned long long get_backoff_delta_msec(unsigned long long t0,
-					  unsigned long long tend,
+unsigned long long get_backoff_delta_msec(unsigned long long t0, unsigned long long tend,
 					  unsigned long long *delta);
-
 
 /* endianness and alignments                                                */
 /* ************************************************************************ */
-#define get_unaligned(ptr)			\
-({						\
-	struct __attribute__((packed)) {	\
-		typeof(*(ptr)) __v;		\
-	} *__p = (typeof(__p)) (ptr);		\
-	__p->__v;				\
-})
+#define get_unaligned(ptr)                       \
+	({                                       \
+		struct __attribute__((packed)) { \
+			typeof(*(ptr)) __v;      \
+		} *__p = (typeof(__p))(ptr);     \
+		__p->__v;                        \
+	})
 
-#define put_unaligned(val, ptr)			\
-do {						\
-	struct __attribute__((packed)) {	\
-		typeof(*(ptr)) __v;		\
-	} *__p = (typeof(__p)) (ptr);		\
-	__p->__v = (val);			\
-} while(0)
+#define put_unaligned(val, ptr)                  \
+	do {                                     \
+		struct __attribute__((packed)) { \
+			typeof(*(ptr)) __v;      \
+		} *__p = (typeof(__p))(ptr);     \
+		__p->__v = (val);                \
+	} while (0)
 
 static _always_inline_ unsigned int ALIGN_POWER2(unsigned int u)
 {
@@ -85,8 +86,9 @@ static _always_inline_ unsigned int ALIGN_POWER2(unsigned int u)
 
 /* misc                                                                     */
 /* ************************************************************************ */
-static inline void freep(void *p) {
-        free(*(void**) p);
+static inline void freep(void *p)
+{
+	free(*(void **)p);
 }
 #define _cleanup_free_ _cleanup_(freep)
 

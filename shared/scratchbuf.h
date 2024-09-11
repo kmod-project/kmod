@@ -24,8 +24,9 @@ static inline char *scratchbuf_str(struct scratchbuf *buf)
 	return buf->bytes;
 }
 
-#define SCRATCHBUF_INITIALIZER(buf_) {			\
-	.bytes = buf_,					\
-	.size = sizeof(buf_) + _array_size_chk(buf_),	\
-	.need_free = false,				\
-}
+#define SCRATCHBUF_INITIALIZER(buf_)                          \
+	{                                                     \
+		.bytes = buf_,                                \
+		.size = sizeof(buf_) + _array_size_chk(buf_), \
+		.need_free = false,                           \
+	}
