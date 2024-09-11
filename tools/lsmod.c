@@ -29,13 +29,13 @@ static const struct option cmdopts[] = {
 static void help(void)
 {
 	printf("Usage:\n"
-		"\t%s [options]\n"
-		"Options:\n"
-		"\t-s, --syslog      print to syslog, not stderr\n"
-		"\t-v, --verbose     enables more messages\n"
-		"\t-V, --version     show version\n"
-		"\t-h, --help        show this help\n",
-		program_invocation_short_name);
+	       "\t%s [options]\n"
+	       "Options:\n"
+	       "\t-s, --syslog      print to syslog, not stderr\n"
+	       "\t-v, --verbose     enables more messages\n"
+	       "\t-V, --version     show version\n"
+	       "\t-h, --help        show this help\n",
+	       program_invocation_short_name);
 }
 
 static int do_lsmod(int argc, char *argv[])
