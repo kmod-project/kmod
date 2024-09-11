@@ -177,7 +177,7 @@ static int read_char(FILE *in)
 	return ch;
 }
 
-static int read_long(FILE *in, uint32_t *l)
+static int read_u32(FILE *in, uint32_t *l)
 {
 	uint32_t val;
 
@@ -260,7 +260,7 @@ static struct index_node_f *index_read(FILE *in, uint32_t offset)
 		node->last = (unsigned char) last;
 
 		for (i = 0; i < child_count; i++)
-			if (read_long(in, &node->children[i]) < 0)
+			if (read_u32(in, &node->children[i]) < 0)
 				goto err;
 	} else {
 		node = malloc(sizeof(struct index_node_f));
@@ -278,12 +278,12 @@ static struct index_node_f *index_read(FILE *in, uint32_t offset)
 		const char *value;
 		unsigned int priority;
 
-		if (read_long(in, &value_count) < 0)
+		if (read_u32(in, &value_count) < 0)
 			goto err;
 
 		strbuf_init(&buf);
 		while (value_count--) {
-			if (read_long(in, &priority) < 0 ||
+			if (read_u32(in, &priority) < 0 ||
 			    buf_freadchars(&buf, in) < 0) {
 				strbuf_release(&buf);
 				goto err;
@@ -327,10 +327,10 @@ struct index_file *index_file_open(const char *filename)
 		return NULL;
 	errno = EINVAL;
 
-	if (read_long(file, &magic) < 0 || magic != INDEX_MAGIC)
+	if (read_u32(file, &magic) < 0 || magic != INDEX_MAGIC)
 		goto err;
 
-	if (read_long(file, &version) < 0 ||
+	if (read_u32(file, &version) < 0 ||
 	    version >> 16 != INDEX_VERSION_MAJOR)
 		goto err;
 
@@ -339,7 +339,7 @@ struct index_file *index_file_open(const char *filename)
 		goto err;
 
 	new->file = file;
-	if (read_long(new->file, &new->root_offset) < 0)
+	if (read_u32(new->file, &new->root_offset) < 0)
 		goto err;
 
 	errno = 0;
@@ -647,7 +647,7 @@ struct index_mm_node {
 	uint32_t children[];
 };
 
-static inline uint32_t read_long_mm(void **p)
+static inline uint32_t read_u32_mm(void **p)
 {
 	uint8_t *addr = *(uint8_t **)p;
 	uint32_t v;
@@ -700,7 +700,7 @@ static struct index_mm_node *index_mm_read_node(struct index_mm *idx,
 		last = read_char_mm(&p);
 		child_count = last - first + 1;
 		for (i = 0; i < child_count; i++)
-			children[i] = read_long_mm(&p);
+			children[i] = read_u32_mm(&p);
 	} else {
 		first = INDEX_CHILDMAX;
 		last = 0;
@@ -711,7 +711,7 @@ static struct index_mm_node *index_mm_read_node(struct index_mm *idx,
 			    (sizeof(uint32_t) * child_count)) % sizeof(void *);
 
 	if (offset & INDEX_NODE_VALUES)
-		value_count = read_long_mm(&p);
+		value_count = read_u32_mm(&p);
 	else
 		value_count = 0;
 
@@ -737,7 +737,7 @@ static struct index_mm_node *index_mm_read_node(struct index_mm *idx,
 
 	for (i = 0; i < value_count; i++) {
 		struct index_mm_value *v = node->values.values + i;
-		v->priority = read_long_mm(&p);
+		v->priority = read_u32_mm(&p);
 		v->value = read_chars_mm(&p, &v->len);
 	}
 
@@ -792,9 +792,9 @@ int index_mm_open(const struct kmod_ctx *ctx, const char *filename,
 	}
 
 	p = idx->mm;
-	hdr.magic = read_long_mm(&p);
-	hdr.version = read_long_mm(&p);
-	hdr.root_offset = read_long_mm(&p);
+	hdr.magic = read_u32_mm(&p);
+	hdr.version = read_u32_mm(&p);
+	hdr.root_offset = read_u32_mm(&p);
 
 	if (hdr.magic != INDEX_MAGIC) {
 		ERR(ctx, "magic check fail: %x instead of %x\n", hdr.magic,
