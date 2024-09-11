@@ -111,4 +111,3 @@ void strbuf_clear(struct strbuf *buf)
 {
 	buf->used = 0;
 }
-

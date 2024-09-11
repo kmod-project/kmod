@@ -16,8 +16,8 @@
 #define MODULE_INIT_COMPRESSED_FILE 4
 
 #ifndef __NR_finit_module
-# warning __NR_finit_module missing - kmod might not work correctly
-# define __NR_finit_module -1
+#warning __NR_finit_module missing - kmod might not work correctly
+#define __NR_finit_module -1
 #endif
 
 #ifndef HAVE_FINIT_MODULE

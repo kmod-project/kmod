@@ -18,24 +18,24 @@
 #include <shared/missing.h>
 #include <shared/util.h>
 
-#define USEC_PER_SEC  1000000ULL
+#define USEC_PER_SEC 1000000ULL
 #define NSEC_PER_USEC 1000ULL
 
 static const struct kmod_ext {
 	const char *ext;
 	size_t len;
 } kmod_exts[] = {
-	{KMOD_EXTENSION_UNCOMPRESSED, sizeof(KMOD_EXTENSION_UNCOMPRESSED) - 1},
+	{ KMOD_EXTENSION_UNCOMPRESSED, sizeof(KMOD_EXTENSION_UNCOMPRESSED) - 1 },
 #ifdef ENABLE_ZLIB
-	{".ko.gz", sizeof(".ko.gz") - 1},
+	{ ".ko.gz", sizeof(".ko.gz") - 1 },
 #endif
 #ifdef ENABLE_XZ
-	{".ko.xz", sizeof(".ko.xz") - 1},
+	{ ".ko.xz", sizeof(".ko.xz") - 1 },
 #endif
 #ifdef ENABLE_ZSTD
-	{".ko.zst", sizeof(".ko.zst") - 1},
+	{ ".ko.zst", sizeof(".ko.zst") - 1 },
 #endif
-	{ },
+	{},
 };
 
 /* string handling functions and memory allocations                         */
@@ -292,10 +292,10 @@ char *freadline_wrapped(FILE *fp, unsigned int *linenum)
 	if (buf == NULL)
 		return NULL;
 
-	for(;;) {
+	for (;;) {
 		int ch = getc_unlocked(fp);
 
-		switch(ch) {
+		switch (ch) {
 		case EOF:
 			if (i == 0)
 				return NULL;
@@ -453,14 +453,14 @@ int mkdir_parents(const char *path, mode_t mode)
 
 static unsigned long long ts_usec(const struct timespec *ts)
 {
-	return (unsigned long long) ts->tv_sec * USEC_PER_SEC +
-	       (unsigned long long) ts->tv_nsec / NSEC_PER_USEC;
+	return (unsigned long long)ts->tv_sec * USEC_PER_SEC +
+	       (unsigned long long)ts->tv_nsec / NSEC_PER_USEC;
 }
 
 static unsigned long long ts_msec(const struct timespec *ts)
 {
-	return (unsigned long long) ts->tv_sec * MSEC_PER_SEC +
-	       (unsigned long long) ts->tv_nsec / NSEC_PER_MSEC;
+	return (unsigned long long)ts->tv_sec * MSEC_PER_SEC +
+	       (unsigned long long)ts->tv_nsec / NSEC_PER_MSEC;
 }
 
 static struct timespec msec_ts(unsigned long long msec)
@@ -487,8 +487,7 @@ int sleep_until_msec(unsigned long long msec)
 /*
  * Exponential retry backoff with tail
  */
-unsigned long long get_backoff_delta_msec(unsigned long long t0,
-					  unsigned long long tend,
+unsigned long long get_backoff_delta_msec(unsigned long long t0, unsigned long long tend,
 					  unsigned long long *delta)
 {
 	unsigned long long t;
@@ -534,6 +533,6 @@ unsigned long long stat_mstamp(const struct stat *st)
 #ifdef HAVE_STRUCT_STAT_ST_MTIM
 	return ts_usec(&st->st_mtim);
 #else
-	return (unsigned long long) st->st_mtime;
+	return (unsigned long long)st->st_mtime;
 #endif
 }

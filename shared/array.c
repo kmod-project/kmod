@@ -13,7 +13,6 @@
 
 /* basic pointer array growing in steps */
 
-
 static int array_realloc(struct array *array, size_t new_total)
 {
 	void *tmp;
@@ -74,20 +73,21 @@ int array_append_unique(struct array *array, const void *element)
 	return array_append(array, element);
 }
 
-void array_pop(struct array *array) {
+void array_pop(struct array *array)
+{
 	if (array->count == 0)
 		return;
 	array->count--;
 	array_trim(array);
 }
 
-void array_free_array(struct array *array) {
+void array_free_array(struct array *array)
+{
 	free(array->array);
 	array->array = NULL;
 	array->count = 0;
 	array->total = 0;
 }
-
 
 void array_sort(struct array *array, int (*cmp)(const void *a, const void *b))
 {
