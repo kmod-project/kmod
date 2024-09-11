@@ -30,15 +30,15 @@ static const struct option cmdopts[] = {
 static void help(void)
 {
 	printf("Usage:\n"
-		"\t%s [options] filename [args]\n"
-		"Options:\n"
-		"\t-f, --force       DANGEROUS: forces a module load, may cause\n"
-		"\t                  data corruption and crash your machine\n"
-		"\t-s, --syslog      print to syslog, not stderr\n"
-		"\t-v, --verbose     enables more messages\n"
-		"\t-V, --version     show version\n"
-		"\t-h, --help        show this help\n",
-		program_invocation_short_name);
+	       "\t%s [options] filename [args]\n"
+	       "Options:\n"
+	       "\t-f, --force       DANGEROUS: forces a module load, may cause\n"
+	       "\t                  data corruption and crash your machine\n"
+	       "\t-s, --syslog      print to syslog, not stderr\n"
+	       "\t-v, --verbose     enables more messages\n"
+	       "\t-V, --version     show version\n"
+	       "\t-h, --help        show this help\n",
+	       program_invocation_short_name);
 }
 
 static const char *mod_strerror(int err)
@@ -95,8 +95,7 @@ static int do_insmod(int argc, char *argv[])
 		case '?':
 			return EXIT_FAILURE;
 		default:
-			ERR("unexpected getopt_long() value '%c'.\n",
-				c);
+			ERR("unexpected getopt_long() value '%c'.\n", c);
 			return EXIT_FAILURE;
 		}
 	}
@@ -145,16 +144,14 @@ static int do_insmod(int argc, char *argv[])
 
 	err = kmod_module_new_from_path(ctx, filename, &mod);
 	if (err < 0) {
-		ERR("could not load module %s: %s\n", filename,
-		    strerror(-err));
+		ERR("could not load module %s: %s\n", filename, strerror(-err));
 		r++;
 		goto end;
 	}
 
 	err = kmod_module_insert_module(mod, flags, opts);
 	if (err < 0) {
-		ERR("could not insert module %s: %s\n", filename,
-		    mod_strerror(-err));
+		ERR("could not insert module %s: %s\n", filename, mod_strerror(-err));
 		r++;
 	}
 	kmod_module_unref(mod);

@@ -48,9 +48,9 @@ static const char *prio_to_str(char buf[static PRIO_MAX_SIZE], int prio)
 	return prioname;
 }
 
-_printf_format_(6, 0)
-static void log_kmod(void *data, int priority, const char *file, int line,
-		     const char *fn, const char *format, va_list args)
+_printf_format_(6, 0) static void log_kmod(void *data, int priority, const char *file,
+					   int line, const char *fn, const char *format,
+					   va_list args)
 {
 	char buf[PRIO_MAX_SIZE];
 	const char *prioname;
@@ -63,19 +63,17 @@ static void log_kmod(void *data, int priority, const char *file, int line,
 
 	if (log_use_syslog) {
 #ifdef ENABLE_DEBUG
-		syslog(priority, "%s: %s:%d %s() %s", prioname, file, line,
-		       fn, str);
+		syslog(priority, "%s: %s:%d %s() %s", prioname, file, line, fn, str);
 #else
 		syslog(priority, "%s: %s", prioname, str);
 #endif
 	} else {
 #ifdef ENABLE_DEBUG
-		fprintf(stderr, "%s: %s: %s:%d %s() %s",
-			program_invocation_short_name, prioname, file, line,
-			fn, str);
+		fprintf(stderr, "%s: %s: %s:%d %s() %s", program_invocation_short_name,
+			prioname, file, line, fn, str);
 #else
-		fprintf(stderr, "%s: %s: %s", program_invocation_short_name,
-			prioname, str);
+		fprintf(stderr, "%s: %s: %s", program_invocation_short_name, prioname,
+			str);
 #endif
 	}
 
@@ -118,8 +116,8 @@ void log_printf(int prio, const char *fmt, ...)
 	if (log_use_syslog)
 		syslog(prio, "%s: %s", prioname, msg);
 	else
-		fprintf(stderr, "%s: %s: %s", program_invocation_short_name,
-			prioname, msg);
+		fprintf(stderr, "%s: %s: %s", program_invocation_short_name, prioname,
+			msg);
 	free(msg);
 
 	if (prio <= LOG_CRIT)

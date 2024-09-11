@@ -35,18 +35,19 @@ static const struct option cmdopts[] = {
 static void help(void)
 {
 	printf("Usage:\n"
-		"\t%s [options] modulename ...\n"
-		"Options:\n"
-		"\t-f, --force       DANGEROUS: forces a module unload and may\n"
-		"\t                  crash your machine\n"
-		"\t-s, --syslog      print to syslog, not stderr\n"
-		"\t-v, --verbose     enables more messages\n"
-		"\t-V, --version     show version\n"
-		"\t-h, --help        show this help\n",
-		program_invocation_short_name);
+	       "\t%s [options] modulename ...\n"
+	       "Options:\n"
+	       "\t-f, --force       DANGEROUS: forces a module unload and may\n"
+	       "\t                  crash your machine\n"
+	       "\t-s, --syslog      print to syslog, not stderr\n"
+	       "\t-v, --verbose     enables more messages\n"
+	       "\t-V, --version     show version\n"
+	       "\t-h, --help        show this help\n",
+	       program_invocation_short_name);
 }
 
-static int check_module_inuse(struct kmod_module *mod) {
+static int check_module_inuse(struct kmod_module *mod)
+{
 	struct kmod_list *holders;
 	int state, ret;
 
@@ -56,8 +57,7 @@ static int check_module_inuse(struct kmod_module *mod) {
 		ERR("Module %s is builtin.\n", kmod_module_get_name(mod));
 		return -ENOENT;
 	} else if (state < 0) {
-		ERR("Module %s is not currently loaded\n",
-				kmod_module_get_name(mod));
+		ERR("Module %s is not currently loaded\n", kmod_module_get_name(mod));
 		return -ENOENT;
 	}
 
@@ -154,8 +154,7 @@ static int do_rmmod(int argc, char *argv[])
 			err = kmod_module_new_from_name(ctx, arg, &mod);
 
 		if (err < 0) {
-			ERR("could not use module %s: %s\n", arg,
-			    strerror(-err));
+			ERR("could not use module %s: %s\n", arg, strerror(-err));
 			r = EXIT_FAILURE;
 			break;
 		}
@@ -167,8 +166,7 @@ static int do_rmmod(int argc, char *argv[])
 
 		err = kmod_module_remove_module(mod, flags);
 		if (err < 0) {
-			ERR("could not remove module %s: %s\n", arg,
-			    strerror(-err));
+			ERR("could not remove module %s: %s\n", arg, strerror(-err));
 			r++;
 		}
 next:
