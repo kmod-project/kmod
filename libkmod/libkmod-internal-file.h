@@ -23,17 +23,26 @@ struct kmod_file {
 #ifdef ENABLE_XZ
 int kmod_file_load_xz(struct kmod_file *file);
 #else
-static inline int kmod_file_load_xz(struct kmod_file *file) { return -ENOSYS; }
+static inline int kmod_file_load_xz(struct kmod_file *file)
+{
+	return -ENOSYS;
+}
 #endif
 
 #ifdef ENABLE_ZLIB
 int kmod_file_load_zlib(struct kmod_file *file);
 #else
-static inline int kmod_file_load_zlib(struct kmod_file *file) { return -ENOSYS; }
+static inline int kmod_file_load_zlib(struct kmod_file *file)
+{
+	return -ENOSYS;
+}
 #endif
 
 #ifdef ENABLE_ZSTD
 int kmod_file_load_zstd(struct kmod_file *file);
 #else
-static inline int kmod_file_load_zstd(struct kmod_file *file) { return -ENOSYS; }
+static inline int kmod_file_load_zstd(struct kmod_file *file)
+{
+	return -ENOSYS;
+}
 #endif

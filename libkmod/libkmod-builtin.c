@@ -32,8 +32,7 @@ struct kmod_builtin_info {
 	char *buf;
 };
 
-static bool kmod_builtin_info_init(struct kmod_builtin_info *info,
-				   struct kmod_ctx *ctx)
+static bool kmod_builtin_info_init(struct kmod_builtin_info *info, struct kmod_ctx *ctx)
 {
 	char path[PATH_MAX];
 	FILE *fp = NULL;
@@ -78,7 +77,7 @@ static ssize_t get_string(struct kmod_builtin_info *info)
 }
 
 static ssize_t get_strings(struct kmod_builtin_info *info, const char *modname,
-				struct strbuf *buf)
+			   struct strbuf *buf)
 {
 	const size_t modlen = strlen(modname);
 	ssize_t count, n;
@@ -100,7 +99,7 @@ static ssize_t get_strings(struct kmod_builtin_info *info, const char *modname,
 		if (dot == NULL) {
 			count = -EINVAL;
 			ERR(info->ctx, "get_strings: "
-			    "unexpected string without modname prefix\n");
+				       "unexpected string without modname prefix\n");
 			return count;
 		}
 		if (strncmp(line, modname, modlen) || line[modlen] != '.') {
@@ -113,11 +112,10 @@ static ssize_t get_strings(struct kmod_builtin_info *info, const char *modname,
 				continue;
 			break;
 		}
-		if (!strbuf_pushchars(buf, dot + 1) ||
-		    !strbuf_pushchar(buf, '\0')) {
+		if (!strbuf_pushchars(buf, dot + 1) || !strbuf_pushchar(buf, '\0')) {
 			count = -errno;
 			ERR(info->ctx, "get_strings: "
-			    "failed to append modinfo string\n");
+				       "failed to append modinfo string\n");
 			return count;
 		}
 		count++;
@@ -126,7 +124,7 @@ static ssize_t get_strings(struct kmod_builtin_info *info, const char *modname,
 	if (count == INTPTR_MAX) {
 		count = -ENOMEM;
 		ERR(info->ctx, "get_strings: "
-		    "too many modinfo strings encountered\n");
+			       "too many modinfo strings encountered\n");
 		return count;
 	}
 
@@ -142,8 +140,7 @@ static char **strbuf_to_vector(struct strbuf *buf, size_t count)
 	size_t n;
 
 	/* make sure that vector and strings fit into memory constraints */
-	if (SIZE_MAX / sizeof(char *) - 1 < count ||
-	    SIZE_MAX - buf->used < vecsz) {
+	if (SIZE_MAX / sizeof(char *) - 1 < count || SIZE_MAX - buf->used < vecsz) {
 		errno = ENOMEM;
 		return NULL;
 	}
@@ -166,7 +163,7 @@ static char **strbuf_to_vector(struct strbuf *buf, size_t count)
 
 /* array will be allocated with strings in a single malloc, just free *array */
 ssize_t kmod_builtin_get_modinfo(struct kmod_ctx *ctx, const char *modname,
-				char ***modinfo)
+				 char ***modinfo)
 {
 	struct kmod_builtin_info info;
 	struct strbuf buf;

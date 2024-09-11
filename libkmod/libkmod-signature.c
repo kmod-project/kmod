@@ -29,8 +29,8 @@ enum pkey_algo {
 };
 
 static const char *const pkey_algo[PKEY_ALGO__LAST] = {
-	[PKEY_ALGO_DSA]		= "DSA",
-	[PKEY_ALGO_RSA]		= "RSA",
+	[PKEY_ALGO_DSA] = "DSA",
+	[PKEY_ALGO_RSA] = "RSA",
 };
 
 enum pkey_hash_algo {
@@ -61,29 +61,29 @@ const char *const pkey_hash_algo[PKEY_HASH__LAST] = {
 };
 
 enum pkey_id_type {
-	PKEY_ID_PGP,		/* OpenPGP generated key ID */
-	PKEY_ID_X509,		/* X.509 arbitrary subjectKeyIdentifier */
-	PKEY_ID_PKCS7,		/* Signature in PKCS#7 message */
+	PKEY_ID_PGP, /* OpenPGP generated key ID */
+	PKEY_ID_X509, /* X.509 arbitrary subjectKeyIdentifier */
+	PKEY_ID_PKCS7, /* Signature in PKCS#7 message */
 	PKEY_ID_TYPE__LAST,
 };
 
 const char *const pkey_id_type[PKEY_ID_TYPE__LAST] = {
-	[PKEY_ID_PGP]		= "PGP",
-	[PKEY_ID_X509]		= "X509",
-	[PKEY_ID_PKCS7]		= "PKCS#7",
+	[PKEY_ID_PGP] = "PGP",
+	[PKEY_ID_X509] = "X509",
+	[PKEY_ID_PKCS7] = "PKCS#7",
 };
 
 /*
  * Module signature information block.
  */
 struct module_signature {
-	uint8_t algo;        /* Public-key crypto algorithm [enum pkey_algo] */
-	uint8_t hash;        /* Digest algorithm [enum pkey_hash_algo] */
-	uint8_t id_type;     /* Key identifier type [enum pkey_id_type] */
-	uint8_t signer_len;  /* Length of signer's name */
-	uint8_t key_id_len;  /* Length of key identifier */
+	uint8_t algo; /* Public-key crypto algorithm [enum pkey_algo] */
+	uint8_t hash; /* Digest algorithm [enum pkey_hash_algo] */
+	uint8_t id_type; /* Key identifier type [enum pkey_id_type] */
+	uint8_t signer_len; /* Length of signer's name */
+	uint8_t key_id_len; /* Length of key identifier */
 	uint8_t __pad[3];
-	uint32_t sig_len;    /* Length of signature data (big endian) */
+	uint32_t sig_len; /* Length of signature data (big endian) */
 };
 
 static bool fill_default(const char *mem, off_t size,
@@ -156,13 +156,12 @@ static const char *x509_name_to_str(X509_NAME *name)
 	return str;
 }
 
-static bool fill_pkcs7(const char *mem, off_t size,
-		       const struct module_signature *modsig, size_t sig_len,
-		       struct kmod_signature_info *sig_info)
+static bool fill_pkcs7(const char *mem, off_t size, const struct module_signature *modsig,
+		       size_t sig_len, struct kmod_signature_info *sig_info)
 {
 	const char *pkcs7_raw;
 	PKCS7 *pkcs7;
-	STACK_OF(PKCS7_SIGNER_INFO) *sis;
+	STACK_OF(PKCS7_SIGNER_INFO) * sis;
 	PKCS7_SIGNER_INFO *si;
 	PKCS7_ISSUER_AND_SERIAL *is;
 	X509_NAME *issuer;
@@ -279,9 +278,8 @@ err:
 
 #else /* ENABLE OPENSSL */
 
-static bool fill_pkcs7(const char *mem, off_t size,
-		       const struct module_signature *modsig, size_t sig_len,
-		       struct kmod_signature_info *sig_info)
+static bool fill_pkcs7(const char *mem, off_t size, const struct module_signature *modsig,
+		       size_t sig_len, struct kmod_signature_info *sig_info)
 {
 	sig_info->hash_algo = "unknown";
 	sig_info->id_type = pkey_id_type[modsig->id_type];
@@ -303,7 +301,8 @@ static bool fill_pkcs7(const char *mem, off_t size,
  * [ SIG_MAGIC               ]
  */
 
-bool kmod_module_signature_info(const struct kmod_file *file, struct kmod_signature_info *sig_info)
+bool kmod_module_signature_info(const struct kmod_file *file,
+				struct kmod_signature_info *sig_info)
 {
 	const char *mem;
 	off_t size;
@@ -322,9 +321,8 @@ bool kmod_module_signature_info(const struct kmod_file *file, struct kmod_signat
 		return false;
 	size -= sizeof(struct module_signature);
 	memcpy(&modsig, mem + size, sizeof(struct module_signature));
-	if (modsig.algo >= PKEY_ALGO__LAST ||
-			modsig.hash >= PKEY_HASH__LAST ||
-			modsig.id_type >= PKEY_ID_TYPE__LAST)
+	if (modsig.algo >= PKEY_ALGO__LAST || modsig.hash >= PKEY_HASH__LAST ||
+	    modsig.id_type >= PKEY_ID_TYPE__LAST)
 		return false;
 	sig_len = be32toh(modsig.sig_len);
 	if (sig_len == 0 ||
