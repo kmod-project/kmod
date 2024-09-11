@@ -29,7 +29,7 @@ static int test_strbuf_pushchar(const struct test *t)
 	for (c = TEXT; *c != '\0'; c++)
 		strbuf_pushchar(&buf, *c);
 
-	result1 = (char *) strbuf_str(&buf);
+	result1 = (char *)strbuf_str(&buf);
 	assert_return(result1 == buf.bytes, EXIT_FAILURE);
 	assert_return(streq(result1, TEXT), EXIT_FAILURE);
 	result1 = strdup(result1);
@@ -42,8 +42,7 @@ static int test_strbuf_pushchar(const struct test *t)
 
 	return 0;
 }
-DEFINE_TEST(test_strbuf_pushchar,
-		.description = "test strbuf_{pushchar, str, steal}");
+DEFINE_TEST(test_strbuf_pushchar, .description = "test strbuf_{pushchar, str, steal}");
 
 static int test_strbuf_pushchars(const struct test *t)
 {
@@ -62,7 +61,7 @@ static int test_strbuf_pushchars(const struct test *t)
 	}
 
 	strbuf_popchar(&buf);
-	result1 = (char *) strbuf_str(&buf);
+	result1 = (char *)strbuf_str(&buf);
 	assert_return(result1 == buf.bytes, EXIT_FAILURE);
 	assert_return(streq(result1, TEXT), EXIT_FAILURE);
 
@@ -71,8 +70,7 @@ static int test_strbuf_pushchars(const struct test *t)
 	assert_return(!streq(TEXT, result2), EXIT_FAILURE);
 	assert_return(strncmp(TEXT, result2, strlen(TEXT) - lastwordlen) == 0,
 		      EXIT_FAILURE);
-	assert_return(result2[strlen(TEXT) - lastwordlen] == '\0',
-		      EXIT_FAILURE);
+	assert_return(result2[strlen(TEXT) - lastwordlen] == '\0', EXIT_FAILURE);
 
 	free(str);
 	free(result2);
@@ -80,7 +78,6 @@ static int test_strbuf_pushchars(const struct test *t)
 	return 0;
 }
 DEFINE_TEST(test_strbuf_pushchars,
-		.description = "test strbuf_{pushchars, popchar, popchars}");
-
+	    .description = "test strbuf_{pushchars, popchar, popchars}");
 
 TESTSUITE_MAIN();

@@ -43,16 +43,16 @@ TS_EXPORT int uname(struct utsname *u)
 
 	release = getenv(S_TC_UNAME_R);
 	if (release == NULL) {
-		fprintf(stderr, "TRAP uname(): missing export %s?\n",
-							S_TC_UNAME_R);
+		fprintf(stderr, "TRAP uname(): missing export %s?\n", S_TC_UNAME_R);
 		return 0;
 	}
 
 	sz = strlen(release) + 1;
 	if (sz > sizeof(u->release)) {
-		fprintf(stderr, "uname(): sizeof release (%s) "
-				"is greater than available space: %zu",
-				release, sizeof(u->release));
+		fprintf(stderr,
+			"uname(): sizeof release (%s) "
+			"is greater than available space: %zu",
+			release, sizeof(u->release));
 		errno = -EFAULT;
 		return -1;
 	}

@@ -103,71 +103,68 @@ struct test {
 	bool print_outputs;
 } __attribute__((aligned(8)));
 
-
-int test_init(const struct test *start, const struct test *stop,
-	      int argc, char *const argv[]);
+int test_init(const struct test *start, const struct test *stop, int argc,
+	      char *const argv[]);
 const struct test *test_find(const struct test *start, const struct test *stop,
 			     const char *name);
 int test_spawn_prog(const char *prog, const char *const args[]);
 int test_run(const struct test *t);
 
-#define TS_EXPORT __attribute__ ((visibility("default")))
+#define TS_EXPORT __attribute__((visibility("default")))
 
-#define _LOG(prefix, fmt, ...) printf("TESTSUITE: " prefix fmt, ## __VA_ARGS__)
-#define LOG(fmt, ...) _LOG("", fmt, ## __VA_ARGS__)
-#define WARN(fmt, ...) _LOG("WARN: ", fmt, ## __VA_ARGS__)
-#define ERR(fmt, ...) _LOG("ERR: ", fmt, ## __VA_ARGS__)
+#define _LOG(prefix, fmt, ...) printf("TESTSUITE: " prefix fmt, ##__VA_ARGS__)
+#define LOG(fmt, ...) _LOG("", fmt, ##__VA_ARGS__)
+#define WARN(fmt, ...) _LOG("WARN: ", fmt, ##__VA_ARGS__)
+#define ERR(fmt, ...) _LOG("ERR: ", fmt, ##__VA_ARGS__)
 
-#define assert_return(expr, r)						\
-	do {								\
-		if ((!(expr))) {					\
-			ERR("Failed assertion: " #expr " %s:%d %s\n",	\
-			    __FILE__, __LINE__, __PRETTY_FUNCTION__);	\
-			return (r);					\
-		}							\
+#define assert_return(expr, r)                                                  \
+	do {                                                                    \
+		if ((!(expr))) {                                                \
+			ERR("Failed assertion: " #expr " %s:%d %s\n", __FILE__, \
+			    __LINE__, __PRETTY_FUNCTION__);                     \
+			return (r);                                             \
+		}                                                               \
 	} while (false)
 
-
 /* Test definitions */
-#define DEFINE_TEST_WITH_FUNC(_name, _func, ...) \
-	static const struct test UNIQ(s##_name) \
-	__attribute__((used, section("kmod_tests"), aligned(8))) = { \
-		.name = #_name, \
-		.func = _func, \
-		## __VA_ARGS__ \
-	};
+#define DEFINE_TEST_WITH_FUNC(_name, _func, ...)                             \
+	static const struct test UNIQ(s##_name)                              \
+		__attribute__((used, section("kmod_tests"), aligned(8))) = { \
+			.name = #_name, .func = _func, ##__VA_ARGS__         \
+		};
 
 #define DEFINE_TEST(_name, ...) DEFINE_TEST_WITH_FUNC(_name, _name, __VA_ARGS__)
 
-#define TESTSUITE_MAIN() \
-	extern struct test __start_kmod_tests[] __attribute__((weak, visibility("hidden")));	\
-	extern struct test __stop_kmod_tests[] __attribute__((weak, visibility("hidden")));	\
-	int main(int argc, char *argv[])							\
-	{											\
-		const struct test *t;								\
-		int arg;									\
-												\
-		arg = test_init(__start_kmod_tests, __stop_kmod_tests, argc, argv);		\
-		if (arg == 0)									\
-			return 0;								\
-		if (arg < 0)									\
-			return EXIT_FAILURE;							\
-												\
-		if (arg < argc) {								\
-			t = test_find(__start_kmod_tests, __stop_kmod_tests, argv[arg]);	\
-			if (t == NULL) {							\
-				fprintf(stderr, "could not find test %s\n", argv[arg]);		\
-				exit(EXIT_FAILURE);						\
-			}									\
-												\
-			return test_run(t);							\
-		}										\
-												\
-		for (t = __start_kmod_tests; t < __stop_kmod_tests; t++) {			\
-			if (test_run(t) != 0)							\
-				exit(EXIT_FAILURE);						\
-		}										\
-												\
-		exit(EXIT_SUCCESS);								\
-	}											\
-
+#define TESTSUITE_MAIN()                                                                 \
+	extern struct test __start_kmod_tests[]                                          \
+		__attribute__((weak, visibility("hidden")));                             \
+	extern struct test __stop_kmod_tests[]                                           \
+		__attribute__((weak, visibility("hidden")));                             \
+	int main(int argc, char *argv[])                                                 \
+	{                                                                                \
+		const struct test *t;                                                    \
+		int arg;                                                                 \
+                                                                                         \
+		arg = test_init(__start_kmod_tests, __stop_kmod_tests, argc, argv);      \
+		if (arg == 0)                                                            \
+			return 0;                                                        \
+		if (arg < 0)                                                             \
+			return EXIT_FAILURE;                                             \
+                                                                                         \
+		if (arg < argc) {                                                        \
+			t = test_find(__start_kmod_tests, __stop_kmod_tests, argv[arg]); \
+			if (t == NULL) {                                                 \
+				fprintf(stderr, "could not find test %s\n", argv[arg]);  \
+				exit(EXIT_FAILURE);                                      \
+			}                                                                \
+                                                                                         \
+			return test_run(t);                                              \
+		}                                                                        \
+                                                                                         \
+		for (t = __start_kmod_tests; t < __stop_kmod_tests; t++) {               \
+			if (test_run(t) != 0)                                            \
+				exit(EXIT_FAILURE);                                      \
+		}                                                                        \
+                                                                                         \
+		exit(EXIT_SUCCESS);                                                      \
+	}

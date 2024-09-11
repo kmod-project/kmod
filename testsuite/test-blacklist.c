@@ -38,15 +38,14 @@ static int blacklist_1(const struct test *t)
 	if (ctx == NULL)
 		exit(EXIT_FAILURE);
 
-	for(name = names; *name; name++) {
+	for (name = names; *name; name++) {
 		err = kmod_module_new_from_name(ctx, *name, &mod);
 		if (err < 0)
 			goto fail_lookup;
 		list = kmod_list_append(list, mod);
 	}
 
-	err = kmod_module_apply_filter(ctx, KMOD_FILTER_BLACKLIST, list,
-								&filtered);
+	err = kmod_module_apply_filter(ctx, KMOD_FILTER_BLACKLIST, list, &filtered);
 	if (err < 0) {
 		ERR("Could not filter: %s\n", strerror(-err));
 		goto fail;
