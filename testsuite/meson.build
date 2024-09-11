@@ -9,7 +9,6 @@ build_module_playground = custom_target(
     meson.project_source_root(),
     meson.project_build_root(),
     'testsuite/module-playground', # do not prepend source/build root
-    moduledir,
   ],
   output : 'bb-rootfs',
   console : true,
