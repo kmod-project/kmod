@@ -10,32 +10,34 @@
 
 #include "libkmod.h"
 
-static _always_inline_ _printf_format_(2, 3) void
-	kmod_log_null(const struct kmod_ctx *ctx, const char *format, ...) {}
+static _always_inline_ _printf_format_(2, 3) void kmod_log_null(const struct kmod_ctx *ctx,
+								const char *format, ...)
+{
+}
 
-#define kmod_log_cond(ctx, prio, arg...) \
-	do { \
-		if (kmod_get_log_priority(ctx) >= prio) \
-		kmod_log(ctx, prio, __FILE__, __LINE__, __func__, ## arg);\
+#define kmod_log_cond(ctx, prio, arg...)                                          \
+	do {                                                                      \
+		if (kmod_get_log_priority(ctx) >= prio)                           \
+			kmod_log(ctx, prio, __FILE__, __LINE__, __func__, ##arg); \
 	} while (0)
 
 #ifdef ENABLE_LOGGING
-#  ifdef ENABLE_DEBUG
-#    define DBG(ctx, arg...) kmod_log_cond(ctx, LOG_DEBUG, ## arg)
-#  else
-#    define DBG(ctx, arg...) kmod_log_null(ctx, ## arg)
-#  endif
-#  define NOTICE(ctx, arg...) kmod_log_cond(ctx, LOG_NOTICE, ## arg)
-#  define INFO(ctx, arg...) kmod_log_cond(ctx, LOG_INFO, ## arg)
-#  define ERR(ctx, arg...) kmod_log_cond(ctx, LOG_ERR, ## arg)
+#ifdef ENABLE_DEBUG
+#define DBG(ctx, arg...) kmod_log_cond(ctx, LOG_DEBUG, ##arg)
 #else
-#  define DBG(ctx, arg...) kmod_log_null(ctx, ## arg)
-#  define NOTICE(ctx, arg...) kmod_log_null(ctx, ## arg)
-#  define INFO(ctx, arg...) kmod_log_null(ctx, ## arg)
-#  define ERR(ctx, arg...) kmod_log_null(ctx, ## arg)
+#define DBG(ctx, arg...) kmod_log_null(ctx, ##arg)
+#endif
+#define NOTICE(ctx, arg...) kmod_log_cond(ctx, LOG_NOTICE, ##arg)
+#define INFO(ctx, arg...) kmod_log_cond(ctx, LOG_INFO, ##arg)
+#define ERR(ctx, arg...) kmod_log_cond(ctx, LOG_ERR, ##arg)
+#else
+#define DBG(ctx, arg...) kmod_log_null(ctx, ##arg)
+#define NOTICE(ctx, arg...) kmod_log_null(ctx, ##arg)
+#define INFO(ctx, arg...) kmod_log_null(ctx, ##arg)
+#define ERR(ctx, arg...) kmod_log_null(ctx, ##arg)
 #endif
 
-#define KMOD_EXPORT __attribute__ ((visibility("default")))
+#define KMOD_EXPORT __attribute__((visibility("default")))
 
 #define KCMD_LINE_SIZE 4096
 
@@ -45,8 +47,9 @@ static _always_inline_ _printf_format_(2, 3) void
 #endif
 
 _printf_format_(6, 7) _nonnull_(1, 3, 5) void kmod_log(const struct kmod_ctx *ctx,
-		int priority, const char *file, int line, const char *fn,
-		const char *format, ...);
+						       int priority, const char *file,
+						       int line, const char *fn,
+						       const char *format, ...);
 
 struct list_node {
 	struct list_node *next, *prev;

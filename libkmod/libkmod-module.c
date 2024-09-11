@@ -28,9 +28,9 @@
 #include "libkmod-internal.h"
 
 enum kmod_module_builtin {
-    KMOD_MODULE_BUILTIN_UNKNOWN,
-    KMOD_MODULE_BUILTIN_NO,
-    KMOD_MODULE_BUILTIN_YES,
+	KMOD_MODULE_BUILTIN_UNKNOWN,
+	KMOD_MODULE_BUILTIN_NO,
+	KMOD_MODULE_BUILTIN_YES,
 };
 
 struct kmod_module {
@@ -40,8 +40,8 @@ struct kmod_module {
 	char *path;
 	struct kmod_list *dep;
 	char *options;
-	const char *install_commands;	/* owned by kmod_config */
-	const char *remove_commands;	/* owned by kmod_config */
+	const char *install_commands; /* owned by kmod_config */
+	const char *remove_commands; /* owned by kmod_config */
 	char *alias; /* only set if this module was created from an alias */
 	struct kmod_file *file;
 	int n_dep;
@@ -80,8 +80,7 @@ struct kmod_module {
 	bool required : 1;
 };
 
-static inline const char *path_join(const char *path, size_t prefixlen,
-							char buf[PATH_MAX])
+static inline const char *path_join(const char *path, size_t prefixlen, char buf[PATH_MAX])
 {
 	size_t pathlen;
 
@@ -100,8 +99,7 @@ static inline bool module_is_inkernel(struct kmod_module *mod)
 {
 	int state = kmod_module_get_initstate(mod);
 
-	if (state == KMOD_MODULE_LIVE ||
-			state == KMOD_MODULE_BUILTIN)
+	if (state == KMOD_MODULE_LIVE || state == KMOD_MODULE_BUILTIN)
 		return true;
 
 	return false;
@@ -148,21 +146,19 @@ int kmod_module_parse_depline(struct kmod_module *mod, char *line)
 
 	p++;
 	for (p = strtok_r(p, " \t", &saveptr); p != NULL;
-					p = strtok_r(NULL, " \t", &saveptr)) {
+	     p = strtok_r(NULL, " \t", &saveptr)) {
 		struct kmod_module *depmod = NULL;
 		const char *path;
 
 		path = path_join(p, dirnamelen, buf);
 		if (path == NULL) {
-			ERR(ctx, "could not join path '%s' and '%s'.\n",
-			    dirname, p);
+			ERR(ctx, "could not join path '%s' and '%s'.\n", dirname, p);
 			goto fail;
 		}
 
 		err = kmod_module_new_from_path(ctx, path, &depmod);
 		if (err < 0) {
-			ERR(ctx, "ctx=%p path=%s error=%s\n",
-						ctx, path, strerror(-err));
+			ERR(ctx, "ctx=%p path=%s error=%s\n", ctx, path, strerror(-err));
 			goto fail;
 		}
 
@@ -191,8 +187,7 @@ void kmod_module_set_visited(struct kmod_module *mod, bool visited)
 
 void kmod_module_set_builtin(struct kmod_module *mod, bool builtin)
 {
-	mod->builtin =
-		builtin ? KMOD_MODULE_BUILTIN_YES : KMOD_MODULE_BUILTIN_NO;
+	mod->builtin = builtin ? KMOD_MODULE_BUILTIN_YES : KMOD_MODULE_BUILTIN_NO;
 }
 
 void kmod_module_set_required(struct kmod_module *mod, bool required)
@@ -203,8 +198,8 @@ void kmod_module_set_required(struct kmod_module *mod, bool required)
 bool kmod_module_is_builtin(struct kmod_module *mod)
 {
 	if (mod->builtin == KMOD_MODULE_BUILTIN_UNKNOWN) {
-		kmod_module_set_builtin(mod,
-					kmod_lookup_alias_is_builtin(mod->ctx, mod->name));
+		kmod_module_set_builtin(mod, kmod_lookup_alias_is_builtin(mod->ctx,
+									  mod->name));
 	}
 
 	return mod->builtin == KMOD_MODULE_BUILTIN_YES;
@@ -232,10 +227,9 @@ bool kmod_module_is_builtin(struct kmod_module *mod)
  *
  * @key is "name\alias" or "name" (in which case alias == NULL)
  */
-static int kmod_module_new(struct kmod_ctx *ctx, const char *key,
-				const char *name, size_t namelen,
-				const char *alias, size_t aliaslen,
-				struct kmod_module **mod)
+static int kmod_module_new(struct kmod_ctx *ctx, const char *key, const char *name,
+			   size_t namelen, const char *alias, size_t aliaslen,
+			   struct kmod_module **mod)
 {
 	struct kmod_module *m;
 	size_t keylen;
@@ -277,9 +271,8 @@ static int kmod_module_new(struct kmod_ctx *ctx, const char *key,
 	return 0;
 }
 
-KMOD_EXPORT int kmod_module_new_from_name(struct kmod_ctx *ctx,
-						const char *name,
-						struct kmod_module **mod)
+KMOD_EXPORT int kmod_module_new_from_name(struct kmod_ctx *ctx, const char *name,
+					  struct kmod_module **mod)
 {
 	size_t namelen;
 	char name_norm[PATH_MAX];
@@ -292,8 +285,8 @@ KMOD_EXPORT int kmod_module_new_from_name(struct kmod_ctx *ctx,
 	return kmod_module_new(ctx, name_norm, name_norm, namelen, NULL, 0, mod);
 }
 
-int kmod_module_new_from_alias(struct kmod_ctx *ctx, const char *alias,
-				const char *name, struct kmod_module **mod)
+int kmod_module_new_from_alias(struct kmod_ctx *ctx, const char *alias, const char *name,
+			       struct kmod_module **mod)
 {
 	int err;
 	char key[PATH_MAX];
@@ -314,9 +307,8 @@ int kmod_module_new_from_alias(struct kmod_ctx *ctx, const char *alias,
 	return 0;
 }
 
-KMOD_EXPORT int kmod_module_new_from_path(struct kmod_ctx *ctx,
-						const char *path,
-						struct kmod_module **mod)
+KMOD_EXPORT int kmod_module_new_from_path(struct kmod_ctx *ctx, const char *path,
+					  struct kmod_module **mod)
 {
 	struct kmod_module *m;
 	int err;
@@ -355,8 +347,9 @@ KMOD_EXPORT int kmod_module_new_from_path(struct kmod_ctx *ctx,
 		else if (streq(m->path, abspath))
 			free(abspath);
 		else {
-			ERR(ctx, "kmod_module '%s' already exists with different path: new-path='%s' old-path='%s'\n",
-							name, abspath, m->path);
+			ERR(ctx,
+			    "kmod_module '%s' already exists with different path: new-path='%s' old-path='%s'\n",
+			    name, abspath, m->path);
 			free(abspath);
 			return -EEXIST;
 		}
@@ -411,7 +404,8 @@ KMOD_EXPORT struct kmod_module *kmod_module_ref(struct kmod_module *mod)
 	return mod;
 }
 
-typedef _nonnull_all_ int (*lookup_func)(struct kmod_ctx *ctx, const char *name, struct kmod_list **list);
+typedef _nonnull_all_ int (*lookup_func)(struct kmod_ctx *ctx, const char *name,
+					 struct kmod_list **list);
 
 static int __kmod_module_new_from_lookup(struct kmod_ctx *ctx, const lookup_func lookup[],
 					 size_t lookup_count, const char *s,
@@ -432,9 +426,8 @@ static int __kmod_module_new_from_lookup(struct kmod_ctx *ctx, const lookup_func
 	return 0;
 }
 
-KMOD_EXPORT int kmod_module_new_from_lookup(struct kmod_ctx *ctx,
-						const char *given_alias,
-						struct kmod_list **list)
+KMOD_EXPORT int kmod_module_new_from_lookup(struct kmod_ctx *ctx, const char *given_alias,
+					    struct kmod_list **list)
 {
 	static const lookup_func lookup[] = {
 		kmod_lookup_alias_from_config,
@@ -463,8 +456,7 @@ KMOD_EXPORT int kmod_module_new_from_lookup(struct kmod_ctx *ctx,
 
 	DBG(ctx, "input alias=%s, normalized=%s\n", given_alias, alias);
 
-	err = __kmod_module_new_from_lookup(ctx, lookup, ARRAY_SIZE(lookup),
-					    alias, list);
+	err = __kmod_module_new_from_lookup(ctx, lookup, ARRAY_SIZE(lookup), alias, list);
 
 	DBG(ctx, "lookup=%s found=%d\n", alias, err >= 0 && *list);
 
@@ -496,8 +488,8 @@ KMOD_EXPORT int kmod_module_new_from_name_lookup(struct kmod_ctx *ctx,
 
 	DBG(ctx, "input modname=%s, normalized=%s\n", modname, name_norm);
 
-	err = __kmod_module_new_from_lookup(ctx, lookup, ARRAY_SIZE(lookup),
-					    name_norm, &list);
+	err = __kmod_module_new_from_lookup(ctx, lookup, ARRAY_SIZE(lookup), name_norm,
+					    &list);
 
 	DBG(ctx, "lookup=%s found=%d\n", name_norm, err >= 0 && list);
 
@@ -518,8 +510,8 @@ KMOD_EXPORT int kmod_module_unref_list(struct kmod_list *list)
 }
 
 KMOD_EXPORT int kmod_module_get_filtered_blacklist(const struct kmod_ctx *ctx,
-						const struct kmod_list *input,
-						struct kmod_list **output)
+						   const struct kmod_list *input,
+						   struct kmod_list **output)
 {
 	return kmod_module_apply_filter(ctx, KMOD_FILTER_BLACKLIST, input, output);
 }
@@ -605,17 +597,15 @@ KMOD_EXPORT const char *kmod_module_get_path(const struct kmod_module *mod)
 	if (line == NULL)
 		return NULL;
 
-	kmod_module_parse_depline((struct kmod_module *) mod, line);
+	kmod_module_parse_depline((struct kmod_module *)mod, line);
 	free(line);
 
 	return mod->path;
 }
 
-
 extern long delete_module(const char *name, unsigned int flags);
 
-KMOD_EXPORT int kmod_module_remove_module(struct kmod_module *mod,
-							unsigned int flags)
+KMOD_EXPORT int kmod_module_remove_module(struct kmod_module *mod, unsigned int flags)
 {
 	unsigned int libkmod_flags = flags & 0xff;
 
@@ -640,8 +630,7 @@ KMOD_EXPORT int kmod_module_remove_module(struct kmod_module *mod,
 
 extern long init_module(const void *mem, unsigned long len, const char *args);
 
-static int do_finit_module(struct kmod_module *mod, unsigned int flags,
-			   const char *args)
+static int do_finit_module(struct kmod_module *mod, unsigned int flags, const char *args)
 {
 	enum kmod_file_compression_type compression, kernel_compression;
 	unsigned int kernel_flags = 0;
@@ -674,8 +663,7 @@ static int do_finit_module(struct kmod_module *mod, unsigned int flags,
 	return err;
 }
 
-static int do_init_module(struct kmod_module *mod, unsigned int flags,
-			  const char *args)
+static int do_init_module(struct kmod_module *mod, unsigned int flags, const char *args)
 {
 	struct kmod_elf *elf;
 	const void *mem;
@@ -692,13 +680,15 @@ static int do_init_module(struct kmod_module *mod, unsigned int flags,
 		if (flags & KMOD_INSERT_FORCE_MODVERSION) {
 			err = kmod_elf_strip_section(elf, "__versions");
 			if (err < 0)
-				INFO(mod->ctx, "Failed to strip modversion: %s\n", strerror(-err));
+				INFO(mod->ctx, "Failed to strip modversion: %s\n",
+				     strerror(-err));
 		}
 
 		if (flags & KMOD_INSERT_FORCE_VERMAGIC) {
 			err = kmod_elf_strip_vermagic(elf);
 			if (err < 0)
-				INFO(mod->ctx, "Failed to strip vermagic: %s\n", strerror(-err));
+				INFO(mod->ctx, "Failed to strip vermagic: %s\n",
+				     strerror(-err));
 		}
 
 		mem = kmod_elf_get_memory(elf);
@@ -718,9 +708,8 @@ static int do_init_module(struct kmod_module *mod, unsigned int flags,
 	return err;
 }
 
-KMOD_EXPORT int kmod_module_insert_module(struct kmod_module *mod,
-							unsigned int flags,
-							const char *options)
+KMOD_EXPORT int kmod_module_insert_module(struct kmod_module *mod, unsigned int flags,
+					  const char *options)
 {
 	int err;
 	const char *path;
@@ -748,8 +737,7 @@ KMOD_EXPORT int kmod_module_insert_module(struct kmod_module *mod,
 		err = do_init_module(mod, flags, args);
 
 	if (err < 0)
-		INFO(mod->ctx, "Failed to insert module '%s': %s\n",
-		     path, strerror(-err));
+		INFO(mod->ctx, "Failed to insert module '%s': %s\n", path, strerror(-err));
 
 	return err;
 }
@@ -772,9 +760,9 @@ static bool module_is_blacklisted(const struct kmod_module *mod)
 }
 
 KMOD_EXPORT int kmod_module_apply_filter(const struct kmod_ctx *ctx,
-						enum kmod_filter filter_type,
-						const struct kmod_list *input,
-						struct kmod_list **output)
+					 enum kmod_filter filter_type,
+					 const struct kmod_list *input,
+					 struct kmod_list **output)
 {
 	const struct kmod_list *li;
 
@@ -789,12 +777,10 @@ KMOD_EXPORT int kmod_module_apply_filter(const struct kmod_ctx *ctx,
 		struct kmod_module *mod = li->data;
 		struct kmod_list *node;
 
-		if ((filter_type & KMOD_FILTER_BLACKLIST) &&
-				module_is_blacklisted(mod))
+		if ((filter_type & KMOD_FILTER_BLACKLIST) && module_is_blacklisted(mod))
 			continue;
 
-		if ((filter_type & KMOD_FILTER_BUILTIN)
-		    && kmod_module_is_builtin(mod))
+		if ((filter_type & KMOD_FILTER_BUILTIN) && kmod_module_is_builtin(mod))
 			continue;
 
 		node = kmod_list_append(*output, mod);
@@ -813,8 +799,7 @@ fail:
 	return -ENOMEM;
 }
 
-static int command_do(struct kmod_module *mod, const char *type,
-							const char *cmd)
+static int command_do(struct kmod_module *mod, const char *type, const char *cmd)
 {
 	const char *modname = kmod_module_get_name(mod);
 	int err;
@@ -826,8 +811,8 @@ static int command_do(struct kmod_module *mod, const char *type,
 	unsetenv("MODPROBE_MODULE");
 
 	if (err == -1) {
-		ERR(mod->ctx, "Could not run %s command '%s' for module %s: %m\n",
-		    type, cmd, modname);
+		ERR(mod->ctx, "Could not run %s command '%s' for module %s: %m\n", type,
+		    cmd, modname);
 		return -EINVAL;
 	}
 
@@ -845,9 +830,8 @@ struct probe_insert_cb {
 	void *data;
 };
 
-static int module_do_install_commands(struct kmod_module *mod,
-					const char *options,
-					struct probe_insert_cb *cb)
+static int module_do_install_commands(struct kmod_module *mod, const char *options,
+				      struct probe_insert_cb *cb)
 {
 	const char *command = kmod_module_get_install_commands(mod);
 	char *p;
@@ -921,22 +905,18 @@ static char *module_options_concat(const char *opt, const char *xopt)
 	return r;
 }
 
-static int __kmod_module_get_probe_list(struct kmod_module *mod,
-						bool required,
-						bool ignorecmd,
-						struct kmod_list **list);
+static int __kmod_module_get_probe_list(struct kmod_module *mod, bool required,
+					bool ignorecmd, struct kmod_list **list);
 
 /* re-entrant */
-static int __kmod_module_fill_softdep(struct kmod_module *mod,
-						struct kmod_list **list)
+static int __kmod_module_fill_softdep(struct kmod_module *mod, struct kmod_list **list)
 {
 	struct kmod_list *pre = NULL, *post = NULL, *l;
 	int err;
 
 	err = kmod_module_get_softdeps(mod, &pre, &post);
 	if (err < 0) {
-		ERR(mod->ctx, "could not get softdep: %s\n",
-							strerror(-err));
+		ERR(mod->ctx, "could not get softdep: %s\n", strerror(-err));
 		goto fail;
 	}
 
@@ -971,17 +951,14 @@ fail:
 }
 
 /* re-entrant */
-static int __kmod_module_get_probe_list(struct kmod_module *mod,
-						bool required,
-						bool ignorecmd,
-						struct kmod_list **list)
+static int __kmod_module_get_probe_list(struct kmod_module *mod, bool required,
+					bool ignorecmd, struct kmod_list **list)
 {
 	struct kmod_list *dep, *l;
 	int err = 0;
 
 	if (mod->visited) {
-		DBG(mod->ctx, "Ignore module '%s': already visited\n",
-								mod->name);
+		DBG(mod->ctx, "Ignore module '%s': already visited\n", mod->name);
 		return 0;
 	}
 	mod->visited = true;
@@ -1024,9 +1001,8 @@ finish:
 	return err;
 }
 
-static int kmod_module_get_probe_list(struct kmod_module *mod,
-						bool ignorecmd,
-						struct kmod_list **list)
+static int kmod_module_get_probe_list(struct kmod_module *mod, bool ignorecmd,
+				      struct kmod_list **list)
 {
 	int err;
 
@@ -1048,14 +1024,11 @@ static int kmod_module_get_probe_list(struct kmod_module *mod,
 	return err;
 }
 
-KMOD_EXPORT int kmod_module_probe_insert_module(struct kmod_module *mod,
-			unsigned int flags, const char *extra_options,
-			int (*run_install)(struct kmod_module *m,
-						const char *cmd, void *data),
-			const void *data,
-			void (*print_action)(struct kmod_module *m,
-						bool install,
-						const char *options))
+KMOD_EXPORT int kmod_module_probe_insert_module(
+	struct kmod_module *mod, unsigned int flags, const char *extra_options,
+	int (*run_install)(struct kmod_module *m, const char *cmd, void *data),
+	const void *data,
+	void (*print_action)(struct kmod_module *m, bool install, const char *options))
 {
 	struct kmod_list *list = NULL, *l;
 	struct probe_insert_cb cb;
@@ -1064,8 +1037,7 @@ KMOD_EXPORT int kmod_module_probe_insert_module(struct kmod_module *mod,
 	if (mod == NULL)
 		return -ENOENT;
 
-	if (!(flags & KMOD_PROBE_IGNORE_LOADED)
-					&& module_is_inkernel(mod)) {
+	if (!(flags & KMOD_PROBE_IGNORE_LOADED) && module_is_inkernel(mod)) {
 		if (flags & KMOD_PROBE_FAIL_ON_LOADED)
 			return -EEXIST;
 		else
@@ -1083,16 +1055,16 @@ KMOD_EXPORT int kmod_module_probe_insert_module(struct kmod_module *mod,
 			return KMOD_PROBE_APPLY_BLACKLIST;
 	}
 
-	err = kmod_module_get_probe_list(mod,
-				!!(flags & KMOD_PROBE_IGNORE_COMMAND), &list);
+	err = kmod_module_get_probe_list(mod, !!(flags & KMOD_PROBE_IGNORE_COMMAND),
+					 &list);
 	if (err < 0)
 		return err;
 
 	if (flags & KMOD_PROBE_APPLY_BLACKLIST_ALL) {
 		struct kmod_list *filtered = NULL;
 
-		err = kmod_module_apply_filter(mod->ctx,
-				KMOD_FILTER_BLACKLIST, list, &filtered);
+		err = kmod_module_apply_filter(mod->ctx, KMOD_FILTER_BLACKLIST, list,
+					       &filtered);
 		if (err < 0)
 			return err;
 
@@ -1104,7 +1076,7 @@ KMOD_EXPORT int kmod_module_probe_insert_module(struct kmod_module *mod,
 	}
 
 	cb.run_install = run_install;
-	cb.data = (void *) data;
+	cb.data = (void *)data;
 
 	kmod_list_foreach(l, list) {
 		struct kmod_module *m = l->data;
@@ -1112,31 +1084,27 @@ KMOD_EXPORT int kmod_module_probe_insert_module(struct kmod_module *mod,
 		const char *cmd = kmod_module_get_install_commands(m);
 		char *options;
 
-		if (!(flags & KMOD_PROBE_IGNORE_LOADED)
-						&& module_is_inkernel(m)) {
-			DBG(mod->ctx, "Ignoring module '%s': already loaded\n",
-								m->name);
+		if (!(flags & KMOD_PROBE_IGNORE_LOADED) && module_is_inkernel(m)) {
+			DBG(mod->ctx, "Ignoring module '%s': already loaded\n", m->name);
 			err = -EEXIST;
 			goto finish_module;
 		}
 
-		options = module_options_concat(moptions,
-					m == mod ? extra_options : NULL);
+		options =
+			module_options_concat(moptions, m == mod ? extra_options : NULL);
 
 		if (cmd != NULL && !m->ignorecmd) {
 			if (print_action != NULL)
 				print_action(m, true, options ?: "");
 
 			if (!(flags & KMOD_PROBE_DRY_RUN))
-				err = module_do_install_commands(m, options,
-									&cb);
+				err = module_do_install_commands(m, options, &cb);
 		} else {
 			if (print_action != NULL)
 				print_action(m, false, options ?: "");
 
 			if (!(flags & KMOD_PROBE_DRY_RUN))
-				err = kmod_module_insert_module(m, flags,
-								options);
+				err = kmod_module_insert_module(m, flags, options);
 		}
 
 		free(options);
@@ -1152,8 +1120,7 @@ finish_module:
 		 * been loaded between the check and the moment we try to
 		 * insert it.
 		 */
-		if (err == -EEXIST && m == mod &&
-				(flags & KMOD_PROBE_FAIL_ON_LOADED))
+		if (err == -EEXIST && m == mod && (flags & KMOD_PROBE_FAIL_ON_LOADED))
 			break;
 
 		/*
@@ -1191,12 +1158,14 @@ KMOD_EXPORT const char *kmod_module_get_options(const struct kmod_module *mod)
 			size_t len;
 			void *tmp;
 
-			DBG(mod->ctx, "modname=%s mod->name=%s mod->alias=%s\n", modname, mod->name, mod->alias);
-			if (!(streq(modname, mod->name) || (mod->alias != NULL &&
-						streq(modname, mod->alias))))
+			DBG(mod->ctx, "modname=%s mod->name=%s mod->alias=%s\n", modname,
+			    mod->name, mod->alias);
+			if (!(streq(modname, mod->name) ||
+			      (mod->alias != NULL && streq(modname, mod->alias))))
 				continue;
 
-			DBG(mod->ctx, "passed = modname=%s mod->name=%s mod->alias=%s\n", modname, mod->name, mod->alias);
+			DBG(mod->ctx, "passed = modname=%s mod->name=%s mod->alias=%s\n",
+			    modname, mod->name, mod->alias);
 			str = kmod_option_get_options(l);
 			len = strlen(str);
 			if (len < 1)
@@ -1271,7 +1240,8 @@ void kmod_module_set_install_commands(struct kmod_module *mod, const char *cmd)
 	mod->install_commands = cmd;
 }
 
-static struct kmod_list *lookup_dep(struct kmod_ctx *ctx, const char * const * array, unsigned int count)
+static struct kmod_list *lookup_dep(struct kmod_ctx *ctx, const char *const *array,
+				    unsigned int count)
 {
 	struct kmod_list *ret = NULL;
 	unsigned i;
@@ -1283,7 +1253,8 @@ static struct kmod_list *lookup_dep(struct kmod_ctx *ctx, const char * const * a
 
 		err = kmod_module_new_from_lookup(ctx, depname, &lst);
 		if (err < 0) {
-			ERR(ctx, "failed to lookup dependency '%s', continuing anyway.\n", depname);
+			ERR(ctx, "failed to lookup dependency '%s', continuing anyway.\n",
+			    depname);
 			continue;
 		} else if (lst != NULL)
 			ret = kmod_list_append_list(ret, lst);
@@ -1292,8 +1263,7 @@ static struct kmod_list *lookup_dep(struct kmod_ctx *ctx, const char * const * a
 }
 
 KMOD_EXPORT int kmod_module_get_softdeps(const struct kmod_module *mod,
-						struct kmod_list **pre,
-						struct kmod_list **post)
+					 struct kmod_list **pre, struct kmod_list **post)
 {
 	const struct kmod_list *l;
 	const struct kmod_config *config;
@@ -1308,7 +1278,7 @@ KMOD_EXPORT int kmod_module_get_softdeps(const struct kmod_module *mod,
 
 	kmod_list_foreach(l, config->softdeps) {
 		const char *modname = kmod_softdep_get_name(l);
-		const char * const *array;
+		const char *const *array;
 		unsigned count;
 
 		if (fnmatch(modname, mod->name, 0) != 0)
@@ -1330,7 +1300,7 @@ KMOD_EXPORT int kmod_module_get_softdeps(const struct kmod_module *mod,
 }
 
 KMOD_EXPORT int kmod_module_get_weakdeps(const struct kmod_module *mod,
-						struct kmod_list **weak)
+					 struct kmod_list **weak)
 {
 	const struct kmod_list *l;
 	const struct kmod_config *config;
@@ -1344,7 +1314,7 @@ KMOD_EXPORT int kmod_module_get_weakdeps(const struct kmod_module *mod,
 
 	kmod_list_foreach(l, config->weakdeps) {
 		const char *modname = kmod_weakdep_get_name(l);
-		const char * const *array;
+		const char *const *array;
 		unsigned count;
 
 		if (fnmatch(modname, mod->name, 0) != 0)
@@ -1403,8 +1373,7 @@ void kmod_module_set_remove_commands(struct kmod_module *mod, const char *cmd)
 	mod->remove_commands = cmd;
 }
 
-KMOD_EXPORT int kmod_module_new_from_loaded(struct kmod_ctx *ctx,
-						struct kmod_list **list)
+KMOD_EXPORT int kmod_module_new_from_loaded(struct kmod_ctx *ctx, struct kmod_list **list)
 {
 	struct kmod_list *l = NULL;
 	FILE *fp;
@@ -1429,8 +1398,8 @@ KMOD_EXPORT int kmod_module_new_from_loaded(struct kmod_ctx *ctx,
 
 		err = kmod_module_new_from_name(ctx, name, &m);
 		if (err < 0) {
-			ERR(ctx, "could not get module from name '%s': %s\n",
-				name, strerror(-err));
+			ERR(ctx, "could not get module from name '%s': %s\n", name,
+			    strerror(-err));
 			goto eat_line;
 		}
 
@@ -1480,18 +1449,16 @@ KMOD_EXPORT int kmod_module_get_initstate(const struct kmod_module *mod)
 	if (kmod_module_is_builtin((struct kmod_module *)mod))
 		return KMOD_MODULE_BUILTIN;
 
-	pathlen = snprintf(path, sizeof(path),
-				"/sys/module/%s/initstate", mod->name);
+	pathlen = snprintf(path, sizeof(path), "/sys/module/%s/initstate", mod->name);
 	if (pathlen >= (int)sizeof(path)) {
 		/* Too long path was truncated */
 		return -ENAMETOOLONG;
 	}
-	fd = open(path, O_RDONLY|O_CLOEXEC);
+	fd = open(path, O_RDONLY | O_CLOEXEC);
 	if (fd < 0) {
 		err = -errno;
 
-		DBG(mod->ctx, "could not open '%s': %s\n",
-			path, strerror(-err));
+		DBG(mod->ctx, "could not open '%s': %s\n", path, strerror(-err));
 
 		if (pathlen > (int)sizeof("/initstate") - 1) {
 			struct stat st;
@@ -1500,16 +1467,14 @@ KMOD_EXPORT int kmod_module_get_initstate(const struct kmod_module *mod)
 				return KMOD_MODULE_COMING;
 		}
 
-		DBG(mod->ctx, "could not open '%s': %s\n",
-			path, strerror(-err));
+		DBG(mod->ctx, "could not open '%s': %s\n", path, strerror(-err));
 		return err;
 	}
 
 	err = read_str_safe(fd, buf, sizeof(buf));
 	close(fd);
 	if (err < 0) {
-		ERR(mod->ctx, "could not read from '%s': %s\n",
-			path, strerror(-err));
+		ERR(mod->ctx, "could not read from '%s': %s\n", path, strerror(-err));
 		return err;
 	}
 
@@ -1540,12 +1505,12 @@ KMOD_EXPORT long kmod_module_get_size(const struct kmod_module *mod)
 	 * loaded.
 	 */
 	snprintf(line, sizeof(line), "/sys/module/%s", mod->name);
-	dfd = open(line, O_RDONLY|O_CLOEXEC);
+	dfd = open(line, O_RDONLY | O_CLOEXEC);
 	if (dfd < 0)
 		return -errno;
 
 	/* available as of linux 3.3.x */
-	cfd = openat(dfd, "coresize", O_RDONLY|O_CLOEXEC);
+	cfd = openat(dfd, "coresize", O_RDONLY | O_CLOEXEC);
 	if (cfd >= 0) {
 		if (read_str_long(cfd, &size, 10) < 0)
 			ERR(mod->ctx, "failed to read coresize from %s\n", line);
@@ -1557,8 +1522,7 @@ KMOD_EXPORT long kmod_module_get_size(const struct kmod_module *mod)
 	fp = fopen("/proc/modules", "re");
 	if (fp == NULL) {
 		int err = -errno;
-		ERR(mod->ctx,
-		    "could not open /proc/modules: %s\n", strerror(errno));
+		ERR(mod->ctx, "could not open /proc/modules: %s\n", strerror(errno));
 		close(dfd);
 		return err;
 	}
@@ -1574,15 +1538,13 @@ KMOD_EXPORT long kmod_module_get_size(const struct kmod_module *mod)
 
 		tok = strtok_r(NULL, " \t", &saveptr);
 		if (tok == NULL) {
-			ERR(mod->ctx,
-			"invalid line format at /proc/modules:%d\n", lineno);
+			ERR(mod->ctx, "invalid line format at /proc/modules:%d\n", lineno);
 			break;
 		}
 
 		value = strtol(tok, &endptr, 10);
 		if (endptr == tok || *endptr != '\0') {
-			ERR(mod->ctx,
-			"invalid line format at /proc/modules:%d\n", lineno);
+			ERR(mod->ctx, "invalid line format at /proc/modules:%d\n", lineno);
 			break;
 		}
 
@@ -1609,19 +1571,18 @@ KMOD_EXPORT int kmod_module_get_refcnt(const struct kmod_module *mod)
 		return -ENOENT;
 
 	snprintf(path, sizeof(path), "/sys/module/%s/refcnt", mod->name);
-	fd = open(path, O_RDONLY|O_CLOEXEC);
+	fd = open(path, O_RDONLY | O_CLOEXEC);
 	if (fd < 0) {
 		err = -errno;
-		DBG(mod->ctx, "could not open '%s': %s\n",
-			path, strerror(errno));
+		DBG(mod->ctx, "could not open '%s': %s\n", path, strerror(errno));
 		return err;
 	}
 
 	err = read_str_long(fd, &refcnt, 10);
 	close(fd);
 	if (err < 0) {
-		ERR(mod->ctx, "could not read integer from '%s': '%s'\n",
-			path, strerror(-err));
+		ERR(mod->ctx, "could not read integer from '%s': '%s'\n", path,
+		    strerror(-err));
 		return err;
 	}
 
@@ -1642,8 +1603,7 @@ KMOD_EXPORT struct kmod_list *kmod_module_get_holders(const struct kmod_module *
 
 	d = opendir(dname);
 	if (d == NULL) {
-		ERR(mod->ctx, "could not open '%s': %s\n",
-						dname, strerror(errno));
+		ERR(mod->ctx, "could not open '%s': %s\n", dname, strerror(errno));
 		return NULL;
 	}
 
@@ -1658,11 +1618,10 @@ KMOD_EXPORT struct kmod_list *kmod_module_get_holders(const struct kmod_module *
 				continue;
 		}
 
-		err = kmod_module_new_from_name(mod->ctx, dent->d_name,
-						&holder);
+		err = kmod_module_new_from_name(mod->ctx, dent->d_name, &holder);
 		if (err < 0) {
 			ERR(mod->ctx, "could not create module for '%s': %s\n",
-				dent->d_name, strerror(-err));
+			    dent->d_name, strerror(-err));
 			goto fail;
 		}
 
@@ -1710,8 +1669,7 @@ KMOD_EXPORT struct kmod_list *kmod_module_get_sections(const struct kmod_module 
 
 	d = opendir(dname);
 	if (d == NULL) {
-		ERR(mod->ctx, "could not open '%s': %s\n",
-			dname, strerror(errno));
+		ERR(mod->ctx, "could not open '%s': %s\n", dname, strerror(errno));
 		return NULL;
 	}
 
@@ -1730,18 +1688,17 @@ KMOD_EXPORT struct kmod_list *kmod_module_get_sections(const struct kmod_module 
 				continue;
 		}
 
-		fd = openat(dfd, dent->d_name, O_RDONLY|O_CLOEXEC);
+		fd = openat(dfd, dent->d_name, O_RDONLY | O_CLOEXEC);
 		if (fd < 0) {
-			ERR(mod->ctx, "could not open '%s/%s': %m\n",
-							dname, dent->d_name);
+			ERR(mod->ctx, "could not open '%s/%s': %m\n", dname, dent->d_name);
 			goto fail;
 		}
 
 		err = read_str_ulong(fd, &address, 16);
 		close(fd);
 		if (err < 0) {
-			ERR(mod->ctx, "could not read long from '%s/%s': %m\n",
-							dname, dent->d_name);
+			ERR(mod->ctx, "could not read long from '%s/%s': %m\n", dname,
+			    dent->d_name);
 			goto fail;
 		}
 
@@ -1815,8 +1772,7 @@ static struct kmod_elf *kmod_module_get_elf(const struct kmod_module *mod)
 			return NULL;
 		}
 
-		((struct kmod_module *)mod)->file = kmod_file_open(mod->ctx,
-									path);
+		((struct kmod_module *)mod)->file = kmod_file_open(mod->ctx, path);
 		if (mod->file == NULL)
 			return NULL;
 	}
@@ -1829,7 +1785,8 @@ struct kmod_module_info {
 	char value[];
 };
 
-static struct kmod_module_info *kmod_module_info_new(const char *key, size_t keylen, const char *value, size_t valuelen)
+static struct kmod_module_info *kmod_module_info_new(const char *key, size_t keylen,
+						     const char *value, size_t valuelen)
 {
 	struct kmod_module_info *info;
 
@@ -1837,8 +1794,7 @@ static struct kmod_module_info *kmod_module_info_new(const char *key, size_t key
 	if (info == NULL)
 		return NULL;
 
-	info->key = (char *)info + sizeof(struct kmod_module_info)
-		    + valuelen + 1;
+	info->key = (char *)info + sizeof(struct kmod_module_info) + valuelen + 1;
 	memcpy(info->key, key, keylen);
 	info->key[keylen] = '\0';
 	memcpy(info->value, value, valuelen);
@@ -1851,7 +1807,9 @@ static void kmod_module_info_free(struct kmod_module_info *info)
 	free(info);
 }
 
-static struct kmod_list *kmod_module_info_append(struct kmod_list **list, const char *key, size_t keylen, const char *value, size_t valuelen)
+static struct kmod_list *kmod_module_info_append(struct kmod_list **list, const char *key,
+						 size_t keylen, const char *value,
+						 size_t valuelen)
 {
 	struct kmod_module_info *info;
 	struct kmod_list *n;
@@ -1895,10 +1853,8 @@ static char *kmod_module_hex_to_str(const char *hex, size_t len)
 }
 
 static struct kmod_list *kmod_module_info_append_hex(struct kmod_list **list,
-						     const char *key,
-						     size_t keylen,
-						     const char *value,
-						     size_t valuelen)
+						     const char *key, size_t keylen,
+						     const char *value, size_t valuelen)
 {
 	char *hex;
 	struct kmod_list *n;
@@ -1924,7 +1880,8 @@ list_error:
 	return NULL;
 }
 
-KMOD_EXPORT int kmod_module_get_info(const struct kmod_module *mod, struct kmod_list **list)
+KMOD_EXPORT int kmod_module_get_info(const struct kmod_module *mod,
+				     struct kmod_list **list)
 {
 	struct kmod_elf *elf;
 	char **strings;
@@ -1938,9 +1895,8 @@ KMOD_EXPORT int kmod_module_get_info(const struct kmod_module *mod, struct kmod_
 
 	/* remove const: this can only change internal state */
 	if (kmod_module_is_builtin((struct kmod_module *)mod)) {
-		count = kmod_builtin_get_modinfo(mod->ctx,
-						kmod_module_get_name(mod),
-						&strings);
+		count = kmod_builtin_get_modinfo(mod->ctx, kmod_module_get_name(mod),
+						 &strings);
 		if (count < 0)
 			return count;
 	} else {
@@ -1979,28 +1935,26 @@ KMOD_EXPORT int kmod_module_get_info(const struct kmod_module *mod, struct kmod_
 		struct kmod_list *n;
 
 		n = kmod_module_info_append(list, "sig_id", strlen("sig_id"),
-				sig_info.id_type, strlen(sig_info.id_type));
+					    sig_info.id_type, strlen(sig_info.id_type));
 		if (n == NULL)
 			goto list_error;
 		count++;
 
 		n = kmod_module_info_append(list, "signer", strlen("signer"),
-				sig_info.signer, sig_info.signer_len);
+					    sig_info.signer, sig_info.signer_len);
 		if (n == NULL)
 			goto list_error;
 		count++;
-
 
 		n = kmod_module_info_append_hex(list, "sig_key", strlen("sig_key"),
-						sig_info.key_id,
-						sig_info.key_id_len);
+						sig_info.key_id, sig_info.key_id_len);
 		if (n == NULL)
 			goto list_error;
 		count++;
 
-		n = kmod_module_info_append(list,
-				"sig_hashalgo", strlen("sig_hashalgo"),
-				sig_info.hash_algo, strlen(sig_info.hash_algo));
+		n = kmod_module_info_append(list, "sig_hashalgo", strlen("sig_hashalgo"),
+					    sig_info.hash_algo,
+					    strlen(sig_info.hash_algo));
 		if (n == NULL)
 			goto list_error;
 		count++;
@@ -2009,15 +1963,12 @@ KMOD_EXPORT int kmod_module_get_info(const struct kmod_module *mod, struct kmod_
 		 * Omit sig_info.algo for now, as these
 		 * are currently constant.
 		 */
-		n = kmod_module_info_append_hex(list, "signature",
-						strlen("signature"),
-						sig_info.sig,
-						sig_info.sig_len);
+		n = kmod_module_info_append_hex(list, "signature", strlen("signature"),
+						sig_info.sig, sig_info.sig_len);
 
 		if (n == NULL)
 			goto list_error;
 		count++;
-
 	}
 	ret = count;
 
@@ -2068,7 +2019,8 @@ struct kmod_module_version {
 	char symbol[];
 };
 
-static struct kmod_module_version *kmod_module_versions_new(uint64_t crc, const char *symbol)
+static struct kmod_module_version *kmod_module_versions_new(uint64_t crc,
+							    const char *symbol)
 {
 	struct kmod_module_version *mv;
 	size_t symbollen = strlen(symbol) + 1;
@@ -2087,7 +2039,8 @@ static void kmod_module_version_free(struct kmod_module_version *version)
 	free(version);
 }
 
-KMOD_EXPORT int kmod_module_get_versions(const struct kmod_module *mod, struct kmod_list **list)
+KMOD_EXPORT int kmod_module_get_versions(const struct kmod_module *mod,
+					 struct kmod_list **list)
 {
 	struct kmod_elf *elf;
 	struct kmod_modversion *versions;
@@ -2190,7 +2143,8 @@ static void kmod_module_symbol_free(struct kmod_module_symbol *symbol)
 	free(symbol);
 }
 
-KMOD_EXPORT int kmod_module_get_symbols(const struct kmod_module *mod, struct kmod_list **list)
+KMOD_EXPORT int kmod_module_get_symbols(const struct kmod_module *mod,
+					struct kmod_list **list)
 {
 	struct kmod_elf *elf;
 	struct kmod_modversion *symbols;
@@ -2292,12 +2246,14 @@ static struct kmod_module_dependency_symbol *kmod_module_dependency_symbols_new(
 	return mv;
 }
 
-static void kmod_module_dependency_symbol_free(struct kmod_module_dependency_symbol *dependency_symbol)
+static void kmod_module_dependency_symbol_free(
+	struct kmod_module_dependency_symbol *dependency_symbol)
 {
 	free(dependency_symbol);
 }
 
-KMOD_EXPORT int kmod_module_get_dependency_symbols(const struct kmod_module *mod, struct kmod_list **list)
+KMOD_EXPORT int kmod_module_get_dependency_symbols(const struct kmod_module *mod,
+						   struct kmod_list **list)
 {
 	struct kmod_elf *elf;
 	struct kmod_modversion *symbols;
@@ -2320,8 +2276,7 @@ KMOD_EXPORT int kmod_module_get_dependency_symbols(const struct kmod_module *mod
 		struct kmod_module_dependency_symbol *mv;
 		struct kmod_list *n;
 
-		mv = kmod_module_dependency_symbols_new(symbols[i].crc,
-							symbols[i].bind,
+		mv = kmod_module_dependency_symbols_new(symbols[i].crc, symbols[i].bind,
 							symbols[i].symbol);
 		if (mv == NULL) {
 			ret = -errno;
