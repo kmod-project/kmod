@@ -936,6 +936,8 @@ enum kmod_filter {
  *
  * Returns: 0 on success or < 0 otherwise. @output is saved with the updated
  * list.
+ *
+ * Since: 6
  */
 int kmod_module_apply_filter(const struct kmod_ctx *ctx,
 					enum kmod_filter filter_type,
