@@ -152,6 +152,12 @@ enum node_offset {
 	INDEX_NODE_MASK     = 0x0FFFFFFF, /* Offset value */
 };
 
+static void fatal_oom(void)
+{
+	ERR("out of memory\n");
+	exit(EXIT_FAILURE);
+}
+
 static struct index_node *index_create(void)
 {
 	struct index_node *node;
@@ -227,7 +233,9 @@ static int index_add_value(struct index_value **values,
 		values = &(*values)->next;
 
 	len = strlen(value);
-	v = NOFAIL(calloc(1, sizeof(struct index_value) + len + 1));
+	v = calloc(1, sizeof(struct index_value) + len + 1);
+	if (v == NULL)
+		fatal_oom();
 	v->next = *values;
 	v->priority = priority;
 	memcpy(v->value, value, len + 1);
@@ -258,9 +266,13 @@ static int index_insert(struct index_node *node, const char *key,
 				struct index_node *n;
 
 				/* New child is copy of node with prefix[j+1..N] */
-				n = NOFAIL(calloc(1, sizeof(struct index_node)));
+				n = calloc(1, sizeof(struct index_node));
+				if (n == NULL)
+					fatal_oom();
 				memcpy(n, node, sizeof(struct index_node));
-				n->prefix = NOFAIL(strdup(&prefix[j+1]));
+				n->prefix = strdup(&prefix[j+1]);
+				if (n->prefix == NULL)
+					fatal_oom();
 
 				/* Parent has prefix[0..j], child at prefix[j] */
 				memset(node, 0, sizeof(struct index_node));
@@ -287,10 +299,14 @@ static int index_insert(struct index_node *node, const char *key,
 				node->first = ch;
 			if (ch > node->last)
 				node->last = ch;
-			node->children[ch] = NOFAIL(calloc(1, sizeof(struct index_node)));
+			node->children[ch] = calloc(1, sizeof(struct index_node));
+			if (node->children[ch] == NULL)
+				fatal_oom();
 
 			child = node->children[ch];
-			child->prefix = NOFAIL(strdup(&key[i+1]));
+			child->prefix = strdup(&key[i+1]);
+			if (child->prefix == NULL)
+				fatal_oom();
 			child->first = INDEX_CHILDMAX;
 			index_add_value(&child->values, value, priority);
 
@@ -330,7 +346,9 @@ static uint32_t index_write__node(const struct index_node *node, FILE *out)
 		int i;
 
 		child_count = node->last - node->first + 1;
-		child_offs = NOFAIL(malloc(child_count * sizeof(uint32_t)));
+		child_offs = malloc(child_count * sizeof(uint32_t));
+		if (child_offs == NULL)
+			fatal_oom();
 
 		for (i = 0; i < child_count; i++) {
 			child = node->children[node->first + i];
