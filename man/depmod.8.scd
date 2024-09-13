@@ -63,7 +63,7 @@ rather than the current kernel version (as returned by *uname -r*).
 		depmod -b /my/build/staging/dir/
 
 	This expects all input files under
-	_/my/build/staging/dir/@MODULE_DIRECTORY@/$(uname -r)_ and generates
+	_/my/build/staging/dir@MODULE_DIRECTORY@/$(uname -r)_ and generates
 	index files under that same directory.
 
 *-m* _moduledir_
