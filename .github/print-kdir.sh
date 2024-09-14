@@ -12,5 +12,6 @@ done
 # There should be one entry - the kernel we installed
 if (( $(echo "$kernel" | wc -l) != 1 )); then
     echo >&2 "Error: exactly one kernel must be installed"
+    exit 1
 fi
 echo "KDIR=$moddir/$kernel/build"
