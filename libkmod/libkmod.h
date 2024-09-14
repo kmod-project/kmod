@@ -261,6 +261,8 @@ void *kmod_get_userdata(const struct kmod_ctx *ctx);
  *
  * Retrieve the absolute path used for linux modules in this context. The path
  * is computed from the arguments to kmod_new().
+ *
+ * Since: 22
  */
 const char *kmod_get_dirname(const struct kmod_ctx *ctx);
 
