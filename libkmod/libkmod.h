@@ -146,6 +146,8 @@ enum kmod_resources {
  * context is not valid anymore.
  *
  * Returns: the resources state, valid states are #kmod_resources.
+ *
+ * Since: 3
  */
 int kmod_validate_resources(struct kmod_ctx *ctx);
 
@@ -774,6 +776,8 @@ enum kmod_probe {
  *
  * Returns: 0 on success, > 0 if stopped by a reason given in @flags or < 0 on
  * failure.
+ *
+ * Since: 3
  */
 int kmod_module_probe_insert_module(struct kmod_module *mod,
 			unsigned int flags, const char *extra_options,
@@ -1032,6 +1036,8 @@ const char *kmod_module_get_path(const struct kmod_module *mod);
  * kmod_module_dependency_symbols_free_list().
  *
  * Returns: 0 on success or < 0 otherwise.
+ *
+ * Since: 3
  */
 int kmod_module_get_dependency_symbols(const struct kmod_module *mod, struct kmod_list **list);
 
@@ -1061,6 +1067,8 @@ enum kmod_symbol_bind {
  *
  * Returns: the bind of this kmod module dependency_symbol on success,
  * or < 0 on failure. Valid bind types are #kmod_symbol_bind.
+ *
+ * Since: 3
  */
 int kmod_module_dependency_symbol_get_bind(const struct kmod_list *entry);
 
@@ -1071,6 +1079,8 @@ int kmod_module_dependency_symbol_get_bind(const struct kmod_list *entry);
  * Get the crc of a kmod module dependency_symbol.
  *
  * Returns: the crc of this kmod module dependency_symbol if available, otherwise default to 0.
+ *
+ * Since: 3
  */
 uint64_t kmod_module_dependency_symbol_get_crc(const struct kmod_list *entry);
 
@@ -1082,6 +1092,8 @@ uint64_t kmod_module_dependency_symbol_get_crc(const struct kmod_list *entry);
  *
  * Returns: the symbol of this kmod module dependency_symbols on success or NULL
  * on failure. The string is owned by the dependency_symbols, do not free it.
+ *
+ * Since: 3
  */
 const char *kmod_module_dependency_symbol_get_symbol(const struct kmod_list *entry);
 
@@ -1090,6 +1102,8 @@ const char *kmod_module_dependency_symbol_get_symbol(const struct kmod_list *ent
  * @list: kmod module dependency_symbols list
  *
  * Release the resources taken by @list
+ *
+ * Since: 3
  */
 void kmod_module_dependency_symbols_free_list(struct kmod_list *list);
 
@@ -1163,6 +1177,8 @@ void kmod_module_section_free_list(struct kmod_list *list);
  * After use, free the @list by calling kmod_module_symbols_free_list().
  *
  * Returns: 0 on success or < 0 otherwise.
+ *
+ * Since: 3
  */
 int kmod_module_get_symbols(const struct kmod_module *mod, struct kmod_list **list);
 
@@ -1173,6 +1189,8 @@ int kmod_module_get_symbols(const struct kmod_module *mod, struct kmod_list **li
  * Get the crc of a kmod module symbol.
  *
  * Returns: the crc of this kmod module symbol if available, otherwise default to 0.
+ *
+ * Since: 3
  */
 uint64_t kmod_module_symbol_get_crc(const struct kmod_list *entry);
 
@@ -1184,6 +1202,8 @@ uint64_t kmod_module_symbol_get_crc(const struct kmod_list *entry);
  *
  * Returns: the symbol of this kmod module symbols on success or NULL
  * on failure. The string is owned by the symbols, do not free it.
+ *
+ * Since: 3
  */
 const char *kmod_module_symbol_get_symbol(const struct kmod_list *entry);
 
@@ -1192,6 +1212,8 @@ const char *kmod_module_symbol_get_symbol(const struct kmod_list *entry);
  * @list: kmod module symbols list
  *
  * Release the resources taken by @list
+ *
+ * Since: 3
  */
 void kmod_module_symbols_free_list(struct kmod_list *list);
 
