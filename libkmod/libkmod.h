@@ -611,6 +611,8 @@ int kmod_module_new_from_lookup(struct kmod_ctx *ctx, const char *given_alias,
  * Returns: 0 on success or < 0 otherwise. It fails if any of the lookup
  * methods failed, which is basically due to memory allocation failure. If
  * module is not found, it still returns 0, but @mod is left untouched.
+ *
+ * Since: 30
  */
 int kmod_module_new_from_name_lookup(struct kmod_ctx *ctx,
 				     const char *modname,
