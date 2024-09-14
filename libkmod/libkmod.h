@@ -182,6 +182,8 @@ enum kmod_index {
  * order.
  *
  * Returns: 0 on success or < 0 otherwise.
+ *
+ * Since: 4
  */
 int kmod_dump_index(struct kmod_ctx *ctx, enum kmod_index type, int fd);
 
@@ -383,6 +385,8 @@ struct kmod_config_iter;
  *
  * Returns: a new iterator over the blacklists or NULL on failure. Free it
  * with kmod_config_iter_free_iter().
+ *
+ * Since: 4
  */
 struct kmod_config_iter *kmod_config_get_blacklists(const struct kmod_ctx *ctx);
 
@@ -397,6 +401,8 @@ struct kmod_config_iter *kmod_config_get_blacklists(const struct kmod_ctx *ctx);
  *
  * Returns: a new iterator over the install commands or NULL on failure. Free
  * it with kmod_config_iter_free_iter().
+ *
+ * Since: 4
  */
 struct kmod_config_iter *kmod_config_get_install_commands(const struct kmod_ctx *ctx);
 
@@ -411,6 +417,8 @@ struct kmod_config_iter *kmod_config_get_install_commands(const struct kmod_ctx 
  *
  * Returns: a new iterator over the remove commands or NULL on failure. Free
  * it with kmod_config_iter_free_iter().
+ *
+ * Since: 4
  */
 struct kmod_config_iter *kmod_config_get_remove_commands(const struct kmod_ctx *ctx);
 
@@ -425,6 +433,8 @@ struct kmod_config_iter *kmod_config_get_remove_commands(const struct kmod_ctx *
  *
  * Returns: a new iterator over the aliases or NULL on failure. Free it with
  * kmod_config_iter_free_iter().
+ *
+ * Since: 4
  */
 struct kmod_config_iter *kmod_config_get_aliases(const struct kmod_ctx *ctx);
 
@@ -439,6 +449,8 @@ struct kmod_config_iter *kmod_config_get_aliases(const struct kmod_ctx *ctx);
  *
  * Returns: a new iterator over the options or NULL on failure. Free it with
  * kmod_config_iter_free_iter().
+ *
+ * Since: 4
  */
 struct kmod_config_iter *kmod_config_get_options(const struct kmod_ctx *ctx);
 
@@ -453,6 +465,8 @@ struct kmod_config_iter *kmod_config_get_options(const struct kmod_ctx *ctx);
  *
  * Returns: a new iterator over the softdeps or NULL on failure. Free it with
  * kmod_config_iter_free_iter().
+ *
+ * Since: 4
  */
 struct kmod_config_iter *kmod_config_get_softdeps(const struct kmod_ctx *ctx);
 
@@ -479,6 +493,8 @@ struct kmod_config_iter *kmod_config_get_weakdeps(const struct kmod_ctx *ctx);
  * valid.
  *
  * Returns: the key of the current configuration pointed by @iter.
+ *
+ * Since: 4
  */
 const char *kmod_config_iter_get_key(const struct kmod_config_iter *iter);
 
@@ -491,6 +507,8 @@ const char *kmod_config_iter_get_key(const struct kmod_config_iter *iter);
  * valid.
  *
  * Returns: the value of the current configuration pointed by @iter.
+ *
+ * Since: 4
  */
 const char *kmod_config_iter_get_value(const struct kmod_config_iter *iter);
 
@@ -505,6 +523,8 @@ const char *kmod_config_iter_get_value(const struct kmod_config_iter *iter);
  *
  * Returns: true if next position of @iter is valid or false if its end is
  * reached.
+ *
+ * Since: 4
  */
 bool kmod_config_iter_next(struct kmod_config_iter *iter);
 
@@ -513,6 +533,8 @@ bool kmod_config_iter_next(struct kmod_config_iter *iter);
  * @iter: iterator over a certain configuration
  *
  * Free resources used by the iterator.
+ *
+ * Since: 4
  */
 void kmod_config_iter_free_iter(struct kmod_config_iter *iter);
 
