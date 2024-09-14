@@ -82,3 +82,9 @@ kmod replaced module-init-tools, which was EOL'ed in 2011. All the tools were
 rewritten on top of libkmod and they can be used as drop in replacements.
 Along the years there were a few behavior changes and new features implemented,
 following feedback from Linux kernel community and distros.
+
+## SAST Tools
+
+[PVS-Studio] - static analyzer for C, C++, C#, and Java code.
+
+[PVS-Studio]: https://pvs-studio.com/en/pvs-studio/?utm_source=website&utm_medium=github&utm_campaign=open_source
