@@ -483,6 +483,8 @@ struct kmod_config_iter *kmod_config_get_softdeps(const struct kmod_ctx *ctx);
  *
  * Returns: a new iterator over the weakdeps or NULL on failure. Free it with
  * kmod_config_iter_free_iter().
+ *
+ * Since: 33
  */
 struct kmod_config_iter *kmod_config_get_weakdeps(const struct kmod_ctx *ctx);
 
@@ -912,6 +914,8 @@ int kmod_module_get_softdeps(const struct kmod_module *mod,
  * should be unreferenced with kmod_module_unref_list().
  *
  * Returns: 0 on success or < 0 otherwise.
+ *
+ * Since: 33
  */
 int kmod_module_get_weakdeps(const struct kmod_module *mod,
 				struct kmod_list **weak);
