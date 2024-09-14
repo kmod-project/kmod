@@ -185,7 +185,6 @@ WRAP_1ARG(int, -1, chdir);
 
 WRAP_2ARGS(FILE*, NULL, fopen, const char*);
 WRAP_2ARGS(int, -1, mkdir, mode_t);
-WRAP_2ARGS(int, -1, access, int);
 WRAP_2ARGS(int, -1, stat, struct stat*);
 
 WRAP_OPEN();

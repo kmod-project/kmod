@@ -105,14 +105,9 @@ DEFINE_TEST(testsuite_rootfs_open,
 	},
 	.need_spawn = true);
 
-static int testsuite_rootfs_stat_access(const struct test *t)
+static int testsuite_rootfs_stat(const struct test *t)
 {
 	struct stat st;
-
-	if (access(MODULE_DIRECTORY "/a", F_OK) < 0) {
-		ERR("access failed: %m\n");
-		return EXIT_FAILURE;
-	}
 
 	if (stat(MODULE_DIRECTORY "/a", &st) < 0) {
 		ERR("stat failed: %m\n");
@@ -121,8 +116,8 @@ static int testsuite_rootfs_stat_access(const struct test *t)
 
 	return EXIT_SUCCESS;
 }
-DEFINE_TEST(testsuite_rootfs_stat_access,
-	.description = "test if rootfs works - stat() and access()",
+DEFINE_TEST(testsuite_rootfs_stat,
+	.description = "test if rootfs works - stat()",
 	.config = {
 		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-rootfs/",
 	},
