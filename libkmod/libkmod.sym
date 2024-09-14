@@ -1,3 +1,6 @@
+# With kmod v5 we bumped the DSO major and re-tagged all symbols.
+#
+# NOTE: Do not change the existing sections. Add new symbols to new sections.
 LIBKMOD_5 {
 global:
 	kmod_get_log_priority;
