@@ -187,29 +187,23 @@ WRAP_2ARGS(FILE*, NULL, fopen, const char*);
 WRAP_2ARGS(int, -1, mkdir, mode_t);
 WRAP_2ARGS(int, -1, access, int);
 WRAP_2ARGS(int, -1, stat, struct stat*);
-WRAP_2ARGS(int, -1, lstat, struct stat*);
 
 WRAP_OPEN();
 
 #if HAVE_DECL___GLIBC__
 WRAP_2ARGS(FILE*, NULL, fopen64, const char*);
 WRAP_2ARGS(int, -1, stat64, struct stat64*);
-WRAP_2ARGS(int, -1, lstat64, struct stat64*);
 
 struct __stat64_t64;
 extern int __stat64_time64 (const char *file, struct __stat64_t64 *buf);
-extern int __lstat64_time64 (const char *file, struct __stat64_t64 *buf);
 WRAP_2ARGS(int, -1, __stat64_time64, struct __stat64_t64*);
-WRAP_2ARGS(int, -1, __lstat64_time64, struct __stat64_t64*);
 
 WRAP_OPEN(64);
 #endif
 
 #ifdef HAVE___XSTAT
 WRAP_VERSTAT(__x,);
-WRAP_VERSTAT(__lx,);
 #if HAVE_DECL___GLIBC__
 WRAP_VERSTAT(__x,64);
-WRAP_VERSTAT(__lx,64);
 #endif
 #endif
