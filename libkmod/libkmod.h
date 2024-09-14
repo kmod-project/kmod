@@ -312,6 +312,8 @@ struct kmod_list;
  * expected, and this is what differentiates from kmod_list_prev()).
  *
  * Returns: last node at @list or NULL if the list is empty.
+ *
+ * Since: 2
  */
 struct kmod_list *kmod_list_last(const struct kmod_list *list);
 
@@ -859,6 +861,8 @@ struct kmod_list *kmod_module_get_dependencies(const struct kmod_module *mod);
  * should be unreferenced with kmod_module_unref_list().
  *
  * Returns: 0 on success or < 0 otherwise.
+ *
+ * Since: 2
  */
 int kmod_module_get_softdeps(const struct kmod_module *mod,
 				struct kmod_list **pre, struct kmod_list **post);
@@ -1206,6 +1210,8 @@ void kmod_module_symbols_free_list(struct kmod_list *list);
  * After use, free the @list by calling kmod_module_versions_free_list().
  *
  * Returns: 0 on success or < 0 otherwise.
+ *
+ * Since: 2
  */
 int kmod_module_get_versions(const struct kmod_module *mod, struct kmod_list **list);
 
@@ -1216,6 +1222,8 @@ int kmod_module_get_versions(const struct kmod_module *mod, struct kmod_list **l
  * Get the crc of a kmod module version.
  *
  * Returns: the crc of this kmod module version if available, otherwise default to 0.
+ *
+ * Since: 2
  */
 uint64_t kmod_module_version_get_crc(const struct kmod_list *entry);
 
@@ -1227,6 +1235,8 @@ uint64_t kmod_module_version_get_crc(const struct kmod_list *entry);
  *
  * Returns: the symbol of this kmod module versions on success or NULL
  * on failure. The string is owned by the versions, do not free it.
+ *
+ * Since: 2
  */
 const char *kmod_module_version_get_symbol(const struct kmod_list *entry);
 
@@ -1235,6 +1245,8 @@ const char *kmod_module_version_get_symbol(const struct kmod_list *entry);
  * @list: kmod module versions list
  *
  * Release the resources taken by @list
+ *
+ * Since: 2
  */
 void kmod_module_versions_free_list(struct kmod_list *list);
 
@@ -1257,6 +1269,8 @@ void kmod_module_versions_free_list(struct kmod_list *list);
  * After use, free the @list by calling kmod_module_info_free_list().
  *
  * Returns: number of entries in @list on success or < 0 otherwise.
+ *
+ * Since: 2
  */
 int kmod_module_get_info(const struct kmod_module *mod, struct kmod_list **list);
 
@@ -1268,6 +1282,8 @@ int kmod_module_get_info(const struct kmod_module *mod, struct kmod_list **list)
  *
  * Returns: the key of this kmod module info on success or NULL on
  * failure. The string is owned by the info, do not free it.
+ *
+ * Since: 2
  */
 const char *kmod_module_info_get_key(const struct kmod_list *entry);
 
@@ -1279,6 +1295,8 @@ const char *kmod_module_info_get_key(const struct kmod_list *entry);
  *
  * Returns: the value of this kmod module info on success or NULL on
  * failure. The string is owned by the info, do not free it.
+ *
+ * Since: 2
  */
 const char *kmod_module_info_get_value(const struct kmod_list *entry);
 
@@ -1287,6 +1305,8 @@ const char *kmod_module_info_get_value(const struct kmod_list *entry);
  * @list: kmod module info list
  *
  * Release the resources taken by @list
+ *
+ * Since: 2
  */
 void kmod_module_info_free_list(struct kmod_list *list);
 
