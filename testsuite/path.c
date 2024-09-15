@@ -196,7 +196,7 @@ WRAP_2ARGS(FILE*, NULL, fopen64, const char*);
 WRAP_2ARGS(int, -1, stat64, struct stat64*);
 #endif
 
-#if HAVE_DECL___GLIBC__
+#ifdef HAVE___STAT64_TIME64
 extern int __stat64_time64 (const char *file, void *buf);
 WRAP_2ARGS(int, -1, __stat64_time64, void *);
 #endif

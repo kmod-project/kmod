@@ -35,7 +35,7 @@ cdata.set10('_GNU_SOURCE', true)
 
 _funcs = [
   '__xstat',
-  'open64', 'stat64', 'fopen64',
+  'open64', 'stat64', 'fopen64', '__stat64_time64',
   '__secure_getenv', 'secure_getenv',
 ]
 foreach func : _funcs
