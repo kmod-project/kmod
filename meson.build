@@ -34,7 +34,6 @@ cdata.set10('_GNU_SOURCE', true)
 ################################################################################
 
 _funcs = [
-  '__xstat',
   'open64', 'stat64', 'fopen64', '__stat64_time64',
   '__secure_getenv', 'secure_getenv',
 ]
@@ -88,11 +87,12 @@ endforeach
 # not desired here
 _decls = [
   ['basename', 'string.h'],
+  ['__xstat', 'sys/stat.h'],
 ]
 foreach tuple : _decls
   decl = tuple[0]
   header = tuple[1]
-  glibc = cc.has_header_symbol(header, decl, args : '-D_GNU_SOURCE')
+  have  = cc.has_header_symbol(header, decl, args : '-D_GNU_SOURCE')
   cdata.set10('HAVE_DECL_@0@'.format(decl.to_upper()), have)
 endforeach
 
