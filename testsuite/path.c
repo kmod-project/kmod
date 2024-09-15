@@ -189,14 +189,20 @@ WRAP_2ARGS(int, -1, stat, struct stat*);
 
 WRAP_OPEN();
 
-#if HAVE_DECL___GLIBC__
+#ifdef HAVE_FOPEN64
 WRAP_2ARGS(FILE*, NULL, fopen64, const char*);
+#endif
+#ifdef HAVE_STAT64
 WRAP_2ARGS(int, -1, stat64, struct stat64*);
+#endif
 
+#if HAVE_DECL___GLIBC__
 struct __stat64_t64;
 extern int __stat64_time64 (const char *file, struct __stat64_t64 *buf);
 WRAP_2ARGS(int, -1, __stat64_time64, struct __stat64_t64*);
+#endif
 
+#ifdef HAVE_OPEN64
 WRAP_OPEN(64);
 #endif
 

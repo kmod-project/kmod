@@ -40,6 +40,7 @@ AC_PROG_CC_C99
 #####################################################################
 
 AC_CHECK_FUNCS_ONCE(__xstat)
+AC_CHECK_FUNCS_ONCE([open64 stat64 fopen64])
 AC_CHECK_FUNCS_ONCE([__secure_getenv secure_getenv])
 
 CC_CHECK_FUNC_BUILTIN([__builtin_clz])

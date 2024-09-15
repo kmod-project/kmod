@@ -33,9 +33,14 @@ cdata.set10('_GNU_SOURCE', true)
 # Function and structure checks
 ################################################################################
 
-foreach decl : ['__xstat', '__secure_getenv', 'secure_getenv']
-  if cc.has_function(decl, args : '-D_GNU_SOURCE')
-    cdata.set('HAVE_@0@'.format(decl.to_upper()), true)
+_funcs = [
+  '__xstat',
+  'open64', 'stat64', 'fopen64',
+  '__secure_getenv', 'secure_getenv',
+]
+foreach func : _funcs
+  if cc.has_function(func, args : '-D_GNU_SOURCE')
+    cdata.set('HAVE_@0@'.format(func.to_upper()), true)
   endif
 endforeach
 
