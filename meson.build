@@ -87,12 +87,12 @@ endforeach
 # basename may be only available in libgen.h with the POSIX behavior,
 # not desired here
 _decls = [
-  ['basename', '#include <string.h>'],
+  ['basename', 'string.h'],
 ]
 foreach tuple : _decls
   decl = tuple[0]
-  prefix = tuple[1]
-  have = cc.has_function(decl, prefix : prefix, args : '-D_GNU_SOURCE')
+  header = tuple[1]
+  glibc = cc.has_header_symbol(header, decl, args : '-D_GNU_SOURCE')
   cdata.set10('HAVE_DECL_@0@'.format(decl.to_upper()), have)
 endforeach
 
