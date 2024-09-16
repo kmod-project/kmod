@@ -7,6 +7,7 @@ patches sent to the [mailing list]. In addition you can open issues and feature
 requests on our [GitHub tracker].
 
 In this file you can find:
+  * [License and SPDX](#license-and-spdx)
   * [Commit style and history](#commit-style-and-history)
   * [Using commit trailers](#using-commit-trailers)
     + [Signed-off-by](#signed-off-by)
@@ -18,6 +19,12 @@ In this file you can find:
   * [API documentation](#api-documentation)
   * [Tools manual pages](#tools-manual-pages)
   * [Tools shell completion](#tools-shell-completion)
+
+## License and SPDX
+
+The project uses `GPLv2+` for `tools/` and `LGPLv2.1+` for everything else. When
+adding new files use the respective `SPDX-License-Identifier:` instead of the
+complete license text.
 
 ## Commit style and history
 
