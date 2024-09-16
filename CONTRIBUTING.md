@@ -34,6 +34,14 @@ If your commit covers a topic raised in an issue, but does not resolve the issue
 itself; or otherwise refers to a more complicated topic, you can use
 `Reference:`.
 
+### Link(s)
+
+The use of `Link:` trailer is reserved and should be used only to point to the
+patch origin. Be that the GitHub pull request, or the mailing list archive.
+
+You can add it yourself, although usually the maintainer will include it when
+merging the patch.
+
 ### Bugfixes, regressions
 
 Nobody is perfect and regressions happen from time to time. Whenever a commit
