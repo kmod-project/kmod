@@ -16,15 +16,15 @@ Commit messages are in imperative mood and merges are to be avoided.
 When in doubt, or need a regresher, checking through the output of `git log` is
 highly recommended.
 
-## Commit tags
+## Commit tailers
 
 Commit messages, apart from stating why a particular change is made, can include
-a range of tags.
+a range of trailers.
 
 ### Issues, feature requests
 
 Whenever a patch resolves a particular issue, be that one on our [GitHub
-tracker] or elsewhere, use the `Closes:` tag followed by the full URL.
+tracker] or elsewhere, use the `Closes:` trailer followed by the full URL.
 
     Closes: https://github.com/kmod-project/kmod/issues/65
 
