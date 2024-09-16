@@ -6,6 +6,19 @@ If you want to submit changes, you can send GitHub [pull requests] as well as
 patches sent to the [mailing list]. In addition you can open issues and feature
 requests on our [GitHub tracker].
 
+In this file you can find:
+  * [Commit style and history](#commit-style-and-history)
+  * [Using commit trailers](#using-commit-trailers)
+    + [Signed-off-by](#signed-off-by)
+    + [Issues, feature requests](#issues--feature-requests)
+    + [Discussions, references](#discussions--references)
+    + [Link(s)](#link-s-)
+    + [Bugfixes, regressions](#bugfixes--regressions)
+  * [Coding style](#coding-style)
+  * [API documentation](#api-documentation)
+  * [Tools manual pages](#tools-manual-pages)
+  * [Tools shell completion](#tools-shell-completion)
+
 ## Commit style and history
 
 The kmod project uses a [linear, "recipe" style] history. This means that
