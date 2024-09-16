@@ -21,6 +21,11 @@ highly recommended.
 Commit messages, apart from stating why a particular change is made, can include
 a range of trailers.
 
+### Signed-off-by
+
+By using a `Signed-off-by:` trailer you agree that you comply with the
+[Developer Certificate of Origin](DCO.txt).
+
 ### Issues, feature requests
 
 Whenever a patch resolves a particular issue, be that one on our [GitHub
