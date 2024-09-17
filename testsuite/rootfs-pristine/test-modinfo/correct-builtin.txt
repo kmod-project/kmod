@@ -1,0 +1,6 @@
+name:           intel_uncore
+filename:       (builtin)
+license:        GPL
+file:           arch/x86/events/intel/intel-uncore
+description:    Support for Intel uncore performance events
+parm:           uncore_no_discover:Don't enable the Intel uncore PerfMon discovery mechanism (default: enable the discovery mechanism). (bool)
