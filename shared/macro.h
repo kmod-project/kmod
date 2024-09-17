@@ -39,9 +39,6 @@
 #define CONCATENATE(x, y) XCONCATENATE(x, y)
 #define UNIQ(x) CONCATENATE(x, __COUNTER__)
 
-/* Temporaries for importing index handling */
-#define NOFAIL(x) (x)
-
 /* Attributes */
 
 #define _must_check_ __attribute__((warn_unused_result))
