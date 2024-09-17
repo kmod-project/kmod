@@ -1,333 +1,193 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 /*
  * Copyright (C) 2019  Alexey Gladkov <gladkov.alexey@gmail.com>
+ * Copyright (C) 2024  Tobias Stöckmann <tobias@stoeckmann.org>
  */
 
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#include <unistd.h>
+#include <errno.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <errno.h>
+#include <unistd.h>
+
+#include <shared/strbuf.h>
 
 #include "libkmod.h"
 #include "libkmod-internal.h"
 
 #define MODULES_BUILTIN_MODINFO "modules.builtin.modinfo"
 
-struct kmod_builtin_iter {
+struct kmod_builtin_info {
 	struct kmod_ctx *ctx;
 
-	// The file descriptor.
-	int file;
+	// The file handle.
+	FILE *fp;
 
-	// The total size in bytes.
-	ssize_t size;
-
-	// The offset of current module.
-	off_t pos;
-
-	// The offset at which the next module is located.
-	off_t next;
-
-	// Number of strings in the current block.
-	ssize_t nstrings;
-
-	// Internal buffer and its size.
+	// Internal buffer and its size. Used by getdelim.
 	size_t bufsz;
 	char *buf;
 };
 
-static struct kmod_builtin_iter *kmod_builtin_iter_new(struct kmod_ctx *ctx)
+static bool kmod_builtin_info_init(struct kmod_builtin_info *info,
+				   struct kmod_ctx *ctx)
 {
 	char path[PATH_MAX];
-	int file, sv_errno;
-	struct stat sb;
-	struct kmod_builtin_iter *iter = NULL;
+	FILE *fp = NULL;
 	const char *dirname = kmod_get_dirname(ctx);
 	size_t len = strlen(dirname);
 
-	file = -1;
-
 	if ((len + 1 + strlen(MODULES_BUILTIN_MODINFO) + 1) >= PATH_MAX) {
-		sv_errno = ENAMETOOLONG;
-		goto fail;
+		errno = ENAMETOOLONG;
+		return false;
 	}
+	snprintf(path, PATH_MAX, "%s/" MODULES_BUILTIN_MODINFO, dirname);
 
-	snprintf(path, PATH_MAX, "%s/%s", dirname, MODULES_BUILTIN_MODINFO);
+	fp = fopen(path, "r");
+	if (fp == NULL)
+		return false;
 
-	file = open(path, O_RDONLY|O_CLOEXEC);
-	if (file < 0) {
-		sv_errno = errno;
-		goto fail;
-	}
-
-	if (fstat(file, &sb) < 0) {
-		sv_errno = errno;
-		goto fail;
-	}
-
-	if (sb.st_size > INTPTR_MAX) {
-		sv_errno = ENOMEM;
-		goto fail;
-	}
-
-	iter = malloc(sizeof(*iter));
-	if (!iter) {
-		sv_errno = ENOMEM;
-		goto fail;
-	}
-
-	iter->ctx = ctx;
-	iter->file = file;
-	iter->size = sb.st_size;
-	iter->nstrings = 0;
-	iter->pos = 0;
-	iter->next = 0;
-	iter->bufsz = 0;
-	iter->buf = NULL;
-
-	return iter;
-fail:
-	if (file >= 0)
-		close(file);
-
-	errno = sv_errno;
-
-	return iter;
-}
-
-static void kmod_builtin_iter_free(struct kmod_builtin_iter *iter)
-{
-	close(iter->file);
-	free(iter->buf);
-	free(iter);
-}
-
-static off_t get_string(struct kmod_builtin_iter *iter, off_t offset,
-			char **line, size_t *size)
-{
-	int sv_errno;
-	char buf[BUFSIZ];
-	char *nullp = NULL;
-	size_t linesz = 0;
-
-	while (!nullp) {
-		ssize_t sz;
-		size_t partsz;
-
-		sz = pread(iter->file, buf, BUFSIZ, offset);
-		if (sz < 0) {
-			sv_errno = errno;
-			goto fail;
-		} else if (sz == 0) {
-			offset = 0;
-			break;
-		}
-
-		nullp = memchr(buf, '\0', (size_t) sz);
-		partsz = (size_t)((nullp) ? (nullp - buf) + 1 : sz);
-		offset += (off_t) partsz;
-
-		if (iter->bufsz < linesz + partsz) {
-			void *tmp;
-			size_t s;
-
-			s = linesz + partsz;
-			tmp = realloc(iter->buf, s);
-
-			if (!tmp) {
-				sv_errno = errno;
-				goto fail;
-			}
-			iter->bufsz = s;
-			iter->buf = tmp;
-		}
-
-		strncpy(iter->buf + linesz, buf, partsz);
-		linesz += partsz;
-	}
-
-	if (linesz) {
-		if (iter->buf[linesz - 1] != '\0') {
-			sv_errno = EINVAL;
-			goto fail;
-		}
-		*line = iter->buf;
-		*size = linesz;
-	}
-
-	return offset;
-fail:
-	errno = sv_errno;
-	return -1;
-}
-
-static bool kmod_builtin_iter_next(struct kmod_builtin_iter *iter)
-{
-	char *line,  *modname;
-	size_t linesz;
-	off_t pos, offset, modlen;
-
-	modname = NULL;
-
-	iter->nstrings = 0;
-	offset = pos = iter->next;
-
-	while (offset < iter->size) {
-		char *dot;
-		off_t len;
-
-		offset = get_string(iter, pos, &line, &linesz);
-		if (offset <= 0) {
-			if (offset)
-				ERR(iter->ctx, "get_string: %s\n", strerror(errno));
-			pos = iter->size;
-			break;
-		}
-
-		dot = strchr(line, '.');
-		if (!dot) {
-			ERR(iter->ctx, "kmod_builtin_iter_next: unexpected string without modname prefix\n");
-			pos = iter->size;
-			break;
-		}
-
-		len = dot - line;
-
-		if (!modname) {
-			modname = strdup(line);
-			modlen = len;
-		} else if (modlen != len || strncmp(modname, line, len)) {
-			break;
-		}
-
-		iter->nstrings++;
-		pos = offset;
-	}
-
-	iter->pos = iter->next;
-	iter->next = pos;
-
-	free(modname);
-
-	return (iter->pos < iter->size);
-}
-
-static bool kmod_builtin_iter_get_modname(struct kmod_builtin_iter *iter,
-				char modname[static PATH_MAX])
-{
-	int sv_errno;
-	char *line, *dot;
-	size_t linesz, len;
-	off_t offset;
-
-	if (iter->pos == iter->size) {
-		sv_errno = EINVAL;
-		goto fail;
-	}
-
-	line = NULL;
-
-	offset = get_string(iter, iter->pos, &line, &linesz);
-	if (offset <= 0) {
-		sv_errno = errno;
-		if (offset)
-			ERR(iter->ctx, "get_string: %s\n", strerror(errno));
-		goto fail;
-	}
-
-	dot = strchr(line, '.');
-	if (!dot) {
-		sv_errno = EINVAL;
-		ERR(iter->ctx, "kmod_builtin_iter_get_modname: unexpected string without modname prefix\n");
-		goto fail;
-	}
-
-	len = dot - line;
-
-	if (len >= PATH_MAX) {
-		sv_errno = ENAMETOOLONG;
-		goto fail;
-	}
-
-	strncpy(modname, line, len);
-	modname[len] = '\0';
+	info->ctx = ctx;
+	info->fp = fp;
+	info->bufsz = 0;
+	info->buf = NULL;
 
 	return true;
-fail:
-	errno = sv_errno;
-	return false;
+}
+
+static void kmod_builtin_info_release(struct kmod_builtin_info *info)
+{
+	free(info->buf);
+	fclose(info->fp);
+}
+
+static ssize_t get_string(struct kmod_builtin_info *info)
+{
+	ssize_t len;
+
+	len = getdelim(&info->buf, &info->bufsz, '\0', info->fp);
+	if (len > 0 && info->buf[len] != '\0') {
+		errno = EINVAL;
+		len = -1;
+	}
+
+	return len;
+}
+
+static ssize_t get_strings(struct kmod_builtin_info *info, const char *modname,
+				struct strbuf *buf)
+{
+	const size_t modlen = strlen(modname);
+	ssize_t count, n;
+
+	for (count = 0; count < INTPTR_MAX;) {
+		char *dot, *line;
+
+		n = get_string(info);
+		if (n == -1) {
+			if (!feof(info->fp)) {
+				count = -errno;
+				ERR(info->ctx, "get_string: %s\n", strerror(errno));
+			}
+			break;
+		}
+
+		line = info->buf;
+		dot = strchr(line, '.');
+		if (dot == NULL) {
+			count = -EINVAL;
+			ERR(info->ctx, "get_strings: "
+			    "unexpected string without modname prefix\n");
+			return count;
+		}
+		if (strncmp(line, modname, modlen) || line[modlen] != '.') {
+			/*
+			 * If no string matched modname yet, keep searching.
+			 * Otherwise this indicates that no further string will
+			 * match again.
+			 */
+			if (count == 0)
+				continue;
+			break;
+		}
+		if (!strbuf_pushchars(buf, dot + 1) ||
+		    !strbuf_pushchar(buf, '\0')) {
+			count = -errno;
+			ERR(info->ctx, "get_strings: "
+			    "failed to append modinfo string\n");
+			return count;
+		}
+		count++;
+	}
+
+	if (count == INTPTR_MAX) {
+		count = -ENOMEM;
+		ERR(info->ctx, "get_strings: "
+		    "too many modinfo strings encountered\n");
+		return count;
+	}
+
+	return count;
+}
+
+static char **strbuf_to_vector(struct strbuf *buf, size_t count)
+{
+	/* size required for string vector + terminating NULL */
+	const size_t vecsz = sizeof(char *) * (count + 1);
+	char **vector;
+	char *s;
+	size_t n;
+
+	/* make sure that vector and strings fit into memory constraints */
+	if (SIZE_MAX / sizeof(char *) - 1 < count ||
+	    SIZE_MAX - buf->used < vecsz) {
+		errno = ENOMEM;
+		return NULL;
+	}
+
+	vector = realloc(buf->bytes, vecsz + buf->used);
+	if (vector == NULL)
+		return NULL;
+	buf->bytes = NULL;
+	memmove(vector + count + 1, vector, buf->used);
+	s = (char *)(vector + count + 1);
+
+	for (n = 0; n < count; n++) {
+		vector[n] = s;
+		s += strlen(s) + 1;
+	}
+	vector[n] = NULL;
+
+	return vector;
 }
 
 /* array will be allocated with strings in a single malloc, just free *array */
 ssize_t kmod_builtin_get_modinfo(struct kmod_ctx *ctx, const char *modname,
 				char ***modinfo)
 {
-	ssize_t count = 0;
-	char *s, *line = NULL;
-	size_t i, n, linesz, modlen, size;
-	off_t pos, offset;
+	struct kmod_builtin_info info;
+	struct strbuf buf;
+	ssize_t count;
 
-	char *name = NULL;
-	char buf[PATH_MAX];
-
-	struct kmod_builtin_iter *iter = kmod_builtin_iter_new(ctx);
-
-	if (!iter)
+	if (!kmod_builtin_info_init(&info, ctx))
 		return -errno;
+	strbuf_init(&buf);
 
-	while (!name && kmod_builtin_iter_next(iter)) {
-		if (!kmod_builtin_iter_get_modname(iter, buf)) {
+	count = get_strings(&info, modname, &buf);
+	if (count == 0)
+		*modinfo = NULL;
+	else if (count > 0) {
+		*modinfo = strbuf_to_vector(&buf, (size_t)count);
+		if (*modinfo == NULL) {
 			count = -errno;
-			goto fail;
+			ERR(ctx, "strbuf_to_vector: %s\n", strerror(errno));
+			strbuf_release(&buf);
 		}
-
-		if (strcmp(modname, buf))
-			continue;
-
-		name = buf;
 	}
 
-	if (!name) {
-		count = -ENOSYS;
-		goto fail;
-	}
-
-	modlen = strlen(modname) + 1;
-	count = iter->nstrings;
-	size = iter->next - iter->pos - (modlen * count);
-
-	*modinfo = malloc(size + sizeof(char *) * (count + 1));
-	if (!*modinfo) {
-		count = -errno;
-		goto fail;
-	}
-
-	s = (char *)(*modinfo + count + 1);
-	i = 0;
-
-	n = 0;
-	offset = pos = iter->pos;
-
-	while (offset < iter->next) {
-		offset = get_string(iter, pos, &line, &linesz);
-		if (offset <= 0) {
-			count = (offset) ? -errno : -EINVAL;
-			free(*modinfo);
-			goto fail;
-		}
-
-		strcpy(s + i, line + modlen);
-		(*modinfo)[n++] = s + i;
-		i += linesz - modlen;
-
-		pos = offset;
-	}
-fail:
-	kmod_builtin_iter_free(iter);
+	kmod_builtin_info_release(&info);
 	return count;
 }
