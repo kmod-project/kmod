@@ -109,4 +109,26 @@ DEFINE_TEST(test_modinfo_external,
 		.out = TESTSUITE_ROOTFS "test-modinfo/correct-external.txt",
 	})
 
+static noreturn int test_modinfo_builtin(const struct test *t)
+{
+	const char *const args[] = {
+		// clang-format off
+		progname,
+		"intel_uncore",
+		NULL,
+		// clang-format on
+	};
+	test_spawn_prog(progname, args);
+	exit(EXIT_FAILURE);
+}
+DEFINE_TEST(test_modinfo_builtin,
+	.description = "check if modinfo finds builtin module",
+	.config = {
+		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-modinfo/builtin",
+		[TC_UNAME_R] = "6.11.0",
+	},
+	.output = {
+		.out = TESTSUITE_ROOTFS "test-modinfo/correct-builtin.txt",
+	})
+
 TESTSUITE_MAIN();
