@@ -152,7 +152,7 @@ enum node_offset {
 	INDEX_NODE_MASK     = 0x0FFFFFFF, /* Offset value */
 };
 
-static void fatal_oom(void)
+static noreturn void fatal_oom(void)
 {
 	ERR("out of memory\n");
 	exit(EXIT_FAILURE);
