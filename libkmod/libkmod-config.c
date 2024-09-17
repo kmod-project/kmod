@@ -135,8 +135,10 @@ static int kmod_config_add_command(struct kmod_config *config,
 	memcpy(cmd->command, command, commandlen);
 
 	l = kmod_list_append(*list, cmd);
-	if (!l)
+	if (!l) {
+		free(cmd);
 		return -ENOMEM;
+	}
 
 	*list = l;
 	cmd = NULL;
@@ -174,8 +176,10 @@ static int kmod_config_add_options(struct kmod_config *config,
 	strchr_replace(opt->options, '\t', ' ');
 
 	list = kmod_list_append(config->options, opt);
-	if (!list)
+	if (!list) {
+		free(opt);
 		return -ENOMEM;
+	}
 
 	opt = NULL;
 	config->options = list;
@@ -211,8 +215,10 @@ static int kmod_config_add_alias(struct kmod_config *config,
 	memcpy(alias->name, name, namelen);
 
 	list = kmod_list_append(config->aliases, alias);
-	if (!list)
+	if (!list) {
+		free(alias);
 		return -ENOMEM;
+	}
 
 	alias = NULL;
 	config->aliases = list;
@@ -242,8 +248,10 @@ static int kmod_config_add_blacklist(struct kmod_config *config,
 		return -ENOMEM;
 
 	list = kmod_list_append(config->blacklists, p);
-	if (!list)
+	if (!list) {
+		free(p);
 		return -ENOMEM;
+	}
 
 	p = NULL;
 	config->blacklists = list;
