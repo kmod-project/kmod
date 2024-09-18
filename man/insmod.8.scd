@@ -6,7 +6,7 @@ insmod - Simple program to insert a module into the Linux Kernel
 
 # SYNOPSIS
 
-*insmod* [_filename_] [_module options_...]
+*insmod* [_OPTIONS_] [_filename_] [_module options_...]
 
 # DESCRIPTION
 
@@ -17,6 +17,25 @@ module dependencies.
 Only the most general of error messages are reported: as the work of trying to
 link the module is now done inside the kernel, the *dmesg* usually gives more
 information about errors.
+
+# OPTIONS
+
+*-s*
+*--syslog*
+	Send errors to syslog instead of standard error.
+
+*-v*
+*--verbose*
+	Print messages about what the program is doing. Usually *insmod* prints
+	messages only if something goes wrong.
+
+*-V*
+*--version*
+	Show version of program and exit.
+
+*-h*
+*--help*
+	Print the help message and exit.
 
 # COPYRIGHT
 

@@ -15,11 +15,15 @@
 
 #include "kmod.h"
 
-static const char cmdopts_s[] = "fVh";
+static const char cmdopts_s[] = "fsvVh";
 static const struct option cmdopts[] = {
-	{"version", no_argument, 0, 'V'},
-	{"help", no_argument, 0, 'h'},
-	{NULL, 0, 0, 0},
+	// clang-format off
+	{ "syslog", no_argument, 0, 's' },
+	{ "verbose", no_argument, 0, 'v' },
+	{ "version", no_argument, 0, 'V' },
+	{ "help", no_argument, 0, 'h' },
+	{ NULL, 0, 0, 0 },
+	// clang-format on
 };
 
 static void help(void)
@@ -27,6 +31,8 @@ static void help(void)
 	printf("Usage:\n"
 		"\t%s [options] filename [args]\n"
 		"Options:\n"
+		"\t-s, --syslog      print to syslog, not stderr\n"
+		"\t-v, --verbose     enables more messages\n"
 		"\t-V, --version     show version\n"
 		"\t-h, --help        show this help\n",
 		program_invocation_short_name);
@@ -50,12 +56,14 @@ static const char *mod_strerror(int err)
 
 static int do_insmod(int argc, char *argv[])
 {
-	struct kmod_ctx *ctx;
+	struct kmod_ctx *ctx = NULL;
 	struct kmod_module *mod;
 	const char *filename;
 	char *opts = NULL;
 	size_t optslen = 0;
-	int i, err;
+	int verbose = LOG_ERR;
+	int use_syslog;
+	int i, err = 0, r = 0;
 	const char *null_config = NULL;
 	unsigned int flags = 0;
 
@@ -68,6 +76,12 @@ static int do_insmod(int argc, char *argv[])
 		case 'f':
 			flags |= KMOD_PROBE_FORCE_MODVERSION;
 			flags |= KMOD_PROBE_FORCE_VERMAGIC;
+			break;
+		case 's':
+			use_syslog = 1;
+			break;
+		case 'v':
+			verbose++;
 			break;
 		case 'h':
 			help();
@@ -84,15 +98,19 @@ static int do_insmod(int argc, char *argv[])
 		}
 	}
 
+	log_open(use_syslog);
+
 	if (optind >= argc) {
 		ERR("missing filename.\n");
-		return EXIT_FAILURE;
+		r = EXIT_FAILURE;
+		goto end;
 	}
 
 	filename = argv[optind];
 	if (streq(filename, "-")) {
 		ERR("this tool does not support loading from stdin!\n");
-		return EXIT_FAILURE;
+		r = EXIT_FAILURE;
+		goto end;
 	}
 
 	for (i = optind + 1; i < argc; i++) {
@@ -100,8 +118,8 @@ static int do_insmod(int argc, char *argv[])
 		void *tmp = realloc(opts, optslen + len + 2);
 		if (tmp == NULL) {
 			ERR("out of memory\n");
-			free(opts);
-			return EXIT_FAILURE;
+			r = EXIT_FAILURE;
+			goto end;
 		}
 		opts = tmp;
 		if (optslen > 0) {
@@ -116,14 +134,17 @@ static int do_insmod(int argc, char *argv[])
 	ctx = kmod_new(NULL, &null_config);
 	if (!ctx) {
 		ERR("kmod_new() failed!\n");
-		free(opts);
-		return EXIT_FAILURE;
+		r = EXIT_FAILURE;
+		goto end;
 	}
+
+	log_setup_kmod_log(ctx, verbose);
 
 	err = kmod_module_new_from_path(ctx, filename, &mod);
 	if (err < 0) {
 		ERR("could not load module %s: %s\n", filename,
 		    strerror(-err));
+		r++;
 		goto end;
 	}
 
@@ -131,12 +152,15 @@ static int do_insmod(int argc, char *argv[])
 	if (err < 0) {
 		ERR("could not insert module %s: %s\n", filename,
 		    mod_strerror(-err));
+		r++;
 	}
 	kmod_module_unref(mod);
 
 end:
 	kmod_unref(ctx);
 	free(opts);
+
+	log_close();
 	return err >= 0 ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
