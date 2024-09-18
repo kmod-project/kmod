@@ -191,16 +191,45 @@ if moduledir == ''
 endif
 cdata.set_quoted('MODULE_DIRECTORY', moduledir)
 
-bashcompletiondir = get_option('bashcompletiondir')
-if bashcompletiondir == ''
-  bashcompletion = dependency('bash-completion', required : false)
-  if bashcompletion.found()
-    bashcompletiondir = bashcompletion.get_variable(pkgconfig : 'completionsdir')
-  else
-    bashcompletiondir = join_paths(get_option('prefix'), get_option('datadir'),
-                                   'bash-completion/completions')
+_completiondirs = [
+  ['bashcompletiondir', 'bash-completion', 'bash-completion/completions', 'shell-completion/bash/@0@'],
+  ['fishcompletiondir', 'fish',            'fish/vendor_functions.d',     'shell-completion/fish/@0@.fish'],
+  ['zshcompletiondir',  '',                'zsh/site-functions',          'shell-completion/zsh/_@0@'],
+]
+
+foreach tuple : _completiondirs
+  dir_option = tuple[0]
+  pkg_dep = tuple[1]
+  def_path = tuple[2]
+  ins_path = tuple[3]
+
+  completiondir = get_option(dir_option)
+  if completiondir == ''
+    completion = dependency(pkg_dep, required : false)
+    if completion.found()
+      completiondir = completion.get_variable(pkgconfig : 'completionsdir')
+    else
+      completiondir = join_paths(get_option('prefix'), get_option('datadir'),
+                                 def_path)
+    endif
   endif
-endif
+
+  _completions = [
+    'lsmod',
+  ]
+
+  if completiondir != 'no'
+    foreach comp : _completions
+      install_data(
+        files(ins_path.format(comp)),
+        install_dir : completiondir,
+      )
+    endforeach
+  endif
+
+  # NEEDED solely for bash/kmod below
+  set_variable(dir_option, completiondir)
+endforeach
 
 if bashcompletiondir != 'no'
   install_data(

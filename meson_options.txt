@@ -18,6 +18,18 @@ option(
   description : 'Bash completions directory. Use "no" to disable.',
 )
 
+option(
+  'fishcompletiondir',
+  type : 'string',
+  description : 'Fish completions directory. Use "no" to disable.',
+)
+
+option(
+  'zshcompletiondir',
+  type : 'string',
+  description : 'Zsh completions directory. Use "no" to disable.',
+)
+
 # Compression options
 option(
   'zstd',
