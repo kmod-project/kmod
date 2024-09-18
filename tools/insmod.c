@@ -15,7 +15,7 @@
 
 #include "kmod.h"
 
-static const char cmdopts_s[] = "psfVh";
+static const char cmdopts_s[] = "fVh";
 static const struct option cmdopts[] = {
 	{"version", no_argument, 0, 'V'},
 	{"help", no_argument, 0, 'h'},
@@ -65,10 +65,6 @@ static int do_insmod(int argc, char *argv[])
 		if (c == -1)
 			break;
 		switch (c) {
-		case 'p':
-		case 's':
-			/* ignored, for compatibility only */
-			break;
 		case 'f':
 			flags |= KMOD_PROBE_FORCE_MODVERSION;
 			flags |= KMOD_PROBE_FORCE_VERMAGIC;
