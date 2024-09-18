@@ -156,6 +156,7 @@ static int do_rmmod(int argc, char *argv[])
 		if (err < 0) {
 			ERR("could not use module %s: %s\n", arg,
 			    strerror(-err));
+			r = EXIT_FAILURE;
 			break;
 		}
 
