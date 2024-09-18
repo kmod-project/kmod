@@ -307,7 +307,7 @@ bool kmod_module_signature_info(const struct kmod_file *file, struct kmod_signat
 {
 	const char *mem;
 	off_t size;
-	const struct module_signature *modsig;
+	struct module_signature modsig;
 	size_t sig_len;
 
 	size = kmod_file_get_size(file);
@@ -321,21 +321,21 @@ bool kmod_module_signature_info(const struct kmod_file *file, struct kmod_signat
 	if (size < (off_t)sizeof(struct module_signature))
 		return false;
 	size -= sizeof(struct module_signature);
-	modsig = (struct module_signature *)(mem + size);
-	if (modsig->algo >= PKEY_ALGO__LAST ||
-			modsig->hash >= PKEY_HASH__LAST ||
-			modsig->id_type >= PKEY_ID_TYPE__LAST)
+	memcpy(&modsig, mem + size, sizeof(struct module_signature));
+	if (modsig.algo >= PKEY_ALGO__LAST ||
+			modsig.hash >= PKEY_HASH__LAST ||
+			modsig.id_type >= PKEY_ID_TYPE__LAST)
 		return false;
-	sig_len = be32toh(get_unaligned(&modsig->sig_len));
+	sig_len = be32toh(modsig.sig_len);
 	if (sig_len == 0 ||
-	    size < (int64_t)sig_len + modsig->signer_len + modsig->key_id_len)
+	    size < (int64_t)sig_len + modsig.signer_len + modsig.key_id_len)
 		return false;
 
-	switch (modsig->id_type) {
+	switch (modsig.id_type) {
 	case PKEY_ID_PKCS7:
-		return fill_pkcs7(mem, size, modsig, sig_len, sig_info);
+		return fill_pkcs7(mem, size, &modsig, sig_len, sig_info);
 	default:
-		return fill_default(mem, size, modsig, sig_len, sig_info);
+		return fill_default(mem, size, &modsig, sig_len, sig_info);
 	}
 }
 
