@@ -3026,8 +3026,7 @@ static int do_depmod(int argc, char *argv[])
 			help();
 			return EXIT_SUCCESS;
 		case 'V':
-			puts(PACKAGE " version " VERSION);
-			puts(KMOD_FEATURES);
+			kmod_version();
 			return EXIT_SUCCESS;
 		case '?':
 			goto cmdline_failed;

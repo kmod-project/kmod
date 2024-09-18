@@ -25,4 +25,10 @@ extern const struct kmod_cmd kmod_cmd_list;
 extern const struct kmod_cmd kmod_cmd_static_nodes;
 extern const struct kmod_cmd kmod_cmd_remove;
 
+static inline void kmod_version(void)
+{
+	puts(PACKAGE " version " VERSION);
+	puts(KMOD_FEATURES);
+}
+
 #include "log.h"
