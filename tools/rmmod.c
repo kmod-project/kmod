@@ -20,10 +20,6 @@
 
 #include "kmod.h"
 
-#define DEFAULT_VERBOSE LOG_ERR
-static int verbose = DEFAULT_VERBOSE;
-static int use_syslog;
-
 static const char cmdopts_s[] = "fsvVh";
 static const struct option cmdopts[] = {
 	// clang-format off
@@ -97,6 +93,8 @@ static int do_rmmod(int argc, char *argv[])
 {
 	struct kmod_ctx *ctx;
 	const char *null_config = NULL;
+	int verbose = LOG_ERR;
+	int use_syslog;
 	int flags = 0;
 	int i, err, r = 0;
 
