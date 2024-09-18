@@ -48,7 +48,7 @@ static struct mod *modules;
 static bool need_init = true;
 static struct kmod_ctx *ctx;
 
-static void parse_retcodes(struct mod *_modules, const char *s)
+static void parse_retcodes(struct mod **_modules, const char *s)
 {
 	const char *p;
 
@@ -97,8 +97,8 @@ static void parse_retcodes(struct mod *_modules, const char *s)
 		mod->name[modnamelen] = '\0';
 		mod->ret = ret;
 		mod->errcode = errcode;
-		mod->next = _modules;
-		_modules = mod;
+		mod->next = *_modules;
+		*_modules = mod;
 	}
 }
 
@@ -179,7 +179,7 @@ static void init_retcodes(void)
 
 	ctx = kmod_new(NULL, NULL);
 
-	parse_retcodes(modules, s);
+	parse_retcodes(&modules, s);
 }
 
 static inline bool module_is_inkernel(const char *modname)
