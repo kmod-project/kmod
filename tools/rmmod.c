@@ -69,10 +69,10 @@ static int check_module_inuse(struct kmod_module *mod) {
 
 		kmod_list_foreach(itr, holders) {
 			struct kmod_module *hm = kmod_module_get_module(itr);
-			fprintf(stderr, " %s", kmod_module_get_name(hm));
+			ERR(" %s", kmod_module_get_name(hm));
 			kmod_module_unref(hm);
 		}
-		fputc('\n', stderr);
+		ERR("\n");
 
 		kmod_module_unref_list(holders);
 		return -EBUSY;
