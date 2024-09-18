@@ -24,7 +24,7 @@
 static int verbose = DEFAULT_VERBOSE;
 static int use_syslog;
 
-static const char cmdopts_s[] = "fsvVwh";
+static const char cmdopts_s[] = "fsvVh";
 static const struct option cmdopts[] = {
 	// clang-format off
 	{ "force", no_argument, 0, 'f' },
