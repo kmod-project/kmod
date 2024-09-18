@@ -1,0 +1,14 @@
+#compdef insmod
+
+# insmod(8) completion                                      -*- shell-script -*-
+# SPDX-License-Identifier: LGPL-2.1-or-later
+#
+# SPDX-FileCopyrightText: 2024 Emil Velikov <emil.l.velikov@gmail.com>
+
+_arguments \
+    {-f,--force}'[DANGEROUS: forces a module load, may cause data corruption and crash your machine]' \
+    {-s,--syslog}'[print to syslog, not stderr]' \
+    {-v,--verbose}'[enables more messages]' \
+    {-V,--version}'[show version]' \
+    {-h,--help}'[show this help]' \
+    '1::module:_files -g "*.ko(|.gz|.xz|.zst)"'

@@ -215,6 +215,7 @@ foreach tuple : _completiondirs
   endif
 
   _completions = [
+    'insmod',
     'lsmod',
     'rmmod',
   ]

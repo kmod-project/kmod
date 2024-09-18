@@ -125,17 +125,20 @@ noarch_pkgconfig_DATA = tools/kmod.pc
 
 bashcompletiondir=@bashcompletiondir@
 dist_bashcompletion_DATA = \
+	shell-completion/bash/insmod \
 	shell-completion/bash/kmod \
 	shell-completion/bash/lsmod \
 	shell-completion/bash/rmmod
 
 fishcompletiondir=@fishcompletiondir@
 dist_fishcompletion_DATA = \
+	shell-completion/fish/insmod.fish \
 	shell-completion/fish/lsmod.fish \
 	shell-completion/fish/rmmod.fish
 
 zshcompletiondir=@zshcompletiondir@
 dist_zshcompletion_DATA = \
+	shell-completion/zsh/_insmod \
 	shell-completion/zsh/_lsmod \
 	shell-completion/zsh/_rmmod
 
