@@ -163,6 +163,22 @@ AC_ARG_WITH([bashcompletiondir],
 	])])
 AC_SUBST([bashcompletiondir], [$with_bashcompletiondir])
 
+AC_ARG_WITH([fishcompletiondir],
+	AS_HELP_STRING([--with-fishcompletiondir=DIR], [Fish completions directory]),
+	[],
+	[AS_IF([$($PKG_CONFIG --exists fish)], [
+		with_fishcompletiondir=$($PKG_CONFIG --variable=completionsdir fish)
+	] , [
+		with_fishcompletiondir=${datadir}/fish/vendor_functions.d
+	])])
+AC_SUBST([fishcompletiondir], [$with_fishcompletiondir])
+
+AC_ARG_WITH([zshcompletiondir],
+	AS_HELP_STRING([--with-zshcompletiondir=DIR], [Zsh completions directory]),
+	[],
+	[with_zshcompletiondir=${datadir}/zsh/site-functions])
+AC_SUBST([zshcompletiondir], [$with_zshcompletiondir])
+
 #####################################################################
 # --enable-
 #####################################################################
