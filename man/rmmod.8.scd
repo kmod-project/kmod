@@ -6,7 +6,7 @@ rmmod - Simple program to remove a module from the Linux Kernel
 
 # SYNOPSIS
 
-*rmmod* [*-f*] [*-s*] [*-v*] [_modulename_]
+*rmmod* [_OPTIONS_] [_modulename_]
 
 # DESCRIPTION
 
@@ -15,11 +15,6 @@ is provided) from the kernel. Most users will want to use *modprobe*(8) with the
 *-r* option instead since it removes unused dependent modules as well.
 
 # OPTIONS
-
-*-v*
-*--verbose*
-	Print messages about what the program is doing. Usually *rmmod* prints
-	messages only if something goes wrong.
 
 *-f*
 *--force*
@@ -32,9 +27,18 @@ is provided) from the kernel. Most users will want to use *modprobe*(8) with the
 *--syslog*
 	Send errors to syslog instead of standard error.
 
+*-v*
+*--verbose*
+	Print messages about what the program is doing. Usually *rmmod* prints
+	messages only if something goes wrong.
+
 *-V*
 *--version*
 	Show version of program and exit.
+
+*-h*
+*--help*
+	Print the help message and exit.
 
 # COPYRIGHT
 
