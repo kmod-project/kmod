@@ -1,0 +1,34 @@
+# rmmod(8) completion                                       -*- shell-script -*-
+# SPDX-License-Identifier: LGPL-2.1-or-later
+#
+# SPDX-FileCopyrightText: 2024 Emil Velikov <emil.l.velikov@gmail.com>
+#
+# Formatted using:
+# shfmt --language-dialect bash --indent 4 --func-next-line
+
+_rmmod()
+{
+    # long/short opt pairs
+    local -A opts=(
+        ['force']='f'
+        ['syslog']='s'
+        ['verbose']='v'
+        ['version']='V'
+        ['help']='h'
+    )
+
+    local cur="${COMP_WORDS[COMP_CWORD]}"
+
+    if [[ $cur == --* ]]; then
+        COMPREPLY=($(compgen -P '--' -W "${!opts[*]}" -- "${cur:2}"))
+    elif [[ $cur == -* ]]; then
+        if (( ${#cur} != 2 )); then
+            COMPREPLY=($(compgen -P '--' -W "${!opts[*]}" -- "${cur:2}"))
+        fi
+        COMPREPLY+=($(compgen -P '-' -W "${opts[*]}" -- "${cur:1}"))
+    else
+        local -a modules=($(lsmod | cut -f1 -d' '))
+        COMPREPLY=($(compgen -W "${modules[*]}" -- "${cur}"))
+    fi
+} &&
+    complete -F _rmmod rmmod

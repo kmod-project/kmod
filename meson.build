@@ -216,6 +216,7 @@ foreach tuple : _completiondirs
 
   _completions = [
     'lsmod',
+    'rmmod',
   ]
 
   if completiondir != 'no'

@@ -1,0 +1,21 @@
+#compdef rmmod
+
+# rmmod(8) completion                                       -*- shell-script -*-
+# SPDX-License-Identifier: LGPL-2.1-or-later
+#
+# SPDX-FileCopyrightText: 2024 Emil Velikov <emil.l.velikov@gmail.com>
+
+(( $+functions[_rmmod_modules] )) || _rmmod_modules()
+{
+    local -a _modules
+    _modules=(${${(f)"$(_call_program modules lsmod)"}[2,-1]%% *})
+    _values 'modules' "$_modules[@]"
+}
+
+_arguments \
+    {-f,--force}'[DANGEROUS: forces a module unload and may crash your machine]' \
+    {-s,--syslog}'[print to syslog, not stderr]' \
+    {-v,--verbose}'[enables more messages]' \
+    {-V,--version}'[show version]' \
+    {-h,--help}'[show this help]' \
+    '*::modules:_rmmod_modules'

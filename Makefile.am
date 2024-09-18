@@ -126,15 +126,18 @@ noarch_pkgconfig_DATA = tools/kmod.pc
 bashcompletiondir=@bashcompletiondir@
 dist_bashcompletion_DATA = \
 	shell-completion/bash/kmod \
-	shell-completion/bash/lsmod
+	shell-completion/bash/lsmod \
+	shell-completion/bash/rmmod
 
 fishcompletiondir=@fishcompletiondir@
 dist_fishcompletion_DATA = \
-	shell-completion/fish/lsmod.fish
+	shell-completion/fish/lsmod.fish \
+	shell-completion/fish/rmmod.fish
 
 zshcompletiondir=@zshcompletiondir@
 dist_zshcompletion_DATA = \
-	shell-completion/zsh/_lsmod
+	shell-completion/zsh/_lsmod \
+	shell-completion/zsh/_rmmod
 
 install-exec-hook:
 if BUILD_TOOLS
