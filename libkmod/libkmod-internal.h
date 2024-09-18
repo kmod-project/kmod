@@ -40,12 +40,8 @@ static _always_inline_ _printf_format_(2, 3) void
 #define KCMD_LINE_SIZE 4096
 
 #ifndef HAVE_SECURE_GETENV
-#  ifdef HAVE___SECURE_GETENV
-#    define secure_getenv __secure_getenv
-#  else
-#    warning neither secure_getenv nor __secure_getenv is available
-#    define secure_getenv getenv
-#  endif
+#warning secure_getenv is not available
+#define secure_getenv getenv
 #endif
 
 _printf_format_(6, 7) _nonnull_(1, 3, 5) void kmod_log(const struct kmod_ctx *ctx,
