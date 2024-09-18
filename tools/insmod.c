@@ -18,6 +18,7 @@
 static const char cmdopts_s[] = "fsvVh";
 static const struct option cmdopts[] = {
 	// clang-format off
+	{ "force", no_argument, 0, 'f' },
 	{ "syslog", no_argument, 0, 's' },
 	{ "verbose", no_argument, 0, 'v' },
 	{ "version", no_argument, 0, 'V' },
@@ -31,6 +32,8 @@ static void help(void)
 	printf("Usage:\n"
 		"\t%s [options] filename [args]\n"
 		"Options:\n"
+		"\t-f, --force       DANGEROUS: forces a module load, may cause\n"
+		"\t                  data corruption and crash your machine\n"
 		"\t-s, --syslog      print to syslog, not stderr\n"
 		"\t-v, --verbose     enables more messages\n"
 		"\t-V, --version     show version\n"

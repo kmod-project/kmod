@@ -20,6 +20,12 @@ information about errors.
 
 # OPTIONS
 
+*-f*
+*--force*
+	This option can be extremely dangerous: it tells the kernel to ignore
+	the module version and vermagic fields when loading. With this option,
+	you can load modules build locally or by third parties, although this
+	can lead to memory corruption, system crashes and data loss.
 *-s*
 *--syslog*
 	Send errors to syslog instead of standard error.
