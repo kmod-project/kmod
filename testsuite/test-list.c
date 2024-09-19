@@ -21,6 +21,11 @@ static int len(struct kmod_list *list)
 	return count;
 }
 
+static void kmod_list_remove_all(struct kmod_list *list)
+{
+	while (list)
+		list = kmod_list_remove(list);
+}
 
 static int test_list_last(const struct test *t)
 {
@@ -35,6 +40,8 @@ static int test_list_last(const struct test *t)
 
 	last = kmod_list_last(list);
 	assert_return(last->data == v[N - 1], EXIT_FAILURE);
+
+	kmod_list_remove_all(list);
 
 	return 0;
 }
@@ -65,6 +72,8 @@ static int test_list_prev(const struct test *t)
 		assert_return(p->data == v[i], EXIT_FAILURE);
 	}
 
+	kmod_list_remove_all(list);
+
 	return 0;
 }
 DEFINE_TEST(test_list_prev,
@@ -91,6 +100,8 @@ static int test_list_remove_n_latest(const struct test *t)
 		i++;
 	}
 
+	kmod_list_remove_all(list);
+
 	return 0;
 }
 DEFINE_TEST(test_list_remove_n_latest,
@@ -113,6 +124,8 @@ static int test_list_remove_data(const struct test *t)
 
 	kmod_list_foreach (l, list)
 		assert_return(l->data != removed, EXIT_FAILURE);
+
+	kmod_list_remove_all(list);
 
 	return 0;
 }
@@ -150,6 +163,8 @@ static int test_list_append_list(const struct test *t)
 		i++;
 	}
 
+	kmod_list_remove_all(c);
+
 	return 0;
 }
 DEFINE_TEST(test_list_append_list,
@@ -184,6 +199,8 @@ static int test_list_insert_before(const struct test *t)
 	l = kmod_list_next(list, l);
 	assert_return(l->data == v3, EXIT_FAILURE);
 
+	kmod_list_remove_all(list);
+
 	return 0;
 }
 DEFINE_TEST(test_list_insert_before,
@@ -217,6 +234,8 @@ static int test_list_insert_after(const struct test *t)
 
 	l = kmod_list_next(list, l);
 	assert_return(l->data == v3, EXIT_FAILURE);
+
+	kmod_list_remove_all(list);
 
 	return 0;
 }
