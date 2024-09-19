@@ -910,8 +910,10 @@ static int check_loaded_modules(const struct test *t)
 	a2 = read_loaded_modules(t, &buf2, &l2);
 	if (l2 < 0)
 		goto out_a1;
-	qsort(a1, l1, sizeof(char *), cmp_modnames);
-	qsort(a2, l2, sizeof(char *), cmp_modnames);
+	if (a1 && l1)
+		qsort(a1, l1, sizeof(char *), cmp_modnames);
+	if (a2 && l2)
+		qsort(a2, l2, sizeof(char *), cmp_modnames);
 	i1 = i2 = 0;
 	err = true;
 	while (i1 < l1 || i2 < l2) {
