@@ -344,7 +344,7 @@ struct kmod_elf *kmod_elf_new(const void *memory, off_t size)
 		uint64_t slen;
 		const char *s = elf_get_strings_section(elf, &slen);
 		if (slen == 0 || s[slen - 1] != '\0') {
-			ELFDBG(elf, "strings section does not ends with \\0\n");
+			ELFDBG(elf, "strings section does not end with \\0\n");
 			goto invalid;
 		}
 	}
