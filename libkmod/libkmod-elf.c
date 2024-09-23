@@ -6,6 +6,7 @@
 #include <assert.h>
 #include <elf.h>
 #include <errno.h>
+#include <limits.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -428,6 +429,7 @@ int kmod_elf_get_section(const struct kmod_elf *elf, const char *section,
 int kmod_elf_get_strings(const struct kmod_elf *elf, const char *section, char ***array)
 {
 	size_t i, j, count;
+	size_t vecsz;
 	uint64_t size;
 	const void *buf;
 	const char *strings;
@@ -468,7 +470,13 @@ int kmod_elf_get_strings(const struct kmod_elf *elf, const char *section, char *
 	if (strings[i - 1] != '\0')
 		count++;
 
-	*array = a = malloc(size + 1 + sizeof(char *) * (count + 1));
+	/* make sure that vector and strings fit into memory constraints */
+	vecsz = sizeof(char *) * (count + 1);
+	if (SIZE_MAX / sizeof(char *) - 1 < count || SIZE_MAX - size <= vecsz) {
+		return -ENOMEM;
+	}
+
+	*array = a = malloc(vecsz + size + 1);
 	if (*array == NULL)
 		return -errno;
 
