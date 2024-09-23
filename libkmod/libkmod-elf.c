@@ -756,12 +756,13 @@ static uint64_t kmod_elf_resolve_crc(const struct kmod_elf *elf, uint64_t crc,
 
 	err = elf_get_section_info(elf, shndx, &off, &size, &nameoff);
 	if (err < 0) {
-		ELFDBG("Could not find section index %" PRIu16 " for crc", shndx);
+		ELFDBG(elf, "Could not find section index %" PRIu16 " for crc", shndx);
 		return (uint64_t)-1;
 	}
 
 	if (crc > (size - sizeof(uint32_t))) {
-		ELFDBG("CRC offset %" PRIu64 " is too big, section %" PRIu16
+		ELFDBG(elf,
+		       "CRC offset %" PRIu64 " is too big, section %" PRIu16
 		       " size is %" PRIu64 "\n",
 		       crc, shndx, size);
 		return (uint64_t)-1;
