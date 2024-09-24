@@ -338,8 +338,10 @@ struct index_file *index_file_open(const char *filename)
 		goto err;
 
 	new->file = file;
-	if (read_u32(new->file, &new->root_offset) < 0)
+	if (read_u32(new->file, &new->root_offset) < 0) {
+		free(new);
 		goto err;
+	}
 
 	errno = 0;
 	return new;
