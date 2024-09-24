@@ -87,7 +87,7 @@
  *
  * == Key ==
  *  + Normal node
- *  * Marked node, representing a key and it's values.
+ *  * Marked node, representing a key and its values.
  *
  * +
  * |-a-+-s-+-k-*
@@ -101,7 +101,7 @@
  * Naive implementations tend to be very space inefficient; child pointers
  * are stored in arrays indexed by character, but most child pointers are null.
  *
- * Our implementation uses a scheme described by Wikipedia as a Patrica trie,
+ * Our implementation uses a scheme described by Wikipedia as a Patricia trie,
  *
  *     "easiest to understand as a space-optimized trie where
  *      each node with only one child is merged with its child"
@@ -118,7 +118,7 @@
  * We still use arrays of child pointers indexed by a single character;
  * the remaining characters of the label are stored as a "prefix" in the child.
  *
- * The paper describing the original Patrica trie works on individual bits -
+ * The paper describing the original Patricia trie works on individual bits -
  * each node has a maximum of two children, which increases space efficiency.
  * However for this application it is simpler to use the ASCII character set.
  * Since the index file is read-only, it can be compressed by omitting null
