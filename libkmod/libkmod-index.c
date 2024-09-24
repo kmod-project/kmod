@@ -145,7 +145,7 @@ void index_values_free(struct index_value *values)
 	}
 }
 
-static int add_value(struct index_value **values, const char *value, unsigned len,
+static int add_value(struct index_value **values, const char *value, size_t len,
 		     unsigned int priority)
 {
 	struct index_value *v;
@@ -619,13 +619,13 @@ struct index_mm {
 
 struct index_mm_value {
 	unsigned int priority;
-	unsigned int len;
+	size_t len;
 	const char *value;
 };
 
 struct index_mm_value_array {
 	struct index_mm_value *values;
-	unsigned int len;
+	size_t len;
 };
 
 struct index_mm_node {
@@ -657,7 +657,7 @@ static inline uint8_t read_char_mm(void **p)
 	return v;
 }
 
-static inline char *read_chars_mm(void **p, unsigned *rlen)
+static inline char *read_chars_mm(void **p, size_t *rlen)
 {
 	char *addr = *(char **)p;
 	size_t len = *rlen = strlen(addr);
@@ -680,7 +680,7 @@ static struct index_mm_node *index_mm_read_node(struct index_mm *idx, uint32_t o
 	p = (char *)p + (offset & INDEX_NODE_MASK);
 
 	if (offset & INDEX_NODE_PREFIX) {
-		unsigned len;
+		size_t len;
 		prefix = read_chars_mm(&p, &len);
 	} else
 		prefix = _idx_empty_str;

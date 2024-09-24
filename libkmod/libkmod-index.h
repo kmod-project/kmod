@@ -10,7 +10,7 @@
 struct index_value {
 	struct index_value *next;
 	unsigned int priority;
-	unsigned int len;
+	size_t len;
 	char value[0];
 };
 
