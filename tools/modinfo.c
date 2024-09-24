@@ -350,8 +350,8 @@ static bool is_module_filename(const char *name)
 {
 	struct stat st;
 
-	if (stat(name, &st) == 0 && S_ISREG(st.st_mode) &&
-	    path_ends_with_kmod_ext(name, strlen(name)))
+	if (path_ends_with_kmod_ext(name, strlen(name)) && stat(name, &st) == 0 &&
+	    S_ISREG(st.st_mode))
 		return true;
 
 	return false;
