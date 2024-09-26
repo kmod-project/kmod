@@ -18,7 +18,7 @@ dependencies for every module in the directories under
 libkmod.
 
 Its text counterpart is located in the same directory with the name
-*modules.dep*. The text version is maintained only for easy of reading by humans
+*modules.dep*. The text version is maintained only for ease of reading by humans
 and is in no way used by any *kmod* tool.
 
 These files are not intended for editing or use by any additional utilities as
