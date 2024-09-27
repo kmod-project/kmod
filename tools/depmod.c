@@ -265,10 +265,9 @@ static int index_insert(struct index_node *node, const char *key, const char *va
 				struct index_node *n;
 
 				/* New child is copy of node with prefix[j+1..N] */
-				n = calloc(1, sizeof(struct index_node));
+				n = memdup(node, sizeof(struct index_node));
 				if (n == NULL)
 					fatal_oom();
-				memcpy(n, node, sizeof(struct index_node));
 				n->prefix = strdup(&prefix[j + 1]);
 				if (n->prefix == NULL)
 					fatal_oom();
