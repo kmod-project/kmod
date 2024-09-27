@@ -2661,7 +2661,7 @@ static int depmod_output(struct depmod *depmod, FILE *out)
 
 static void depmod_add_fake_syms(struct depmod *depmod)
 {
-	/* __this_module is magic inserted by kernel loader. */
+	/* __this_module is magically inserted by kernel loader. */
 	depmod_symbol_add(depmod, "__this_module", true, 0, NULL);
 	/* On S390, this is faked up too */
 	depmod_symbol_add(depmod, "_GLOBAL_OFFSET_TABLE_", true, 0, NULL);
