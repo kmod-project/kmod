@@ -319,6 +319,8 @@ char *freadline_wrapped(FILE *fp, unsigned int *linenum)
 			if (ch == '\n') {
 				n++;
 				continue;
+			} else if (ch == EOF) {
+				continue;
 			}
 			/* else fall through */
 
