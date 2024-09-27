@@ -1066,6 +1066,11 @@ static int depmod_module_add(struct depmod *depmod, struct kmod_module *kmod)
 		size_t uncrelpathlen = lastslash - mod->relpath + modnamesz +
 				       strlen(KMOD_EXTENSION_UNCOMPRESSED);
 		mod->uncrelpath = memdup(mod->relpath, uncrelpathlen + 1);
+		if (mod->uncrelpath == NULL) {
+			err = -ENOMEM;
+			hash_del(depmod->modules_by_name, mod->modname);
+			goto fail;
+		}
 		mod->uncrelpath[uncrelpathlen] = '\0';
 		err = hash_add_unique(depmod->modules_by_uncrelpath, mod->uncrelpath, mod);
 		if (err < 0) {
