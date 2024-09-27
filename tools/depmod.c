@@ -1463,39 +1463,30 @@ static void depmod_modules_sort(struct depmod *depmod)
 	char line[PATH_MAX];
 	const char *order_file = "modules.order";
 	FILE *fp;
-	unsigned idx = 0, total = 0;
+	size_t idx = 0;
+	// all sorted modules shall have precedence
+	int i = -(int)depmod->modules.count;
 
 	fp = dfdopen(depmod->cfg->dirname, order_file, O_RDONLY, "r");
 	if (fp == NULL)
 		return;
 
 	while (fgets(line, sizeof(line), fp) != NULL) {
+		struct mod *mod;
 		size_t len = strlen(line);
 		idx++;
 		if (len == 0)
 			continue;
 		if (line[len - 1] != '\n') {
-			ERR("%s/%s:%u corrupted line misses '\\n'\n",
+			ERR("%s/%s:%zu corrupted line misses '\\n'\n",
 			    depmod->cfg->dirname, order_file, idx);
 			goto corrupted;
 		}
-	}
-	total = idx + 1;
-	idx = 0;
-	fseek(fp, 0, SEEK_SET);
-	while (fgets(line, sizeof(line), fp) != NULL) {
-		size_t len = strlen(line);
-		struct mod *mod;
-
-		idx++;
-		if (len == 0)
-			continue;
 		line[len - 1] = '\0';
-
 		mod = hash_find(depmod->modules_by_uncrelpath, line);
 		if (mod == NULL)
 			continue;
-		mod->sort_idx = idx - total;
+		mod->sort_idx = i++;
 	}
 
 	array_sort(&depmod->modules, mod_cmp);
