@@ -19,7 +19,7 @@
 #define TEST_WEAKDEP_KERNEL_DIR TEST_WEAKDEP_ROOTFS MODULE_DIRECTORY "/4.4.4/"
 
 static const char *const test_weakdep_config_paths[] = {
-	TEST_WEAKDEP_ROOTFS "etc/modprobe.d",
+	TEST_WEAKDEP_ROOTFS SYSCONFDIR "/modprobe.d",
 	NULL,
 };
 
