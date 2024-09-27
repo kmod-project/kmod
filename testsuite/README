@@ -50,9 +50,9 @@ pay attention when writing a test:
     expected not to be 0.
 
 7 - The rootfs is populated by copying the entire contents of rootfs-pristine
-    then running populate-modules.sh to copy generated modules from
-    module-playground. Update the latter script to include any modules your
-    test need.
+    through setup-rootfs.sh then running setup-modules.sh to copy generated
+    modules from module-playground. Update the latter script to include any
+    modules your test needs.
 
 8 - Tests can be run individually, outside of 'make check'. strace and gdb work
     too, as long as you tell them to operate on child process.
