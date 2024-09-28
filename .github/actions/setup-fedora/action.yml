@@ -25,6 +25,11 @@ runs:
           openssl-devel \
           git \
           gtk-doc \
+          libasan \
+          libhwasan \
+          liblsan \
+          libtsan \
+          libubsan \
           libtool \
           rsync \
           scdoc
