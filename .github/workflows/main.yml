@@ -25,15 +25,20 @@ jobs:
         build: ['meson', 'autotools']
         container:
           - name: 'ubuntu:22.04'
+            meson_setup: '-D b_sanitize=address,undefined'
             multilib: 'true'
           - name: 'ubuntu:24.04'
+            meson_setup: '-D b_sanitize=address,undefined'
             multilib: 'true'
           - name: 'archlinux:base-devel'
+            meson_setup: '-D b_sanitize=address,undefined'
             multilib: 'true'
           - name: 'fedora:latest'
+            meson_setup: '-D b_sanitize=address,undefined'
           - name: 'alpine:latest'
             meson_setup: '-D docs=false'
           - name: 'debian:unstable'
+            meson_setup: '-D b_sanitize=address,undefined'
             multilib: 'true'
 
     container:
@@ -66,6 +71,7 @@ jobs:
           git config --global --add safe.directory '*'
 
           .github/print-kdir.sh >> "$GITHUB_ENV"
+          echo "ASAN_OPTIONS=verify_asan_link_order=0:halt_on_error=1:abort_on_error=1:print_summary=1" >> "$GITHUB_ENV"
 
       - name: configure (meson)
         if: ${{ matrix.build == 'meson' }}
