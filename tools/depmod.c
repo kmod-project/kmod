@@ -1484,7 +1484,7 @@ static void depmod_modules_sort(struct depmod *depmod)
 		}
 		line[len - 1] = '\0';
 		mod = hash_find(depmod->modules_by_uncrelpath, line);
-		if (mod == NULL)
+		if (mod == NULL || mod->sort_idx < 0)
 			continue;
 		mod->sort_idx = i++;
 	}
