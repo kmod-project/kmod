@@ -243,7 +243,7 @@ static inline int elf_get_section_info(const struct kmod_elf *elf, uint16_t idx,
 	}
 #undef READV
 
-	if (addu64_overflow(*offset, *size, &min_size) || min_size > elf->size) {
+	if (uadd64_overflow(*offset, *size, &min_size) || min_size > elf->size) {
 		ELFDBG(elf, "out-of-bounds: %" PRIu64 " >= %" PRIu64 " (ELF size)\n",
 		       min_size, elf->size);
 		return -EINVAL;
@@ -330,7 +330,7 @@ struct kmod_elf *kmod_elf_new(const void *memory, off_t size)
 		goto invalid;
 	}
 	shdrs_size = shdr_size * elf->header.section.count;
-	if (addu64_overflow(shdrs_size, elf->header.section.offset, &min_size) ||
+	if (uadd64_overflow(shdrs_size, elf->header.section.offset, &min_size) ||
 	    min_size > elf->size) {
 		ELFDBG(elf, "file is too short to hold sections\n");
 		goto invalid;

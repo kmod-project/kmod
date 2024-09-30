@@ -92,7 +92,7 @@ static inline void freep(void *p)
 }
 #define _cleanup_free_ _cleanup_(freep)
 
-static inline bool addu64_overflow(uint64_t a, uint64_t b, uint64_t *res)
+static inline bool uadd64_overflow(uint64_t a, uint64_t b, uint64_t *res)
 {
 #if (HAVE___BUILTIN_UADDL_OVERFLOW && __SIZEOF_LONG__ == 8)
 	return __builtin_uaddl_overflow(a, b, res);
