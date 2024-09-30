@@ -191,22 +191,22 @@ DEFINE_TEST(test_write_str_safe,
 		},
 	});
 
-static int test_addu64_overflow(const struct test *t)
+static int test_uadd64_overflow(const struct test *t)
 {
 	uint64_t res;
 	bool overflow;
 
-	overflow = addu64_overflow(UINT64_MAX - 1, 1, &res);
+	overflow = uadd64_overflow(UINT64_MAX - 1, 1, &res);
 	assert_return(!overflow, EXIT_FAILURE);
 	assert_return(res == UINT64_MAX, EXIT_FAILURE);
 
-	overflow = addu64_overflow(UINT64_MAX, 1, &res);
+	overflow = uadd64_overflow(UINT64_MAX, 1, &res);
 	assert_return(overflow, EXIT_FAILURE);
 
 	return EXIT_SUCCESS;
 }
-DEFINE_TEST(test_addu64_overflow,
-	    .description = "check implementation of addu4_overflow()")
+DEFINE_TEST(test_uadd64_overflow,
+	    .description = "check implementation of uadd64_overflow()")
 
 static int test_backoff_time(const struct test *t)
 {
