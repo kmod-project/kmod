@@ -1428,6 +1428,8 @@ static int depmod_modules_build_array(struct depmod *depmod)
 		if (err < 0)
 			return err;
 	}
+	if (depmod->modules.count >= UINT16_MAX)
+		return -ERANGE;
 
 	return 0;
 }
