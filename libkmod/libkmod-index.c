@@ -699,7 +699,7 @@ static struct index_mm_node *index_mm_read_node(struct index_mm *idx, uint32_t o
 		first = read_char_mm(&p);
 		last = read_char_mm(&p);
 
-		if (first > last)
+		if (first > last || first < 0 || last < 0)
 			return NULL;
 
 		child_count = last - first + 1;
