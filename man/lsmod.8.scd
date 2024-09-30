@@ -11,7 +11,7 @@ lsmod - Show the status of modules in the Linux Kernel
 # DESCRIPTION
 
 *lsmod* is a trivial program which nicely formats the contents of the
-/proc/modules, showing what kernel modules are currently loaded.
+_/proc/modules_, showing what kernel modules are currently loaded.
 
 # OPTIONS
 
