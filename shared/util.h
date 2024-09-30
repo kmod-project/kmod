@@ -92,6 +92,16 @@ static inline void freep(void *p)
 }
 #define _cleanup_free_ _cleanup_(freep)
 
+static inline bool uadd32_overflow(uint32_t a, uint32_t b, uint32_t *res)
+{
+#if (HAVE___BUILTIN_UADD_OVERFLOW && __SIZEOF_INT__ == 4)
+	return __builtin_uadd_overflow(a, b, res);
+#else
+	*res = a + b;
+	return UINT32_MAX - a < b;
+#endif
+}
+
 static inline bool uadd64_overflow(uint64_t a, uint64_t b, uint64_t *res)
 {
 #if (HAVE___BUILTIN_UADDL_OVERFLOW && __SIZEOF_LONG__ == 8)

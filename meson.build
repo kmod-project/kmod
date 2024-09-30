@@ -49,6 +49,7 @@ endforeach
 _builtins = [
   ['__builtin_clz', '0', true],
   ['__builtin_types_compatible_p', 'int, int', true],
+  ['__builtin_uadd_overflow', '0U, 0U, (void*)0', false],
   ['__builtin_uaddl_overflow', '0UL, 0UL, (void*)0', false],
   ['__builtin_uaddll_overflow', '0ULL, 0ULL, (void*)0', false],
 ]
