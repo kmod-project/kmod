@@ -50,12 +50,13 @@ static const char *const default_cfg_paths[] = {
 	// clang-format on
 };
 
-static const char cmdopts_s[] = "aAb:m:o:C:E:F:evnP:wVh";
+static const char cmdopts_s[] = "aAb:m:Mo:C:E:F:evnP:wVh";
 static const struct option cmdopts[] = {
 	{ "all", no_argument, 0, 'a' },
 	{ "quick", no_argument, 0, 'A' },
 	{ "basedir", required_argument, 0, 'b' },
 	{ "moduledir", required_argument, 0, 'm' },
+	{ "moduledir-default", no_argument, 0, 'M' },
 	{ "outdir", required_argument, 0, 'o' },
 	{ "config", required_argument, 0, 'C' },
 	{ "symvers", required_argument, 0, 'E' },
@@ -96,6 +97,7 @@ static void help(void)
 	       "\t-b, --basedir=DIR    Root path (default: /).\n"
 	       "\t-m, --moduledir=DIR  Module directory (default: " MODULE_DIRECTORY
 	       ").\n"
+	       "\t-M, --moduledir-default  Print MODULE_DIRECTORY default value.\n"
 	       "\t-o, --outdir=DIR     Output root path (default: same as <basedir>).\n"
 	       "\t-F, --filesyms=FILE  Use the file instead of the\n"
 	       "\t                     current kernel symbols.\n"
@@ -2932,6 +2934,9 @@ static int do_depmod(int argc, char *argv[])
 		case 'm':
 			module_directory = optarg;
 			break;
+		case 'M':
+			puts(MODULE_DIRECTORY);
+			return EXIT_SUCCESS;
 		case 'o':
 			free(out_root);
 			out_root = path_make_absolute_cwd(optarg);

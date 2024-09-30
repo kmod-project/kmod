@@ -363,11 +363,25 @@ libkmod = shared_library(
   install : true,
 )
 
+_libkmod_variables = [
+  'sysconfdir=' + sysconfdir,
+  'distconfdir=' + distconfdir,
+  'module_directory=' + moduledir,
+  'module_signatures=' + module_signatures,
+]
+
+# XXX: Support for empty variables was added in meson v1.4.0.
+# pkgconf behaves identically on missing and empty variable.
+if module_compressions != ''
+  _libkmod_variables += ['module_compressions=' + module_compressions]
+endif
+
 pkg.generate(
   name : 'libkmod',
   description : 'Library to deal with kernel modules',
   libraries : libkmod,
   requires_private : libkmod_deps,
+  variables: _libkmod_variables
 )
 
 libkmod_internal = static_library(
@@ -398,26 +412,6 @@ kmod = executable(
   gnu_symbol_visibility : 'hidden',
   build_by_default : get_option('tools'),
   install : get_option('tools'),
-)
-
-_kmod_variables = [
-  'sysconfdir=' + sysconfdir,
-  'distconfdir=' + distconfdir,
-  'module_directory=' + moduledir,
-  'module_signatures=' + module_signatures,
-]
-
-# XXX: Support for empty variables was added in meson v1.4.0.
-# pkgconf behaves identically on missing and empty variable.
-if module_compressions != ''
-  _kmod_variables += ['module_compressions=' + module_compressions]
-endif
-
-pkg.generate(
-  name : 'kmod',
-  description : 'Tools to deal with kernel modules',
-  install_dir : join_paths(get_option('datadir'), 'pkgconfig'),
-  variables : _kmod_variables,
 )
 
 _tools = [

@@ -12,6 +12,8 @@ depmod - Generate modules.dep and map files.
 *depmod* [*-e*] [*-E* _Module.symvers_] [*-F* _System.map_] [*-n*] [*-v*] [*-P* _prefix_]
 \ \ \ \ \ \ \ \[*-w*] [_version_] [_filename_...]
 
+*depmod* *-M*
+
 # DESCRIPTION
 
 Linux kernel modules can provide services (called "symbols") for other modules
@@ -79,6 +81,10 @@ rather than the current kernel version (as returned by *uname -r*).
 	This expects all input files under
 	_/tmp/build/kernel-modules/$(uname -r)_ and generates index files under
 	that same directory.
+
+*-M*
+*--moduledir-defualt*
+	Print the moduledir prefix @MODULE_DIRECTORY@ set at compile time.
 
 *-o* _outdir_
 *--outdir* _outdir_

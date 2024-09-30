@@ -312,7 +312,6 @@ AC_CONFIG_FILES([
 	libkmod/docs/Makefile
 	libkmod/docs/version.xml
 	libkmod/libkmod.pc
-	tools/kmod.pc
 ])
 
 
