@@ -30,7 +30,7 @@ static const struct option cmdopts[] = {
 static void help(void)
 {
 	printf("Usage:\n"
-	       "\t%s [options] filename [args]\n"
+	       "\t%s [options] filename [module options]\n"
 	       "Options:\n"
 	       "\t-f, --force       DANGEROUS: forces a module load, may cause\n"
 	       "\t                  data corruption and crash your machine\n"
