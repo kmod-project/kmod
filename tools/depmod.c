@@ -2333,6 +2333,7 @@ static int output_symbols_bin(struct depmod *depmod, FILE *out)
 		int duplicate;
 		const struct symbol *sym = v;
 		size_t len;
+		char *s;
 
 		if (sym->owner == NULL)
 			continue;
@@ -2343,12 +2344,12 @@ static int output_symbols_bin(struct depmod *depmod, FILE *out)
 			ret = -ENOMEM;
 			goto err_scratchbuf;
 		}
-		memcpy(scratchbuf_str(&salias) + baselen, sym->name, len + 1);
-		duplicate =
-			index_insert(idx, alias, sym->owner->modname, sym->owner->idx);
+		s = scratchbuf_str(&salias);
+		memcpy(s + baselen, sym->name, len + 1);
+		duplicate = index_insert(idx, s, sym->owner->modname, sym->owner->idx);
 
 		if (duplicate && depmod->cfg->warn_dups)
-			WRN("duplicate module syms:\n%s %s\n", alias, sym->owner->modname);
+			WRN("duplicate module syms:\n%s %s\n", s, sym->owner->modname);
 	}
 
 	index_write(idx, out);
