@@ -34,6 +34,12 @@ This manual page originally Copyright 2002, Rusty Russell, IBM Corporation.
 
 *depmod*(8), *modprobe*(8)
 
+# BUGS
+
+Please direct any bug reports to kmod's issue tracker at
+https://github.com/kmod-project/kmod/issues/ alongside with version used, steps
+to reproduce the problem and the expected outcome."
+
 # AUTHORS
 
 Numerous contributions have come from the linux-modules mailing list
