@@ -52,6 +52,9 @@ _builtins = [
   ['__builtin_uadd_overflow', '0U, 0U, (void*)0', false],
   ['__builtin_uaddl_overflow', '0UL, 0UL, (void*)0', false],
   ['__builtin_uaddll_overflow', '0ULL, 0ULL, (void*)0', false],
+  ['__builtin_umul_overflow', '0U, 0U, (void*)0', false],
+  ['__builtin_umull_overflow', '0UL, 0UL, (void*)0', false],
+  ['__builtin_umulll_overflow', '0ULL, 0ULL, (void*)0', false],
 ]
 foreach tuple : _builtins
   builtin = tuple[0]

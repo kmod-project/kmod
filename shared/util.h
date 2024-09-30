@@ -113,3 +113,25 @@ static inline bool uadd64_overflow(uint64_t a, uint64_t b, uint64_t *res)
 	return UINT64_MAX - a < b;
 #endif
 }
+
+static inline bool umul32_overflow(uint32_t a, uint32_t b, uint32_t *res)
+{
+#if (HAVE___BUILTIN_UMUL_OVERFLOW && __SIZEOF_INT__ == 4)
+	return __builtin_umul_overflow(a, b, res);
+#else
+	*res = a * b;
+	return UINT32_MAX / a < b;
+#endif
+}
+
+static inline bool umul64_overflow(uint64_t a, uint64_t b, uint64_t *res)
+{
+#if (HAVE___BUILTIN_UMULL_OVERFLOW && __SIZEOF_LONG__ == 8)
+	return __builtin_umull_overflow(a, b, res);
+#elif (HAVE___BUILTIN_UMULLL_OVERFLOW && __SIZEOF_LONG_LONG__ == 8)
+	return __builtin_umulll_overflow(a, b, res);
+#else
+	*res = a * b;
+	return UINT64_MAX / a < b;
+#endif
+}
