@@ -114,6 +114,17 @@ static inline bool uadd64_overflow(uint64_t a, uint64_t b, uint64_t *res)
 #endif
 }
 
+static inline bool uaddsz_overflow(size_t a, size_t b, size_t *res)
+{
+#if __SIZEOF_SIZE_T__ == 8
+	return uadd64_overflow(a, b, res);
+#elif __SIZEOF_SIZE_T__ == 4
+	return uadd32_overflow(a, b, res);
+#else
+#error "Unknown sizeof(size_t)"
+#endif
+}
+
 static inline bool umul32_overflow(uint32_t a, uint32_t b, uint32_t *res)
 {
 #if (HAVE___BUILTIN_UMUL_OVERFLOW && __SIZEOF_INT__ == 4)
@@ -133,5 +144,16 @@ static inline bool umul64_overflow(uint64_t a, uint64_t b, uint64_t *res)
 #else
 	*res = a * b;
 	return UINT64_MAX / a < b;
+#endif
+}
+
+static inline bool umulsz_overflow(size_t a, size_t b, size_t *res)
+{
+#if __SIZEOF_SIZE_T__ == 8
+	return umul64_overflow(a, b, res);
+#elif __SIZEOF_SIZE_T__ == 4
+	return umul32_overflow(a, b, res);
+#else
+#error "Unknown sizeof(size_t)"
 #endif
 }

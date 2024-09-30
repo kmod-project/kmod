@@ -15,6 +15,7 @@
 #include <unistd.h>
 
 #include <shared/strbuf.h>
+#include <shared/util.h>
 
 #include "libkmod.h"
 #include "libkmod-internal.h"
@@ -133,19 +134,20 @@ static ssize_t get_strings(struct kmod_builtin_info *info, const char *modname,
 
 static char **strbuf_to_vector(struct strbuf *buf, size_t count)
 {
-	/* size required for string vector + terminating NULL */
-	const size_t vecsz = sizeof(char *) * (count + 1);
+	size_t vec_size, total_size;
 	char **vector;
 	char *s;
 	size_t n;
 
-	/* make sure that vector and strings fit into memory constraints */
-	if (SIZE_MAX / sizeof(char *) - 1 < count || SIZE_MAX - buf->used < vecsz) {
+	/* (string vector + NULL) * sizeof(char *) + buf->used */
+	if (uaddsz_overflow(count, 1, &n) ||
+	    umulsz_overflow(sizeof(char *), n, &vec_size) ||
+	    uaddsz_overflow(buf->used, vec_size, &total_size)) {
 		errno = ENOMEM;
 		return NULL;
 	}
 
-	vector = realloc(buf->bytes, vecsz + buf->used);
+	vector = realloc(buf->bytes, total_size);
 	if (vector == NULL)
 		return NULL;
 	buf->bytes = NULL;
