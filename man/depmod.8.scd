@@ -158,6 +158,12 @@ Portions Copyright Jon Masters, and others.
 
 *depmod.d*(5), *modprobe*(8), *modules.dep*(5)
 
+# BUGS
+
+Please direct any bug reports to kmod's issue tracker at
+https://github.com/kmod-project/kmod/issues/ alongside with version used, steps
+to reproduce the problem and the expected outcome."
+
 # AUTHORS
 
 Numerous contributions have come from the linux-modules mailing list

@@ -43,6 +43,12 @@ This manual page originally Copyright 2014, Marco d'Itri.
 
 *lsmod*(8), *rmmod*(8), *insmod*(8), *modinfo*(8), *modprobe*(8), *depmod*(8)
 
+# BUGS
+
+Please direct any bug reports to kmod's issue tracker at
+https://github.com/kmod-project/kmod/issues/ alongside with version used, steps
+to reproduce the problem and the expected outcome."
+
 # AUTHOR
 
 *kmod* project was started by Lucas De Marchi as a drop-in replacement to
