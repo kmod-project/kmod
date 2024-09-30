@@ -2310,10 +2310,10 @@ static int output_symbols(struct depmod *depmod, FILE *out)
 static int output_symbols_bin(struct depmod *depmod, FILE *out)
 {
 	struct index_node *idx;
-	char alias[1024];
+	char aliasbuf[1024] = "symbol:";
 	_cleanup_(scratchbuf_release) struct scratchbuf salias =
-		SCRATCHBUF_INITIALIZER(alias);
-	size_t baselen = sizeof("symbol:") - 1;
+		SCRATCHBUF_INITIALIZER(aliasbuf);
+	const size_t baselen = sizeof("symbol:") - 1;
 	struct hash_iter iter;
 	const void *v;
 	int ret = 0;
@@ -2324,8 +2324,6 @@ static int output_symbols_bin(struct depmod *depmod, FILE *out)
 	idx = index_create();
 	if (idx == NULL)
 		return -ENOMEM;
-
-	memcpy(alias, "symbol:", baselen);
 
 	hash_iter_init(depmod->symbols, &iter);
 
