@@ -94,15 +94,12 @@ static inline void freep(void *p)
 
 static inline bool addu64_overflow(uint64_t a, uint64_t b, uint64_t *res)
 {
-#if (HAVE___BUILTIN_UADDL_OVERFLOW && HAVE___BUILTIN_UADDLL_OVERFLOW)
-#if __SIZEOF_LONG__ == 8
+#if (HAVE___BUILTIN_UADDL_OVERFLOW && __SIZEOF_LONG__ == 8)
 	return __builtin_uaddl_overflow(a, b, res);
-#elif __SIZEOF_LONG_LONG__ == 8
+#elif (HAVE___BUILTIN_UADDLL_OVERFLOW && __SIZEOF_LONG_LONG__ == 8)
 	return __builtin_uaddll_overflow(a, b, res);
 #else
-#error "sizeof(long long) != 8"
-#endif
-#endif
 	*res = a + b;
 	return UINT64_MAX - a < b;
+#endif
 }
