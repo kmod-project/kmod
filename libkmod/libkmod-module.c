@@ -340,29 +340,21 @@ KMOD_EXPORT int kmod_module_new_from_path(struct kmod_ctx *ctx, const char *path
 		return -ENOENT;
 	}
 
-	m = kmod_pool_get_module(ctx, name);
-	if (m != NULL) {
-		if (m->path == NULL)
-			m->path = abspath;
-		else if (streq(m->path, abspath))
-			free(abspath);
-		else {
-			ERR(ctx,
-			    "kmod_module '%s' already exists with different path: new-path='%s' old-path='%s'\n",
-			    name, abspath, m->path);
-			free(abspath);
-			return -EEXIST;
-		}
-
-		kmod_module_ref(m);
-	} else {
-		err = kmod_module_new(ctx, name, name, namelen, NULL, 0, &m);
-		if (err < 0) {
-			free(abspath);
-			return err;
-		}
-
+	err = kmod_module_new(ctx, name, name, namelen, NULL, 0, &m);
+	if (err < 0) {
+		free(abspath);
+		return err;
+	}
+	if (m->path == NULL)
 		m->path = abspath;
+	else if (streq(m->path, abspath))
+		free(abspath);
+	else {
+		ERR(ctx,
+		    "kmod_module '%s' already exists with different path: new-path='%s' old-path='%s'\n",
+		    name, abspath, m->path);
+		free(abspath);
+		return -EEXIST;
 	}
 
 	m->builtin = KMOD_MODULE_BUILTIN_NO;
