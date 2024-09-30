@@ -191,6 +191,23 @@ DEFINE_TEST(test_write_str_safe,
 		},
 	});
 
+static int test_uadd32_overflow(const struct test *t)
+{
+	uint32_t res;
+	bool overflow;
+
+	overflow = uadd32_overflow(UINT32_MAX - 1, 1, &res);
+	assert_return(!overflow, EXIT_FAILURE);
+	assert_return(res == UINT32_MAX, EXIT_FAILURE);
+
+	overflow = uadd32_overflow(UINT32_MAX, 1, &res);
+	assert_return(overflow, EXIT_FAILURE);
+
+	return EXIT_SUCCESS;
+}
+DEFINE_TEST(test_uadd32_overflow,
+	    .description = "check implementation of uadd32_overflow()")
+
 static int test_uadd64_overflow(const struct test *t)
 {
 	uint64_t res;
