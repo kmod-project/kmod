@@ -15,21 +15,17 @@ _/proc/modules_, showing what kernel modules are currently loaded.
 
 # OPTIONS
 
-*-s*
-*--syslog*
+*-s*, *--syslog*
 	Send errors to syslog instead of standard error.
 
-*-v*
-*--verbose*
+*-v*, *--verbose*
 	Print messages about what the program is doing. Usually *lsmod* prints
 	messages only if something goes wrong.
 
-*-V*
-*--version*
+*-V*, *--version*
 	Show version of program and exit.
 
-*-h*
-*--help*
+*-h*, *--help*
 	Print the help message and exit.
 
 # COPYRIGHT
