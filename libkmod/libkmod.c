@@ -802,8 +802,15 @@ KMOD_EXPORT int kmod_dump_index(struct kmod_ctx *ctx, enum kmod_index type, int 
 	if (ctx == NULL)
 		return -ENOSYS;
 
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wtautological-unsigned-enum-zero-compare"
+#endif
 	if (type < 0 || type >= _KMOD_INDEX_MODULES_SIZE)
 		return -ENOENT;
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
 
 	if (ctx->indexes[type] != NULL) {
 		DBG(ctx, "use mmapped index '%s'\n", index_files[type].fn);
