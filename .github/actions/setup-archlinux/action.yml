@@ -20,9 +20,9 @@ runs:
         pacman --noconfirm -Sy archlinux-keyring
 
         pacman --noconfirm -Su \
+          git \
+          gtk-doc \
           linux-headers \
           meson \
           rsync \
-          scdoc \
-          git \
-          gtk-doc
+          scdoc

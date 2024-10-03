@@ -15,24 +15,24 @@ runs:
         dnf install -y \
           autoconf \
           automake \
-          make \
           gcc \
-          kernel-devel \
-          zlib-devel \
-          xz-devel \
-          libzstd-devel \
-          meson \
-          openssl-devel \
           git \
           gtk-doc \
+          kernel-devel \
           libasan \
           libhwasan \
           liblsan \
+          libtool \
           libtsan \
           libubsan \
-          libtool \
+          libzstd-devel \
+          make \
+          meson \
+          openssl-devel \
           rsync \
-          scdoc
+          scdoc \
+          xz-devel \
+          zlib-devel
         # CI builds with KDIR pointing to /usr/lib/modules/*/build
         # so just a foo/build pointing to the right place, assuming
         # just one kernel installed

@@ -13,14 +13,14 @@ runs:
       run: |
         apt-get update
         apt-get install --yes \
-          build-essential \
           autoconf \
           automake \
+          build-essential \
           gcc-multilib \
           git \
           gtk-doc-tools \
-          libssl-dev \
           liblzma-dev \
+          libssl-dev \
           libtool \
           libzstd-dev \
           linux-headers-generic \
