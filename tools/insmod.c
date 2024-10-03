@@ -65,7 +65,7 @@ static int do_insmod(int argc, char *argv[])
 	char *opts = NULL;
 	size_t optslen = 0;
 	int verbose = LOG_ERR;
-	int use_syslog;
+	int use_syslog = 0;
 	int i, err = 0, r = 0;
 	const char *null_config = NULL;
 	unsigned int flags = 0;
