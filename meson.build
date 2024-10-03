@@ -19,6 +19,9 @@ cdata.set_quoted('PACKAGE', meson.project_name())
 cdata.set_quoted('VERSION', meson.project_version())
 
 cdata.set10('ENABLE_DEBUG', get_option('debug-messages'))
+if get_option('debug-messages')
+  warning('*** debug messages requested, your syslog will be spammed')
+endif
 
 pkg = import('pkgconfig')
 cc = meson.get_compiler('c')
