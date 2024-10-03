@@ -18,8 +18,12 @@ cdata = configuration_data()
 cdata.set_quoted('PACKAGE', meson.project_name())
 cdata.set_quoted('VERSION', meson.project_version())
 
-cdata.set10('ENABLE_LOGGING', get_option('logging'))
-cdata.set10('ENABLE_DEBUG', get_option('debug-messages'))
+if get_option('logging')
+  cdata.set('ENABLE_LOGGING', true)
+endif
+if get_option('debug-messages')
+  cdata.set('ENABLE_DEBUG', true)
+endif
 
 pkg = import('pkgconfig')
 cc = meson.get_compiler('c')
