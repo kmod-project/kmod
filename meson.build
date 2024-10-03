@@ -18,9 +18,7 @@ cdata = configuration_data()
 cdata.set_quoted('PACKAGE', meson.project_name())
 cdata.set_quoted('VERSION', meson.project_version())
 
-if get_option('debug-messages')
-  cdata.set('ENABLE_DEBUG', true)
-endif
+cdata.set10('ENABLE_DEBUG', get_option('debug-messages'))
 
 pkg = import('pkgconfig')
 cc = meson.get_compiler('c')
