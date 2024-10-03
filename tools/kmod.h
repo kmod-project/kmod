@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include <stdio.h>
+
 #include <shared/macro.h>
 
 struct kmod_cmd {
