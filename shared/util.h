@@ -44,6 +44,7 @@ _nonnull_(1) char *freadline_wrapped(FILE *fp, unsigned int *linenum);
 /* path handling functions                                                  */
 /* ************************************************************************ */
 _must_check_ _nonnull_all_ char *path_make_absolute_cwd(const char *p);
+int is_dir(const char *path);
 int mkdir_p(const char *path, int len, mode_t mode);
 int mkdir_parents(const char *path, mode_t mode);
 unsigned long long stat_mstamp(const struct stat *st);

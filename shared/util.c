@@ -377,7 +377,7 @@ char *path_make_absolute_cwd(const char *p)
 	return r;
 }
 
-static inline int is_dir(const char *path)
+int is_dir(const char *path)
 {
 	struct stat st;
 
