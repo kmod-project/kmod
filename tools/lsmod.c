@@ -44,7 +44,7 @@ static int do_lsmod(int argc, char *argv[])
 	const char *null_config = NULL;
 	struct kmod_list *list, *itr;
 	int verbose = LOG_ERR;
-	int use_syslog;
+	int use_syslog = 0;
 	int err, r = 0;
 
 	for (;;) {
