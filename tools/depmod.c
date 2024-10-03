@@ -504,7 +504,7 @@ static int cfg_search_add(struct cfg *cfg, const char *path)
 		memcpy(s->path, path, len);
 	}
 
-	DBG("search add: %s, search type=%hhu\n", path, type);
+	DBG("search add: %s, search type=%hhu\n", path, (unsigned char)type);
 
 	s->next = cfg->searches;
 	cfg->searches = s;
