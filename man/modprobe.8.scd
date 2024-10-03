@@ -46,26 +46,22 @@ database.
 
 # OPTIONS
 
-*-a*
-*--all*
+*-a*, *--all*
 	Insert all module names on the command line.
 
-*-b*
-*--use-blacklist*
+*-b*, *--use-blacklist*
 	This option causes *modprobe* to apply the *blacklist* commands in the
 	configuration files (if any) to module names as well. It is usually used
 	by *udev*(7).
 
-*-C* _directory_
-*--config* _directory_
+*-C* _directory_, *--config* _directory_
 	This option overrides the default configuration directory. See
 	*modprobe.d*(5).
 
 	This option is passed through *install* or *remove* commands to other
 	*modprobe* commands in the MODPROBE_OPTIONS environment variable.
 
-*-c*
-*--showconfig*
+*-c*, *--showconfig*
 	Dump out the effective configuration from the config directory and exit.
 
 *--dump-modversions*
@@ -73,8 +69,7 @@ database.
 	This option is commonly used by distributions in order to package up a
 	Linux kernel module using module versioning deps.
 
-*-d*
-*--dirname*
+*-d*, *--dirname*
 	Root directory for modules, / by default.
 
 *--first-time*
@@ -108,8 +103,7 @@ database.
 	This applies to any modules inserted: both the module (or alias) on the
 	command line and any modules on which it depends.
 
-*-f*
-*--force*
+*-f*, *--force*
 	Try to strip any versioning information from the module which might
 	otherwise stop it from loading: this is the same as using both
 	*--force-vermagic* and *--force-modversion*. Naturally, these checks are
@@ -119,9 +113,7 @@ database.
 	This applies to any modules inserted: both the module (or alias) on the
 	command line and any modules on which it depends.
 
-*-i*
-*--ignore-install*
-*--ignore-remove*
+*-i*, *--ignore-install*, *--ignore-remove*
 	This option causes *modprobe* to ignore *install* and *remove* commands
 	in the configuration file (if any) for the module specified on the
 	command line (any dependent modules are still subject to commands set
@@ -130,29 +122,24 @@ database.
 	the request was more specifically made with only one or other (and not
 	both) of *--ignore-install* or *--ignore-remove*. See *modprobe.d*(5).
 
-*-n*
-*--dry-run*
-*--show*
+*-n*, *--dry-run*, *--show*
 	This option does everything but actually insert or delete the modules
 	(or run the install or remove commands). Combined with *-v*, it is
 	useful for debugging problems. For historical reasons both *--dry-run*
 	and *--show* actually mean the same thing and are interchangeable.
 
-*-q*
-*--quiet*
+*-q*, *--quiet*
 	With this flag, *modprobe* won't print an error message if you try to
 	remove or insert a module it can't find (and isn't an alias or
 	*install*/*remove* command). However, it will still return with a non-zero
 	exit status. The kernel uses this to opportunistically probe for modules
 	which might exist using request_module.
 
-*-R*
-*--resolve-alias*
+*-R*, *--resolve-alias*
 	Print all module names matching an alias. This can be useful for
 	debugging module alias problems.
 
-***-r*
-*--remove*
+***-r*, *--remove*
 	This option causes *modprobe* to remove rather than insert a module. If
 	the modules it depends on are also unused, *modprobe* will try to remove
 	them too. Unlike insertion, more than one module can be specified on the
@@ -163,16 +150,14 @@ database.
 	require it. Your distribution kernel may not have been built to support
 	removal of modules at all.
 
-*-w* _TIMEOUT_MSEC_
-*--wait* _TIMEOUT_MSEC_
+*-w* _TIMEOUT_MSEC_, *--wait* _TIMEOUT_MSEC_
 	This option causes *modprobe -r *to continue trying to remove a module
 	if it fails due to the module being busy, i.e. its refcount is not 0 at
 	the time the call is made. Modprobe tries to remove the module with an
 	incremental sleep time between each tentative up until the maximum wait
 	time in milliseconds passed in this option.
 
-*-S* _version_
-*--set-version* _version_
+*-S* _version_, *--set-version* _version_
 	Set the kernel version, rather than using *uname*(2) to decide on the
 	kernel version (which dictates where to find the modules).
 
@@ -186,8 +171,7 @@ database.
 	that *modinfo*(8) can be used to extract dependencies of a module from the
 	module itself, but knows nothing of aliases or install commands.
 
-*-s*
-*--syslog*
+*-s*, *--syslog*
 	This option causes any error messages to go through the syslog mechanism
 	(as LOG_DAEMON with level LOG_NOTICE) rather than to standard error.
 	This is also automatically enabled when stderr is unavailable.
@@ -195,12 +179,10 @@ database.
 	This option is passed through *install* or *remove* commands to other
 	*modprobe* commands in the MODPROBE_OPTIONS environment variable.
 
-*-V*
-*--version*
+*-V*, *--version*
 	Show version of program and exit.
 
-*-v*
-*--verbose*
+*-v*, *--verbose*
 	Print messages about what the program is doing. Usually *modprobe* only
 	prints messages if something goes wrong.
 

@@ -15,12 +15,10 @@ Linux Kernel modules. Most users will only run it using its other names.
 
 # OPTIONS
 
-*-V*
-*--version*
+*-V*, *--version*
 	Show the program version and exit.
 
-*-h*
-*--help*
+*-h*, *--help*
 	Show the help message.
 
 # COMMANDS

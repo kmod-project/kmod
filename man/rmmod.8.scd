@@ -16,28 +16,23 @@ is provided) from the kernel. Most users will want to use *modprobe*(8) with the
 
 # OPTIONS
 
-*-f*
-*--force*
+*-f*, *--force*
 	This option can be extremely dangerous: it has no effect unless
 	CONFIG_MODULE_FORCE_UNLOAD was set when the kernel was compiled. With
 	this option, you can remove modules which are being used, or which are
 	not designed to be removed, or have been marked as unsafe (see *lsmod*(8)).
 
-*-s*
-*--syslog*
+*-s*, *--syslog*
 	Send errors to syslog instead of standard error.
 
-*-v*
-*--verbose*
+*-v*, *--verbose*
 	Print messages about what the program is doing. Usually *rmmod* prints
 	messages only if something goes wrong.
 
-*-V*
-*--version*
+*-V*, *--version*
 	Show version of program and exit.
 
-*-h*
-*--help*
+*-h*, *--help*
 	Print the help message and exit.
 
 # COPYRIGHT
