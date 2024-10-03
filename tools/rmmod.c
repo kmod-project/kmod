@@ -94,7 +94,7 @@ static int do_rmmod(int argc, char *argv[])
 	struct kmod_ctx *ctx;
 	const char *null_config = NULL;
 	int verbose = LOG_ERR;
-	int use_syslog;
+	int use_syslog = 0;
 	int flags = 0;
 	int i, err, r = 0;
 
