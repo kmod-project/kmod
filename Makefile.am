@@ -32,6 +32,7 @@ AM_CPPFLAGS = \
 	-DSYSCONFDIR=\""$(sysconfdir)"\" \
 	-DDISTCONFDIR=\""$(distconfdir)"\" \
 	-DMODULE_DIRECTORY=\""$(module_directory)"\" \
+	-DMODULE_FALLBACK_DIRECTORY=\""$(module_fallback_directory)"\" \
 	${zlib_CFLAGS}
 
 AM_CFLAGS = $(OUR_CFLAGS)

@@ -85,8 +85,13 @@ AC_ARG_WITH([module_directory],
         [], [with_module_directory=/lib/modules])
 AC_SUBST([module_directory], [$with_module_directory])
 
+AC_ARG_WITH([module_fallback_directory],
+        AS_HELP_STRING([--with-module-fallback_directory=DIR], [alternative directory in which to look for kernel modules @<:@default=/run/modules@:>@]),
+        [], [with_module_fallback_directory=/run/modules])
+AC_SUBST([module_fallback_directory], [$with_module_fallback_directory])
+
 # Check all directory arguments for consistency.
-for ac_var in	distconfdir module_directory
+for ac_var in	distconfdir module_directory module_fallback_directory
 do
   eval ac_val=\$$ac_var
   # Remove trailing slashes.

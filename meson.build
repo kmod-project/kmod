@@ -191,6 +191,12 @@ if moduledir == ''
 endif
 cdata.set_quoted('MODULE_DIRECTORY', moduledir)
 
+moduledir = get_option('modulefallbackdir')
+if moduledir == ''
+  moduledir = '/run/modules'
+endif
+cdata.set_quoted('MODULE_FALLBACK_DIRECTORY', moduledir)
+
 _completiondirs = [
   ['bashcompletiondir', 'bash-completion', 'bash-completion/completions', 'shell-completion/bash/@0@'],
   ['fishcompletiondir', 'fish',            'fish/vendor_functions.d',     'shell-completion/fish/@0@.fish'],
