@@ -11,8 +11,6 @@ runs:
     - name: Install dependencies
       shell: bash
       run: |
-        # Enable multilib, for building 32bit binaries
-        echo -e '[multilib]\nInclude = /etc/pacman.d/mirrorlist' >> /etc/pacman.conf
         # Semi-regularly the packager key may have (temporarily) expired.
         # Somewhat robust solution is to wipe the local keyring and
         # regenerate/reinstall it prior to any other packages on the system.
@@ -22,7 +20,6 @@ runs:
         pacman --noconfirm -Sy archlinux-keyring
 
         pacman --noconfirm -Su \
-          multilib-devel \
           linux-headers \
           meson \
           rsync \

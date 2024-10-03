@@ -30,7 +30,7 @@ jobs:
           - name: 'ubuntu:24.04'
             meson_setup: '-D b_sanitize=address,undefined'
             multilib: 'true'
-          - name: 'archlinux:base-devel'
+          - name: 'archlinux:multilib-devel'
             meson_setup: '-D b_sanitize=address,undefined'
             multilib: 'true'
           - name: 'fedora:latest'
