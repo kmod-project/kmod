@@ -198,13 +198,6 @@ AS_IF([test "x$enable_manpages" = "xyes"], [
 	])])
 AM_CONDITIONAL([BUILD_MANPAGES], [test "x$enable_manpages" = "xyes"])
 
-AC_ARG_ENABLE([logging],
-	AS_HELP_STRING([--disable-logging], [disable system logging @<:@default=enabled@:>@]),
-	[], enable_logging=yes)
-AS_IF([test "x$enable_logging" = "xyes"], [
-	AC_DEFINE(ENABLE_LOGGING, [1], [System logging.])
-])
-
 AC_ARG_ENABLE([debug],
 	AS_HELP_STRING([--enable-debug], [enable debug messages @<:@default=disabled@:>@]),
 	[], [enable_debug=no])

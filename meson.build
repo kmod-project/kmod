@@ -18,9 +18,6 @@ cdata = configuration_data()
 cdata.set_quoted('PACKAGE', meson.project_name())
 cdata.set_quoted('VERSION', meson.project_version())
 
-if get_option('logging')
-  cdata.set('ENABLE_LOGGING', true)
-endif
 if get_option('debug-messages')
   cdata.set('ENABLE_DEBUG', true)
 endif
@@ -490,7 +487,6 @@ summary({
 
 summary({
   'tools'           : get_option('tools'),
-  'logging'         : get_option('logging'),
   'debug-messages'  : get_option('debug-messages'),
   'build-tests'     : get_option('build-tests'),
   'manpages'        : get_option('manpages'),

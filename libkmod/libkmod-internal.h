@@ -21,7 +21,6 @@ static _always_inline_ _printf_format_(2, 3) void kmod_log_null(const struct kmo
 			kmod_log(ctx, prio, __FILE__, __LINE__, __func__, ##arg); \
 	} while (0)
 
-#ifdef ENABLE_LOGGING
 #ifdef ENABLE_DEBUG
 #define DBG(ctx, arg...) kmod_log_cond(ctx, LOG_DEBUG, ##arg)
 #else
@@ -30,12 +29,6 @@ static _always_inline_ _printf_format_(2, 3) void kmod_log_null(const struct kmo
 #define NOTICE(ctx, arg...) kmod_log_cond(ctx, LOG_NOTICE, ##arg)
 #define INFO(ctx, arg...) kmod_log_cond(ctx, LOG_INFO, ##arg)
 #define ERR(ctx, arg...) kmod_log_cond(ctx, LOG_ERR, ##arg)
-#else
-#define DBG(ctx, arg...) kmod_log_null(ctx, ##arg)
-#define NOTICE(ctx, arg...) kmod_log_null(ctx, ##arg)
-#define INFO(ctx, arg...) kmod_log_null(ctx, ##arg)
-#define ERR(ctx, arg...) kmod_log_null(ctx, ##arg)
-#endif
 
 #define KMOD_EXPORT __attribute__((visibility("default")))
 

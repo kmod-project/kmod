@@ -68,13 +68,6 @@ option(
 )
 
 option(
-  'logging',
-  type : 'boolean',
-  value : true,
-  description : 'Build with system logging. Default: true',
-)
-
-option(
   'debug-messages',
   type : 'boolean',
   value : false,
