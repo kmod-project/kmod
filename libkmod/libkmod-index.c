@@ -511,7 +511,7 @@ static void index_searchwild__all(struct index_node_f *node, int j, struct strbu
 		}
 	}
 
-	if (node->values) {
+	if (pushed && node->values) {
 		const char *s = strbuf_str(buf);
 
 		if (s != NULL && fnmatch(s, subkey, 0) == 0)
@@ -997,7 +997,7 @@ static void index_mm_searchwild_all(struct index_mm_node *node, int j, struct st
 		}
 	}
 
-	if (node->values.len > 0) {
+	if (pushed && node->values.len > 0) {
 		const char *s = strbuf_str(buf);
 
 		if (s != NULL && fnmatch(s, subkey, 0) == 0)
