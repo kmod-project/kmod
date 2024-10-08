@@ -284,7 +284,9 @@ static struct index_node_f *index_read(FILE *in, uint32_t offset)
 
 		strbuf_init(&buf);
 		while (value_count--) {
-			if (read_u32(in, &priority) < 0 || buf_freadchars(&buf, in) < 0) {
+			ssize_t length;
+			if (read_u32(in, &priority) < 0 ||
+			    (length = buf_freadchars(&buf, in)) < 0) {
 				strbuf_release(&buf);
 				goto err;
 			}
@@ -293,7 +295,7 @@ static struct index_node_f *index_read(FILE *in, uint32_t offset)
 				strbuf_release(&buf);
 				goto err;
 			}
-			add_value(&node->values, value, buf.used, priority);
+			add_value(&node->values, value, length, priority);
 			strbuf_clear(&buf);
 		}
 		strbuf_release(&buf);
