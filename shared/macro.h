@@ -47,6 +47,7 @@
 #define _cleanup_(x) __attribute__((cleanup(x)))
 #define _nonnull_(...) __attribute__((nonnull(__VA_ARGS__)))
 #define _nonnull_all_ __attribute__((nonnull))
+#define _returns_nonnull_ __attribute__((returns_nonnull))
 
 /* Define C11 noreturn without <stdnoreturn.h> and even on older gcc
  * compiler versions */

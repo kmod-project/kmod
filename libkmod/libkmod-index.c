@@ -231,12 +231,15 @@ static struct index_node_f *index_read(FILE *in, uint32_t offset)
 
 	if (offset & INDEX_NODE_PREFIX) {
 		struct strbuf buf;
+		ssize_t len;
+
 		strbuf_init(&buf);
-		if (buf_freadchars(&buf, in) < 0) {
+		len = buf_freadchars(&buf, in);
+		if (len < 0) {
 			strbuf_release(&buf);
 			return NULL;
 		}
-		prefix = strbuf_steal(&buf);
+		prefix = len ? strbuf_steal(&buf) : strdup("");
 	} else
 		prefix = strdup("");
 
@@ -290,11 +293,7 @@ static struct index_node_f *index_read(FILE *in, uint32_t offset)
 				strbuf_release(&buf);
 				goto err;
 			}
-			value = strbuf_str(&buf);
-			if (value == NULL) {
-				strbuf_release(&buf);
-				goto err;
-			}
+			value = length ? strbuf_str(&buf) : "";
 			add_value(&node->values, value, length, priority);
 			strbuf_clear(&buf);
 		}
@@ -514,9 +513,7 @@ static void index_searchwild__all(struct index_node_f *node, int j, struct strbu
 	}
 
 	if (pushed && node->values) {
-		const char *s = strbuf_str(buf);
-
-		if (s != NULL && fnmatch(s, subkey, 0) == 0)
+		if (fnmatch(strbuf_str(buf), subkey, 0) == 0)
 			index_searchwild__allvalues(node, out);
 		else
 			index_close(node);
@@ -1000,9 +997,7 @@ static void index_mm_searchwild_all(struct index_mm_node *node, int j, struct st
 	}
 
 	if (pushed && node->values.len > 0) {
-		const char *s = strbuf_str(buf);
-
-		if (s != NULL && fnmatch(s, subkey, 0) == 0)
+		if (fnmatch(strbuf_str(buf), subkey, 0) == 0)
 			index_mm_searchwild_allvalues(node, out);
 		else
 			index_mm_free_node(node);

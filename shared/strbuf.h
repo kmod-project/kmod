@@ -2,6 +2,8 @@
 
 #include <stdbool.h>
 
+#include "macro.h"
+
 /*
  * Buffer abstract data type
  */
@@ -16,13 +18,13 @@ void strbuf_release(struct strbuf *buf);
 void strbuf_clear(struct strbuf *buf);
 
 /* Destroy buffer and return a copy as a C string */
-char *strbuf_steal(struct strbuf *buf);
+_returns_nonnull_ char *strbuf_steal(struct strbuf *buf);
 
 /*
  * Return a C string owned by the buffer invalidated if the buffer is
  * changed).
  */
-const char *strbuf_str(struct strbuf *buf);
+_returns_nonnull_ const char *strbuf_str(struct strbuf *buf);
 
 bool strbuf_pushchar(struct strbuf *buf, char ch);
 size_t strbuf_pushchars(struct strbuf *buf, const char *str);
