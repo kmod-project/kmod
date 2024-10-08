@@ -494,15 +494,10 @@ static void index_searchwild__allvalues(struct index_node_f *node,
 static void index_searchwild__all(struct index_node_f *node, int j, struct strbuf *buf,
 				  const char *subkey, struct index_value **out)
 {
-	size_t pushed = 0;
+	size_t pushed;
 	int ch;
 
-	while (node->prefix[j]) {
-		ch = node->prefix[j];
-
-		pushed += strbuf_pushchar(buf, ch);
-		j++;
-	}
+	pushed = strbuf_pushchars(buf, &node->prefix[j]);
 
 	for (ch = node->first; ch <= node->last; ch++) {
 		struct index_node_f *child = index_readchild(node, ch);
@@ -985,15 +980,10 @@ static void index_mm_searchwild_allvalues(struct index_mm_node *node,
 static void index_mm_searchwild_all(struct index_mm_node *node, int j, struct strbuf *buf,
 				    const char *subkey, struct index_value **out)
 {
-	size_t pushed = 0;
+	size_t pushed;
 	int ch;
 
-	while (node->prefix[j]) {
-		ch = node->prefix[j];
-
-		pushed += strbuf_pushchar(buf, ch);
-		j++;
-	}
+	pushed = strbuf_pushchars(buf, &node->prefix[j]);
 
 	for (ch = node->first; ch <= node->last; ch++) {
 		struct index_mm_node *child = index_mm_readchild(node, ch);
