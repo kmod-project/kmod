@@ -75,6 +75,8 @@ jobs:
 
           .github/print-kdir.sh >> "$GITHUB_ENV"
 
+          find / -name libclang_rt.asan-x86_64.so
+
       - name: configure (meson)
         if: ${{ matrix.build == 'meson' }}
         run: mkdir build && cd build && meson setup --native-file ../build-dev.ini ${{ matrix.container.meson_setup }} . ..
