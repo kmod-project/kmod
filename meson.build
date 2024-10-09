@@ -65,12 +65,6 @@ foreach tuple : _builtins
   cdata.set10('HAVE_@0@'.format(builtin.to_upper()), have)
 endforeach
 
-# Check for __GLIBC__ as short-cut for the LFS64 wrappers
-glibc = cc.has_header_symbol('features.h', '__GLIBC__')
-# XXX: once meson only, rename the define to something more sensible ...
-# NEED_64_WRAPPERS perhaps?
-cdata.set10('HAVE_DECL___GLIBC__', glibc)
-
 # dietlibc doesn't have st.st_mtim struct member
 # XXX: we use both st_mtim and st_mtime ... unify and test
 foreach tuple : [['struct stat', 'st_mtim', '#include <sys/stat.h>']]
