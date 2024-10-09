@@ -159,6 +159,17 @@ add_project_link_arguments(
   language : 'c'
 )
 
+# Clang as of v18, relies on statically linking the sanitizers. This causes two
+# distinct issues:
+#  - the shared library is underlinked, so the build fails
+#  - the modules (that we dlopen/ld_preload) are underlinked so the tests fail
+#
+# Force shared libasan (GCC defaults to shared and this toggle doesn't exist),
+# which combined with the LD_PRELOAD in our wrapper makes everything happy.
+if get_option('b_sanitize') != 'none' and cc.get_id() == 'clang'
+  add_project_arguments('-shared-libasan', language : 'c')
+  add_project_link_arguments('-shared-libasan', language : 'c')
+endif
 ################################################################################
 # Options
 ################################################################################
