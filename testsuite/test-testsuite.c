@@ -30,7 +30,7 @@ static noreturn int testsuite_uname(const struct test *t)
 		exit(EXIT_FAILURE);
 
 	if (!streq(u.release, TEST_UNAME)) {
-		char *ldpreload = getenv("LD_PRELOAD");
+		const char *ldpreload = getenv("LD_PRELOAD");
 		ERR("u.release=%s should be %s\n", u.release, TEST_UNAME);
 		ERR("LD_PRELOAD=%s\n", ldpreload);
 		exit(EXIT_FAILURE);
