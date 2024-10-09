@@ -58,7 +58,7 @@ void hash_free(struct hash *hash)
 	bucket = hash->buckets;
 	bucket_end = bucket + hash->n_buckets;
 	for (; bucket < bucket_end; bucket++) {
-		if (hash->free_value) {
+		if (hash->free_value && bucket->used != 0) {
 			struct hash_entry *entry, *entry_end;
 			entry = bucket->entries;
 			entry_end = entry + bucket->used;
