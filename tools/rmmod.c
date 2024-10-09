@@ -96,7 +96,7 @@ static int do_rmmod(int argc, char *argv[])
 	int verbose = LOG_ERR;
 	int use_syslog = 0;
 	int flags = 0;
-	int i, err, r = 0;
+	int i, r = 0;
 
 	for (;;) {
 		int c, idx = 0;
@@ -148,6 +148,8 @@ static int do_rmmod(int argc, char *argv[])
 		struct kmod_module *mod;
 		const char *arg = argv[i];
 		struct stat st;
+		int err;
+
 		if (stat(arg, &st) == 0)
 			err = kmod_module_new_from_path(ctx, arg, &mod);
 		else
@@ -160,16 +162,17 @@ static int do_rmmod(int argc, char *argv[])
 		}
 
 		if (!(flags & KMOD_REMOVE_FORCE) && check_module_inuse(mod) < 0) {
-			r++;
-			goto next;
+			r = EXIT_FAILURE;
+			kmod_module_unref(mod);
+			continue;
 		}
 
 		err = kmod_module_remove_module(mod, flags);
 		if (err < 0) {
 			ERR("could not remove module %s: %s\n", arg, strerror(-err));
-			r++;
+			r = EXIT_FAILURE;
 		}
-next:
+
 		kmod_module_unref(mod);
 	}
 
