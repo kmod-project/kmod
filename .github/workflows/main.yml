@@ -27,20 +27,20 @@ jobs:
         build: ['meson', 'autotools']
         compiler: ['clang','gcc']
         container:
-          - name: 'ubuntu:22.04'
-            meson_setup: '-D b_sanitize=address,undefined'
-            multilib: 'true'
-          - name: 'ubuntu:24.04'
-            meson_setup: '-D b_sanitize=address,undefined'
-            multilib: 'true'
+          - name: 'alpine:latest'
+            meson_setup: '-D docs=false'
           - name: 'archlinux:multilib-devel'
+            meson_setup: '-D b_sanitize=address,undefined'
+            multilib: 'true'
+          - name: 'debian:unstable'
             meson_setup: '-D b_sanitize=address,undefined'
             multilib: 'true'
           - name: 'fedora:latest'
             meson_setup: '-D b_sanitize=address,undefined'
-          - name: 'alpine:latest'
-            meson_setup: '-D docs=false'
-          - name: 'debian:unstable'
+          - name: 'ubuntu:22.04'
+            meson_setup: '-D b_sanitize=address,undefined'
+            multilib: 'true'
+          - name: 'ubuntu:24.04'
             meson_setup: '-D b_sanitize=address,undefined'
             multilib: 'true'
 
@@ -53,16 +53,16 @@ jobs:
         with:
           sparse-checkout: .github
 
-      - uses: ./.github/actions/setup-ubuntu
-        if: ${{ startsWith(matrix.container.name, 'ubuntu') }}
-      - uses: ./.github/actions/setup-archlinux
-        if: ${{ startsWith(matrix.container.name, 'archlinux') }}
-      - uses: ./.github/actions/setup-fedora
-        if: ${{ startsWith(matrix.container.name, 'fedora') }}
       - uses: ./.github/actions/setup-alpine
         if: ${{ startsWith(matrix.container.name, 'alpine') }}
+      - uses: ./.github/actions/setup-archlinux
+        if: ${{ startsWith(matrix.container.name, 'archlinux') }}
       - uses: ./.github/actions/setup-debian
         if: ${{ startsWith(matrix.container.name, 'debian') }}
+      - uses: ./.github/actions/setup-fedora
+        if: ${{ startsWith(matrix.container.name, 'fedora') }}
+      - uses: ./.github/actions/setup-ubuntu
+        if: ${{ startsWith(matrix.container.name, 'ubuntu') }}
 
       - name: Checkout the whole project
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
