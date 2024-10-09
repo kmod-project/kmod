@@ -18,8 +18,10 @@ cdata = configuration_data()
 cdata.set_quoted('PACKAGE', meson.project_name())
 cdata.set_quoted('VERSION', meson.project_version())
 
-cdata.set10('ENABLE_LOGGING', get_option('logging'))
 cdata.set10('ENABLE_DEBUG', get_option('debug-messages'))
+if get_option('debug-messages')
+  warning('*** debug messages requested, your syslog will be spammed')
+endif
 
 pkg = import('pkgconfig')
 cc = meson.get_compiler('c')
@@ -486,7 +488,6 @@ summary({
 
 summary({
   'tools'           : get_option('tools'),
-  'logging'         : get_option('logging'),
   'debug-messages'  : get_option('debug-messages'),
   'build-tests'     : get_option('build-tests'),
   'manpages'        : get_option('manpages'),

@@ -85,7 +85,6 @@ _printf_format_(6, 0) static void log_filep(void *data, int priority, const char
 					    va_list args)
 {
 	FILE *fp = data;
-#ifdef ENABLE_DEBUG
 	char buf[16];
 	const char *priname;
 	switch (priority) {
@@ -118,9 +117,6 @@ _printf_format_(6, 0) static void log_filep(void *data, int priority, const char
 		priname = buf;
 	}
 	fprintf(fp, "libkmod: %s %s:%d %s: ", priname, file, line, fn);
-#else
-	fprintf(fp, "libkmod: %s: ", fn);
-#endif
 	vfprintf(fp, format, args);
 }
 

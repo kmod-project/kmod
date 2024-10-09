@@ -68,17 +68,11 @@ option(
 )
 
 option(
-  'logging',
-  type : 'boolean',
-  value : true,
-  description : 'Build with system logging. Default: true',
-)
-
-option(
   'debug-messages',
   type : 'boolean',
   value : false,
-  description : 'Enable debug messages. Default: false',
+  description : 'Enable debug messages. WARNING: do not enable for ' +
+                'production builds. It will spam your syslog. Default: false',
 )
 
 # XXX: workaround a meson bug, where the tests are always build even
