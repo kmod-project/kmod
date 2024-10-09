@@ -66,10 +66,14 @@ int array_append(struct array *array, const void *element)
 int array_append_unique(struct array *array, const void *element)
 {
 	void **itr = array->array;
-	void **itr_end = itr + array->count;
-	for (; itr < itr_end; itr++)
-		if (*itr == element)
-			return -EEXIST;
+
+	if (itr) {
+		void **itr_end = itr + array->count;
+
+		for (; itr < itr_end; itr++)
+			if (*itr == element)
+				return -EEXIST;
+	}
 	return array_append(array, element);
 }
 

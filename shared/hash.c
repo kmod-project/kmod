@@ -61,9 +61,11 @@ void hash_free(struct hash *hash)
 		if (hash->free_value) {
 			struct hash_entry *entry, *entry_end;
 			entry = bucket->entries;
-			entry_end = entry + bucket->used;
-			for (; entry < entry_end; entry++)
-				hash->free_value((void *)entry->value);
+			if (entry) {
+				entry_end = entry + bucket->used;
+				for (; entry < entry_end; entry++)
+					hash->free_value((void *)entry->value);
+			}
 		}
 		free(bucket->entries);
 	}

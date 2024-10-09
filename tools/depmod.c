@@ -1945,15 +1945,17 @@ static int depmod_calculate_dependencies(struct depmod *depmod)
 		n_sorted++;
 
 		itr_dst = (const struct mod **)src->deps.array;
-		itr_dst_end = itr_dst + src->deps.count;
-		for (; itr_dst < itr_dst_end; itr_dst++) {
-			const struct mod *dst = *itr_dst;
-			uint16_t dst_idx = dst->idx;
-			assert(users[dst_idx] > 0);
-			users[dst_idx]--;
-			if (users[dst_idx] == 0) {
-				roots[n_roots] = dst_idx;
-				n_roots++;
+		if (itr_dst) {
+			itr_dst_end = itr_dst + src->deps.count;
+			for (; itr_dst < itr_dst_end; itr_dst++) {
+				const struct mod *dst = *itr_dst;
+				uint16_t dst_idx = dst->idx;
+				assert(users[dst_idx] > 0);
+				users[dst_idx]--;
+				if (users[dst_idx] == 0) {
+					roots[n_roots] = dst_idx;
+					n_roots++;
+				}
 			}
 		}
 	}
