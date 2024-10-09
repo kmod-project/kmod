@@ -91,7 +91,7 @@ jobs:
 
       - name: test (meson)
         if: ${{ matrix.build == 'meson' }}
-        run: cd build && meson test
+        run: cd build && meson test || meson test --verbose
 
       - name: test (autotools)
         if: ${{ matrix.build == 'autotools' }}
@@ -123,4 +123,4 @@ jobs:
 
       - name: test (32bit) (meson)
         if: ${{ matrix.build == 'meson' && matrix.container.multilib == 'true' }}
-        run: cd build32 && meson test
+        run: cd build32 && meson test || meson test --verbose
