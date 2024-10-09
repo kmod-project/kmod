@@ -16,6 +16,7 @@ runs:
           autoconf \
           automake \
           build-essential \
+          clang \
           gcc-multilib \
           git \
           gtk-doc-tools \
