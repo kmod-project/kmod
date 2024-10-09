@@ -70,7 +70,6 @@ jobs:
           git config --global --add safe.directory '*'
 
           .github/print-kdir.sh >> "$GITHUB_ENV"
-          echo "ASAN_OPTIONS=verify_asan_link_order=0:halt_on_error=1:abort_on_error=1:print_summary=1" >> "$GITHUB_ENV"
 
       - name: configure (meson)
         if: ${{ matrix.build == 'meson' }}
