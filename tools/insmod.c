@@ -66,7 +66,7 @@ static int do_insmod(int argc, char *argv[])
 	size_t optslen = 0;
 	int verbose = LOG_ERR;
 	int use_syslog = 0;
-	int i, err = 0, r = 0;
+	int i, r = 0;
 	const char *null_config = NULL;
 	unsigned int flags = 0;
 
@@ -142,18 +142,16 @@ static int do_insmod(int argc, char *argv[])
 
 	log_setup_kmod_log(ctx, verbose);
 
-	err = kmod_module_new_from_path(ctx, filename, &mod);
-	if (err < 0) {
-		ERR("could not load module %s: %s\n", filename, strerror(-err));
-		r++;
+	r = kmod_module_new_from_path(ctx, filename, &mod);
+	if (r < 0) {
+		ERR("could not load module %s: %s\n", filename, strerror(-r));
 		goto end;
 	}
 
-	err = kmod_module_insert_module(mod, flags, opts);
-	if (err < 0) {
-		ERR("could not insert module %s: %s\n", filename, mod_strerror(-err));
-		r++;
-	}
+	r = kmod_module_insert_module(mod, flags, opts);
+	if (r < 0)
+		ERR("could not insert module %s: %s\n", filename, mod_strerror(-r));
+
 	kmod_module_unref(mod);
 
 end:
@@ -161,7 +159,7 @@ end:
 	free(opts);
 
 	log_close();
-	return err >= 0 ? EXIT_SUCCESS : EXIT_FAILURE;
+	return r == 0 ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
 const struct kmod_cmd kmod_cmd_compat_insmod = {
