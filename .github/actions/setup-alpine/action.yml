@@ -17,6 +17,7 @@ runs:
           automake \
           bash \
           build-base \
+          clang \
           git \
           gtk-doc \
           libtool \
