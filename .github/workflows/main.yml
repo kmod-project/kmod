@@ -18,11 +18,14 @@ permissions:
 
 jobs:
   build:
+    env:
+      CC: ${{ matrix.compiler }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         build: ['meson', 'autotools']
+        compiler: ['clang','gcc']
         container:
           - name: 'ubuntu:22.04'
             multilib: 'true'
@@ -31,6 +34,7 @@ jobs:
           - name: 'archlinux:multilib-devel'
             multilib: 'true'
           - name: 'fedora:latest'
+            meson_setup: '-D b_sanitize=none'
           - name: 'alpine:latest'
             meson_setup: '-D docs=false -D b_sanitize=none'
           - name: 'debian:unstable'
@@ -109,7 +113,7 @@ jobs:
 
       - name: configure (32bit) (meson)
         if: ${{ matrix.build == 'meson' && matrix.container.multilib == 'true' }}
-        run: mkdir build32 && cd build32 && CC='gcc -m32' meson setup . ..
+        run: mkdir build32 && cd build32 && CC="$CC -m32" meson setup . ..
 
       - name: build (32bit) (meson)
         if: ${{ matrix.build == 'meson' && matrix.container.multilib == 'true' }}

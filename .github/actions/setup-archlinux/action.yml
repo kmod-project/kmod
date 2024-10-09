@@ -20,6 +20,7 @@ runs:
         pacman --noconfirm -Sy archlinux-keyring
 
         pacman --noconfirm -Su \
+          clang \
           git \
           gtk-doc \
           linux-headers \
