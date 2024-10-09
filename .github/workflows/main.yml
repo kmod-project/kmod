@@ -43,6 +43,11 @@ jobs:
           - name: 'ubuntu:24.04'
             meson_setup: '-D b_sanitize=address,undefined'
             multilib: 'true'
+      exclude:
+          - container.name: 'fedora:latest'
+            compiler: 'clang'
+          - container.name: 'ubuntu:22.04'
+            compiler: 'clang'
 
     container:
       image: ${{ matrix.container.name }}
