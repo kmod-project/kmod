@@ -97,7 +97,8 @@ _testsuite = [
 foreach input : _testsuite
   test(
     input,
-    executable(
+    test_wrapper,
+    args : executable(
       input,
       files('@0@.c'.format(input)),
       include_directories : top_include,
