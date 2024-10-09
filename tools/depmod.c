@@ -1944,6 +1944,9 @@ static int depmod_calculate_dependencies(struct depmod *depmod)
 		sorted[n_sorted] = src_idx;
 		n_sorted++;
 
+		if (src->deps.count == 0)
+			continue;
+
 		itr_dst = (const struct mod **)src->deps.array;
 		itr_dst_end = itr_dst + src->deps.count;
 		for (; itr_dst < itr_dst_end; itr_dst++) {
