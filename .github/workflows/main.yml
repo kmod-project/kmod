@@ -24,7 +24,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        build: ['meson', 'autotools']
+        build: ['meson']
         compiler: ['clang','gcc']
         container:
           - name: 'alpine:latest'
