@@ -75,7 +75,12 @@ jobs:
 
           .github/print-kdir.sh >> "$GITHUB_ENV"
 
-          find / -name libclang_rt.asan-x86_64.so
+          find /usr -name libclang_rt.asan-x86_64.so || true
+          find /usr -name libclang_rt.asan-x86_64.so | xargs ldd -r || true
+          gcc -print-file-name=libasan.so || true
+          gcc -print-file-name=libasan.so | xargs ldd -r || true
+          clang -print-file-name=libclang_rt.asan-x86_64.so || true
+          clang -print-file-name=libclang_rt.asan-x86_64.so | xargs ldd -r || true
 
       - name: configure (meson)
         if: ${{ matrix.build == 'meson' }}
