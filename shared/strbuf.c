@@ -22,14 +22,22 @@ static bool buf_grow(struct strbuf *buf, size_t newsize)
 	if (newsize <= buf->size)
 		return true;
 
+	/*
+	 * The size/used variables don't include the trailing \0, by design.
+	 *
+	 * On the other hand, we want the allocations to be POT (aka BUF_STEP), so adjust
+	 * the numbers respectively.
+	 */
+	newsize++;
 	if (newsize % BUF_STEP == 0)
 		sz = newsize;
 	else
 		sz = ((newsize / BUF_STEP) + 1) * BUF_STEP;
 
 	tmp = realloc(buf->bytes, sz);
-	if (sz > 0 && tmp == NULL)
+	if (tmp == NULL)
 		return false;
+	sz--;
 	buf->bytes = tmp;
 	buf->size = sz;
 	return true;
@@ -49,21 +57,14 @@ void strbuf_release(struct strbuf *buf)
 
 char *strbuf_steal(struct strbuf *buf)
 {
-	char *bytes;
-
-	bytes = realloc(buf->bytes, buf->used + 1);
-	if (!bytes) {
-		free(buf->bytes);
-		return NULL;
-	}
-	bytes[buf->used] = '\0';
-	return bytes;
+	assert(buf->bytes != NULL);
+	buf->bytes[buf->used] = '\0';
+	return buf->bytes;
 }
 
 const char *strbuf_str(struct strbuf *buf)
 {
-	if (!buf_grow(buf, buf->used + 1))
-		return NULL;
+	assert(buf->bytes != NULL);
 	buf->bytes[buf->used] = '\0';
 	return buf->bytes;
 }
