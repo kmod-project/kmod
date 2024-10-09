@@ -65,12 +65,6 @@ foreach tuple : _builtins
   cdata.set10('HAVE_@0@'.format(builtin.to_upper()), have)
 endforeach
 
-# Check for __GLIBC__ as short-cut for the LFS64 wrappers
-glibc = cc.has_header_symbol('features.h', '__GLIBC__')
-# XXX: once meson only, rename the define to something more sensible ...
-# NEED_64_WRAPPERS perhaps?
-cdata.set10('HAVE_DECL___GLIBC__', glibc)
-
 # dietlibc doesn't have st.st_mtim struct member
 # XXX: we use both st_mtim and st_mtime ... unify and test
 foreach tuple : [['struct stat', 'st_mtim', '#include <sys/stat.h>']]
@@ -160,6 +154,17 @@ add_project_link_arguments(
   language : 'c'
 )
 
+# Clang as of v18, relies on statically linking the sanitizers. This causes two
+# distinct issues:
+#  - the shared library is underlinked, so the build fails
+#  - the modules (that we dlopen/ld_preload) are underlinked so the tests fail
+#
+# Force shared libasan (GCC defaults to shared and this toggle doesn't exist),
+# which combined with the LD_PRELOAD in our wrapper makes everything happy.
+if get_option('b_sanitize') != 'none' and cc.get_id() == 'clang'
+  add_project_arguments('-shared-libasan', language : 'c')
+  add_project_link_arguments('-shared-libasan', language : 'c')
+endif
 ################################################################################
 # Options
 ################################################################################
@@ -457,6 +462,7 @@ if get_option('build-tests')
   setup_modules = find_program('scripts/setup-modules.sh')
   setup_rootfs = find_program('scripts/setup-rootfs.sh')
   top_include = include_directories('.')
+  test_wrapper = find_program('scripts/test-wrapper.sh')
   subdir('testsuite')
 endif
 

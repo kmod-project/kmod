@@ -18,28 +18,36 @@ permissions:
 
 jobs:
   build:
+    env:
+      CC: ${{ matrix.compiler }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        build: ['meson', 'autotools']
+        build: ['meson']
+        compiler: ['clang','gcc']
         container:
+          - name: 'alpine:latest'
+            meson_setup: '-D docs=false'
+          - name: 'archlinux:multilib-devel'
+            meson_setup: '-D b_sanitize=address,undefined'
+            multilib: 'true'
+          - name: 'debian:unstable'
+            meson_setup: '-D b_sanitize=address,undefined'
+            multilib: 'true'
+          - name: 'fedora:latest'
+            meson_setup: '-D b_sanitize=address,undefined'
           - name: 'ubuntu:22.04'
             meson_setup: '-D b_sanitize=address,undefined'
             multilib: 'true'
           - name: 'ubuntu:24.04'
             meson_setup: '-D b_sanitize=address,undefined'
             multilib: 'true'
-          - name: 'archlinux:multilib-devel'
-            meson_setup: '-D b_sanitize=address,undefined'
-            multilib: 'true'
-          - name: 'fedora:latest'
-            meson_setup: '-D b_sanitize=address,undefined'
-          - name: 'alpine:latest'
-            meson_setup: '-D docs=false'
-          - name: 'debian:unstable'
-            meson_setup: '-D b_sanitize=address,undefined'
-            multilib: 'true'
+      exclude:
+          - container.name: 'fedora:latest'
+            compiler: 'clang'
+          - container.name: 'ubuntu:22.04'
+            compiler: 'clang'
 
     container:
       image: ${{ matrix.container.name }}
@@ -50,16 +58,16 @@ jobs:
         with:
           sparse-checkout: .github
 
-      - uses: ./.github/actions/setup-ubuntu
-        if: ${{ startsWith(matrix.container.name, 'ubuntu') }}
-      - uses: ./.github/actions/setup-archlinux
-        if: ${{ startsWith(matrix.container.name, 'archlinux') }}
-      - uses: ./.github/actions/setup-fedora
-        if: ${{ startsWith(matrix.container.name, 'fedora') }}
       - uses: ./.github/actions/setup-alpine
         if: ${{ startsWith(matrix.container.name, 'alpine') }}
+      - uses: ./.github/actions/setup-archlinux
+        if: ${{ startsWith(matrix.container.name, 'archlinux') }}
       - uses: ./.github/actions/setup-debian
         if: ${{ startsWith(matrix.container.name, 'debian') }}
+      - uses: ./.github/actions/setup-fedora
+        if: ${{ startsWith(matrix.container.name, 'fedora') }}
+      - uses: ./.github/actions/setup-ubuntu
+        if: ${{ startsWith(matrix.container.name, 'ubuntu') }}
 
       - name: Checkout the whole project
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
@@ -71,7 +79,13 @@ jobs:
           git config --global --add safe.directory '*'
 
           .github/print-kdir.sh >> "$GITHUB_ENV"
-          echo "ASAN_OPTIONS=verify_asan_link_order=0:halt_on_error=1:abort_on_error=1:print_summary=1" >> "$GITHUB_ENV"
+
+          find /usr -name libclang_rt.asan-x86_64.so || true
+          find /usr -name libclang_rt.asan-x86_64.so | xargs ldd -r || true
+          gcc -print-file-name=libasan.so || true
+          gcc -print-file-name=libasan.so | xargs ldd -r || true
+          clang -print-file-name=libclang_rt.asan-x86_64.so || true
+          clang -print-file-name=libclang_rt.asan-x86_64.so | xargs ldd -r || true
 
       - name: configure (meson)
         if: ${{ matrix.build == 'meson' }}
@@ -91,7 +105,7 @@ jobs:
 
       - name: test (meson)
         if: ${{ matrix.build == 'meson' }}
-        run: cd build && meson test
+        run: cd build && meson test || meson test --verbose
 
       - name: test (autotools)
         if: ${{ matrix.build == 'autotools' }}
@@ -115,7 +129,7 @@ jobs:
 
       - name: configure (32bit) (meson)
         if: ${{ matrix.build == 'meson' && matrix.container.multilib == 'true' }}
-        run: mkdir build32 && cd build32 && CC='gcc -m32' meson setup . ..
+        run: mkdir build32 && cd build32 && CC="$CC -m32" meson setup . ..
 
       - name: build (32bit) (meson)
         if: ${{ matrix.build == 'meson' && matrix.container.multilib == 'true' }}
@@ -123,4 +137,4 @@ jobs:
 
       - name: test (32bit) (meson)
         if: ${{ matrix.build == 'meson' && matrix.container.multilib == 'true' }}
-        run: cd build32 && meson test
+        run: cd build32 && meson test || meson test --verbose
