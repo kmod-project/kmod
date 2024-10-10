@@ -10,16 +10,18 @@
 #include <string.h>
 
 #include <shared/array.h>
+#include <shared/util.h>
 
 /* basic pointer array growing in steps */
 
 static int array_realloc(struct array *array, size_t new_total)
 {
+	size_t total_size;
 	void *tmp;
 
-	if (SIZE_MAX / sizeof(void *) < new_total)
+	if (umulsz_overflow(sizeof(void *), new_total, &total_size))
 		return -ENOMEM;
-	tmp = realloc(array->array, sizeof(void *) * new_total);
+	tmp = realloc(array->array, total_size);
 	if (tmp == NULL)
 		return -ENOMEM;
 	array->array = tmp;
@@ -49,11 +51,12 @@ int array_append(struct array *array, const void *element)
 	size_t idx;
 
 	if (array->count + 1 >= array->total) {
+		size_t new_size;
 		int r;
 
-		if (SIZE_MAX - array->total < array->step)
+		if (uaddsz_overflow(array->total, array->step, &new_size))
 			return -ENOMEM;
-		r = array_realloc(array, array->total + array->step);
+		r = array_realloc(array, new_size);
 		if (r < 0)
 			return r;
 	}

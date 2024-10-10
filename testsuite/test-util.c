@@ -191,22 +191,73 @@ DEFINE_TEST(test_write_str_safe,
 		},
 	});
 
-static int test_addu64_overflow(const struct test *t)
+static int test_uadd32_overflow(const struct test *t)
 {
-	uint64_t res;
+	uint32_t res;
 	bool overflow;
 
-	overflow = addu64_overflow(UINT64_MAX - 1, 1, &res);
+	overflow = uadd32_overflow(UINT32_MAX - 1, 1, &res);
 	assert_return(!overflow, EXIT_FAILURE);
-	assert_return(res == UINT64_MAX, EXIT_FAILURE);
+	assert_return(res == UINT32_MAX, EXIT_FAILURE);
 
-	overflow = addu64_overflow(UINT64_MAX, 1, &res);
+	overflow = uadd32_overflow(UINT32_MAX, 1, &res);
 	assert_return(overflow, EXIT_FAILURE);
 
 	return EXIT_SUCCESS;
 }
-DEFINE_TEST(test_addu64_overflow,
-	    .description = "check implementation of addu4_overflow()")
+DEFINE_TEST(test_uadd32_overflow,
+	    .description = "check implementation of uadd32_overflow()")
+
+static int test_uadd64_overflow(const struct test *t)
+{
+	uint64_t res;
+	bool overflow;
+
+	overflow = uadd64_overflow(UINT64_MAX - 1, 1, &res);
+	assert_return(!overflow, EXIT_FAILURE);
+	assert_return(res == UINT64_MAX, EXIT_FAILURE);
+
+	overflow = uadd64_overflow(UINT64_MAX, 1, &res);
+	assert_return(overflow, EXIT_FAILURE);
+
+	return EXIT_SUCCESS;
+}
+DEFINE_TEST(test_uadd64_overflow,
+	    .description = "check implementation of uadd64_overflow()")
+
+static int test_umul32_overflow(const struct test *t)
+{
+	uint32_t res;
+	bool overflow;
+
+	overflow = umul32_overflow(UINT32_MAX / 0x10, 0x10, &res);
+	assert_return(!overflow, EXIT_FAILURE);
+	assert_return(res == (UINT32_MAX & ~0xf), EXIT_FAILURE);
+
+	overflow = umul32_overflow(UINT32_MAX, 0x10, &res);
+	assert_return(overflow, EXIT_FAILURE);
+
+	return EXIT_SUCCESS;
+}
+DEFINE_TEST(test_umul32_overflow,
+	    .description = "check implementation of umul32_overflow()")
+
+static int test_umul64_overflow(const struct test *t)
+{
+	uint64_t res;
+	bool overflow;
+
+	overflow = umul64_overflow(UINT64_MAX / 0x10, 0x10, &res);
+	assert_return(!overflow, EXIT_FAILURE);
+	assert_return(res == (UINT64_MAX & ~0xf), EXIT_FAILURE);
+
+	overflow = umul64_overflow(UINT64_MAX, 0x10, &res);
+	assert_return(overflow, EXIT_FAILURE);
+
+	return EXIT_SUCCESS;
+}
+DEFINE_TEST(test_umul64_overflow,
+	    .description = "check implementation of umul64_overflow()")
 
 static int test_backoff_time(const struct test *t)
 {

@@ -243,7 +243,7 @@ static inline int elf_get_section_info(const struct kmod_elf *elf, uint16_t idx,
 	}
 #undef READV
 
-	if (addu64_overflow(*offset, *size, &min_size) || min_size > elf->size) {
+	if (uadd64_overflow(*offset, *size, &min_size) || min_size > elf->size) {
 		ELFDBG(elf, "out-of-bounds: %" PRIu64 " >= %" PRIu64 " (ELF size)\n",
 		       min_size, elf->size);
 		return -EINVAL;
@@ -330,7 +330,7 @@ struct kmod_elf *kmod_elf_new(const void *memory, off_t size)
 		goto invalid;
 	}
 	shdrs_size = shdr_size * elf->header.section.count;
-	if (addu64_overflow(shdrs_size, elf->header.section.offset, &min_size) ||
+	if (uadd64_overflow(shdrs_size, elf->header.section.offset, &min_size) ||
 	    min_size > elf->size) {
 		ELFDBG(elf, "file is too short to hold sections\n");
 		goto invalid;
@@ -429,7 +429,7 @@ int kmod_elf_get_section(const struct kmod_elf *elf, const char *section,
 int kmod_elf_get_strings(const struct kmod_elf *elf, const char *section, char ***array)
 {
 	size_t i, j, count;
-	size_t vecsz;
+	size_t tmp_size, vec_size, total_size;
 	uint64_t size;
 	const void *buf;
 	const char *strings;
@@ -470,13 +470,15 @@ int kmod_elf_get_strings(const struct kmod_elf *elf, const char *section, char *
 	if (strings[i - 1] != '\0')
 		count++;
 
-	/* make sure that vector and strings fit into memory constraints */
-	vecsz = sizeof(char *) * (count + 1);
-	if (SIZE_MAX / sizeof(char *) - 1 < count || SIZE_MAX - size <= vecsz) {
+	/* (string vector + NULL) * sizeof(char *) + size + NUL */
+	if (uaddsz_overflow(count, 1, &tmp_size) ||
+	    umulsz_overflow(sizeof(char *), tmp_size, &vec_size) ||
+	    uaddsz_overflow(size, vec_size, &tmp_size) ||
+	    uaddsz_overflow(1, tmp_size, &total_size)) {
 		return -ENOMEM;
 	}
 
-	*array = a = malloc(vecsz + size + 1);
+	*array = a = malloc(total_size);
 	if (*array == NULL)
 		return -errno;
 
