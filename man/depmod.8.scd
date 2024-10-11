@@ -148,7 +148,7 @@ Portions Copyright Jon Masters, and others.
 
 Please direct any bug reports to kmod's issue tracker at
 https://github.com/kmod-project/kmod/issues/ alongside with version used, steps
-to reproduce the problem and the expected outcome."
+to reproduce the problem and the expected outcome.
 
 # AUTHORS
 

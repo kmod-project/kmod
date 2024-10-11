@@ -71,7 +71,7 @@ This manual page originally Copyright 2003, Rusty Russell, IBM Corporation.
 
 Please direct any bug reports to kmod's issue tracker at
 https://github.com/kmod-project/kmod/issues/ alongside with version used, steps
-to reproduce the problem and the expected outcome."
+to reproduce the problem and the expected outcome.
 
 # AUTHORS
 

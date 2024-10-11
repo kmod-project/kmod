@@ -105,7 +105,7 @@ This manual page Copyright 2006-2010, Jon Masters, Red Hat, Inc.
 
 Please direct any bug reports to kmod's issue tracker at
 https://github.com/kmod-project/kmod/issues/ alongside with version used, steps
-to reproduce the problem and the expected outcome."
+to reproduce the problem and the expected outcome.
 
 # AUTHORS
 
