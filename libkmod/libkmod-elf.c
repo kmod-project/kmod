@@ -572,7 +572,7 @@ static int elf_strip_versions_section(const struct kmod_elf *elf, uint8_t *chang
 	uint64_t val;
 
 	if (idx < 0)
-		return idx;
+		return idx == -ENODATA ? 0 : idx;
 
 	buf = elf_get_section_header(elf, idx);
 	off = (const uint8_t *)buf - elf->memory;
@@ -600,7 +600,7 @@ static int elf_strip_vermagic(const struct kmod_elf *elf, uint8_t *changed)
 
 	err = kmod_elf_get_section(elf, ".modinfo", &buf, &size);
 	if (err < 0)
-		return err;
+		return err == -ENODATA ? 0 : err;
 	strings = buf;
 	if (strings == NULL || size == 0)
 		return 0;
@@ -657,14 +657,18 @@ const void *kmod_elf_strip(const struct kmod_elf *elf, unsigned int flags)
 
 	if (flags & KMOD_INSERT_FORCE_MODVERSION) {
 		err = elf_strip_versions_section(elf, changed);
-		if (err < 0)
+		if (err < 0) {
+			errno = -err;
 			goto fail;
+		}
 	}
 
 	if (flags & KMOD_INSERT_FORCE_VERMAGIC) {
 		err = elf_strip_vermagic(elf, changed);
-		if (err < 0)
+		if (err < 0) {
+			errno = -err;
 			goto fail;
+		}
 	}
 
 	return changed;

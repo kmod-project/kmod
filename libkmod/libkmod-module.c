@@ -673,12 +673,11 @@ static int do_init_module(struct kmod_module *mod, unsigned int flags, const cha
 
 		stripped = kmod_elf_strip(elf, flags);
 		if (stripped == NULL) {
-			INFO(mod->ctx, "Failed to strip version information: %s\n",
-			     strerror(errno));
-			mem = kmod_elf_get_memory(elf);
-		} else {
-			mem = stripped;
+			ERR(mod->ctx, "Failed to strip version information: %s\n",
+			    strerror(errno));
+			return -errno;
 		}
+		mem = stripped;
 	} else {
 		err = kmod_file_load_contents(mod->file);
 		if (err)
