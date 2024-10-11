@@ -6,12 +6,12 @@ insmod - Simple program to insert a module into the Linux Kernel
 
 # SYNOPSIS
 
-*insmod* [_OPTIONS_] [_filename_] [_module options_...]
+*insmod* [_OPTIONS_] [_filename_] [_module options_]
 
 # DESCRIPTION
 
 *insmod* is a trivial program to insert a module into the kernel. Most users
-will want to use* modprobe*(8) instead, which is more clever and can handle
+will want to use *modprobe*(8) instead, which is more clever and can handle
 module dependencies.
 
 Only the most general of error messages are reported: as the work of trying to
