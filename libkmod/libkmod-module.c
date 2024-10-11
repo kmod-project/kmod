@@ -660,6 +660,7 @@ static int do_init_module(struct kmod_module *mod, unsigned int flags, const cha
 {
 	struct kmod_elf *elf;
 	const void *mem;
+	_cleanup_free_ const void *stripped = NULL;
 	off_t size;
 	int err;
 
@@ -670,21 +671,14 @@ static int do_init_module(struct kmod_module *mod, unsigned int flags, const cha
 			return err;
 		}
 
-		if (flags & KMOD_INSERT_FORCE_MODVERSION) {
-			err = kmod_elf_strip_section(elf, "__versions");
-			if (err < 0)
-				INFO(mod->ctx, "Failed to strip modversion: %s\n",
-				     strerror(-err));
+		stripped = kmod_elf_strip(elf, flags);
+		if (stripped == NULL) {
+			INFO(mod->ctx, "Failed to strip version information: %s\n",
+			     strerror(errno));
+			mem = kmod_elf_get_memory(elf);
+		} else {
+			mem = stripped;
 		}
-
-		if (flags & KMOD_INSERT_FORCE_VERMAGIC) {
-			err = kmod_elf_strip_vermagic(elf);
-			if (err < 0)
-				INFO(mod->ctx, "Failed to strip vermagic: %s\n",
-				     strerror(-err));
-		}
-
-		mem = kmod_elf_get_memory(elf);
 	} else {
 		err = kmod_file_load_contents(mod->file);
 		if (err)

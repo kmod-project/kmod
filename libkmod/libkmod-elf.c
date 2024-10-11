@@ -35,7 +35,6 @@ struct kmod_modversion64 {
 
 struct kmod_elf {
 	const uint8_t *memory;
-	uint8_t *changed;
 	uint64_t size;
 	enum kmod_elf_class class;
 	struct kmod_elf_header {
@@ -143,15 +142,15 @@ static inline uint64_t elf_get_uint(const struct kmod_elf *elf, uint64_t offset,
 	return ret;
 }
 
-static inline int elf_set_uint(struct kmod_elf *elf, uint64_t offset, uint64_t size,
-			       uint64_t value)
+static inline int elf_set_uint(const struct kmod_elf *elf, uint64_t offset, uint64_t size,
+			       uint64_t value, uint8_t *changed)
 {
 	uint8_t *p;
 	size_t i;
 
 	ELFDBG(elf,
 	       "size=%" PRIu16 " offset=%" PRIu64 " value=%" PRIu64 " write memory=%p\n",
-	       size, offset, value, elf->changed);
+	       size, offset, value, changed);
 
 	assert(size <= sizeof(uint64_t));
 	assert(offset + size <= elf->size);
@@ -163,16 +162,7 @@ static inline int elf_set_uint(struct kmod_elf *elf, uint64_t offset, uint64_t s
 		return -1;
 	}
 
-	if (elf->changed == NULL) {
-		elf->changed = malloc(elf->size);
-		if (elf->changed == NULL)
-			return -errno;
-		memcpy(elf->changed, elf->memory, elf->size);
-		elf->memory = elf->changed;
-		ELFDBG(elf, "copied memory to allow writing.\n");
-	}
-
-	p = elf->changed + offset;
+	p = changed + offset;
 	if (elf->class & KMOD_ELF_MSB) {
 		for (i = 1; i <= size; i++) {
 			p[size - i] = value & 0xff;
@@ -292,7 +282,6 @@ struct kmod_elf *kmod_elf_new(const void *memory, off_t size)
 	}
 
 	elf->memory = memory;
-	elf->changed = NULL;
 	elf->size = size;
 	elf->class = class;
 
@@ -360,7 +349,6 @@ invalid:
 
 void kmod_elf_unref(struct kmod_elf *elf)
 {
-	free(elf->changed);
 	free(elf);
 }
 
@@ -576,7 +564,8 @@ int kmod_elf_get_modversions(const struct kmod_elf *elf, struct kmod_modversion 
 	return count;
 }
 
-int kmod_elf_strip_section(struct kmod_elf *elf, const char *section)
+static int elf_strip_section(const struct kmod_elf *elf, const char *section,
+			     uint8_t *changed)
 {
 	uint64_t off, size;
 	const void *buf;
@@ -600,10 +589,10 @@ int kmod_elf_strip_section(struct kmod_elf *elf, const char *section)
 	val = elf_get_uint(elf, off, size);
 	val &= ~(uint64_t)SHF_ALLOC;
 
-	return elf_set_uint(elf, off, size, val);
+	return elf_set_uint(elf, off, size, val, changed);
 }
 
-int kmod_elf_strip_vermagic(struct kmod_elf *elf)
+static int elf_strip_vermagic(const struct kmod_elf *elf, uint8_t *changed)
 {
 	uint64_t i, size;
 	const void *buf;
@@ -644,23 +633,45 @@ int kmod_elf_strip_vermagic(struct kmod_elf *elf)
 		}
 		off = (const uint8_t *)s - elf->memory;
 
-		if (elf->changed == NULL) {
-			elf->changed = malloc(elf->size);
-			if (elf->changed == NULL)
-				return -errno;
-			memcpy(elf->changed, elf->memory, elf->size);
-			elf->memory = elf->changed;
-			ELFDBG(elf, "copied memory to allow writing.\n");
-		}
-
 		len = strlen(s);
 		ELFDBG(elf, "clear .modinfo vermagic \"%s\" (%zd bytes)\n", s, len);
-		memset(elf->changed + off, '\0', len);
+		memset(changed + off, '\0', len);
 		return 0;
 	}
 
 	ELFDBG(elf, "no vermagic found in .modinfo\n");
 	return -ENODATA;
+}
+
+const void *kmod_elf_strip(const struct kmod_elf *elf, unsigned int flags)
+{
+	uint8_t *changed;
+	int err = 0;
+
+	assert(flags & (KMOD_INSERT_FORCE_MODVERSION | KMOD_INSERT_FORCE_VERMAGIC));
+
+	changed = memdup(elf->memory, elf->size);
+	if (changed == NULL)
+		return NULL;
+
+	ELFDBG(elf, "copied memory to allow writing.\n");
+
+	if (flags & KMOD_INSERT_FORCE_MODVERSION) {
+		err = elf_strip_section(elf, "__versions", changed);
+		if (err < 0)
+			goto fail;
+	}
+
+	if (flags & KMOD_INSERT_FORCE_VERMAGIC) {
+		err = elf_strip_vermagic(elf, changed);
+		if (err < 0)
+			goto fail;
+	}
+
+	return changed;
+fail:
+	free(changed);
+	return NULL;
 }
 
 static int kmod_elf_get_symbols_symtab(const struct kmod_elf *elf,
