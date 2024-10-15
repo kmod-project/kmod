@@ -781,7 +781,7 @@ static uint64_t kmod_elf_resolve_crc(const struct kmod_elf *elf, uint64_t crc,
 		return (uint64_t)-1;
 	}
 
-	if (crc > (size - sizeof(uint32_t))) {
+	if (size < sizeof(uint32_t) || crc > (size - sizeof(uint32_t))) {
 		ELFDBG(elf,
 		       "CRC offset %" PRIu64 " is too big, section %" PRIu16
 		       " size is %" PRIu64 "\n",
