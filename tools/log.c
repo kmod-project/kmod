@@ -62,19 +62,19 @@ _printf_format_(6, 0) static void log_kmod(void *data, int priority, const char 
 		return;
 
 	if (log_use_syslog) {
-#ifdef ENABLE_DEBUG
-		syslog(priority, "%s: %s:%d %s() %s", prioname, file, line, fn, str);
-#else
-		syslog(priority, "%s: %s", prioname, str);
-#endif
+		if (ENABLE_DEBUG == 1)
+			syslog(priority, "%s: %s:%d %s() %s", prioname, file, line, fn,
+			       str);
+		else
+			syslog(priority, "%s: %s", prioname, str);
 	} else {
-#ifdef ENABLE_DEBUG
-		fprintf(stderr, "%s: %s: %s:%d %s() %s", program_invocation_short_name,
-			prioname, file, line, fn, str);
-#else
-		fprintf(stderr, "%s: %s: %s", program_invocation_short_name, prioname,
-			str);
-#endif
+		if (ENABLE_DEBUG == 1)
+			fprintf(stderr, "%s: %s: %s:%d %s() %s",
+				program_invocation_short_name, prioname, file, line, fn,
+				str);
+		else
+			fprintf(stderr, "%s: %s: %s", program_invocation_short_name,
+				prioname, str);
 	}
 
 	free(str);

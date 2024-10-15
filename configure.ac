@@ -212,6 +212,8 @@ AC_ARG_ENABLE([debug],
 	[], [enable_debug=no])
 AS_IF([test "x$enable_debug" = "xyes"], [
 	AC_DEFINE(ENABLE_DEBUG, [1], [Debug messages.])
+], [
+	AC_DEFINE(ENABLE_DEBUG, [0], [Debug messages.])
 ])
 
 AC_ARG_ENABLE([coverage],
