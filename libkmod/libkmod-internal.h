@@ -10,22 +10,15 @@
 
 #include "libkmod.h"
 
-static _always_inline_ _printf_format_(2, 3) void kmod_log_null(const struct kmod_ctx *ctx,
-								const char *format, ...)
-{
-}
-
-#define kmod_log_cond(ctx, prio, arg...)                                          \
-	do {                                                                      \
-		if (ENABLE_LOGGING == 1 && kmod_get_log_priority(ctx) >= prio)    \
-			kmod_log(ctx, prio, __FILE__, __LINE__, __func__, ##arg); \
+#define kmod_log_cond(ctx, prio, arg...)                                           \
+	do {                                                                       \
+		if (ENABLE_LOGGING == 1 &&                                         \
+		    (ENABLE_DEBUG == 1 || (!ENABLE_DEBUG && prio != LOG_DEBUG)) && \
+		    kmod_get_log_priority(ctx) >= prio)                            \
+			kmod_log(ctx, prio, __FILE__, __LINE__, __func__, ##arg);  \
 	} while (0)
 
-#ifdef ENABLE_DEBUG
 #define DBG(ctx, arg...) kmod_log_cond(ctx, LOG_DEBUG, ##arg)
-#else
-#define DBG(ctx, arg...) kmod_log_null(ctx, ##arg)
-#endif
 #define NOTICE(ctx, arg...) kmod_log_cond(ctx, LOG_NOTICE, ##arg)
 #define INFO(ctx, arg...) kmod_log_cond(ctx, LOG_INFO, ##arg)
 #define ERR(ctx, arg...) kmod_log_cond(ctx, LOG_ERR, ##arg)

@@ -116,11 +116,10 @@ _printf_format_(6, 0) static void log_filep(void *data, int priority, const char
 		snprintf(buf, sizeof(buf), "L:%d", priority);
 		priname = buf;
 	}
-#ifdef ENABLE_DEBUG
-	fprintf(fp, "libkmod: %s %s:%d %s: ", priname, file, line, fn);
-#else
-	fprintf(fp, "libkmod: %s: %s: ", priname, fn);
-#endif
+	if (ENABLE_DEBUG == 1)
+		fprintf(fp, "libkmod: %s %s:%d %s: ", priname, file, line, fn);
+	else
+		fprintf(fp, "libkmod: %s: %s: ", priname, fn);
 	vfprintf(fp, format, args);
 }
 
