@@ -10,8 +10,8 @@ rmmod - Simple program to remove a module from the Linux Kernel
 
 # DESCRIPTION
 
-*rmmod* is a trivial program to remove a module or a list of modules, (when module
-unloading support is provided) from the kernel. Most users will want to use
+*rmmod* is a trivial program to remove a module or a list of modules from the
+kernel (when module unloading support is provided). Most users will want to use
 *modprobe*(8) with the *-r* option instead since it removes unused dependent
 modules as well.
 
