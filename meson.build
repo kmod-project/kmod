@@ -20,6 +20,7 @@ cdata.set_quoted('VERSION', meson.project_version())
 
 cdata.set10('ENABLE_LOGGING', get_option('logging'))
 cdata.set10('ENABLE_DEBUG', get_option('debug-messages'))
+cdata.set10('ENABLE_ELFDBG', false)
 
 pkg = import('pkgconfig')
 cc = meson.get_compiler('c')

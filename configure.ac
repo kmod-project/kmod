@@ -219,6 +219,7 @@ AS_IF([test "x$enable_debug" = "xyes"], [
 ], [
 	AC_DEFINE(ENABLE_DEBUG, [0], [Debug messages.])
 ])
+AC_DEFINE(ENABLE_ELFDBG, [0], [Debug elf parsing messages.])
 
 AC_ARG_ENABLE([coverage],
 	AS_HELP_STRING([--enable-coverage], [enable test coverage @<:@default=disabled@:>@]),

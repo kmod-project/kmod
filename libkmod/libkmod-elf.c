@@ -53,10 +53,14 @@ struct kmod_elf {
 	} header;
 };
 
+//#undef ENABLE_ELFDBG
 //#define ENABLE_ELFDBG 1
 
-#if (ENABLE_LOGGING == 1) && defined(ENABLE_ELFDBG)
-#define ELFDBG(elf, ...) _elf_dbg(elf, __FILE__, __LINE__, __func__, __VA_ARGS__);
+#define ELFDBG(elf, ...)                                                          \
+	do {                                                                      \
+		if (ENABLE_LOGGING == 1 && ENABLE_ELFDBG == 1)                    \
+			_elf_dbg(elf, __FILE__, __LINE__, __func__, __VA_ARGS__); \
+	} while (0);
 
 static inline void _elf_dbg(const struct kmod_elf *elf, const char *fname, unsigned line,
 			    const char *func, const char *fmt, ...)
@@ -69,9 +73,6 @@ static inline void _elf_dbg(const struct kmod_elf *elf, const char *fname, unsig
 	vfprintf(stderr, fmt, args);
 	va_end(args);
 }
-#else
-#define ELFDBG(elf, ...)
-#endif
 
 static int elf_identify(const void *memory, uint64_t size)
 {
