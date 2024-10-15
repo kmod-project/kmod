@@ -25,7 +25,6 @@ jobs:
         build: ['meson', 'autotools']
         container:
           - name: 'ubuntu:22.04'
-            meson_setup: '-D b_sanitize=address,undefined'
             multilib: 'true'
           - name: 'ubuntu:24.04'
             meson_setup: '-D b_sanitize=address,undefined'
