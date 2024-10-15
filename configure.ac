@@ -207,6 +207,8 @@ AC_ARG_ENABLE([logging],
 	[], enable_logging=yes)
 AS_IF([test "x$enable_logging" = "xyes"], [
 	AC_DEFINE(ENABLE_LOGGING, [1], [System logging.])
+], [
+	AC_DEFINE(ENABLE_LOGGING, [0], [System logging.])
 ])
 
 AC_ARG_ENABLE([debug],
