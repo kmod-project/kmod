@@ -564,12 +564,11 @@ int kmod_elf_get_modversions(const struct kmod_elf *elf, struct kmod_modversion 
 	return count;
 }
 
-static int elf_strip_section(const struct kmod_elf *elf, const char *section,
-			     uint8_t *changed)
+static int elf_strip_versions_section(const struct kmod_elf *elf, uint8_t *changed)
 {
 	uint64_t off, size;
 	const void *buf;
-	int idx = elf_find_section(elf, section);
+	int idx = elf_find_section(elf, "__versions");
 	uint64_t val;
 
 	if (idx < 0)
@@ -657,7 +656,7 @@ const void *kmod_elf_strip(const struct kmod_elf *elf, unsigned int flags)
 	ELFDBG(elf, "copied memory to allow writing.\n");
 
 	if (flags & KMOD_INSERT_FORCE_MODVERSION) {
-		err = elf_strip_section(elf, "__versions", changed);
+		err = elf_strip_versions_section(elf, changed);
 		if (err < 0)
 			goto fail;
 	}
