@@ -66,7 +66,7 @@ static int do_insmod(int argc, char *argv[])
 	size_t optslen = 0;
 	int verbose = LOG_ERR;
 	int use_syslog = 0;
-	int i, err = 0, r = 0;
+	int i, err = 0;
 	const char *null_config = NULL;
 	unsigned int flags = 0;
 
@@ -104,14 +104,14 @@ static int do_insmod(int argc, char *argv[])
 
 	if (optind >= argc) {
 		ERR("missing filename.\n");
-		r = EXIT_FAILURE;
+		err = -1;
 		goto end;
 	}
 
 	filename = argv[optind];
 	if (streq(filename, "-")) {
 		ERR("this tool does not support loading from stdin!\n");
-		r = EXIT_FAILURE;
+		err = -1;
 		goto end;
 	}
 
@@ -120,7 +120,7 @@ static int do_insmod(int argc, char *argv[])
 		void *tmp = realloc(opts, optslen + len + 2);
 		if (tmp == NULL) {
 			ERR("out of memory\n");
-			r = EXIT_FAILURE;
+			err = -1;
 			goto end;
 		}
 		opts = tmp;
@@ -136,7 +136,7 @@ static int do_insmod(int argc, char *argv[])
 	ctx = kmod_new(NULL, &null_config);
 	if (!ctx) {
 		ERR("kmod_new() failed!\n");
-		r = EXIT_FAILURE;
+		err = -1;
 		goto end;
 	}
 
@@ -145,14 +145,12 @@ static int do_insmod(int argc, char *argv[])
 	err = kmod_module_new_from_path(ctx, filename, &mod);
 	if (err < 0) {
 		ERR("could not load module %s: %s\n", filename, strerror(-err));
-		r++;
 		goto end;
 	}
 
 	err = kmod_module_insert_module(mod, flags, opts);
 	if (err < 0) {
 		ERR("could not insert module %s: %s\n", filename, mod_strerror(-err));
-		r++;
 	}
 	kmod_module_unref(mod);
 
