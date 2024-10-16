@@ -34,14 +34,19 @@ struct param {
 	int typelen;
 };
 
-static struct param *add_param(const char *name, int namelen, const char *param,
-			       int paramlen, const char *type, int typelen,
+static struct param *add_param(const char *name, size_t namelen, const char *param,
+			       size_t paramlen, const char *type, size_t typelen,
 			       struct param **list)
 {
 	struct param *it;
 
+	if (namelen > INT_MAX || paramlen > INT_MAX || typelen > INT_MAX) {
+		errno = EINVAL;
+		return NULL;
+	}
+
 	for (it = *list; it != NULL; it = it->next) {
-		if (it->namelen == namelen && memcmp(it->name, name, namelen) == 0)
+		if (it->namelen == (int)namelen && memcmp(it->name, name, namelen) == 0)
 			break;
 	}
 
@@ -75,7 +80,7 @@ static struct param *add_param(const char *name, int namelen, const char *param,
 static int process_parm(const char *key, const char *value, struct param **params)
 {
 	const char *name, *param, *type;
-	int namelen, paramlen, typelen;
+	size_t namelen, paramlen, typelen;
 	struct param *it;
 	const char *colon = strchr(value, ':');
 	if (colon == NULL) {
@@ -99,7 +104,7 @@ static int process_parm(const char *key, const char *value, struct param **param
 
 	it = add_param(name, namelen, param, paramlen, type, typelen, params);
 	if (it == NULL) {
-		ERR("Out of memory!\n");
+		ERR("Unable to add parameter: %m\n");
 		return -ENOMEM;
 	}
 
