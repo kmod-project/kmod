@@ -5,6 +5,7 @@
 
 #include <assert.h>
 #include <elf.h>
+#include <endian.h>
 #include <errno.h>
 #include <limits.h>
 #include <stdlib.h>
@@ -110,7 +111,6 @@ static inline uint64_t elf_get_uint(const struct kmod_elf *elf, uint64_t offset,
 {
 	const uint8_t *p;
 	uint64_t ret = 0;
-	size_t i;
 
 	assert(size <= sizeof(uint64_t));
 	assert(offset + size <= elf->size);
@@ -123,12 +123,13 @@ static inline uint64_t elf_get_uint(const struct kmod_elf *elf, uint64_t offset,
 	}
 
 	p = elf->memory + offset;
+
 	if (elf->msb) {
-		for (i = 0; i < size; i++)
-			ret = (ret << 8) | p[i];
+		memcpy((char *)&ret + sizeof(ret) - size, p, size);
+		ret = be64toh(ret);
 	} else {
-		for (i = 1; i <= size; i++)
-			ret = (ret << 8) | p[size - i];
+		memcpy(&ret, p, size);
+		ret = le64toh(ret);
 	}
 
 	ELFDBG(elf, "size=%" PRIu16 " offset=%" PRIu64 " value=%" PRIu64 "\n", size,
