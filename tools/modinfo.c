@@ -201,7 +201,7 @@ static int modinfo_do(struct kmod_module *mod)
 	kmod_list_foreach(l, list) {
 		const char *key = kmod_module_info_get_key(l);
 		const char *value = kmod_module_info_get_value(l);
-		int keylen;
+		size_t keylen;
 
 		if (field != NULL) {
 			if (!streq(field, key))
@@ -224,7 +224,9 @@ static int modinfo_do(struct kmod_module *mod)
 		}
 
 		keylen = strlen(key);
-		printf("%s:%-*s%s%c", key, 15 - keylen, "", value, separator);
+		if (keylen > 15)
+			keylen = 15;
+		printf("%s:%-*s%s%c", key, 15 - (int)keylen, "", value, separator);
 	}
 
 	if (field != NULL)
