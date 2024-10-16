@@ -86,7 +86,6 @@ AttributeMacros:
   - _nonnull_
   - _nonnull_all_
   - _printf_format_
-  - _unused_
   - noreturn
 
 IncludeBlocks: Preserve
