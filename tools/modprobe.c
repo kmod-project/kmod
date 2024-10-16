@@ -824,7 +824,7 @@ static int do_modprobe(int argc, char **orig_argv)
 
 	argv = prepend_options_from_env(&argc, orig_argv);
 	if (argv == NULL) {
-		ERR("Could not prepend options from command line\n");
+		ERR("Could not prepend options from environment\n");
 		return EXIT_FAILURE;
 	}
 
