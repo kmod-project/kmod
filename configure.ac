@@ -44,8 +44,12 @@ AC_CHECK_FUNCS_ONCE([secure_getenv])
 
 CC_CHECK_FUNC_BUILTIN([__builtin_clz])
 CC_CHECK_FUNC_BUILTIN([__builtin_types_compatible_p])
+CC_CHECK_FUNC_BUILTIN([__builtin_uadd_overflow], [ ], [ ])
 CC_CHECK_FUNC_BUILTIN([__builtin_uaddl_overflow], [ ], [ ])
 CC_CHECK_FUNC_BUILTIN([__builtin_uaddll_overflow], [ ], [ ])
+CC_CHECK_FUNC_BUILTIN([__builtin_umul_overflow], [ ], [ ])
+CC_CHECK_FUNC_BUILTIN([__builtin_umull_overflow], [ ], [ ])
+CC_CHECK_FUNC_BUILTIN([__builtin_umulll_overflow], [ ], [ ])
 
 # dietlibc doesn't have st.st_mtim struct member
 AC_CHECK_MEMBERS([struct stat.st_mtim], [], [], [#include <sys/stat.h>])
