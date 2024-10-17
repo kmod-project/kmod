@@ -27,17 +27,13 @@ jobs:
           - name: 'ubuntu:22.04'
             multilib: 'true'
           - name: 'ubuntu:24.04'
-            meson_setup: '-D b_sanitize=address,undefined'
             multilib: 'true'
           - name: 'archlinux:multilib-devel'
-            meson_setup: '-D b_sanitize=address,undefined'
             multilib: 'true'
           - name: 'fedora:latest'
-            meson_setup: '-D b_sanitize=address,undefined'
           - name: 'alpine:latest'
-            meson_setup: '-D docs=false'
+            meson_setup: '-D docs=false -D b_sanitize=none'
           - name: 'debian:unstable'
-            meson_setup: '-D b_sanitize=address,undefined'
             multilib: 'true'
 
     container:
