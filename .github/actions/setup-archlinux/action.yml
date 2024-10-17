@@ -24,5 +24,4 @@ runs:
           gtk-doc \
           linux-headers \
           meson \
-          rsync \
           scdoc

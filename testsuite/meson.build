@@ -10,9 +10,11 @@ build_module_playground = custom_target(
     meson.project_build_root(),
     'testsuite/module-playground', # do not prepend source/build root
   ],
+  # The command ensures we don't do extra work, so the missing output token file
+  # and the build_always_stale true are intentional.
   output : 'bb-rootfs',
   console : true,
-  build_always_stale : true, # TODO: only when the playground has changed
+  build_always_stale : true,
   build_by_default : false,
 )
 

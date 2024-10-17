@@ -29,7 +29,6 @@ runs:
           make \
           meson \
           openssl-devel \
-          rsync \
           scdoc \
           xz-devel \
           zlib-devel
