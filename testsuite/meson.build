@@ -96,18 +96,28 @@ _testsuite = [
   'test-weakdep',
 ]
 
+if get_option('b_sanitize') != 'none'
+  source_env = 'source @0@;'.format(sanitizer_env.full_path())
+else
+  source_env = ''
+endif
+
 foreach input : _testsuite
+  exec = executable(
+    input,
+    files('@0@.c'.format(input)),
+    include_directories : top_include,
+    c_args : testsuite_c_args,
+    link_with : [libshared, libkmod_internal, libtestsuite],
+    build_by_default : false,
+  )
   test(
     input,
-    test_wrapper,
-    args : executable(
-      input,
-      files('@0@.c'.format(input)),
-      include_directories : top_include,
-      c_args : testsuite_c_args,
-      link_with : [libshared, libkmod_internal, libtestsuite],
-      build_by_default : false,
-    ),
-    depends : [internal_kmod_symlinks, create_rootfs, test_override_mods],
+    bash,
+    args : [
+      '-c',
+      '@0@@1@'.format(source_env, exec.full_path()),
+    ],
+    depends : [exec, internal_kmod_symlinks, create_rootfs, test_override_mods],
   )
 endforeach

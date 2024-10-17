@@ -453,10 +453,11 @@ endforeach
 # ------------------------------------------------------------------------------
 
 if get_option('build-tests')
+  bash = find_program('bash')
+  sanitizer_env = find_program('scripts/sanitizer-env.sh')
   setup_modules = find_program('scripts/setup-modules.sh')
   setup_rootfs = find_program('scripts/setup-rootfs.sh')
   top_include = include_directories('.')
-  test_wrapper = find_program('scripts/test-wrapper.sh')
   subdir('testsuite')
 endif
 
