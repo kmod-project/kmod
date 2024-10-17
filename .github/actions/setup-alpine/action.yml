@@ -23,7 +23,6 @@ runs:
           linux-edge-dev \
           meson \
           openssl-dev \
-          rsync \
           scdoc \
           tar \
           xz-dev \
