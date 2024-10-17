@@ -384,7 +384,7 @@ static uint32_t index_calculate_size(struct index_node *node)
 static uint32_t index_write__node(const struct index_node *node, FILE *out,
 				  uint32_t offset)
 {
-	uint32_t *child_offs = NULL;
+	uint32_t child_offs[INDEX_CHILDMAX] = {};
 	int child_count = 0;
 
 	/* Calculate children offsets */
@@ -393,9 +393,6 @@ static uint32_t index_write__node(const struct index_node *node, FILE *out,
 		size_t sizes = 0;
 
 		child_count = node->last - node->first + 1;
-		child_offs = malloc(child_count * sizeof(uint32_t));
-		if (child_offs == NULL)
-			fatal_oom();
 
 		for (i = 0; i < child_count; i++) {
 			struct index_node *child;
@@ -423,8 +420,6 @@ static uint32_t index_write__node(const struct index_node *node, FILE *out,
 		fputc(node->last, out);
 		fwrite(child_offs, sizeof(uint32_t), child_count, out);
 	}
-
-	free(child_offs);
 
 	if (node->values) {
 		const struct index_value *v;
