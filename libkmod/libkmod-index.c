@@ -214,8 +214,14 @@ static ssize_t buf_freadchars(struct strbuf *buf, FILE *in)
 /*
  * Index file searching
  */
-struct index_node_f {
+struct index_file {
 	FILE *file;
+	uint32_t root_offset;
+	struct strbuf buf;
+};
+
+struct index_node_f {
+	struct index_file *idx;
 	char *prefix; /* path compression */
 	struct index_value *values;
 	unsigned char first; /* range of child nodes */
@@ -223,22 +229,23 @@ struct index_node_f {
 	uint32_t children[0];
 };
 
-static struct index_node_f *index_read(FILE *in, uint32_t offset)
+static struct index_node_f *index_read(struct index_file *idx, uint32_t offset)
 {
 	struct index_node_f *node = NULL;
 	char *prefix = NULL;
 	size_t child_count = 0;
+	FILE *fp = idx->file;
 
 	if ((offset & INDEX_NODE_MASK) == 0)
 		return NULL;
 
-	if (fseek(in, offset & INDEX_NODE_MASK, SEEK_SET) < 0)
+	if (fseek(fp, offset & INDEX_NODE_MASK, SEEK_SET) < 0)
 		return NULL;
 
 	if (offset & INDEX_NODE_PREFIX) {
 		struct strbuf buf;
 		strbuf_init(&buf);
-		if (buf_freadchars(&buf, in) < 0) {
+		if (buf_freadchars(&buf, fp) < 0) {
 			strbuf_release(&buf);
 			return NULL;
 		}
@@ -250,8 +257,8 @@ static struct index_node_f *index_read(FILE *in, uint32_t offset)
 		goto err;
 
 	if (offset & INDEX_NODE_CHILDS) {
-		int first = read_char(in);
-		int last = read_char(in);
+		int first = read_char(fp);
+		int last = read_char(fp);
 
 		if (first == EOF || last == EOF || first > last)
 			goto err;
@@ -266,7 +273,7 @@ static struct index_node_f *index_read(FILE *in, uint32_t offset)
 		node->first = (unsigned char)first;
 		node->last = (unsigned char)last;
 
-		if (!read_u32s(in, node->children, child_count))
+		if (!read_u32s(fp, node->children, child_count))
 			goto err;
 	} else {
 		node = malloc(sizeof(struct index_node_f));
@@ -280,32 +287,26 @@ static struct index_node_f *index_read(FILE *in, uint32_t offset)
 	node->values = NULL;
 	if (offset & INDEX_NODE_VALUES) {
 		uint32_t value_count;
-		struct strbuf buf;
 		const char *value;
 		unsigned int priority;
 
-		if (!read_u32(in, &value_count))
+		if (!read_u32(fp, &value_count))
 			goto err;
 
-		strbuf_init(&buf);
+		strbuf_clear(&idx->buf);
 		while (value_count--) {
-			if (!read_u32(in, &priority) || buf_freadchars(&buf, in) < 0) {
-				strbuf_release(&buf);
+			if (!read_u32(fp, &priority) || buf_freadchars(&idx->buf, fp) < 0)
 				goto err;
-			}
-			value = strbuf_str(&buf);
-			if (value == NULL) {
-				strbuf_release(&buf);
+			value = strbuf_str(&idx->buf);
+			if (value == NULL)
 				goto err;
-			}
-			add_value(&node->values, value, buf.used, priority);
-			strbuf_clear(&buf);
+			add_value(&node->values, value, idx->buf.used, priority);
+			strbuf_clear(&idx->buf);
 		}
-		strbuf_release(&buf);
 	}
 
 	node->prefix = prefix;
-	node->file = in;
+	node->idx = idx;
 	return node;
 err:
 	free(prefix);
@@ -319,11 +320,6 @@ static void index_close(struct index_node_f *node)
 	index_values_free(node->values);
 	free(node);
 }
-
-struct index_file {
-	FILE *file;
-	uint32_t root_offset;
-};
 
 struct index_file *index_file_open(const char *filename)
 {
@@ -351,6 +347,7 @@ struct index_file *index_file_open(const char *filename)
 		free(new);
 		goto err;
 	}
+	strbuf_init(&new->buf);
 
 	errno = 0;
 	return new;
@@ -362,18 +359,19 @@ err:
 void index_file_close(struct index_file *idx)
 {
 	fclose(idx->file);
+	strbuf_release(&idx->buf);
 	free(idx);
 }
 
 static struct index_node_f *index_readroot(struct index_file *in)
 {
-	return index_read(in->file, in->root_offset);
+	return index_read(in, in->root_offset);
 }
 
 static struct index_node_f *index_readchild(const struct index_node_f *parent, int ch)
 {
 	if (parent->first <= ch && ch <= parent->last) {
-		return index_read(parent->file, parent->children[ch - parent->first]);
+		return index_read(parent->idx, parent->children[ch - parent->first]);
 	}
 
 	return NULL;
