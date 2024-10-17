@@ -178,17 +178,23 @@ static int read_char(FILE *in)
 	return ch;
 }
 
-static int read_u32(FILE *in, uint32_t *l)
+static bool read_u32s(FILE *in, uint32_t *l, size_t n)
 {
-	uint32_t val;
+	size_t i;
 
 	errno = 0;
-	if (fread(&val, sizeof(uint32_t), 1, in) != 1) {
+	if (fread(l, sizeof(uint32_t), n, in) != n) {
 		errno = EINVAL;
-		return -1;
+		return false;
 	}
-	*l = ntohl(val);
-	return 1;
+	for (i = 0; i < n; i++)
+		l[i] = ntohl(l[i]);
+	return true;
+}
+
+static inline bool read_u32(FILE *in, uint32_t *l)
+{
+	return read_u32s(in, l, 1);
 }
 
 static ssize_t buf_freadchars(struct strbuf *buf, FILE *in)
@@ -221,7 +227,7 @@ static struct index_node_f *index_read(FILE *in, uint32_t offset)
 {
 	struct index_node_f *node = NULL;
 	char *prefix = NULL;
-	int i, child_count = 0;
+	size_t child_count = 0;
 
 	if ((offset & INDEX_NODE_MASK) == 0)
 		return NULL;
@@ -260,9 +266,8 @@ static struct index_node_f *index_read(FILE *in, uint32_t offset)
 		node->first = (unsigned char)first;
 		node->last = (unsigned char)last;
 
-		for (i = 0; i < child_count; i++)
-			if (read_u32(in, &node->children[i]) < 0)
-				goto err;
+		if (!read_u32s(in, node->children, child_count))
+			goto err;
 	} else {
 		node = malloc(sizeof(struct index_node_f));
 		if (node == NULL)
@@ -279,12 +284,12 @@ static struct index_node_f *index_read(FILE *in, uint32_t offset)
 		const char *value;
 		unsigned int priority;
 
-		if (read_u32(in, &value_count) < 0)
+		if (!read_u32(in, &value_count))
 			goto err;
 
 		strbuf_init(&buf);
 		while (value_count--) {
-			if (read_u32(in, &priority) < 0 || buf_freadchars(&buf, in) < 0) {
+			if (!read_u32(in, &priority) || buf_freadchars(&buf, in) < 0) {
 				strbuf_release(&buf);
 				goto err;
 			}
@@ -331,10 +336,10 @@ struct index_file *index_file_open(const char *filename)
 		return NULL;
 	errno = EINVAL;
 
-	if (read_u32(file, &magic) < 0 || magic != INDEX_MAGIC)
+	if (!read_u32(file, &magic) || magic != INDEX_MAGIC)
 		goto err;
 
-	if (read_u32(file, &version) < 0 || version >> 16 != INDEX_VERSION_MAJOR)
+	if (!read_u32(file, &version) || version >> 16 != INDEX_VERSION_MAJOR)
 		goto err;
 
 	new = malloc(sizeof(struct index_file));
@@ -342,7 +347,7 @@ struct index_file *index_file_open(const char *filename)
 		goto err;
 
 	new->file = file;
-	if (read_u32(new->file, &new->root_offset) < 0) {
+	if (!read_u32(new->file, &new->root_offset)) {
 		free(new);
 		goto err;
 	}
