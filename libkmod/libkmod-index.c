@@ -183,7 +183,7 @@ static bool read_u32s(FILE *in, uint32_t *l, size_t n)
 	size_t i;
 
 	errno = 0;
-	if (fread(l, sizeof(uint32_t), n, in) != n) {
+	if (fread_unlocked(l, sizeof(uint32_t), n, in) != n) {
 		errno = EINVAL;
 		return false;
 	}
