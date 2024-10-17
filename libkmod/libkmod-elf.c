@@ -62,8 +62,9 @@ struct kmod_elf {
 			_elf_dbg(elf, __FILE__, __LINE__, __func__, __VA_ARGS__); \
 	} while (0);
 
-static inline void _elf_dbg(const struct kmod_elf *elf, const char *fname, unsigned line,
-			    const char *func, const char *fmt, ...)
+_printf_format_(5, 6) static inline void _elf_dbg(const struct kmod_elf *elf,
+						  const char *fname, unsigned line,
+						  const char *func, const char *fmt, ...)
 {
 	va_list args;
 
@@ -150,14 +151,14 @@ static inline int elf_set_uint(const struct kmod_elf *elf, uint64_t offset, uint
 	size_t i;
 
 	ELFDBG(elf,
-	       "size=%" PRIu16 " offset=%" PRIu64 " value=%" PRIu64 " write memory=%p\n",
+	       "size=%" PRIu64 " offset=%" PRIu64 " value=%" PRIu64 " write memory=%p\n",
 	       size, offset, value, changed);
 
 	assert(size <= sizeof(uint64_t));
 	assert(offset + size <= elf->size);
 	if (offset + size > elf->size) {
 		ELFDBG(elf,
-		       "out of bounds: %" PRIu64 " + %" PRIu16 " = %" PRIu64 "> %" PRIu64
+		       "out of bounds: %" PRIu64 " + %" PRIu64 " = %" PRIu64 "> %" PRIu64
 		       " (ELF size)\n",
 		       offset, size, offset + size, elf->size);
 		return -1;
@@ -313,9 +314,7 @@ struct kmod_elf *kmod_elf_new(const void *memory, off_t size)
 	       elf->header.section.entry_size, elf->header.strings.section);
 
 	if (elf->header.section.entry_size != shdr_size) {
-		ELFDBG(elf,
-		       "unexpected section entry size: %" PRIu16 ", expected %" PRIu16
-		       "\n",
+		ELFDBG(elf, "unexpected section entry size: %" PRIu16 ", expected %zu\n",
 		       elf->header.section.entry_size, shdr_size);
 		goto invalid;
 	}
@@ -1105,7 +1104,7 @@ int kmod_elf_get_dependency_symbols(const struct kmod_elf *elf,
 
 		name = elf_get_mem(elf, str_off + name_off);
 		if (name[0] == '\0') {
-			ELFDBG(elf, "empty symbol name at index %" PRIu64 "\n", i);
+			ELFDBG(elf, "empty symbol name at index %d\n", i);
 			continue;
 		}
 
@@ -1192,7 +1191,7 @@ int kmod_elf_get_dependency_symbols(const struct kmod_elf *elf,
 
 		name = elf_get_mem(elf, str_off + name_off);
 		if (name[0] == '\0') {
-			ELFDBG(elf, "empty symbol name at index %" PRIu64 "\n", i);
+			ELFDBG(elf, "empty symbol name at index %d\n", i);
 			continue;
 		}
 
