@@ -54,8 +54,12 @@ pay attention when writing a test:
     modules from module-playground. Update the latter script to include any
     modules your test needs.
 
-8 - Tests can be run individually, outside of 'make check'. strace and gdb work
-    too, as long as you tell them to operate on child process.
+8 - Tests can be run individually, outside of 'meson test'. strace and gdb
+    work too, as long as you tell them to operate on child process.
+
+    When running with sanitizers, make sure to 'source scripts/sanitizer-env.sh'.
+    Sanitizers are not guaranteed to work well with other tools like strace and gdb.
 
 9 - Make sure test passes when using "default" build flags, i.e. by running
-    'autogen.sh c'
+    'meson setup --native-file build-dev.ini ...', which by default enables the
+    sanitizers.
