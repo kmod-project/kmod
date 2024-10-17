@@ -95,8 +95,7 @@ struct kmod_file *kmod_file_open(const struct kmod_ctx *ctx, const char *filenam
 		return NULL;
 	}
 
-	sz = read_str_safe(file->fd, buf, sizeof(buf));
-	lseek(file->fd, 0, SEEK_SET);
+	sz = pread_str_safe(file->fd, buf, sizeof(buf), 0);
 	if (sz != (sizeof(buf) - 1)) {
 		if (sz < 0)
 			errno = -sz;
