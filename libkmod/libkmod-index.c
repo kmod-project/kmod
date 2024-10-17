@@ -197,20 +197,6 @@ static inline bool read_u32(FILE *in, uint32_t *l)
 	return read_u32s(in, l, 1);
 }
 
-static ssize_t buf_freadchars(struct strbuf *buf, FILE *in)
-{
-	ssize_t i = 0;
-	int ch;
-
-	while ((ch = read_char(in))) {
-		if (ch == EOF || !strbuf_pushchar(buf, ch))
-			return -1;
-		i++;
-	}
-
-	return i;
-}
-
 /*
  * Index file searching
  */
@@ -218,6 +204,8 @@ struct index_file {
 	FILE *file;
 	uint32_t root_offset;
 	struct strbuf buf;
+	char *tmp;
+	size_t tmp_size;
 };
 
 struct index_node_f {
@@ -243,13 +231,9 @@ static struct index_node_f *index_read(struct index_file *idx, uint32_t offset)
 		return NULL;
 
 	if (offset & INDEX_NODE_PREFIX) {
-		struct strbuf buf;
-		strbuf_init(&buf);
-		if (buf_freadchars(&buf, fp) < 0) {
-			strbuf_release(&buf);
+		if (getdelim(&idx->tmp, &idx->tmp_size, '\0', fp) < 0)
 			return NULL;
-		}
-		prefix = strbuf_steal(&buf);
+		prefix = strdup(idx->tmp);
 	} else
 		prefix = strdup("");
 
@@ -287,7 +271,6 @@ static struct index_node_f *index_read(struct index_file *idx, uint32_t offset)
 	node->values = NULL;
 	if (offset & INDEX_NODE_VALUES) {
 		uint32_t value_count;
-		const char *value;
 		unsigned int priority;
 
 		if (!read_u32(fp, &value_count))
@@ -295,13 +278,14 @@ static struct index_node_f *index_read(struct index_file *idx, uint32_t offset)
 
 		strbuf_clear(&idx->buf);
 		while (value_count--) {
-			if (!read_u32(fp, &priority) || buf_freadchars(&idx->buf, fp) < 0)
+			ssize_t n;
+
+			if (!read_u32(fp, &priority))
 				goto err;
-			value = strbuf_str(&idx->buf);
-			if (value == NULL)
+			n = getdelim(&idx->tmp, &idx->tmp_size, '\0', fp);
+			if (n < 0)
 				goto err;
-			add_value(&node->values, value, idx->buf.used, priority);
-			strbuf_clear(&idx->buf);
+			add_value(&node->values, idx->tmp, n, priority);
 		}
 	}
 
@@ -348,6 +332,8 @@ struct index_file *index_file_open(const char *filename)
 		goto err;
 	}
 	strbuf_init(&new->buf);
+	new->tmp = NULL;
+	new->tmp_size = 0;
 
 	errno = 0;
 	return new;
@@ -360,6 +346,7 @@ void index_file_close(struct index_file *idx)
 {
 	fclose(idx->file);
 	strbuf_release(&idx->buf);
+	free(idx->tmp);
 	free(idx);
 }
 
