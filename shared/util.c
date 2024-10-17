@@ -183,6 +183,33 @@ bool path_ends_with_kmod_ext(const char *path, size_t len)
 
 /* read-like and fread-like functions                                       */
 /* ************************************************************************ */
+ssize_t pread_str_safe(int fd, char *buf, size_t buflen, off_t off)
+{
+	size_t todo = buflen - 1;
+	size_t done = 0;
+
+	assert_cc(EAGAIN == EWOULDBLOCK);
+
+	do {
+		ssize_t r = pread(fd, buf + done, todo, off + done);
+
+		if (r == 0)
+			break;
+		else if (r > 0) {
+			todo -= r;
+			done += r;
+		} else {
+			if (errno == EAGAIN || errno == EINTR)
+				continue;
+			else
+				return -errno;
+		}
+	} while (todo > 0);
+
+	buf[done] = '\0';
+	return done;
+}
+
 ssize_t read_str_safe(int fd, char *buf, size_t buflen)
 {
 	size_t todo = buflen - 1;
