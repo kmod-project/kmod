@@ -23,6 +23,7 @@
 #include <shared/array.h>
 #include <shared/hash.h>
 #include <shared/macro.h>
+#include <shared/strbuf.h>
 #include <shared/util.h>
 #include <shared/scratchbuf.h>
 
@@ -2076,6 +2077,7 @@ static int output_deps_bin(struct depmod *depmod, FILE *out)
 	struct index_node *idx;
 	size_t i;
 	struct array array;
+	struct strbuf sbuf;
 
 	if (out == stdout)
 		return 0;
@@ -2085,12 +2087,13 @@ static int output_deps_bin(struct depmod *depmod, FILE *out)
 		return -ENOMEM;
 
 	array_init(&array, 64);
+	strbuf_init(&sbuf);
 
 	for (i = 0; i < depmod->modules.count; i++) {
 		const struct mod *mod = depmod->modules.array[i];
 		const char *p = mod_get_compressed_path(mod);
-		char *line;
-		size_t j, linepos, linelen, slen;
+		const char *line;
+		size_t j;
 		int duplicate;
 
 		if (!mod_get_all_sorted_dependencies(mod, &array)) {
@@ -2098,45 +2101,29 @@ static int output_deps_bin(struct depmod *depmod, FILE *out)
 			continue;
 		}
 
-		linelen = strlen(p) + 1;
-		for (j = 0; j < array.count; j++) {
-			const struct mod *d = array.array[j];
-			linelen += 1 + strlen(mod_get_compressed_path(d));
-		}
-
-		line = malloc(linelen + 1);
-		if (line == NULL) {
-			ERR("modules.deps.bin: out of memory\n");
+		strbuf_clear(&sbuf);
+		if (!strbuf_pushchars(&sbuf, p) || !strbuf_pushchar(&sbuf, ':')) {
+			ERR("could not write dependencies of %s\n", p);
 			continue;
 		}
 
-		linepos = 0;
-		slen = strlen(p);
-		memcpy(line + linepos, p, slen);
-		linepos += slen;
-		line[linepos] = ':';
-		linepos++;
-
 		for (j = 0; j < array.count; j++) {
 			const struct mod *d = array.array[j];
-			const char *dp;
+			const char *dp = mod_get_compressed_path(d);
 
-			line[linepos] = ' ';
-			linepos++;
-
-			dp = mod_get_compressed_path(d);
-			slen = strlen(dp);
-			memcpy(line + linepos, dp, slen);
-			linepos += slen;
+			if (!strbuf_pushchar(&sbuf, ' ') || !strbuf_pushchars(&sbuf, dp)) {
+				ERR("could not write dependencies of %s\n", p);
+				continue;
+			}
 		}
-		line[linepos] = '\0';
+		line = strbuf_str(&sbuf);
 
 		duplicate = index_insert(idx, mod->modname, line, mod->idx);
 		if (duplicate && depmod->cfg->warn_dups)
 			WRN("duplicate module deps:\n%s\n", line);
-		free(line);
 	}
 
+	strbuf_release(&sbuf);
 	array_free_array(&array);
 	index_write(idx, out);
 	index_destroy(idx);
