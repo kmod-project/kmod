@@ -8,6 +8,7 @@ MODULE_PLAYGROUND=$3
 CONFIG_H=$4
 SYSCONFDIR=$5
 MODULE_DIRECTORY=$6
+MODULE_FALLBACK_DIRECTORY=$7
 ANOTHER_MODULE_DIRECTORY=/foobar
 
 # create rootfs from rootfs-pristine
@@ -98,6 +99,7 @@ map=(
     ["test-modprobe/external/lib/modules/external/"]="mod-simple.ko"
     ["test-modprobe/module-from-abspath/home/foo/"]="mod-simple.ko"
     ["test-modprobe/module-from-relpath/home/foo/"]="mod-simple.ko"
+    ["test-modprobe/fallback$MODULE_FALLBACK_DIRECTORY/4.4.4/kernel/"]="mod-simple.ko"
     ["test-depmod/modules-order-compressed$MODULE_DIRECTORY/4.4.4/kernel/drivers/block/cciss.ko"]="mod-fake-cciss.ko"
     ["test-depmod/modules-order-compressed$MODULE_DIRECTORY/4.4.4/kernel/drivers/scsi/hpsa.ko"]="mod-fake-hpsa.ko"
     ["test-depmod/modules-order-compressed$MODULE_DIRECTORY/4.4.4/kernel/drivers/scsi/scsi_mod.ko"]="mod-fake-scsi-mod.ko"

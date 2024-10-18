@@ -484,4 +484,27 @@ DEFINE_TEST(modprobe_module_from_relpath,
 	.modules_loaded = "mod-simple",
 	);
 
+static noreturn int modprobe_fallback(const struct test *t)
+{
+	const char *progname = TOOLS_DIR "/modprobe";
+	const char *const args[] = {
+		progname,
+		"mod-simple",
+		NULL,
+	};
+
+	test_spawn_prog(progname, args);
+	exit(EXIT_FAILURE);
+}
+DEFINE_TEST(modprobe_fallback,
+	.description = "check modprobe able to load module from fallback path",
+	.config = {
+		[TC_UNAME_R] = "4.4.4",
+		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-modprobe/fallback",
+		[TC_INIT_MODULE_RETCODES] = "",
+	},
+	.need_spawn = true,
+	.modules_loaded = "mod-simple",
+	);
+
 TESTSUITE_MAIN();
