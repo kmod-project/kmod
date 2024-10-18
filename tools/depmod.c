@@ -23,6 +23,7 @@
 #include <shared/array.h>
 #include <shared/hash.h>
 #include <shared/macro.h>
+#include <shared/strbuf.h>
 #include <shared/util.h>
 #include <shared/scratchbuf.h>
 
@@ -1493,10 +1494,12 @@ static void depmod_modules_sort(struct depmod *depmod)
 		mod->sort_idx = i++;
 	}
 
-	array_sort(&depmod->modules, mod_cmp);
-	for (idx = 0; idx < depmod->modules.count; idx++) {
-		struct mod *m = depmod->modules.array[idx];
-		m->idx = idx;
+	if (depmod->modules.count > 0) {
+		array_sort(&depmod->modules, mod_cmp);
+		for (idx = 0; idx < depmod->modules.count; idx++) {
+			struct mod *m = depmod->modules.array[idx];
+			m->idx = idx;
+		}
 	}
 
 corrupted:
@@ -1995,70 +1998,37 @@ static int depmod_load(struct depmod *depmod)
 	return 0;
 }
 
-static size_t mod_count_all_dependencies(const struct mod *mod)
-{
-	size_t i, count = 0;
-	for (i = 0; i < mod->deps.count; i++) {
-		const struct mod *d = mod->deps.array[i];
-		count += 1 + mod_count_all_dependencies(d);
-	}
-	return count;
-}
-
-static int mod_fill_all_unique_dependencies(const struct mod *mod,
-					    const struct mod **deps, size_t n_deps,
-					    size_t *last)
+static int mod_fill_all_unique_dependencies(const struct mod *mod, struct array *array)
 {
 	size_t i;
 	int err = 0;
+
 	for (i = 0; i < mod->deps.count; i++) {
 		const struct mod *d = mod->deps.array[i];
-		size_t j;
-		uint8_t exists = 0;
 
-		for (j = 0; j < *last; j++) {
-			if (deps[j] == d) {
-				exists = 1;
-				break;
-			}
-		}
-
-		if (exists)
+		err = array_append_unique(array, d);
+		if (err == -EEXIST) {
+			err = 0;
 			continue;
+		} else if (err < 0)
+			return err;
 
-		if (*last >= n_deps)
-			return -ENOSPC;
-		deps[*last] = d;
-		(*last)++;
-		err = mod_fill_all_unique_dependencies(d, deps, n_deps, last);
+		err = mod_fill_all_unique_dependencies(d, array);
 		if (err < 0)
 			break;
 	}
 	return err;
 }
 
-static const struct mod **mod_get_all_sorted_dependencies(const struct mod *mod,
-							  size_t *n_deps)
+static bool mod_get_all_sorted_dependencies(const struct mod *mod, struct array *array)
 {
-	const struct mod **deps;
-	size_t last = 0;
+	array->count = 0;
+	if (mod_fill_all_unique_dependencies(mod, array) < 0)
+		return false;
 
-	*n_deps = mod_count_all_dependencies(mod);
-	if (*n_deps == 0)
-		return NULL;
-
-	deps = malloc(sizeof(struct mod *) * (*n_deps));
-	if (deps == NULL)
-		return NULL;
-
-	if (mod_fill_all_unique_dependencies(mod, deps, *n_deps, &last) < 0) {
-		free(deps);
-		return NULL;
-	}
-
-	qsort(deps, last, sizeof(struct mod *), dep_cmp);
-	*n_deps = last;
-	return deps;
+	if (array->count > 1)
+		array_sort(array, dep_cmp);
+	return true;
 }
 
 static inline const char *mod_get_compressed_path(const struct mod *mod)
@@ -2071,32 +2041,34 @@ static inline const char *mod_get_compressed_path(const struct mod *mod)
 static int output_deps(struct depmod *depmod, FILE *out)
 {
 	size_t i;
+	struct array array;
+
+	array_init(&array, 8);
 
 	for (i = 0; i < depmod->modules.count; i++) {
-		const struct mod **deps, *mod = depmod->modules.array[i];
+		const struct mod *mod = depmod->modules.array[i];
 		const char *p = mod_get_compressed_path(mod);
-		size_t j, n_deps;
+		size_t j;
 
 		fprintf(out, "%s:", p);
 
 		if (mod->deps.count == 0)
 			goto end;
 
-		deps = mod_get_all_sorted_dependencies(mod, &n_deps);
-		if (deps == NULL) {
+		if (!mod_get_all_sorted_dependencies(mod, &array)) {
 			ERR("could not get all sorted dependencies of %s\n", p);
 			goto end;
 		}
 
-		for (j = 0; j < n_deps; j++) {
-			const struct mod *d = deps[j];
+		for (j = 0; j < array.count; j++) {
+			const struct mod *d = array.array[j];
 			fprintf(out, " %s", mod_get_compressed_path(d));
 		}
-		free(deps);
 end:
 		putc('\n', out);
 	}
 
+	array_free_array(&array);
 	return 0;
 }
 
@@ -2104,6 +2076,8 @@ static int output_deps_bin(struct depmod *depmod, FILE *out)
 {
 	struct index_node *idx;
 	size_t i;
+	struct array array;
+	struct strbuf sbuf;
 
 	if (out == stdout)
 		return 0;
@@ -2112,60 +2086,45 @@ static int output_deps_bin(struct depmod *depmod, FILE *out)
 	if (idx == NULL)
 		return -ENOMEM;
 
+	array_init(&array, 8);
+	strbuf_init(&sbuf);
+
 	for (i = 0; i < depmod->modules.count; i++) {
-		const struct mod **deps, *mod = depmod->modules.array[i];
+		const struct mod *mod = depmod->modules.array[i];
 		const char *p = mod_get_compressed_path(mod);
-		char *line;
-		size_t j, n_deps, linepos, linelen, slen;
+		const char *line;
+		size_t j;
 		int duplicate;
 
-		deps = mod_get_all_sorted_dependencies(mod, &n_deps);
-		if (deps == NULL && n_deps > 0) {
+		if (!mod_get_all_sorted_dependencies(mod, &array)) {
 			ERR("could not get all sorted dependencies of %s\n", p);
 			continue;
 		}
 
-		linelen = strlen(p) + 1;
-		for (j = 0; j < n_deps; j++) {
-			const struct mod *d = deps[j];
-			linelen += 1 + strlen(mod_get_compressed_path(d));
-		}
-
-		line = malloc(linelen + 1);
-		if (line == NULL) {
-			free(deps);
-			ERR("modules.deps.bin: out of memory\n");
+		strbuf_clear(&sbuf);
+		if (!strbuf_pushchars(&sbuf, p) || !strbuf_pushchar(&sbuf, ':')) {
+			ERR("could not write dependencies of %s\n", p);
 			continue;
 		}
 
-		linepos = 0;
-		slen = strlen(p);
-		memcpy(line + linepos, p, slen);
-		linepos += slen;
-		line[linepos] = ':';
-		linepos++;
+		for (j = 0; j < array.count; j++) {
+			const struct mod *d = array.array[j];
+			const char *dp = mod_get_compressed_path(d);
 
-		for (j = 0; j < n_deps; j++) {
-			const struct mod *d = deps[j];
-			const char *dp;
-
-			line[linepos] = ' ';
-			linepos++;
-
-			dp = mod_get_compressed_path(d);
-			slen = strlen(dp);
-			memcpy(line + linepos, dp, slen);
-			linepos += slen;
+			if (!strbuf_pushchar(&sbuf, ' ') || !strbuf_pushchars(&sbuf, dp)) {
+				ERR("could not write dependencies of %s\n", p);
+				continue;
+			}
 		}
-		line[linepos] = '\0';
+		line = sbuf.used > 0 ? strbuf_str(&sbuf) : "";
 
 		duplicate = index_insert(idx, mod->modname, line, mod->idx);
 		if (duplicate && depmod->cfg->warn_dups)
 			WRN("duplicate module deps:\n%s\n", line);
-		free(line);
-		free(deps);
 	}
 
+	strbuf_release(&sbuf);
+	array_free_array(&array);
 	index_write(idx, out);
 	index_destroy(idx);
 
