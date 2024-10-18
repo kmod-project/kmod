@@ -1494,10 +1494,12 @@ static void depmod_modules_sort(struct depmod *depmod)
 		mod->sort_idx = i++;
 	}
 
-	array_sort(&depmod->modules, mod_cmp);
-	for (idx = 0; idx < depmod->modules.count; idx++) {
-		struct mod *m = depmod->modules.array[idx];
-		m->idx = idx;
+	if (depmod->modules.count > 1) {
+		array_sort(&depmod->modules, mod_cmp);
+		for (idx = 0; idx < depmod->modules.count; idx++) {
+			struct mod *m = depmod->modules.array[idx];
+			m->idx = idx;
+		}
 	}
 
 corrupted:
