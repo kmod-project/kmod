@@ -1494,10 +1494,12 @@ static void depmod_modules_sort(struct depmod *depmod)
 		mod->sort_idx = i++;
 	}
 
-	array_sort(&depmod->modules, mod_cmp);
-	for (idx = 0; idx < depmod->modules.count; idx++) {
-		struct mod *m = depmod->modules.array[idx];
-		m->idx = idx;
+	if (depmod->modules.count > 0) {
+		array_sort(&depmod->modules, mod_cmp);
+		for (idx = 0; idx < depmod->modules.count; idx++) {
+			struct mod *m = depmod->modules.array[idx];
+			m->idx = idx;
+		}
 	}
 
 corrupted:
@@ -2024,7 +2026,8 @@ static bool mod_get_all_sorted_dependencies(const struct mod *mod, struct array 
 	if (mod_fill_all_unique_dependencies(mod, array) < 0)
 		return false;
 
-	array_sort(array, dep_cmp);
+	if (array->count > 1)
+		array_sort(array, dep_cmp);
 	return true;
 }
 
