@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include <sys/stat.h>
 #include <sys/utsname.h>
 
@@ -364,13 +365,9 @@ static int do_modinfo(int argc, char *argv[])
 	const char *root = NULL;
 	const char *null_config = NULL;
 	bool arg_is_modname = false;
-	int i, err;
+	int i, err, c;
 
-	for (;;) {
-		int c, idx = 0;
-		c = getopt_long(argc, argv, cmdopts_s, cmdopts, &idx);
-		if (c == -1)
-			break;
+	while ((c = getopt_long(argc, argv, cmdopts_s, cmdopts, NULL)) != -1) {
 		switch (c) {
 		case 'a':
 			field = "author";

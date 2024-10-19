@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include <shared/util.h>
 #include <shared/missing.h>
@@ -81,16 +82,10 @@ static const struct kmod_cmd kmod_cmd_help = {
 static int handle_kmod_commands(int argc, char *argv[])
 {
 	const char *cmd;
-	int err = 0;
+	int err = 0, c;
 	size_t i;
 
-	for (;;) {
-		int c;
-
-		c = getopt_long(argc, argv, options_s, options, NULL);
-		if (c == -1)
-			break;
-
+	while ((c = getopt_long(argc, argv, options_s, options, NULL)) != -1) {
 		switch (c) {
 		case 'h':
 			kmod_help(argc, argv);

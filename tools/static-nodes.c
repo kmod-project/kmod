@@ -149,15 +149,9 @@ static int do_static_nodes(int argc, char *argv[])
 	FILE *in = NULL, *out = NULL;
 	const struct static_nodes_format *format = &static_nodes_format_human;
 	int r, ret = EXIT_SUCCESS;
+	int c, valid;
 
-	for (;;) {
-		int c, idx = 0, valid;
-		size_t i;
-
-		c = getopt_long(argc, argv, cmdopts_s, cmdopts, &idx);
-		if (c == -1) {
-			break;
-		}
+	while ((c = getopt_long(argc, argv, cmdopts_s, cmdopts, NULL)) != -1) {
 		switch (c) {
 		case 'o':
 			output = optarg;
@@ -165,7 +159,7 @@ static int do_static_nodes(int argc, char *argv[])
 		case 'f':
 			valid = 0;
 
-			for (i = 0; i < ARRAY_SIZE(static_nodes_formats); i++) {
+			for (size_t i = 0; i < ARRAY_SIZE(static_nodes_formats); i++) {
 				if (streq(static_nodes_formats[i]->name, optarg)) {
 					format = static_nodes_formats[i];
 					valid = 1;

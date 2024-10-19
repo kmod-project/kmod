@@ -80,6 +80,8 @@ static void test_list(const struct test *start, const struct test *stop)
 int test_init(const struct test *start, const struct test *stop, int argc,
 	      char *const argv[])
 {
+	int c;
+
 	progname = argv[0];
 
 	/* An empty testsuite is not likely intended */
@@ -88,11 +90,7 @@ int test_init(const struct test *start, const struct test *stop, int argc,
 		return -EINVAL;
 	}
 
-	for (;;) {
-		int c, idx = 0;
-		c = getopt_long(argc, argv, options_short, options, &idx);
-		if (c == -1)
-			break;
+	while ((c = getopt_long(argc, argv, options_short, options, NULL)) != -1) {
 		switch (c) {
 		case 'l':
 			test_list(start, stop);

@@ -2879,7 +2879,7 @@ static int is_version_number(const char *version)
 static int do_depmod(int argc, char *argv[])
 {
 	FILE *out = NULL;
-	int err = 0, all = 0, maybe_all = 0, n_config_paths = 0;
+	int c, err = 0, all = 0, maybe_all = 0, n_config_paths = 0;
 	_cleanup_free_ char *root_arg = NULL;
 	_cleanup_free_ char *out_root = NULL;
 	_cleanup_free_ const char **config_paths = NULL;
@@ -2896,11 +2896,7 @@ static int do_depmod(int argc, char *argv[])
 	memset(&cfg, 0, sizeof(cfg));
 	memset(&depmod, 0, sizeof(depmod));
 
-	for (;;) {
-		int c, idx = 0;
-		c = getopt_long(argc, argv, cmdopts_s, cmdopts, &idx);
-		if (c == -1)
-			break;
+	while ((c = getopt_long(argc, argv, cmdopts_s, cmdopts, NULL)) != -1) {
 		switch (c) {
 		case 'a':
 			all = 1;

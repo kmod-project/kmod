@@ -803,7 +803,7 @@ static int do_modprobe(int argc, char **orig_argv)
 	int do_show_config = 0;
 	int do_show_modversions = 0;
 	int do_show_exports = 0;
-	int err;
+	int err, c;
 	struct stat stat_buf;
 	bool use_syslog = false;
 
@@ -813,11 +813,7 @@ static int do_modprobe(int argc, char **orig_argv)
 		return EXIT_FAILURE;
 	}
 
-	for (;;) {
-		int c, idx = 0;
-		c = getopt_long(argc, argv, cmdopts_s, cmdopts, &idx);
-		if (c == -1)
-			break;
+	while ((c = getopt_long(argc, argv, cmdopts_s, cmdopts, NULL)) != -1) {
 		switch (c) {
 		case 'a':
 			log_priority = LOG_WARNING;
