@@ -45,13 +45,9 @@ static int do_lsmod(int argc, char *argv[])
 	struct kmod_list *list, *itr;
 	int verbose = LOG_ERR;
 	int use_syslog = 0;
-	int err, r = 0;
+	int err, c, r = 0;
 
-	for (;;) {
-		int c, idx = 0;
-		c = getopt_long(argc, argv, cmdopts_s, cmdopts, &idx);
-		if (c == -1)
-			break;
+	while ((c = getopt_long(argc, argv, cmdopts_s, cmdopts, NULL)) != -1) {
 		switch (c) {
 		case 's':
 			use_syslog = 1;
