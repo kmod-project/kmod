@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include <shared/util.h>
 
@@ -66,15 +67,11 @@ static int do_insmod(int argc, char *argv[])
 	size_t optslen = 0;
 	int verbose = LOG_ERR;
 	int use_syslog = 0;
-	int i, r = 0;
+	int i, c, r = 0;
 	const char *null_config = NULL;
 	unsigned int flags = 0;
 
-	for (;;) {
-		int c, idx = 0;
-		c = getopt_long(argc, argv, cmdopts_s, cmdopts, &idx);
-		if (c == -1)
-			break;
+	while ((c = getopt_long(argc, argv, cmdopts_s, cmdopts, NULL)) != -1) {
 		switch (c) {
 		case 'f':
 			flags |= KMOD_PROBE_FORCE_MODVERSION;
