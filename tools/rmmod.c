@@ -96,13 +96,9 @@ static int do_rmmod(int argc, char *argv[])
 	int verbose = LOG_ERR;
 	int use_syslog = 0;
 	int flags = 0;
-	int i, r = 0;
+	int i, c, r = 0;
 
-	for (;;) {
-		int c, idx = 0;
-		c = getopt_long(argc, argv, cmdopts_s, cmdopts, &idx);
-		if (c == -1)
-			break;
+	while ((c = getopt_long(argc, argv, cmdopts_s, cmdopts, NULL)) != -1) {
 		switch (c) {
 		case 'f':
 			flags |= KMOD_REMOVE_FORCE;
