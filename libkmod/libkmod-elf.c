@@ -786,7 +786,7 @@ int kmod_elf_get_symbols(const struct kmod_elf *elf, struct kmod_modversion **ar
 	if (symtablen % symlen != 0) {
 		ELFDBG(elf,
 		       "unexpected .symtab of length %" PRIu64
-		       ", not multiple of %" PRIu64 " as expected.\n",
+		       ", not multiple of %zu as expected.\n",
 		       symtablen, symlen);
 		goto fallback;
 	}
@@ -812,8 +812,9 @@ int kmod_elf_get_symbols(const struct kmod_elf *elf, struct kmod_modversion **ar
 #undef READV
 		if (name_off >= strtablen) {
 			ELFDBG(elf,
-			       ".strtab is %" PRIu64 " bytes, but .symtab entry %" PRIu64
-			       " wants to access offset %" PRIu32 ".\n",
+			       ".strtab is %" PRIu64
+			       " bytes, but .symtab entry %zu wants to access offset %" PRIu32
+			       ".\n",
 			       strtablen, i, name_off);
 			goto fallback;
 		}
@@ -979,7 +980,7 @@ int kmod_elf_get_dependency_symbols(const struct kmod_elf *elf,
 	if (symtablen % symlen != 0) {
 		ELFDBG(elf,
 		       "unexpected .symtab of length %" PRIu64
-		       ", not multiple of %" PRIu64 " as expected.\n",
+		       ", not multiple of %zu as expected.\n",
 		       symtablen, symlen);
 		return -EINVAL;
 	}
