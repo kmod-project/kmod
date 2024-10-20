@@ -353,26 +353,10 @@ const void *kmod_elf_get_memory(const struct kmod_elf *elf)
 	return elf->memory;
 }
 
-static int elf_find_section(const struct kmod_elf *elf, const char *section)
-{
-	uint16_t i;
-
-	for (i = 1; i < elf->header.section.count; i++) {
-		uint64_t off, size;
-		const char *n;
-		int err = elf_get_section_info(elf, i, &off, &size, &n);
-		if (err < 0)
-			continue;
-		if (!streq(section, n))
-			continue;
-
-		return i;
-	}
-
-	return -ENODATA;
-}
-
-/* on success, sec_off and sec_size are range checked and valid */
+/*
+ * Returns section index on success, negative value otherwise.
+ * On success, sec_off and sec_size are range checked and valid.
+ */
 int kmod_elf_get_section(const struct kmod_elf *elf, const char *section,
 			 uint64_t *sec_off, uint64_t *sec_size)
 {
@@ -392,7 +376,7 @@ int kmod_elf_get_section(const struct kmod_elf *elf, const char *section,
 
 		*sec_off = off;
 		*sec_size = size;
-		return 0;
+		return i;
 	}
 
 	return -ENODATA;
@@ -551,7 +535,8 @@ static int elf_strip_versions_section(const struct kmod_elf *elf, uint8_t *chang
 {
 	uint64_t off, size;
 	const void *buf;
-	int idx = elf_find_section(elf, "__versions");
+	/* the off and size values are not used, supply them as dummies */
+	int idx = kmod_elf_get_section(elf, "__versions", &off, &size);
 	uint64_t val;
 
 	if (idx < 0)
