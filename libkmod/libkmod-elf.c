@@ -106,6 +106,21 @@ static int elf_identify(struct kmod_elf *elf, const void *memory, uint64_t size)
 	return 0;
 }
 
+static inline bool elf_range_valid(const struct kmod_elf *elf, uint64_t offset,
+				   uint64_t size)
+{
+	uint64_t min_size;
+
+	if (uadd64_overflow(offset, size, &min_size) || min_size > elf->size) {
+		ELFDBG(elf,
+		       "out of bounds: %" PRIu64 " + %" PRIu64 " > %" PRIu64
+		       " (ELF size)\n",
+		       offset, size, elf->size);
+		return false;
+	}
+	return true;
+}
+
 static inline uint64_t elf_get_uint(const struct kmod_elf *elf, uint64_t offset,
 				    uint16_t size)
 {
@@ -113,14 +128,6 @@ static inline uint64_t elf_get_uint(const struct kmod_elf *elf, uint64_t offset,
 	uint64_t ret = 0;
 
 	assert(size <= sizeof(uint64_t));
-	assert(offset + size <= elf->size);
-	if (offset + size > elf->size) {
-		ELFDBG(elf,
-		       "out of bounds: %" PRIu64 " + %" PRIu16 " = %" PRIu64 "> %" PRIu64
-		       " (ELF size)\n",
-		       offset, size, offset + size, elf->size);
-		return (uint64_t)-1;
-	}
 
 	p = elf->memory + offset;
 
@@ -149,14 +156,6 @@ static inline int elf_set_uint(const struct kmod_elf *elf, uint64_t offset, uint
 	       size, offset, value, changed);
 
 	assert(size <= sizeof(uint64_t));
-	assert(offset + size <= elf->size);
-	if (offset + size > elf->size) {
-		ELFDBG(elf,
-		       "out of bounds: %" PRIu64 " + %" PRIu64 " = %" PRIu64 "> %" PRIu64
-		       " (ELF size)\n",
-		       offset, size, offset + size, elf->size);
-		return -1;
-	}
 
 	p = changed + offset;
 	if (elf->msb) {
@@ -176,12 +175,6 @@ static inline int elf_set_uint(const struct kmod_elf *elf, uint64_t offset, uint
 
 static inline const void *elf_get_mem(const struct kmod_elf *elf, uint64_t offset)
 {
-	assert(offset < elf->size);
-	if (offset >= elf->size) {
-		ELFDBG(elf, "out-of-bounds: %" PRIu64 " >= %" PRIu64 " (ELF size)\n",
-		       offset, elf->size);
-		return NULL;
-	}
 	return elf->memory + offset;
 }
 
@@ -203,14 +196,11 @@ static inline int elf_get_section_info(const struct kmod_elf *elf, uint16_t idx,
 				       uint32_t *nameoff)
 {
 	const uint8_t *p = elf_get_section_header(elf, idx);
-	uint64_t min_size, off = p - elf->memory;
+	uint64_t off = p - elf->memory;
 
 	if (p == NULL) {
 		ELFDBG(elf, "no section at %" PRIu16 "\n", idx);
-		*offset = 0;
-		*size = 0;
-		*nameoff = 0;
-		return -EINVAL;
+		goto fail;
 	}
 
 #define READV(field) \
@@ -218,22 +208,23 @@ static inline int elf_get_section_info(const struct kmod_elf *elf, uint16_t idx,
 
 	if (elf->x32) {
 		Elf32_Shdr *hdr;
+		if (!elf_range_valid(elf, off, sizeof(*hdr)))
+			goto fail;
 		*size = READV(sh_size);
 		*offset = READV(sh_offset);
 		*nameoff = READV(sh_name);
 	} else {
 		Elf64_Shdr *hdr;
+		if (!elf_range_valid(elf, off, sizeof(*hdr)))
+			goto fail;
 		*size = READV(sh_size);
 		*offset = READV(sh_offset);
 		*nameoff = READV(sh_name);
 	}
 #undef READV
 
-	if (uadd64_overflow(*offset, *size, &min_size) || min_size > elf->size) {
-		ELFDBG(elf, "out-of-bounds: %" PRIu64 " >= %" PRIu64 " (ELF size)\n",
-		       min_size, elf->size);
-		return -EINVAL;
-	}
+	if (!elf_range_valid(elf, *offset, *size))
+		goto fail;
 
 	ELFDBG(elf,
 	       "section=%" PRIu16 " is: offset=%" PRIu64 " size=%" PRIu64
@@ -241,6 +232,11 @@ static inline int elf_get_section_info(const struct kmod_elf *elf, uint16_t idx,
 	       idx, *offset, *size, *nameoff);
 
 	return 0;
+fail:
+	*offset = 0;
+	*size = 0;
+	*nameoff = 0;
+	return -EINVAL;
 }
 
 static const char *elf_get_strings_section(const struct kmod_elf *elf, uint64_t *size)
@@ -291,12 +287,16 @@ struct kmod_elf *kmod_elf_new(const void *memory, off_t size)
 	elf->header.machine = READV(e_machine)
 	if (elf->x32) {
 		Elf32_Ehdr *hdr;
-		LOAD_HEADER;
 		shdr_size = sizeof(Elf32_Shdr);
+		if (!elf_range_valid(elf, 0, shdr_size))
+			goto invalid;
+		LOAD_HEADER;
 	} else {
 		Elf64_Ehdr *hdr;
-		LOAD_HEADER;
 		shdr_size = sizeof(Elf64_Shdr);
+		if (!elf_range_valid(elf, 0, shdr_size))
+			goto invalid;
+		LOAD_HEADER;
 	}
 #undef LOAD_HEADER
 #undef READV
