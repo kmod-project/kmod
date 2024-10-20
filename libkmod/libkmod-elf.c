@@ -246,12 +246,6 @@ fail:
 	return -EINVAL;
 }
 
-static const char *elf_get_strings_section(const struct kmod_elf *elf, uint64_t *size)
-{
-	*size = elf->header.strings.size;
-	return elf_get_mem(elf, elf->header.strings.offset);
-}
-
 struct kmod_elf *kmod_elf_new(const void *memory, off_t size)
 {
 	struct kmod_elf *elf;
@@ -333,8 +327,8 @@ struct kmod_elf *kmod_elf_new(const void *memory, off_t size)
 		ELFDBG(elf, "could not get strings section\n");
 		goto invalid;
 	} else {
-		uint64_t slen;
-		const char *s = elf_get_strings_section(elf, &slen);
+		uint64_t slen = elf->header.strings.size;
+		const char *s = elf_get_mem(elf, elf->header.strings.offset);
 		if (slen == 0 || s[slen - 1] != '\0') {
 			ELFDBG(elf, "strings section does not end with \\0\n");
 			goto invalid;
