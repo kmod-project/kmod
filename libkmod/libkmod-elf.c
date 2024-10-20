@@ -42,7 +42,6 @@ struct kmod_elf {
 			uint16_t section; /* index of the strings section */
 			uint64_t size;
 			uint64_t offset;
-			uint32_t nameoff; /* offset in strings itself */
 		} strings;
 		uint16_t machine;
 	} header;
@@ -198,8 +197,9 @@ static inline uint64_t elf_get_section_header_offset(const struct kmod_elf *elf,
 
 static inline int elf_get_section_info(const struct kmod_elf *elf, uint16_t idx,
 				       uint64_t *offset, uint64_t *size,
-				       uint32_t *nameoff)
+				       const char **name)
 {
+	uint64_t nameoff;
 	uint64_t off = elf_get_section_header_offset(elf, idx);
 
 	if (off == 0) {
@@ -216,30 +216,33 @@ static inline int elf_get_section_info(const struct kmod_elf *elf, uint16_t idx,
 			goto fail;
 		*size = READV(sh_size);
 		*offset = READV(sh_offset);
-		*nameoff = READV(sh_name);
+		nameoff = READV(sh_name);
 	} else {
 		Elf64_Shdr *hdr;
 		if (!elf_range_valid(elf, off, sizeof(*hdr)))
 			goto fail;
 		*size = READV(sh_size);
 		*offset = READV(sh_offset);
-		*nameoff = READV(sh_name);
+		nameoff = READV(sh_name);
 	}
 #undef READV
 
 	if (!elf_range_valid(elf, *offset, *size))
 		goto fail;
 
+	if (nameoff >= elf->header.strings.size)
+		goto fail;
+	*name = elf_get_mem(elf, elf->header.strings.offset + nameoff);
+
 	ELFDBG(elf,
-	       "section=%" PRIu16 " is: offset=%" PRIu64 " size=%" PRIu64
-	       " nameoff=%" PRIu32 "\n",
-	       idx, *offset, *size, *nameoff);
+	       "section=%" PRIu16 " is: offset=%" PRIu64 " size=%" PRIu64 " name=%s\n",
+	       idx, *offset, *size, *name);
 
 	return 0;
 fail:
 	*offset = 0;
 	*size = 0;
-	*nameoff = 0;
+	*name = NULL;
 	return -EINVAL;
 }
 
@@ -255,6 +258,7 @@ struct kmod_elf *kmod_elf_new(const void *memory, off_t size)
 	uint64_t min_size;
 	size_t shdrs_size, shdr_size;
 	int err;
+	const char *name;
 
 	assert_cc(sizeof(uint16_t) == sizeof(Elf32_Half));
 	assert_cc(sizeof(uint16_t) == sizeof(Elf64_Half));
@@ -325,7 +329,7 @@ struct kmod_elf *kmod_elf_new(const void *memory, off_t size)
 
 	if (elf_get_section_info(elf, elf->header.strings.section,
 				 &elf->header.strings.offset, &elf->header.strings.size,
-				 &elf->header.strings.nameoff) < 0) {
+				 &name) < 0) {
 		ELFDBG(elf, "could not get strings section\n");
 		goto invalid;
 	} else {
@@ -357,20 +361,14 @@ const void *kmod_elf_get_memory(const struct kmod_elf *elf)
 
 static int elf_find_section(const struct kmod_elf *elf, const char *section)
 {
-	uint64_t nameslen;
-	const char *names = elf_get_strings_section(elf, &nameslen);
 	uint16_t i;
 
 	for (i = 1; i < elf->header.section.count; i++) {
 		uint64_t off, size;
-		uint32_t nameoff;
 		const char *n;
-		int err = elf_get_section_info(elf, i, &off, &size, &nameoff);
+		int err = elf_get_section_info(elf, i, &off, &size, &n);
 		if (err < 0)
 			continue;
-		if (nameoff >= nameslen)
-			continue;
-		n = names + nameoff;
 		if (!streq(section, n))
 			continue;
 
@@ -384,8 +382,6 @@ static int elf_find_section(const struct kmod_elf *elf, const char *section)
 int kmod_elf_get_section(const struct kmod_elf *elf, const char *section,
 			 uint64_t *sec_off, uint64_t *sec_size)
 {
-	uint64_t nameslen;
-	const char *names = elf_get_strings_section(elf, &nameslen);
 	uint16_t i;
 
 	*sec_off = 0;
@@ -393,14 +389,10 @@ int kmod_elf_get_section(const struct kmod_elf *elf, const char *section,
 
 	for (i = 1; i < elf->header.section.count; i++) {
 		uint64_t off, size;
-		uint32_t nameoff;
 		const char *n;
-		int err = elf_get_section_info(elf, i, &off, &size, &nameoff);
+		int err = elf_get_section_info(elf, i, &off, &size, &n);
 		if (err < 0)
 			continue;
-		if (nameoff >= nameslen)
-			continue;
-		n = names + nameoff;
 		if (!streq(section, n))
 			continue;
 
@@ -767,12 +759,12 @@ static uint64_t kmod_elf_resolve_crc(const struct kmod_elf *elf, uint64_t crc,
 {
 	int err;
 	uint64_t off, size;
-	uint32_t nameoff;
+	const char *name;
 
 	if (shndx == SHN_ABS || shndx == SHN_UNDEF)
 		return crc;
 
-	err = elf_get_section_info(elf, shndx, &off, &size, &nameoff);
+	err = elf_get_section_info(elf, shndx, &off, &size, &name);
 	if (err < 0) {
 		ELFDBG(elf, "Could not find section index %" PRIu16 " for crc", shndx);
 		return (uint64_t)-1;
