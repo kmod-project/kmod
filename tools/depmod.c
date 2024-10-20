@@ -898,6 +898,9 @@ struct mod {
 	char *uncrelpath; /* same as relpath but ending in .ko */
 	struct kmod_list *info_list;
 	struct kmod_list *dep_sym_list;
+	struct array alias_values;
+	struct array softdep_values;
+	struct array weakdep_values;
 	struct array deps; /* struct symbol */
 	size_t baselen; /* points to start of basename/filename */
 	size_t modnamesz;
@@ -929,6 +932,9 @@ static void mod_free(struct mod *mod)
 {
 	DBG("free %p kmod=%p, path=%s\n", mod, mod->kmod, mod->path);
 	array_free_array(&mod->deps);
+	array_free_array(&mod->weakdep_values);
+	array_free_array(&mod->softdep_values);
+	array_free_array(&mod->alias_values);
 	kmod_module_unref(mod->kmod);
 	kmod_module_info_free_list(mod->info_list);
 	kmod_module_dependency_symbols_free_list(mod->dep_sym_list);
@@ -1043,6 +1049,10 @@ static int depmod_module_add(struct depmod *depmod, struct kmod_module *kmod)
 	mod->dep_sort_idx = INT32_MAX;
 	memcpy(mod->modname, modname, modnamesz);
 	mod->modnamesz = modnamesz;
+
+	array_init(&mod->alias_values, 32); // fits ~80%, ~5% are in the xxx+
+	array_init(&mod->softdep_values, 8); // fits ~95%, the rest are sub 16
+	array_init(&mod->weakdep_values, 4); // fits 100%
 
 	array_init(&mod->deps, 4);
 
@@ -1575,6 +1585,31 @@ static int depmod_load_modules(struct depmod *depmod)
 
 load_info:
 		kmod_module_get_info(mod->kmod, &mod->info_list);
+		kmod_list_foreach(l, mod->info_list) {
+			const char *key = kmod_module_info_get_key(l);
+
+			if (streq(key, "alias")) {
+				const char *value = kmod_module_info_get_value(l);
+
+				if (array_append(&mod->alias_values, value) < 0)
+					return 0;
+				continue;
+			}
+			if (streq(key, "softdep")) {
+				const char *value = kmod_module_info_get_value(l);
+
+				if (array_append(&mod->softdep_values, value) < 0)
+					return 0;
+				continue;
+			}
+			if (streq(key, "weakdep")) {
+				const char *value = kmod_module_info_get_value(l);
+
+				if (array_append(&mod->weakdep_values, value) < 0)
+					return 0;
+				continue;
+			}
+		}
 		kmod_module_get_dependency_symbols(mod->kmod, &mod->dep_sym_list);
 		kmod_module_unref(mod->kmod);
 		mod->kmod = NULL;
@@ -2141,15 +2176,10 @@ static int output_aliases(struct depmod *depmod, FILE *out)
 
 	for (i = 0; i < depmod->modules.count; i++) {
 		const struct mod *mod = depmod->modules.array[i];
-		struct kmod_list *l;
+		const struct array *values = &mod->alias_values;
 
-		kmod_list_foreach(l, mod->info_list) {
-			const char *key = kmod_module_info_get_key(l);
-			const char *value = kmod_module_info_get_value(l);
-
-			if (!streq(key, "alias"))
-				continue;
-
+		for (size_t j = 0; j < values->count; j++) {
+			const char *value = values->array[j];
 			fprintf(out, "alias %s %s\n", value, mod->modname);
 		}
 	}
@@ -2171,17 +2201,13 @@ static int output_aliases_bin(struct depmod *depmod, FILE *out)
 
 	for (i = 0; i < depmod->modules.count; i++) {
 		const struct mod *mod = depmod->modules.array[i];
-		struct kmod_list *l;
+		const struct array *values = &mod->alias_values;
 
-		kmod_list_foreach(l, mod->info_list) {
-			const char *key = kmod_module_info_get_key(l);
-			const char *value = kmod_module_info_get_value(l);
+		for (size_t j = 0; j < values->count; j++) {
+			const char *value = values->array[j];
 			char buf[PATH_MAX];
 			const char *alias;
 			int duplicate;
-
-			if (!streq(key, "alias"))
-				continue;
 
 			if (alias_normalize(value, buf, NULL) < 0) {
 				WRN("Unmatched bracket in %s\n", value);
@@ -2210,15 +2236,10 @@ static int output_softdeps(struct depmod *depmod, FILE *out)
 
 	for (i = 0; i < depmod->modules.count; i++) {
 		const struct mod *mod = depmod->modules.array[i];
-		struct kmod_list *l;
+		const struct array *values = &mod->softdep_values;
 
-		kmod_list_foreach(l, mod->info_list) {
-			const char *key = kmod_module_info_get_key(l);
-			const char *value = kmod_module_info_get_value(l);
-
-			if (!streq(key, "softdep"))
-				continue;
-
+		for (size_t j = 0; j < values->count; j++) {
+			const char *value = values->array[j];
 			fprintf(out, "softdep %s %s\n", mod->modname, value);
 		}
 	}
@@ -2234,15 +2255,10 @@ static int output_weakdeps(struct depmod *depmod, FILE *out)
 
 	for (i = 0; i < depmod->modules.count; i++) {
 		const struct mod *mod = depmod->modules.array[i];
-		struct kmod_list *l;
+		const struct array *values = &mod->weakdep_values;
 
-		kmod_list_foreach(l, mod->info_list) {
-			const char *key = kmod_module_info_get_key(l);
-			const char *value = kmod_module_info_get_value(l);
-
-			if (!streq(key, "weakdep"))
-				continue;
-
+		for (size_t j = 0; j < values->count; j++) {
+			const char *value = values->array[j];
 			fprintf(out, "weakdep %s %s\n", mod->modname, value);
 		}
 	}
@@ -2461,18 +2477,14 @@ static int output_devname(struct depmod *depmod, FILE *out)
 
 	for (i = 0; i < depmod->modules.count; i++) {
 		const struct mod *mod = depmod->modules.array[i];
-		struct kmod_list *l;
+		const struct array *values = &mod->alias_values;
 		const char *devname = NULL;
 		char type = '\0';
 		unsigned int major = 0, minor = 0;
 
-		kmod_list_foreach(l, mod->info_list) {
-			const char *key = kmod_module_info_get_key(l);
-			const char *value = kmod_module_info_get_value(l);
+		for (size_t j = 0; j < values->count; j++) {
+			const char *value = values->array[j];
 			unsigned int maj, min;
-
-			if (!streq(key, "alias"))
-				continue;
 
 			if (strstartswith(value, "devname:"))
 				devname = value + sizeof("devname:") - 1;
