@@ -32,7 +32,7 @@ struct kmod_elf {
 	uint64_t size;
 	bool x32;
 	bool msb;
-	struct kmod_elf_header {
+	struct {
 		struct {
 			uint64_t offset;
 			uint16_t count;
