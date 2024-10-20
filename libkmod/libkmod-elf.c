@@ -799,8 +799,8 @@ int kmod_elf_get_symbols(const struct kmod_elf *elf, struct kmod_modversion **ar
 	const void *strtab, *symtab;
 	struct kmod_modversion *a;
 	char *itr;
-	size_t slen, symlen;
-	int i, count, symcount, err;
+	size_t i, count, symcount, slen, symlen;
+	int err;
 
 	err = kmod_elf_get_section(elf, ".strtab", &strtab, &strtablen);
 	if (err < 0) {
@@ -848,9 +848,8 @@ int kmod_elf_get_symbols(const struct kmod_elf *elf, struct kmod_modversion **ar
 #undef READV
 		if (name_off >= strtablen) {
 			ELFDBG(elf,
-			       ".strtab is %" PRIu64
-			       " bytes, but .symtab entry %d wants to access offset %" PRIu32
-			       ".\n",
+			       ".strtab is %" PRIu64 " bytes, but .symtab entry %" PRIu64
+			       " wants to access offset %" PRIu32 ".\n",
 			       strtablen, i, name_off);
 			goto fallback;
 		}
