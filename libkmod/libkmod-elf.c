@@ -450,7 +450,7 @@ int kmod_elf_get_strings(const struct kmod_elf *elf, const char *section, char *
 			continue;
 		}
 
-		while (strings[i] == '\0' && i < size)
+		while (i < size && s[i] == '\0')
 			i++;
 
 		a[j] = &s[i];
