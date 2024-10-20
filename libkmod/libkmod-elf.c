@@ -398,12 +398,10 @@ int kmod_elf_get_strings(const struct kmod_elf *elf, const char *section, char *
 	if (err < 0)
 		return err;
 
-	if (size == 0)
-		return 0;
 	strings = elf_get_mem(elf, off);
 
 	/* skip zero padding */
-	while (strings[0] == '\0' && size > 1) {
+	while (size > 1 && strings[0] == '\0') {
 		strings++;
 		size--;
 	}
@@ -567,12 +565,10 @@ static int elf_strip_vermagic(const struct kmod_elf *elf, uint8_t *changed)
 	err = kmod_elf_get_section(elf, ".modinfo", &sec_off, &size);
 	if (err < 0)
 		return err == -ENODATA ? 0 : err;
-	if (size == 0)
-		return 0;
 	strings = elf_get_mem(elf, sec_off);
 
 	/* skip zero padding */
-	while (strings[0] == '\0' && size > 1) {
+	while (size > 1 && strings[0] == '\0') {
 		strings++;
 		size--;
 	}
@@ -657,12 +653,10 @@ static int kmod_elf_get_symbols_symtab(const struct kmod_elf *elf,
 	err = kmod_elf_get_section(elf, "__ksymtab_strings", &off, &size);
 	if (err < 0)
 		return err;
-	if (size == 0)
-		return 0;
 	strings = elf_get_mem(elf, off);
 
 	/* skip zero padding */
-	while (strings[0] == '\0' && size > 1) {
+	while (size > 1 && strings[0] == '\0') {
 		strings++;
 		size--;
 	}
