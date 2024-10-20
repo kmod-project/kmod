@@ -212,6 +212,7 @@ static inline int elf_get_section_info(const struct kmod_elf *elf, uint16_t idx,
 
 	if (elf->x32) {
 		Elf32_Shdr *hdr;
+
 		if (!elf_range_valid(elf, off, sizeof(*hdr)))
 			goto fail;
 		*size = READV(sh_size);
@@ -219,6 +220,7 @@ static inline int elf_get_section_info(const struct kmod_elf *elf, uint16_t idx,
 		nameoff = READV(sh_name);
 	} else {
 		Elf64_Shdr *hdr;
+
 		if (!elf_range_valid(elf, off, sizeof(*hdr)))
 			goto fail;
 		*size = READV(sh_size);
@@ -289,12 +291,14 @@ struct kmod_elf *kmod_elf_new(const void *memory, off_t size)
 	elf->header.machine = READV(e_machine)
 	if (elf->x32) {
 		Elf32_Ehdr *hdr;
+
 		shdr_size = sizeof(Elf32_Shdr);
 		if (!elf_range_valid(elf, 0, shdr_size))
 			goto invalid;
 		LOAD_HEADER;
 	} else {
 		Elf64_Ehdr *hdr;
+
 		shdr_size = sizeof(Elf64_Shdr);
 		if (!elf_range_valid(elf, 0, shdr_size))
 			goto invalid;
@@ -804,9 +808,11 @@ int kmod_elf_get_symbols(const struct kmod_elf *elf, struct kmod_modversion **ar
 	elf_get_uint(elf, sym_off + offsetof(typeof(*s), field), sizeof(s->field))
 		if (elf->x32) {
 			Elf32_Sym *s;
+
 			name_off = READV(st_name);
 		} else {
 			Elf64_Sym *s;
+
 			name_off = READV(st_name);
 		}
 #undef READV
@@ -849,12 +855,14 @@ int kmod_elf_get_symbols(const struct kmod_elf *elf, struct kmod_modversion **ar
 	elf_get_uint(elf, sym_off + offsetof(typeof(*s), field), sizeof(s->field))
 		if (elf->x32) {
 			Elf32_Sym *s;
+
 			name_off = READV(st_name);
 			crc = READV(st_value);
 			info = READV(st_info);
 			shndx = READV(st_shndx);
 		} else {
 			Elf64_Sym *s;
+
 			name_off = READV(st_name);
 			crc = READV(st_value);
 			info = READV(st_info);
@@ -1022,11 +1030,13 @@ int kmod_elf_get_dependency_symbols(const struct kmod_elf *elf,
 	elf_get_uint(elf, sym_off + offsetof(typeof(*s), field), sizeof(s->field))
 		if (elf->x32) {
 			Elf32_Sym *s;
+
 			name_off = READV(st_name);
 			secidx = READV(st_shndx);
 			info = READV(st_info);
 		} else {
 			Elf64_Sym *s;
+
 			name_off = READV(st_name);
 			secidx = READV(st_shndx);
 			info = READV(st_info);
@@ -1119,11 +1129,13 @@ int kmod_elf_get_dependency_symbols(const struct kmod_elf *elf,
 	elf_get_uint(elf, sym_off + offsetof(typeof(*s), field), sizeof(s->field))
 		if (elf->x32) {
 			Elf32_Sym *s;
+
 			name_off = READV(st_name);
 			secidx = READV(st_shndx);
 			info = READV(st_info);
 		} else {
 			Elf64_Sym *s;
+
 			name_off = READV(st_name);
 			secidx = READV(st_shndx);
 			info = READV(st_info);
