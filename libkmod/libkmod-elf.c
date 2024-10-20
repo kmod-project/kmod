@@ -680,6 +680,7 @@ static int kmod_elf_get_symbols_symtab(const struct kmod_elf *elf,
 	char *itr;
 	struct kmod_modversion *a;
 	int count, err;
+	size_t vec_size, tmp_size, total_size;
 
 	*array = NULL;
 
@@ -712,7 +713,14 @@ static int kmod_elf_get_symbols_symtab(const struct kmod_elf *elf,
 	if (strings[i - 1] != '\0')
 		count++;
 
-	*array = a = malloc(size + 1 + sizeof(struct kmod_modversion) * count);
+	/* sizeof(struct kmod_modversion) * count + size + 1 */
+	if (umulsz_overflow(sizeof(struct kmod_modversion), count, &vec_size) ||
+	    uaddsz_overflow(size, vec_size, &tmp_size) ||
+	    uaddsz_overflow(1, tmp_size, &total_size)) {
+		return -ENOMEM;
+	}
+
+	*array = a = malloc(total_size);
 	if (*array == NULL)
 		return -errno;
 
