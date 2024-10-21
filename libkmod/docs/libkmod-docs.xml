@@ -24,4 +24,36 @@
     <title>API Index</title>
     <xi:include href="xml/api-index-full.xml"><xi:fallback /></xi:include>
   </index>
+  <chapter id="api-index-v1" role="1">
+    <title>Index of new symbols in 1</title>
+    <xi:include href="xml/api-index-1.xml"></xi:include>
+  </chapter>
+  <chapter id="api-index-v2" role="2">
+    <title>Index of new symbols in 2</title>
+    <xi:include href="xml/api-index-2.xml"></xi:include>
+  </chapter>
+  <chapter id="api-index-v3" role="3">
+    <title>Index of new symbols in 3</title>
+    <xi:include href="xml/api-index-3.xml"></xi:include>
+  </chapter>
+  <chapter id="api-index-v4" role="4">
+    <title>Index of new symbols in 4</title>
+    <xi:include href="xml/api-index-4.xml"></xi:include>
+  </chapter>
+  <chapter id="api-index-v6" role="6">
+    <title>Index of new symbols in 6</title>
+    <xi:include href="xml/api-index-6.xml"></xi:include>
+  </chapter>
+  <chapter id="api-index-v22" role="22">
+    <title>Index of new symbols in 22</title>
+    <xi:include href="xml/api-index-22.xml"></xi:include>
+  </chapter>
+  <chapter id="api-index-v30" role="30">
+    <title>Index of new symbols in 30</title>
+    <xi:include href="xml/api-index-30.xml"></xi:include>
+  </chapter>
+  <chapter id="api-index-v33" role="33">
+    <title>Index of new symbols in 33</title>
+    <xi:include href="xml/api-index-33.xml"></xi:include>
+  </chapter>
 </book>
