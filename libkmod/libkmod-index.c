@@ -527,7 +527,7 @@ static void index_searchwild__all(struct index_node_f *node, int j, struct strbu
 
 /* Level 2: descend the tree (until we hit a wildcard) */
 static void index_searchwild__node(struct index_node_f *node, struct strbuf *buf,
-				   const char *key, int i, struct index_value **out)
+				   const char *key, struct index_value **out)
 {
 	struct index_node_f *child;
 	int j;
@@ -538,22 +538,22 @@ static void index_searchwild__node(struct index_node_f *node, struct strbuf *buf
 			ch = node->prefix[j];
 
 			if (ch == '*' || ch == '?' || ch == '[') {
-				index_searchwild__all(node, j, buf, &key[i + j], out);
+				index_searchwild__all(node, j, buf, &key[j], out);
 				return;
 			}
 
-			if (ch != key[i + j]) {
+			if (ch != key[j]) {
 				index_close(node);
 				return;
 			}
 		}
 
-		i += j;
+		key += j;
 
 		child = index_readchild(node, '*');
 		if (child) {
 			if (strbuf_pushchar(buf, '*')) {
-				index_searchwild__all(child, 0, buf, &key[i], out);
+				index_searchwild__all(child, 0, buf, key, out);
 				strbuf_popchar(buf);
 			}
 		}
@@ -561,7 +561,7 @@ static void index_searchwild__node(struct index_node_f *node, struct strbuf *buf
 		child = index_readchild(node, '?');
 		if (child) {
 			if (strbuf_pushchar(buf, '?')) {
-				index_searchwild__all(child, 0, buf, &key[i], out);
+				index_searchwild__all(child, 0, buf, key, out);
 				strbuf_popchar(buf);
 			}
 		}
@@ -569,21 +569,21 @@ static void index_searchwild__node(struct index_node_f *node, struct strbuf *buf
 		child = index_readchild(node, '[');
 		if (child) {
 			if (strbuf_pushchar(buf, '[')) {
-				index_searchwild__all(child, 0, buf, &key[i], out);
+				index_searchwild__all(child, 0, buf, key, out);
 				strbuf_popchar(buf);
 			}
 		}
 
-		if (key[i] == '\0') {
+		if (*key == '\0') {
 			index_searchwild__allvalues(node, out);
 
 			return;
 		}
 
-		child = index_readchild(node, key[i]);
+		child = index_readchild(node, *key);
 		index_close(node);
 		node = child;
-		i++;
+		key++;
 	}
 }
 
@@ -599,7 +599,7 @@ struct index_value *index_searchwild(struct index_file *in, const char *key)
 	struct index_value *out = NULL;
 
 	strbuf_init(&buf);
-	index_searchwild__node(root, &buf, key, 0, &out);
+	index_searchwild__node(root, &buf, key, &out);
 	strbuf_release(&buf);
 	return out;
 }
@@ -903,7 +903,7 @@ void index_mm_dump(struct index_mm *idx, int fd, const char *prefix)
 	strbuf_release(&buf);
 }
 
-static char *index_mm_search_node(struct index_mm_node *node, const char *key, int i)
+static char *index_mm_search_node(struct index_mm_node *node, const char *key)
 {
 	char *value;
 	struct index_mm_node *child;
@@ -914,15 +914,15 @@ static char *index_mm_search_node(struct index_mm_node *node, const char *key, i
 		for (j = 0; node->prefix[j]; j++) {
 			ch = node->prefix[j];
 
-			if (ch != key[i + j]) {
+			if (ch != key[j]) {
 				index_mm_free_node(node);
 				return NULL;
 			}
 		}
 
-		i += j;
+		key += j;
 
-		if (key[i] == '\0') {
+		if (*key == '\0') {
 			value = node->values.len > 0 ?
 					strdup(node->values.values[0].value) :
 					NULL;
@@ -931,10 +931,10 @@ static char *index_mm_search_node(struct index_mm_node *node, const char *key, i
 			return value;
 		}
 
-		child = index_mm_readchild(node, key[i]);
+		child = index_mm_readchild(node, *key);
 		index_mm_free_node(node);
 		node = child;
-		i++;
+		key++;
 	}
 
 	return NULL;
@@ -954,7 +954,7 @@ char *index_mm_search(struct index_mm *idx, const char *key)
 	char *value;
 
 	root = index_mm_readroot(idx);
-	value = index_mm_search_node(root, key, 0);
+	value = index_mm_search_node(root, key);
 
 	return value;
 }
@@ -1013,7 +1013,7 @@ static void index_mm_searchwild_all(struct index_mm_node *node, int j, struct st
 
 /* Level 2: descend the tree (until we hit a wildcard) */
 static void index_mm_searchwild_node(struct index_mm_node *node, struct strbuf *buf,
-				     const char *key, int i, struct index_value **out)
+				     const char *key, struct index_value **out)
 {
 	struct index_mm_node *child;
 	int j;
@@ -1024,22 +1024,22 @@ static void index_mm_searchwild_node(struct index_mm_node *node, struct strbuf *
 			ch = node->prefix[j];
 
 			if (ch == '*' || ch == '?' || ch == '[') {
-				index_mm_searchwild_all(node, j, buf, &key[i + j], out);
+				index_mm_searchwild_all(node, j, buf, key + j, out);
 				return;
 			}
 
-			if (ch != key[i + j]) {
+			if (ch != key[j]) {
 				index_mm_free_node(node);
 				return;
 			}
 		}
 
-		i += j;
+		key += j;
 
 		child = index_mm_readchild(node, '*');
 		if (child) {
 			if (strbuf_pushchar(buf, '*')) {
-				index_mm_searchwild_all(child, 0, buf, &key[i], out);
+				index_mm_searchwild_all(child, 0, buf, key, out);
 				strbuf_popchar(buf);
 			}
 		}
@@ -1047,7 +1047,7 @@ static void index_mm_searchwild_node(struct index_mm_node *node, struct strbuf *
 		child = index_mm_readchild(node, '?');
 		if (child) {
 			if (strbuf_pushchar(buf, '?')) {
-				index_mm_searchwild_all(child, 0, buf, &key[i], out);
+				index_mm_searchwild_all(child, 0, buf, key, out);
 				strbuf_popchar(buf);
 			}
 		}
@@ -1055,21 +1055,21 @@ static void index_mm_searchwild_node(struct index_mm_node *node, struct strbuf *
 		child = index_mm_readchild(node, '[');
 		if (child) {
 			if (strbuf_pushchar(buf, '[')) {
-				index_mm_searchwild_all(child, 0, buf, &key[i], out);
+				index_mm_searchwild_all(child, 0, buf, key, out);
 				strbuf_popchar(buf);
 			}
 		}
 
-		if (key[i] == '\0') {
+		if (*key == '\0') {
 			index_mm_searchwild_allvalues(node, out);
 
 			return;
 		}
 
-		child = index_mm_readchild(node, key[i]);
+		child = index_mm_readchild(node, *key);
 		index_mm_free_node(node);
 		node = child;
-		i++;
+		key++;
 	}
 }
 
@@ -1085,7 +1085,7 @@ struct index_value *index_mm_searchwild(struct index_mm *idx, const char *key)
 	struct index_value *out = NULL;
 
 	strbuf_init(&buf);
-	index_mm_searchwild_node(root, &buf, key, 0, &out);
+	index_mm_searchwild_node(root, &buf, key, &out);
 	strbuf_release(&buf);
 	return out;
 }
