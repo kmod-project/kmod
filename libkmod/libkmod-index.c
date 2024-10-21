@@ -642,29 +642,29 @@ struct index_mm_node {
 	uint32_t children[];
 };
 
-static inline uint32_t read_u32_mm(void **p)
+static inline uint32_t read_u32_mm(const void **p)
 {
-	uint8_t *addr = *(uint8_t **)p;
+	const uint8_t *addr = *(const uint8_t **)p;
 	uint32_t v;
 
 	/* addr may be unalined to uint32_t */
-	v = get_unaligned((uint32_t *)addr);
+	v = get_unaligned((const uint32_t *)addr);
 
 	*p = addr + sizeof(uint32_t);
 	return ntohl(v);
 }
 
-static inline uint8_t read_char_mm(void **p)
+static inline uint8_t read_char_mm(const void **p)
 {
-	uint8_t *addr = *(uint8_t **)p;
+	const uint8_t *addr = *(const uint8_t **)p;
 	uint8_t v = *addr;
 	*p = addr + sizeof(uint8_t);
 	return v;
 }
 
-static inline char *read_chars_mm(void **p, size_t *rlen)
+static inline const char *read_chars_mm(const void **p, size_t *rlen)
 {
-	char *addr = *(char **)p;
+	const char *addr = *(const char **)p;
 	size_t len = *rlen = strlen(addr);
 	*p = addr + len + 1;
 	return addr;
@@ -672,7 +672,7 @@ static inline char *read_chars_mm(void **p, size_t *rlen)
 
 static struct index_mm_node *index_mm_read_node(struct index_mm *idx, uint32_t offset)
 {
-	void *p = idx->mm;
+	const void *p = idx->mm;
 	struct index_mm_node *node;
 	const char *prefix;
 	int i, child_count, value_count, children_padding;
@@ -682,7 +682,7 @@ static struct index_mm_node *index_mm_read_node(struct index_mm *idx, uint32_t o
 	if ((offset & INDEX_NODE_MASK) == 0 || (offset & INDEX_NODE_MASK) >= idx->size)
 		return NULL;
 
-	p = (char *)p + (offset & INDEX_NODE_MASK);
+	p = (const char *)p + (offset & INDEX_NODE_MASK);
 
 	if (offset & INDEX_NODE_PREFIX) {
 		size_t len;
@@ -761,7 +761,7 @@ int index_mm_open(const struct kmod_ctx *ctx, const char *filename,
 		uint32_t version;
 		uint32_t root_offset;
 	} hdr;
-	void *p;
+	const void *p;
 
 	assert(pidx != NULL);
 
