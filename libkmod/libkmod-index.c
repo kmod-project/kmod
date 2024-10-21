@@ -635,7 +635,7 @@ struct index_mm_value_array {
 
 struct index_mm_node {
 	struct index_mm *idx;
-	const char *prefix; /* mmape'd value */
+	const char *prefix; /* mmap'ed value */
 	struct index_mm_value_array values;
 	unsigned char first;
 	unsigned char last;
@@ -647,7 +647,7 @@ static inline uint32_t read_u32_mm(const void **p)
 	const uint8_t *addr = *(const uint8_t **)p;
 	uint32_t v;
 
-	/* addr may be unalined to uint32_t */
+	/* addr may be unaligned to uint32_t */
 	v = get_unaligned((const uint32_t *)addr);
 
 	*p = addr + sizeof(uint32_t);
@@ -945,7 +945,7 @@ static char *index_mm_search_node(struct index_mm_node *node, const char *key, i
  *
  * Returns the value of the first match
  *
- * The recursive functions free their node argument (using index_close).
+ * The recursive functions free their node argument (using index_mm_free_node).
  */
 char *index_mm_search(struct index_mm *idx, const char *key)
 {
