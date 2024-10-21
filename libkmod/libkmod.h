@@ -946,6 +946,7 @@ int kmod_module_apply_filter(const struct kmod_ctx *ctx, enum kmod_filter filter
  * list.
  *
  * Since: 1
+ * Deprecated: 6: Use #kmod_module_apply_filter instead.
  */
 int kmod_module_get_filtered_blacklist(const struct kmod_ctx *ctx,
 				       const struct kmod_list *input,

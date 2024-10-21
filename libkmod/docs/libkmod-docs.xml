@@ -24,6 +24,10 @@
     <title>API Index</title>
     <xi:include href="xml/api-index-full.xml"><xi:fallback /></xi:include>
   </index>
+  <chapter id="deprecated-api-index" role="deprecated">
+    <title>Index of deprecated symbols</title>
+    <xi:include href="xml/api-index-deprecated.xml"></xi:include>
+  </chapter>
   <chapter id="api-index-v1" role="1">
     <title>Index of new symbols in 1</title>
     <xi:include href="xml/api-index-1.xml"></xi:include>
