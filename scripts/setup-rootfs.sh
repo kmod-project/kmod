@@ -100,6 +100,7 @@ map=(
     ["test-modprobe/module-from-abspath/home/foo/"]="mod-simple.ko"
     ["test-modprobe/module-from-relpath/home/foo/"]="mod-simple.ko"
     ["test-modprobe/fallback$MODULE_FALLBACK_DIRECTORY/4.4.4/kernel/"]="mod-simple.ko"
+    ["test-modprobe/fallback-custom$MODULE_FALLBACK_DIRECTORY/3.3.3/kernel/"]="mod-simple.ko"
     ["test-depmod/modules-order-compressed$MODULE_DIRECTORY/4.4.4/kernel/drivers/block/cciss.ko"]="mod-fake-cciss.ko"
     ["test-depmod/modules-order-compressed$MODULE_DIRECTORY/4.4.4/kernel/drivers/scsi/hpsa.ko"]="mod-fake-hpsa.ko"
     ["test-depmod/modules-order-compressed$MODULE_DIRECTORY/4.4.4/kernel/drivers/scsi/scsi_mod.ko"]="mod-fake-scsi-mod.ko"

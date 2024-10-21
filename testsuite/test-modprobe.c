@@ -507,4 +507,28 @@ DEFINE_TEST(modprobe_fallback,
 	.modules_loaded = "mod-simple",
 	);
 
+static noreturn int modprobe_fallback_custom(const struct test *t)
+{
+	const char *progname = TOOLS_DIR "/modprobe";
+	const char *const args[] = {
+		progname,
+		"--set-version",
+		"3.3.3",
+		"mod-simple",
+		NULL,
+	};
+
+	test_spawn_prog(progname, args);
+	exit(EXIT_FAILURE);
+}
+DEFINE_TEST(modprobe_fallback_custom,
+	.description = "check modprobe able to load module from fallback path with --set-version",
+	.config = {
+		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-modprobe/fallback-custom",
+		[TC_INIT_MODULE_RETCODES] = "",
+	},
+	.need_spawn = true,
+	.modules_loaded = "mod-simple",
+	);
+
 TESTSUITE_MAIN();
