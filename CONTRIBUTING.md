@@ -91,6 +91,9 @@ is wired to `meson test` to catch accidental mistakes or omissions.
 
 If you're unfamiliar with `gtk-doc` here is a [quick primer].
 
+When adding new API, make sure to include the `Since:` token and add a new
+api-index section in `libkmod/docs/libkmod-docs.xml`.
+
 ## Tools manual pages
 
 Our manual pages are written in [scdoc] a simple [markdown-like syntax]. Please
