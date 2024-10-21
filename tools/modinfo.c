@@ -443,6 +443,17 @@ static int do_modinfo(int argc, char *argv[])
 			    root, kversion);
 			return EXIT_FAILURE;
 		}
+
+		if (is_dir(dirname_buf) <= 0) {
+			n = snprintf(dirname_buf, sizeof(dirname_buf),
+				     "%s" MODULE_FALLBACK_DIRECTORY "/%s", root, kversion);
+			if (n >= (int)sizeof(dirname_buf)) {
+				ERR("bad directory %s" MODULE_FALLBACK_DIRECTORY "/%s: path too long\n",
+				    root, kversion);
+				return EXIT_FAILURE;
+			}
+		}
+
 		dirname = dirname_buf;
 	}
 
