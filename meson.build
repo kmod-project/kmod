@@ -186,6 +186,7 @@ features = []
 sysconfdir = get_option('sysconfdir')
 cdata.set_quoted('SYSCONFDIR', sysconfdir)
 
+bindir = join_paths(get_option('prefix'), get_option('bindir'))
 libdir = join_paths(get_option('prefix'), get_option('libdir'))
 
 distconfdir = get_option('distconfdir')
@@ -442,7 +443,7 @@ _tools = [
 kmod_symlink = find_program('scripts/kmod-symlink.sh')
 foreach tool : _tools
   if get_option('tools')
-    symlink = join_paths(get_option('bindir'), tool)
+    symlink = join_paths(bindir, tool)
     meson.add_install_script(kmod_symlink, symlink)
   endif
 endforeach
@@ -493,7 +494,7 @@ summary({
   'distconfdir' : distconfdir,
   'libdir'      : libdir,
   'includedir'  : join_paths(get_option('prefix'), get_option('includedir')),
-  'bindir'      : join_paths(get_option('prefix'), get_option('bindir')),
+  'bindir'      : bindir
 }, section : 'Directories')
 
 summary({
