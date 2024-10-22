@@ -7,4 +7,4 @@ set -euo pipefail
 #
 # For context read through https://github.com/mesonbuild/meson/issues/9
 
-ln -sf kmod "$MESON_INSTALL_DESTDIR_PREFIX/$1"
+ln -sf kmod "$DESTDIR/$1"
