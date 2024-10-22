@@ -147,5 +147,30 @@ DEFINE_TEST(test_modinfo_fallback,
 		.out = TESTSUITE_ROOTFS "test-modinfo/correct-fallback.txt",
 	})
 
+static noreturn int test_modinfo_fallback_custom(const struct test *t)
+{
+	const char *const args[] = {
+		// clang-format off
+		progname,
+		"-F", "filename",
+		"--set-version",
+		"3.3.3",
+		"mod-simple",
+		NULL,
+		// clang-format on
+	};
+	test_spawn_prog(progname, args);
+	exit(EXIT_FAILURE);
+}
+DEFINE_TEST(test_modinfo_fallback_custom,
+	.description = "check if modinfo finds external module",
+	.config = {
+		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-modinfo/fallback-custom",
+		[TC_UNAME_R] = "4.4.4",
+	},
+	.output = {
+		.out = TESTSUITE_ROOTFS "test-modinfo/correct-fallback-custom.txt",
+	})
+
 
 TESTSUITE_MAIN();

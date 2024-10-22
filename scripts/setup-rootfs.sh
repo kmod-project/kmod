@@ -115,6 +115,7 @@ map=(
     ["test-modinfo/mod-simple-pkcs7.ko"]="mod-simple.ko"
     ["test-modinfo/external/lib/modules/external/mod-simple.ko"]="mod-simple.ko"
     ["test-modinfo/fallback$MODULE_FALLBACK_DIRECTORY/4.4.4/kernel/"]="mod-simple.ko"
+    ["test-modinfo/fallback-custom$MODULE_FALLBACK_DIRECTORY/3.3.3/kernel/"]="mod-simple.ko"
     ["test-weakdep$MODULE_DIRECTORY/4.4.4/kernel/mod-loop-a.ko"]="mod-loop-a.ko"
     ["test-weakdep$MODULE_DIRECTORY/4.4.4/kernel/mod-loop-b.ko"]="mod-loop-b.ko"
     ["test-weakdep$MODULE_DIRECTORY/4.4.4/kernel/mod-simple.ko"]="mod-simple.ko"
