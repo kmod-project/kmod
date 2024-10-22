@@ -679,7 +679,7 @@ static struct index_mm_node *index_mm_read_node(struct index_mm *idx, uint32_t o
 	uint32_t children[INDEX_CHILDMAX];
 	unsigned char first, last;
 
-	if ((offset & INDEX_NODE_MASK) == 0)
+	if ((offset & INDEX_NODE_MASK) == 0 || (offset & INDEX_NODE_MASK) >= idx->size)
 		return NULL;
 
 	p = (char *)p + (offset & INDEX_NODE_MASK);
