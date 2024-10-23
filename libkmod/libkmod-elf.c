@@ -644,10 +644,9 @@ static int kmod_elf_get_symbols_symtab(const struct kmod_elf *elf,
 {
 	uint64_t i, last, off, size;
 	const char *strings;
-	char *itr;
 	struct kmod_modversion *a;
 	int count, err;
-	size_t vec_size, total_size;
+	size_t total_size;
 
 	*array = NULL;
 
@@ -681,9 +680,8 @@ static int kmod_elf_get_symbols_symtab(const struct kmod_elf *elf,
 		}
 	}
 
-	/* sizeof(struct kmod_modversion) * count + size */
-	if (umulsz_overflow(sizeof(struct kmod_modversion), count, &vec_size) ||
-	    uaddsz_overflow(size, vec_size, &total_size)) {
+	/* sizeof(struct kmod_modversion) * count */
+	if (umulsz_overflow(sizeof(struct kmod_modversion), count, &total_size)) {
 		return -ENOMEM;
 	}
 
@@ -691,21 +689,16 @@ static int kmod_elf_get_symbols_symtab(const struct kmod_elf *elf,
 	if (*array == NULL)
 		return -errno;
 
-	itr = (char *)(a + count);
 	last = 0;
 	for (i = 0, count = 0; i < size; i++) {
 		if (strings[i] == '\0') {
-			size_t slen = i - last;
 			if (last == i) {
 				last = i + 1;
 				continue;
 			}
 			a[count].crc = 0;
 			a[count].bind = KMOD_SYMBOL_GLOBAL;
-			a[count].symbol = itr;
-			memcpy(itr, strings + last, slen);
-			itr[slen] = '\0';
-			itr += slen + 1;
+			a[count].symbol = strings + last;
 			count++;
 			last = i + 1;
 		}
