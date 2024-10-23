@@ -756,8 +756,7 @@ int kmod_elf_get_symbols(const struct kmod_elf *elf, struct kmod_modversion **ar
 	static const size_t crc_strlen = sizeof(crc_str) - 1;
 	uint64_t strtablen, symtablen, str_sec_off, sym_sec_off, str_off, sym_off;
 	struct kmod_modversion *a;
-	char *itr;
-	size_t i, count, symcount, slen, symlen;
+	size_t i, count, symcount, symlen;
 	int err;
 
 	err = kmod_elf_get_section(elf, ".strtab", &str_sec_off, &strtablen);
@@ -787,7 +786,6 @@ int kmod_elf_get_symbols(const struct kmod_elf *elf, struct kmod_modversion **ar
 
 	symcount = symtablen / symlen;
 	count = 0;
-	slen = 0;
 	str_off = str_sec_off;
 	sym_off = sym_sec_off + symlen;
 	for (i = 1; i < symcount; i++, sym_off += symlen) {
@@ -819,18 +817,16 @@ int kmod_elf_get_symbols(const struct kmod_elf *elf, struct kmod_modversion **ar
 
 		if (strncmp(name, crc_str, crc_strlen) != 0)
 			continue;
-		slen += strlen(name + crc_strlen) + 1;
 		count++;
 	}
 
 	if (count == 0)
 		goto fallback;
 
-	*array = a = malloc(sizeof(struct kmod_modversion) * count + slen);
+	*array = a = malloc(sizeof(struct kmod_modversion) * count);
 	if (*array == NULL)
 		return -errno;
 
-	itr = (char *)(a + count);
 	count = 0;
 	str_off = str_sec_off;
 	sym_off = sym_sec_off + symlen;
@@ -871,11 +867,7 @@ int kmod_elf_get_symbols(const struct kmod_elf *elf, struct kmod_modversion **ar
 
 		a[count].crc = kmod_elf_resolve_crc(elf, crc, shndx);
 		a[count].bind = kmod_symbol_bind_from_elf(bind);
-		a[count].symbol = itr;
-		slen = strlen(name);
-		memcpy(itr, name, slen);
-		itr[slen] = '\0';
-		itr += slen + 1;
+		a[count].symbol = name;
 		count++;
 	}
 	return count;
