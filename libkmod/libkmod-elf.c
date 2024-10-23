@@ -383,7 +383,7 @@ int kmod_elf_get_section(const struct kmod_elf *elf, const char *section,
 }
 
 /* array will be allocated with strings in a single malloc, just free *array */
-int kmod_elf_get_strings(const struct kmod_elf *elf, const char *section, char ***array)
+int kmod_elf_get_modinfo_strings(const struct kmod_elf *elf, char ***array)
 {
 	size_t i, j, count;
 	size_t tmp_size, vec_size, total_size;
@@ -394,7 +394,7 @@ int kmod_elf_get_strings(const struct kmod_elf *elf, const char *section, char *
 
 	*array = NULL;
 
-	err = kmod_elf_get_section(elf, section, &off, &size);
+	err = kmod_elf_get_section(elf, ".modinfo", &off, &size);
 	if (err < 0)
 		return err;
 
