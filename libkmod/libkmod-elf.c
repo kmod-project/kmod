@@ -912,8 +912,7 @@ int kmod_elf_get_dependency_symbols(const struct kmod_elf *elf,
 	uint64_t versionslen, strtablen, symtablen, str_off, sym_off, ver_off;
 	uint64_t str_sec_off, sym_sec_off;
 	struct kmod_modversion *a;
-	char *itr;
-	size_t namlen, slen, verlen, symlen, crclen;
+	size_t namlen, verlen, symlen, crclen;
 	int i, count, symcount, vercount, err;
 	bool handle_register_symbols;
 	uint8_t *visited_versions;
@@ -977,7 +976,6 @@ int kmod_elf_get_dependency_symbols(const struct kmod_elf *elf,
 
 	symcount = symtablen / symlen;
 	count = 0;
-	slen = 0;
 	str_off = str_sec_off;
 	sym_off = sym_sec_off + symlen;
 
@@ -1047,7 +1045,6 @@ int kmod_elf_get_dependency_symbols(const struct kmod_elf *elf,
 			continue;
 		}
 
-		slen += strlen(name) + 1;
 		count++;
 
 		idx = kmod_elf_crc_find(elf, ver_off, versionslen, name, &crc);
@@ -1073,7 +1070,6 @@ int kmod_elf_get_dependency_symbols(const struct kmod_elf *elf,
 					free(symcrcs);
 					return -EINVAL;
 				}
-				slen += nlen + 1;
 
 				count++;
 			}
@@ -1087,14 +1083,13 @@ int kmod_elf_get_dependency_symbols(const struct kmod_elf *elf,
 		return 0;
 	}
 
-	*array = a = malloc(sizeof(struct kmod_modversion) * count + slen);
+	*array = a = malloc(sizeof(struct kmod_modversion) * count);
 	if (*array == NULL) {
 		free(visited_versions);
 		free(symcrcs);
 		return -errno;
 	}
 
-	itr = (char *)(a + count);
 	count = 0;
 	str_off = str_sec_off;
 	sym_off = sym_sec_off + symlen;
@@ -1155,15 +1150,11 @@ int kmod_elf_get_dependency_symbols(const struct kmod_elf *elf,
 		else
 			bind = KMOD_SYMBOL_UNDEF;
 
-		slen = strlen(name);
 		crc = symcrcs[i];
 
 		a[count].crc = crc;
 		a[count].bind = bind;
-		a[count].symbol = itr;
-		memcpy(itr, name, slen);
-		itr[slen] = '\0';
-		itr += slen + 1;
+		a[count].symbol = name;
 
 		count++;
 	}
@@ -1182,15 +1173,11 @@ int kmod_elf_get_dependency_symbols(const struct kmod_elf *elf,
 			continue;
 
 		name = elf_get_mem(elf, ver_off + i * verlen + crclen);
-		slen = strlen(name);
 		crc = elf_get_uint(elf, ver_off + i * verlen, crclen);
 
 		a[count].crc = crc;
 		a[count].bind = KMOD_SYMBOL_UNDEF;
-		a[count].symbol = itr;
-		memcpy(itr, name, slen);
-		itr[slen] = '\0';
-		itr += slen + 1;
+		a[count].symbol = name;
 
 		count++;
 	}
