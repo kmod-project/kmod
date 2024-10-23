@@ -7,4 +7,6 @@ set -euo pipefail
 #
 # For context read through https://github.com/mesonbuild/meson/issues/9
 
+DESTDIR=${DESTDIR:-/}
+
 ln -sf kmod "$DESTDIR/$1"
