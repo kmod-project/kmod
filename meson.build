@@ -187,6 +187,7 @@ sysconfdir = get_option('sysconfdir')
 cdata.set_quoted('SYSCONFDIR', sysconfdir)
 
 bindir = join_paths(get_option('prefix'), get_option('bindir'))
+includedir = join_paths(get_option('prefix'), get_option('includedir'))
 libdir = join_paths(get_option('prefix'), get_option('libdir'))
 
 distconfdir = get_option('distconfdir')
@@ -493,7 +494,7 @@ summary({
   'sysconfdir'  : sysconfdir,
   'distconfdir' : distconfdir,
   'libdir'      : libdir,
-  'includedir'  : join_paths(get_option('prefix'), get_option('includedir')),
+  'includedir'  : includedir,
   'bindir'      : bindir
 }, section : 'Directories')
 
