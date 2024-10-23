@@ -467,10 +467,9 @@ int kmod_elf_get_strings(const struct kmod_elf *elf, const char *section, char *
 /* array will be allocated with strings in a single malloc, just free *array */
 int kmod_elf_get_modversions(const struct kmod_elf *elf, struct kmod_modversion **array)
 {
-	size_t off, offcrc, slen;
+	size_t off, offcrc;
 	uint64_t sec_off, size;
 	struct kmod_modversion *a;
-	char *itr;
 	int i, count, err;
 #define MODVERSION_SEC_SIZE (sizeof(struct kmod_modversion64))
 
@@ -494,40 +493,20 @@ int kmod_elf_get_modversions(const struct kmod_elf *elf, struct kmod_modversion 
 		return -EINVAL;
 
 	count = size / MODVERSION_SEC_SIZE;
-
-	off = sec_off;
-	slen = 0;
-
-	for (i = 0; i < count; i++, off += MODVERSION_SEC_SIZE) {
-		const char *symbol = elf_get_mem(elf, off + offcrc);
-
-		if (symbol[0] == '.')
-			symbol++;
-
-		slen += strlen(symbol) + 1;
-	}
-
-	*array = a = malloc(sizeof(struct kmod_modversion) * count + slen);
+	*array = a = malloc(sizeof(struct kmod_modversion) * count);
 	if (*array == NULL)
 		return -errno;
 
-	itr = (char *)(a + count);
-	off = sec_off;
-
-	for (i = 0; i < count; i++, off += MODVERSION_SEC_SIZE) {
+	for (i = 0, off = sec_off; i < count; i++, off += MODVERSION_SEC_SIZE) {
 		uint64_t crc = elf_get_uint(elf, off, offcrc);
 		const char *symbol = elf_get_mem(elf, off + offcrc);
-		size_t symbollen;
 
 		if (symbol[0] == '.')
 			symbol++;
 
 		a[i].crc = crc;
 		a[i].bind = KMOD_SYMBOL_UNDEF;
-		a[i].symbol = itr;
-		symbollen = strlen(symbol) + 1;
-		memcpy(itr, symbol, symbollen);
-		itr += symbollen;
+		a[i].symbol = symbol;
 	}
 
 	return count;
