@@ -15,7 +15,7 @@ int options_from_array(char **args, int nargs, char **output)
 	size_t optslen = 0;
 	int i, err = 0;
 
-	for (i = 1; i < nargs; i++) {
+	for (i = 0; i < nargs; i++) {
 		size_t len = strlen(args[i]);
 		size_t qlen = 0;
 		const char *value;
