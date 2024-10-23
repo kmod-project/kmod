@@ -27,6 +27,23 @@ struct kmod_modversion64 {
 	char name[64 - sizeof(uint64_t)];
 };
 
+enum kmod_elf_section {
+	KMOD_ELF_SECTION_KSYMTAB,
+	KMOD_ELF_SECTION_MODINFO,
+	KMOD_ELF_SECTION_STRTAB,
+	KMOD_ELF_SECTION_SYMTAB,
+	KMOD_ELF_SECTION_VERSIONS,
+	KMOD_ELF_SECTION_MAX,
+};
+
+static const char *const section_name_map[] = {
+	[KMOD_ELF_SECTION_KSYMTAB] = "__ksymtab_strings",
+	[KMOD_ELF_SECTION_MODINFO] = ".modinfo",
+	[KMOD_ELF_SECTION_STRTAB] = ".strtab",
+	[KMOD_ELF_SECTION_SYMTAB] = ".symtab",
+	[KMOD_ELF_SECTION_VERSIONS] = "__versions",
+};
+
 struct kmod_elf {
 	const uint8_t *memory;
 	uint64_t size;
@@ -45,6 +62,10 @@ struct kmod_elf {
 		} strings;
 		uint16_t machine;
 	} header;
+	struct {
+		uint64_t offset;
+		uint64_t size;
+	} sections[KMOD_ELF_SECTION_MAX];
 };
 
 //#undef ENABLE_ELFDBG
@@ -248,6 +269,42 @@ fail:
 	return -EINVAL;
 }
 
+static void kmod_elf_save_sections(struct kmod_elf *elf)
+{
+	const uint16_t all_sec = (1 << KMOD_ELF_SECTION_MAX) - 1;
+	uint16_t found_sec = 0;
+	enum kmod_elf_section sec;
+
+	for (uint16_t i = 1; i < elf->header.section.count && found_sec != all_sec; i++) {
+		uint64_t off, size;
+		const char *n;
+		int err = elf_get_section_info(elf, i, &off, &size, &n);
+		if (err < 0)
+			continue;
+
+		for (sec = KMOD_ELF_SECTION_KSYMTAB; sec < KMOD_ELF_SECTION_MAX; sec++) {
+			if (found_sec & (1 << sec))
+				continue;
+
+			if (streq(section_name_map[sec], n)) {
+				elf->sections[sec].offset = off;
+				elf->sections[sec].size = size;
+				found_sec |= 1 << sec;
+				break;
+			}
+		}
+	}
+
+	for (sec = KMOD_ELF_SECTION_KSYMTAB; sec < KMOD_ELF_SECTION_MAX; sec++) {
+		if (found_sec & (1 << sec))
+			continue;
+
+		ELFDBG(elf, "section %s not found\n", section_name_map[sec]);
+		elf->sections[sec].offset = 0;
+		elf->sections[sec].size = 0;
+	}
+}
+
 struct kmod_elf *kmod_elf_new(const void *memory, off_t size)
 {
 	struct kmod_elf *elf;
@@ -335,6 +392,7 @@ struct kmod_elf *kmod_elf_new(const void *memory, off_t size)
 		}
 	}
 
+	kmod_elf_save_sections(elf);
 	return elf;
 
 invalid:
@@ -390,13 +448,13 @@ int kmod_elf_get_modinfo_strings(const struct kmod_elf *elf, char ***array)
 	uint64_t off, size;
 	const char *strings;
 	char *s, **a;
-	int err;
 
 	*array = NULL;
 
-	err = kmod_elf_get_section(elf, ".modinfo", &off, &size);
-	if (err < 0)
-		return err;
+	off = elf->sections[KMOD_ELF_SECTION_MODINFO].offset;
+	size = elf->sections[KMOD_ELF_SECTION_MODINFO].size;
+	if (off == 0)
+		return -ENODATA;
 
 	strings = elf_get_mem(elf, off);
 
@@ -486,15 +544,16 @@ int kmod_elf_get_modversions(const struct kmod_elf *elf, struct kmod_modversion 
 	size_t off, crclen, namlen, verlen;
 	uint64_t sec_off, size;
 	struct kmod_modversion *a;
-	int i, count, err;
+	int i, count;
 
 	elf_get_modversion_lengths(elf, &verlen, &crclen, &namlen);
 
 	*array = NULL;
 
-	err = kmod_elf_get_section(elf, "__versions", &sec_off, &size);
-	if (err < 0)
-		return err;
+	sec_off = elf->sections[KMOD_ELF_SECTION_VERSIONS].offset;
+	size = elf->sections[KMOD_ELF_SECTION_VERSIONS].size;
+	if (sec_off == 0)
+		return -ENODATA;
 
 	if (size == 0)
 		return 0;
@@ -560,11 +619,11 @@ static int elf_strip_vermagic(const struct kmod_elf *elf, uint8_t *changed)
 {
 	uint64_t i, sec_off, size;
 	const char *strings;
-	int err;
 
-	err = kmod_elf_get_section(elf, ".modinfo", &sec_off, &size);
-	if (err < 0)
-		return err == -ENODATA ? 0 : err;
+	sec_off = elf->sections[KMOD_ELF_SECTION_MODINFO].offset;
+	size = elf->sections[KMOD_ELF_SECTION_MODINFO].size;
+	if (sec_off == 0)
+		return 0;
 	strings = elf_get_mem(elf, sec_off);
 
 	/* skip zero padding */
@@ -645,14 +704,15 @@ static int kmod_elf_get_symbols_symtab(const struct kmod_elf *elf,
 	uint64_t i, last, off, size;
 	const char *strings;
 	struct kmod_modversion *a;
-	int count, err;
+	int count;
 	size_t total_size;
 
 	*array = NULL;
 
-	err = kmod_elf_get_section(elf, "__ksymtab_strings", &off, &size);
-	if (err < 0)
-		return err;
+	off = elf->sections[KMOD_ELF_SECTION_KSYMTAB].offset;
+	size = elf->sections[KMOD_ELF_SECTION_KSYMTAB].size;
+	if (off == 0)
+		return -ENODATA;
 	strings = elf_get_mem(elf, off);
 
 	/* skip zero padding */
@@ -757,16 +817,17 @@ int kmod_elf_get_symbols(const struct kmod_elf *elf, struct kmod_modversion **ar
 	uint64_t strtablen, symtablen, str_sec_off, sym_sec_off, str_off, sym_off;
 	struct kmod_modversion *a;
 	size_t i, count, symcount, symlen;
-	int err;
 
-	err = kmod_elf_get_section(elf, ".strtab", &str_sec_off, &strtablen);
-	if (err < 0) {
+	str_sec_off = elf->sections[KMOD_ELF_SECTION_STRTAB].offset;
+	strtablen = elf->sections[KMOD_ELF_SECTION_STRTAB].size;
+	if (str_sec_off == 0) {
 		ELFDBG(elf, "no .strtab found.\n");
 		goto fallback;
 	}
 
-	err = kmod_elf_get_section(elf, ".symtab", &sym_sec_off, &symtablen);
-	if (err < 0) {
+	sym_sec_off = elf->sections[KMOD_ELF_SECTION_SYMTAB].offset;
+	symtablen = elf->sections[KMOD_ELF_SECTION_SYMTAB].size;
+	if (sym_sec_off == 0) {
 		ELFDBG(elf, "no .symtab found.\n");
 		goto fallback;
 	}
@@ -913,13 +974,14 @@ int kmod_elf_get_dependency_symbols(const struct kmod_elf *elf,
 	uint64_t str_sec_off, sym_sec_off;
 	struct kmod_modversion *a;
 	size_t namlen, verlen, symlen, crclen;
-	int i, count, symcount, vercount, err;
+	int i, count, symcount, vercount;
 	bool handle_register_symbols;
 	uint8_t *visited_versions;
 	uint64_t *symcrcs;
 
-	err = kmod_elf_get_section(elf, "__versions", &ver_off, &versionslen);
-	if (err < 0) {
+	ver_off = elf->sections[KMOD_ELF_SECTION_VERSIONS].offset;
+	versionslen = elf->sections[KMOD_ELF_SECTION_VERSIONS].size;
+	if (ver_off == 0) {
 		versionslen = 0;
 		verlen = 0;
 		crclen = 0;
@@ -936,14 +998,16 @@ int kmod_elf_get_dependency_symbols(const struct kmod_elf *elf,
 		}
 	}
 
-	err = kmod_elf_get_section(elf, ".strtab", &str_sec_off, &strtablen);
-	if (err < 0) {
+	str_sec_off = elf->sections[KMOD_ELF_SECTION_STRTAB].offset;
+	strtablen = elf->sections[KMOD_ELF_SECTION_STRTAB].size;
+	if (str_sec_off == 0) {
 		ELFDBG(elf, "no .strtab found.\n");
 		return -EINVAL;
 	}
 
-	err = kmod_elf_get_section(elf, ".symtab", &sym_sec_off, &symtablen);
-	if (err < 0) {
+	sym_sec_off = elf->sections[KMOD_ELF_SECTION_SYMTAB].offset;
+	symtablen = elf->sections[KMOD_ELF_SECTION_SYMTAB].size;
+	if (sym_sec_off == 0) {
 		ELFDBG(elf, "no .symtab found.\n");
 		return -EINVAL;
 	}
