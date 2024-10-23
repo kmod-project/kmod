@@ -145,7 +145,7 @@ struct kmod_elf;
 struct kmod_modversion {
 	uint64_t crc;
 	enum kmod_symbol_bind bind;
-	char *symbol;
+	const char *symbol;
 };
 
 struct kmod_elf *kmod_elf_new(const void *memory, off_t size);
