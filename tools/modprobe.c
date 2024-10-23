@@ -953,7 +953,7 @@ static int do_modprobe(int argc, char **orig_argv)
 		err = insmod_all(ctx, args, nargs);
 	else {
 		char *opts;
-		err = options_from_array(args, nargs, &opts);
+		err = options_from_array(args + 1, nargs - 1, &opts);
 		if (err == 0) {
 			err = insmod(ctx, args[0], opts);
 			free(opts);

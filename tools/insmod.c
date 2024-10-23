@@ -64,10 +64,9 @@ static int do_insmod(int argc, char *argv[])
 	struct kmod_module *mod;
 	const char *filename;
 	char *opts = NULL;
-	size_t optslen = 0;
 	int verbose = LOG_ERR;
 	int use_syslog = 0;
-	int i, c, r = 0;
+	int c, r = 0;
 	const char *null_config = NULL;
 	unsigned int flags = 0;
 
@@ -112,23 +111,9 @@ static int do_insmod(int argc, char *argv[])
 		goto end;
 	}
 
-	for (i = optind + 1; i < argc; i++) {
-		size_t len = strlen(argv[i]);
-		void *tmp = realloc(opts, optslen + len + 2);
-		if (tmp == NULL) {
-			ERR("out of memory\n");
-			r = EXIT_FAILURE;
-			goto end;
-		}
-		opts = tmp;
-		if (optslen > 0) {
-			opts[optslen] = ' ';
-			optslen++;
-		}
-		memcpy(opts + optslen, argv[i], len);
-		optslen += len;
-		opts[optslen] = '\0';
-	}
+	r = options_from_array(argv + optind + 1, argc - optind - 1, &opts);
+	if (r < 0)
+		goto end;
 
 	ctx = kmod_new(NULL, &null_config);
 	if (!ctx) {
