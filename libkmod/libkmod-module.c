@@ -1875,7 +1875,7 @@ KMOD_EXPORT int kmod_module_get_info(const struct kmod_module *mod,
 		if (elf == NULL)
 			return -errno;
 
-		count = kmod_elf_get_strings(elf, ".modinfo", &strings);
+		count = kmod_elf_get_modinfo_strings(elf, &strings);
 		if (count < 0)
 			return count;
 	}
