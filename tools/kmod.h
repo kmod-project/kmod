@@ -34,3 +34,4 @@ static inline void kmod_version(void)
 }
 
 #include "log.h"
+#include "opt.h"

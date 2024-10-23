@@ -174,6 +174,8 @@ tools_kmod_SOURCES = \
 	tools/lsmod.c \
 	tools/modinfo.c \
 	tools/modprobe.c \
+	tools/opt.c \
+	tools/opt.h \
 	tools/rmmod.c \
 	tools/static-nodes.c
 
