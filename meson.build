@@ -225,16 +225,16 @@ foreach tuple : _customdirs
 endforeach
 
 _completiondirs = [
-  ['bashcompletiondir', 'bash-completion', 'bash-completion/completions', 'shell-completion/bash/@0@'],
-  ['fishcompletiondir', 'fish',            'fish/vendor_functions.d',     'shell-completion/fish/@0@.fish'],
-  ['zshcompletiondir',  '',                'zsh/site-functions',          'shell-completion/zsh/_@0@'],
+  ['bash', 'bash-completion', 'bash-completion' / 'completions', '@0@'],
+  ['fish', 'fish',            'fish' / 'vendor_functions.d',     '@0@.fish'],
+  ['zsh',  '',                'zsh' / 'site-functions',          '_@0@'],
 ]
 
 foreach tuple : _completiondirs
-  dir_option = tuple[0]
+  dir_option = tuple[0] + 'completiondir'
   pkg_dep = tuple[1]
   def_path = tuple[2]
-  ins_path = tuple[3]
+  ins_name = tuple[3]
 
   completiondir = get_variable(dir_option)
   if completiondir == ''
@@ -264,7 +264,7 @@ foreach tuple : _completiondirs
   if completiondir != 'no'
     foreach comp : _completions
       install_data(
-        files(ins_path.format(comp)),
+        files('shell-completion' / tuple[0] / ins_name.format(comp)),
         install_dir : completiondir,
       )
     endforeach
