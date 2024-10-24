@@ -3,7 +3,7 @@ project(
   'c',
   version : '33',
   license : ['LGPLv2.1', 'GPL-2.0-or-later'],
-  meson_version : '>=0.60.0',
+  meson_version : '>=0.61.0',
   default_options : [
     'c_std=gnu11',
     'b_pie=true',
@@ -471,11 +471,9 @@ _tools = [
   'rmmod',
 ]
 
-kmod_symlink = find_program('scripts/kmod-symlink.sh')
 foreach tool : _tools
   if get_option('tools')
-    symlink = bindir / tool
-    meson.add_install_script(kmod_symlink, symlink)
+    install_symlink(tool, pointing_to: 'kmod', install_dir: bindir)
   endif
 endforeach
 
