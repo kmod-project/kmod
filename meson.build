@@ -183,21 +183,28 @@ features = []
 # Directories
 #-------------------------------------------------------------------------------
 
+prefixdir = get_option('prefix')
 sysconfdir = get_option('sysconfdir')
-cdata.set_quoted('SYSCONFDIR', sysconfdir)
-
-bindir = get_option('prefix') / get_option('bindir')
-includedir = get_option('prefix') / get_option('includedir')
-libdir = get_option('prefix') / get_option('libdir')
+bindir = prefixdir / get_option('bindir')
+includedir = prefixdir / get_option('includedir')
+libdir = prefixdir / get_option('libdir')
+datadir = prefixdir / get_option('datadir')
 
 distconfdir = get_option('distconfdir')
+moduledir = get_option('moduledir')
+
+bashcompletiondir = get_option('bashcompletiondir')
+fishcompletiondir = get_option('fishcompletiondir')
+zshcompletiondir = get_option('zshcompletiondir')
+
+cdata.set_quoted('SYSCONFDIR', sysconfdir)
+
 if distconfdir == ''
   distconfdir = libdir
 endif
 cdata.set_quoted('DISTCONFDIR', distconfdir)
 
 # The default moduledir is hard-coded due to historical reasons
-moduledir = get_option('moduledir')
 if moduledir == ''
   moduledir = '/lib/modules'
 endif
@@ -215,13 +222,13 @@ foreach tuple : _completiondirs
   def_path = tuple[2]
   ins_path = tuple[3]
 
-  completiondir = get_option(dir_option)
+  completiondir = get_variable(dir_option)
   if completiondir == ''
     completion = dependency(pkg_dep, required : false)
     if completion.found()
       completiondir = completion.get_variable(pkgconfig : 'completionsdir')
     else
-      completiondir = get_option('prefix') / get_option('datadir') / def_path
+      completiondir = datadir / def_path
     endif
   endif
 
@@ -429,7 +436,7 @@ endif
 pkg.generate(
   name : 'kmod',
   description : 'Tools to deal with kernel modules',
-  install_dir : get_option('datadir') / 'pkgconfig',
+  install_dir : datadir / 'pkgconfig',
   variables : _kmod_variables,
 )
 
@@ -491,7 +498,7 @@ endif
 
 summary({
   'moduledir'   : moduledir,
-  'prefix'      : get_option('prefix'),
+  'prefix'      : prefixdir,
   'sysconfdir'  : sysconfdir,
   'distconfdir' : distconfdir,
   'libdir'      : libdir,
