@@ -240,7 +240,16 @@ foreach tuple : _completiondirs
   if completiondir == ''
     completion = dependency(pkg_dep, required : false)
     if completion.found()
-      completiondir = completion.get_variable(pkgconfig : 'completionsdir')
+      completion_prefix = completion.get_variable(pkgconfig : 'prefix')
+      if completion_prefix != prefixdir
+        warning('User provided prefix \'@0@\' differs from @1@ one \'@2@\'.'
+                .format(prefixdir, pkg_dep, completion_prefix))
+        warning('Not installing completion. To re-enable, manually set @0@.'
+                .format(dir_option))
+        completiondir = 'no'
+      else
+        completiondir = completion.get_variable(pkgconfig : 'completionsdir')
+      endif
     else
       completiondir = datadir / def_path
     endif
