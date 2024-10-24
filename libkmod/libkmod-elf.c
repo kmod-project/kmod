@@ -251,7 +251,6 @@ fail:
 struct kmod_elf *kmod_elf_new(const void *memory, off_t size)
 {
 	struct kmod_elf *elf;
-	uint64_t min_size;
 	size_t shdrs_size, shdr_size;
 	int err;
 	const char *name;
@@ -319,11 +318,8 @@ struct kmod_elf *kmod_elf_new(const void *memory, off_t size)
 		goto invalid;
 	}
 	shdrs_size = shdr_size * elf->header.section.count;
-	if (uadd64_overflow(shdrs_size, elf->header.section.offset, &min_size) ||
-	    min_size > elf->size) {
-		ELFDBG(elf, "file is too short to hold sections\n");
+	if (!elf_range_valid(elf, elf->header.section.offset, shdrs_size))
 		goto invalid;
-	}
 
 	if (elf_get_section_info(elf, elf->header.strings.section,
 				 &elf->header.strings.offset, &elf->header.strings.size,
