@@ -146,6 +146,7 @@ void kmod_module_parse_depline(struct kmod_module *mod, char *line)
 	p++;
 	for (p = strtok_r(p, " \t", &saveptr); p != NULL;
 	     p = strtok_r(NULL, " \t", &saveptr)) {
+		struct kmod_list *l_new;
 		struct kmod_module *depmod = NULL;
 		const char *path;
 		int err;
@@ -164,7 +165,12 @@ void kmod_module_parse_depline(struct kmod_module *mod, char *line)
 
 		DBG(ctx, "add dep: %s\n", path);
 
-		list = kmod_list_prepend(list, depmod);
+		l_new = kmod_list_prepend(list, depmod);
+		if (l_new == NULL) {
+			ERR(ctx, "could not add dependency for %s\n", mod->name);
+			goto fail;
+		}
+		list = l_new;
 	}
 
 	DBG(ctx, "%zu dependencies for %s\n", n, mod->name);
