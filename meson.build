@@ -213,6 +213,13 @@ foreach tuple : _customdirs
   customdir = get_variable(dir_option)
   if customdir == ''
     customdir = def_path
+  else
+    if not customdir.startswith('/')
+      error('User provided @0@, \'@1@\' is not an absolute path.'
+          .format(dir_option, customdir))
+    endif
+    # Strip all leading/trailing and re-add only the leading one.
+    customdir = '' / customdir.strip('/')
   endif
   cdata.set_quoted(quoted, customdir)
   set_variable(dir_option, customdir)
