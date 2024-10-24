@@ -10,7 +10,6 @@ project(
     'warning_level=2',
     'prefix=/usr',
     'sysconfdir=/etc',
-    'localstatedir=/var',
   ]
 )
 
