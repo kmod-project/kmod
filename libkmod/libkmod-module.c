@@ -573,8 +573,6 @@ KMOD_EXPORT const char *kmod_module_get_name(const struct kmod_module *mod)
 
 KMOD_EXPORT const char *kmod_module_get_path(const struct kmod_module *mod)
 {
-	char *line;
-
 	if (mod == NULL)
 		return NULL;
 
@@ -586,12 +584,7 @@ KMOD_EXPORT const char *kmod_module_get_path(const struct kmod_module *mod)
 		return NULL;
 
 	/* lazy init */
-	line = kmod_search_moddep(mod->ctx, mod->name);
-	if (line == NULL)
-		return NULL;
-
-	kmod_module_parse_depline((struct kmod_module *)mod, line);
-	free(line);
+	module_get_dependencies_noref(mod);
 
 	return mod->path;
 }
