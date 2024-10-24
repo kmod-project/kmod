@@ -199,16 +199,24 @@ zshcompletiondir = get_option('zshcompletiondir')
 
 cdata.set_quoted('SYSCONFDIR', sysconfdir)
 
-if distconfdir == ''
-  distconfdir = libdir
-endif
-cdata.set_quoted('DISTCONFDIR', distconfdir)
+_customdirs = [
+  ['distconfdir', libdir,         'DISTCONFDIR'],
+  # The default moduledir is hard-coded due to historical reasons
+  ['moduledir',   '/lib/modules', 'MODULE_DIRECTORY'],
+]
 
-# The default moduledir is hard-coded due to historical reasons
-if moduledir == ''
-  moduledir = '/lib/modules'
-endif
-cdata.set_quoted('MODULE_DIRECTORY', moduledir)
+foreach tuple : _customdirs
+  dir_option = tuple[0]
+  def_path = tuple[1]
+  quoted = tuple[2]
+
+  customdir = get_variable(dir_option)
+  if customdir == ''
+    customdir = def_path
+  endif
+  cdata.set_quoted(quoted, customdir)
+  set_variable(dir_option, customdir)
+endforeach
 
 _completiondirs = [
   ['bashcompletiondir', 'bash-completion', 'bash-completion/completions', 'shell-completion/bash/@0@'],
