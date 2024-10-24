@@ -27,6 +27,15 @@ struct kmod_modversion64 {
 	char name[64 - sizeof(uint64_t)];
 };
 
+enum kmod_elf_section {
+	KMOD_ELF_SECTION_KSYMTAB,
+	KMOD_ELF_SECTION_MODINFO,
+	KMOD_ELF_SECTION_STRTAB,
+	KMOD_ELF_SECTION_SYMTAB,
+	KMOD_ELF_SECTION_VERSIONS,
+	KMOD_ELF_SECTION_MAX,
+};
+
 struct kmod_elf {
 	const uint8_t *memory;
 	uint64_t size;
@@ -45,6 +54,10 @@ struct kmod_elf {
 		} strings;
 		uint16_t machine;
 	} header;
+	struct {
+		uint64_t offset;
+		uint64_t size;
+	} sections[KMOD_ELF_SECTION_MAX];
 };
 
 //#undef ENABLE_ELFDBG
@@ -248,6 +261,42 @@ fail:
 	return -EINVAL;
 }
 
+static void kmod_elf_save_sections(struct kmod_elf *elf)
+{
+	for (uint16_t i = 1; i < elf->header.section.count; i++) {
+		uint64_t off, size;
+		const char *n;
+		int err = elf_get_section_info(elf, i, &off, &size, &n);
+		if (err < 0)
+			continue;
+		if (streq("__ksymtab_strings", n)) {
+			elf->sections[KMOD_ELF_SECTION_KSYMTAB].offset = off;
+			elf->sections[KMOD_ELF_SECTION_KSYMTAB].size = size;
+			continue;
+		}
+		if (streq(".modinfo", n)) {
+			elf->sections[KMOD_ELF_SECTION_MODINFO].offset = off;
+			elf->sections[KMOD_ELF_SECTION_MODINFO].size = size;
+			continue;
+		}
+		if (streq(".strtab", n)) {
+			elf->sections[KMOD_ELF_SECTION_STRTAB].offset = off;
+			elf->sections[KMOD_ELF_SECTION_STRTAB].size = size;
+			continue;
+		}
+		if (streq(".symtab", n)) {
+			elf->sections[KMOD_ELF_SECTION_SYMTAB].offset = off;
+			elf->sections[KMOD_ELF_SECTION_SYMTAB].size = size;
+			continue;
+		}
+		if (streq("__versions", n)) {
+			elf->sections[KMOD_ELF_SECTION_VERSIONS].offset = off;
+			elf->sections[KMOD_ELF_SECTION_VERSIONS].size = size;
+			continue;
+		}
+	}
+}
+
 struct kmod_elf *kmod_elf_new(const void *memory, off_t size)
 {
 	struct kmod_elf *elf;
@@ -266,7 +315,7 @@ struct kmod_elf *kmod_elf_new(const void *memory, off_t size)
 		return NULL;
 	}
 
-	elf = malloc(sizeof(struct kmod_elf));
+	elf = calloc(1, sizeof(struct kmod_elf));
 	if (elf == NULL) {
 		return NULL;
 	}
@@ -339,6 +388,7 @@ struct kmod_elf *kmod_elf_new(const void *memory, off_t size)
 		}
 	}
 
+	kmod_elf_save_sections(elf);
 	return elf;
 
 invalid:
@@ -387,20 +437,20 @@ int kmod_elf_get_section(const struct kmod_elf *elf, const char *section,
 }
 
 /* array will be allocated with strings in a single malloc, just free *array */
-int kmod_elf_get_strings(const struct kmod_elf *elf, const char *section, char ***array)
+int kmod_elf_get_modinfo_strings(const struct kmod_elf *elf, char ***array)
 {
 	size_t i, j, count;
 	size_t tmp_size, vec_size, total_size;
 	uint64_t off, size;
 	const char *strings;
 	char *s, **a;
-	int err;
 
 	*array = NULL;
 
-	err = kmod_elf_get_section(elf, section, &off, &size);
-	if (err < 0)
-		return err;
+	off = elf->sections[KMOD_ELF_SECTION_MODINFO].offset;
+	size = elf->sections[KMOD_ELF_SECTION_MODINFO].size;
+	if (off == 0)
+		return -ENODATA;
 
 	strings = elf_get_mem(elf, off);
 
@@ -467,11 +517,10 @@ int kmod_elf_get_strings(const struct kmod_elf *elf, const char *section, char *
 /* array will be allocated with strings in a single malloc, just free *array */
 int kmod_elf_get_modversions(const struct kmod_elf *elf, struct kmod_modversion **array)
 {
-	size_t off, offcrc, slen;
+	size_t off, offcrc;
 	uint64_t sec_off, size;
 	struct kmod_modversion *a;
-	char *itr;
-	int i, count, err;
+	int i, count;
 #define MODVERSION_SEC_SIZE (sizeof(struct kmod_modversion64))
 
 	assert_cc(sizeof(struct kmod_modversion64) == sizeof(struct kmod_modversion32));
@@ -483,9 +532,10 @@ int kmod_elf_get_modversions(const struct kmod_elf *elf, struct kmod_modversion 
 
 	*array = NULL;
 
-	err = kmod_elf_get_section(elf, "__versions", &sec_off, &size);
-	if (err < 0)
-		return err;
+	sec_off = elf->sections[KMOD_ELF_SECTION_VERSIONS].offset;
+	size = elf->sections[KMOD_ELF_SECTION_VERSIONS].size;
+	if (sec_off == 0)
+		return -ENODATA;
 
 	if (size == 0)
 		return 0;
@@ -494,40 +544,20 @@ int kmod_elf_get_modversions(const struct kmod_elf *elf, struct kmod_modversion 
 		return -EINVAL;
 
 	count = size / MODVERSION_SEC_SIZE;
-
-	off = sec_off;
-	slen = 0;
-
-	for (i = 0; i < count; i++, off += MODVERSION_SEC_SIZE) {
-		const char *symbol = elf_get_mem(elf, off + offcrc);
-
-		if (symbol[0] == '.')
-			symbol++;
-
-		slen += strlen(symbol) + 1;
-	}
-
-	*array = a = malloc(sizeof(struct kmod_modversion) * count + slen);
+	*array = a = malloc(sizeof(struct kmod_modversion) * count);
 	if (*array == NULL)
 		return -errno;
 
-	itr = (char *)(a + count);
-	off = sec_off;
-
-	for (i = 0; i < count; i++, off += MODVERSION_SEC_SIZE) {
+	for (i = 0, off = sec_off; i < count; i++, off += MODVERSION_SEC_SIZE) {
 		uint64_t crc = elf_get_uint(elf, off, offcrc);
 		const char *symbol = elf_get_mem(elf, off + offcrc);
-		size_t symbollen;
 
 		if (symbol[0] == '.')
 			symbol++;
 
 		a[i].crc = crc;
 		a[i].bind = KMOD_SYMBOL_UNDEF;
-		a[i].symbol = itr;
-		symbollen = strlen(symbol) + 1;
-		memcpy(itr, symbol, symbollen);
-		itr += symbollen;
+		a[i].symbol = symbol;
 	}
 
 	return count;
@@ -564,11 +594,11 @@ static int elf_strip_vermagic(const struct kmod_elf *elf, uint8_t *changed)
 {
 	uint64_t i, sec_off, size;
 	const char *strings;
-	int err;
 
-	err = kmod_elf_get_section(elf, ".modinfo", &sec_off, &size);
-	if (err < 0)
-		return err == -ENODATA ? 0 : err;
+	sec_off = elf->sections[KMOD_ELF_SECTION_MODINFO].offset;
+	size = elf->sections[KMOD_ELF_SECTION_MODINFO].size;
+	if (sec_off == 0)
+		return 0;
 	strings = elf_get_mem(elf, sec_off);
 
 	/* skip zero padding */
@@ -648,16 +678,16 @@ static int kmod_elf_get_symbols_symtab(const struct kmod_elf *elf,
 {
 	uint64_t i, last, off, size;
 	const char *strings;
-	char *itr;
 	struct kmod_modversion *a;
-	int count, err;
-	size_t vec_size, tmp_size, total_size;
+	int count;
+	size_t total_size;
 
 	*array = NULL;
 
-	err = kmod_elf_get_section(elf, "__ksymtab_strings", &off, &size);
-	if (err < 0)
-		return err;
+	off = elf->sections[KMOD_ELF_SECTION_KSYMTAB].offset;
+	size = elf->sections[KMOD_ELF_SECTION_KSYMTAB].size;
+	if (off == 0)
+		return -ENODATA;
 	strings = elf_get_mem(elf, off);
 
 	/* skip zero padding */
@@ -679,13 +709,9 @@ static int kmod_elf_get_symbols_symtab(const struct kmod_elf *elf,
 			last = i + 1;
 		}
 	}
-	if (strings[i - 1] != '\0')
-		count++;
 
-	/* sizeof(struct kmod_modversion) * count + size + 1 */
-	if (umulsz_overflow(sizeof(struct kmod_modversion), count, &vec_size) ||
-	    uaddsz_overflow(size, vec_size, &tmp_size) ||
-	    uaddsz_overflow(1, tmp_size, &total_size)) {
+	/* sizeof(struct kmod_modversion) * count */
+	if (umulsz_overflow(sizeof(struct kmod_modversion), count, &total_size)) {
 		return -ENOMEM;
 	}
 
@@ -693,33 +719,19 @@ static int kmod_elf_get_symbols_symtab(const struct kmod_elf *elf,
 	if (*array == NULL)
 		return -errno;
 
-	itr = (char *)(a + count);
 	last = 0;
 	for (i = 0, count = 0; i < size; i++) {
 		if (strings[i] == '\0') {
-			size_t slen = i - last;
 			if (last == i) {
 				last = i + 1;
 				continue;
 			}
 			a[count].crc = 0;
 			a[count].bind = KMOD_SYMBOL_GLOBAL;
-			a[count].symbol = itr;
-			memcpy(itr, strings + last, slen);
-			itr[slen] = '\0';
-			itr += slen + 1;
+			a[count].symbol = strings + last;
 			count++;
 			last = i + 1;
 		}
-	}
-	if (strings[i - 1] != '\0') {
-		size_t slen = i - last;
-		a[count].crc = 0;
-		a[count].bind = KMOD_SYMBOL_GLOBAL;
-		a[count].symbol = itr;
-		memcpy(itr, strings + last, slen);
-		itr[slen] = '\0';
-		count++;
 	}
 
 	return count;
@@ -774,18 +786,18 @@ int kmod_elf_get_symbols(const struct kmod_elf *elf, struct kmod_modversion **ar
 	static const size_t crc_strlen = sizeof(crc_str) - 1;
 	uint64_t strtablen, symtablen, str_sec_off, sym_sec_off, str_off, sym_off;
 	struct kmod_modversion *a;
-	char *itr;
-	size_t i, count, symcount, slen, symlen;
-	int err;
+	size_t i, count, symcount, symlen;
 
-	err = kmod_elf_get_section(elf, ".strtab", &str_sec_off, &strtablen);
-	if (err < 0) {
+	str_sec_off = elf->sections[KMOD_ELF_SECTION_STRTAB].offset;
+	strtablen = elf->sections[KMOD_ELF_SECTION_STRTAB].size;
+	if (str_sec_off == 0) {
 		ELFDBG(elf, "no .strtab found.\n");
 		goto fallback;
 	}
 
-	err = kmod_elf_get_section(elf, ".symtab", &sym_sec_off, &symtablen);
-	if (err < 0) {
+	sym_sec_off = elf->sections[KMOD_ELF_SECTION_SYMTAB].offset;
+	symtablen = elf->sections[KMOD_ELF_SECTION_SYMTAB].size;
+	if (sym_sec_off == 0) {
 		ELFDBG(elf, "no .symtab found.\n");
 		goto fallback;
 	}
@@ -805,7 +817,6 @@ int kmod_elf_get_symbols(const struct kmod_elf *elf, struct kmod_modversion **ar
 
 	symcount = symtablen / symlen;
 	count = 0;
-	slen = 0;
 	str_off = str_sec_off;
 	sym_off = sym_sec_off;
 	for (i = 1; i < symcount; i++, sym_off += symlen) {
@@ -837,18 +848,16 @@ int kmod_elf_get_symbols(const struct kmod_elf *elf, struct kmod_modversion **ar
 
 		if (strncmp(name, crc_str, crc_strlen) != 0)
 			continue;
-		slen += strlen(name + crc_strlen) + 1;
 		count++;
 	}
 
 	if (count == 0)
 		goto fallback;
 
-	*array = a = malloc(sizeof(struct kmod_modversion) * count + slen);
+	*array = a = malloc(sizeof(struct kmod_modversion) * count);
 	if (*array == NULL)
 		return -errno;
 
-	itr = (char *)(a + count);
 	count = 0;
 	str_off = str_sec_off;
 	sym_off = sym_sec_off;
@@ -889,11 +898,7 @@ int kmod_elf_get_symbols(const struct kmod_elf *elf, struct kmod_modversion **ar
 
 		a[count].crc = kmod_elf_resolve_crc(elf, crc, shndx);
 		a[count].bind = kmod_symbol_bind_from_elf(bind);
-		a[count].symbol = itr;
-		slen = strlen(name);
-		memcpy(itr, name, slen);
-		itr[slen] = '\0';
-		itr += slen + 1;
+		a[count].symbol = name;
 		count++;
 	}
 	return count;
@@ -944,15 +949,15 @@ int kmod_elf_get_dependency_symbols(const struct kmod_elf *elf,
 	uint64_t versionslen, strtablen, symtablen, str_off, sym_off, ver_off;
 	uint64_t str_sec_off, sym_sec_off;
 	struct kmod_modversion *a;
-	char *itr;
-	size_t slen, verlen, symlen, crclen;
-	int i, count, symcount, vercount, err;
+	size_t verlen, symlen, crclen;
+	int i, count, symcount, vercount;
 	bool handle_register_symbols;
 	uint8_t *visited_versions;
 	uint64_t *symcrcs;
 
-	err = kmod_elf_get_section(elf, "__versions", &ver_off, &versionslen);
-	if (err < 0) {
+	ver_off = elf->sections[KMOD_ELF_SECTION_VERSIONS].offset;
+	versionslen = elf->sections[KMOD_ELF_SECTION_VERSIONS].size;
+	if (ver_off == 0) {
 		versionslen = 0;
 		verlen = 0;
 		crclen = 0;
@@ -976,14 +981,16 @@ int kmod_elf_get_dependency_symbols(const struct kmod_elf *elf,
 		}
 	}
 
-	err = kmod_elf_get_section(elf, ".strtab", &str_sec_off, &strtablen);
-	if (err < 0) {
+	str_sec_off = elf->sections[KMOD_ELF_SECTION_STRTAB].offset;
+	strtablen = elf->sections[KMOD_ELF_SECTION_STRTAB].size;
+	if (str_sec_off == 0) {
 		ELFDBG(elf, "no .strtab found.\n");
 		return -EINVAL;
 	}
 
-	err = kmod_elf_get_section(elf, ".symtab", &sym_sec_off, &symtablen);
-	if (err < 0) {
+	sym_sec_off = elf->sections[KMOD_ELF_SECTION_SYMTAB].offset;
+	symtablen = elf->sections[KMOD_ELF_SECTION_SYMTAB].size;
+	if (sym_sec_off == 0) {
 		ELFDBG(elf, "no .symtab found.\n");
 		return -EINVAL;
 	}
@@ -1016,7 +1023,6 @@ int kmod_elf_get_dependency_symbols(const struct kmod_elf *elf,
 
 	symcount = symtablen / symlen;
 	count = 0;
-	slen = 0;
 	str_off = str_sec_off;
 	sym_off = sym_sec_off + symlen;
 
@@ -1086,7 +1092,6 @@ int kmod_elf_get_dependency_symbols(const struct kmod_elf *elf,
 			continue;
 		}
 
-		slen += strlen(name) + 1;
 		count++;
 
 		idx = kmod_elf_crc_find(elf, ver_off, versionslen, name, &crc);
@@ -1099,10 +1104,6 @@ int kmod_elf_get_dependency_symbols(const struct kmod_elf *elf,
 		/* module_layout/struct_module are not visited, but needed */
 		for (i = 0; i < vercount; i++) {
 			if (visited_versions[i] == 0) {
-				const char *name;
-				name = elf_get_mem(elf, ver_off + i * verlen + crclen);
-				slen += strlen(name) + 1;
-
 				count++;
 			}
 		}
@@ -1115,14 +1116,13 @@ int kmod_elf_get_dependency_symbols(const struct kmod_elf *elf,
 		return 0;
 	}
 
-	*array = a = malloc(sizeof(struct kmod_modversion) * count + slen);
+	*array = a = malloc(sizeof(struct kmod_modversion) * count);
 	if (*array == NULL) {
 		free(visited_versions);
 		free(symcrcs);
 		return -errno;
 	}
 
-	itr = (char *)(a + count);
 	count = 0;
 	str_off = str_sec_off;
 	sym_off = sym_sec_off + symlen;
@@ -1183,15 +1183,11 @@ int kmod_elf_get_dependency_symbols(const struct kmod_elf *elf,
 		else
 			bind = KMOD_SYMBOL_UNDEF;
 
-		slen = strlen(name);
 		crc = symcrcs[i];
 
 		a[count].crc = crc;
 		a[count].bind = bind;
-		a[count].symbol = itr;
-		memcpy(itr, name, slen);
-		itr[slen] = '\0';
-		itr += slen + 1;
+		a[count].symbol = name;
 
 		count++;
 	}
@@ -1210,15 +1206,11 @@ int kmod_elf_get_dependency_symbols(const struct kmod_elf *elf,
 			continue;
 
 		name = elf_get_mem(elf, ver_off + i * verlen + crclen);
-		slen = strlen(name);
 		crc = elf_get_uint(elf, ver_off + i * verlen, crclen);
 
 		a[count].crc = crc;
 		a[count].bind = KMOD_SYMBOL_UNDEF;
-		a[count].symbol = itr;
-		memcpy(itr, name, slen);
-		itr[slen] = '\0';
-		itr += slen + 1;
+		a[count].symbol = name;
 
 		count++;
 	}
