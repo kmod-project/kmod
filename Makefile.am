@@ -24,8 +24,7 @@ EXTRA_DIST += \
 	testsuite/meson.build \
 	scripts/build-scdoc.sh \
 	scripts/sanitizer-env.sh \
-	scripts/test-gtkdoc.sh \
-	scripts/kmod-symlink.sh
+	scripts/test-gtkdoc.sh
 
 AM_CPPFLAGS = \
 	-include $(top_builddir)/config.h \

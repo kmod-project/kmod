@@ -3,14 +3,13 @@ project(
   'c',
   version : '33',
   license : ['LGPLv2.1', 'GPL-2.0-or-later'],
-  meson_version : '>=0.60.0',
+  meson_version : '>=0.61.0',
   default_options : [
     'c_std=gnu11',
     'b_pie=true',
     'warning_level=2',
     'prefix=/usr',
     'sysconfdir=/etc',
-    'localstatedir=/var',
   ]
 )
 
@@ -183,46 +182,76 @@ features = []
 # Directories
 #-------------------------------------------------------------------------------
 
+prefixdir = get_option('prefix')
 sysconfdir = get_option('sysconfdir')
-cdata.set_quoted('SYSCONFDIR', sysconfdir)
-
-bindir = join_paths(get_option('prefix'), get_option('bindir'))
-includedir = join_paths(get_option('prefix'), get_option('includedir'))
-libdir = join_paths(get_option('prefix'), get_option('libdir'))
+bindir = prefixdir / get_option('bindir')
+includedir = prefixdir / get_option('includedir')
+libdir = prefixdir / get_option('libdir')
+datadir = prefixdir / get_option('datadir')
 
 distconfdir = get_option('distconfdir')
-if distconfdir == ''
-  distconfdir = libdir
-endif
-cdata.set_quoted('DISTCONFDIR', distconfdir)
-
-# The default moduledir is hard-coded due to historical reasons
 moduledir = get_option('moduledir')
-if moduledir == ''
-  moduledir = '/lib/modules'
-endif
-cdata.set_quoted('MODULE_DIRECTORY', moduledir)
+
+bashcompletiondir = get_option('bashcompletiondir')
+fishcompletiondir = get_option('fishcompletiondir')
+zshcompletiondir = get_option('zshcompletiondir')
+
+cdata.set_quoted('SYSCONFDIR', sysconfdir)
+
+_customdirs = [
+  ['distconfdir', libdir,         'DISTCONFDIR'],
+  # The default moduledir is hard-coded due to historical reasons
+  ['moduledir',   '/lib/modules', 'MODULE_DIRECTORY'],
+]
+
+foreach tuple : _customdirs
+  dir_option = tuple[0]
+  def_path = tuple[1]
+  quoted = tuple[2]
+
+  customdir = get_variable(dir_option)
+  if customdir == ''
+    customdir = def_path
+  else
+    if not customdir.startswith('/')
+      error('User provided @0@, \'@1@\' is not an absolute path.'
+          .format(dir_option, customdir))
+    endif
+    # Strip all leading/trailing and re-add only the leading one.
+    customdir = '' / customdir.strip('/')
+  endif
+  cdata.set_quoted(quoted, customdir)
+  set_variable(dir_option, customdir)
+endforeach
 
 _completiondirs = [
-  ['bashcompletiondir', 'bash-completion', 'bash-completion/completions', 'shell-completion/bash/@0@'],
-  ['fishcompletiondir', 'fish',            'fish/vendor_functions.d',     'shell-completion/fish/@0@.fish'],
-  ['zshcompletiondir',  '',                'zsh/site-functions',          'shell-completion/zsh/_@0@'],
+  ['bash', 'bash-completion', 'bash-completion' / 'completions', '@0@'],
+  ['fish', 'fish',            'fish' / 'vendor_functions.d',     '@0@.fish'],
+  ['zsh',  '',                'zsh' / 'site-functions',          '_@0@'],
 ]
 
 foreach tuple : _completiondirs
-  dir_option = tuple[0]
+  dir_option = tuple[0] + 'completiondir'
   pkg_dep = tuple[1]
   def_path = tuple[2]
-  ins_path = tuple[3]
+  ins_name = tuple[3]
 
-  completiondir = get_option(dir_option)
+  completiondir = get_variable(dir_option)
   if completiondir == ''
     completion = dependency(pkg_dep, required : false)
     if completion.found()
-      completiondir = completion.get_variable(pkgconfig : 'completionsdir')
+      completion_prefix = completion.get_variable(pkgconfig : 'prefix')
+      if completion_prefix != prefixdir
+        warning('User provided prefix \'@0@\' differs from @1@ one \'@2@\'.'
+                .format(prefixdir, pkg_dep, completion_prefix))
+        warning('Not installing completion. To re-enable, manually set @0@.'
+                .format(dir_option))
+        completiondir = 'no'
+      else
+        completiondir = completion.get_variable(pkgconfig : 'completionsdir')
+      endif
     else
-      completiondir = join_paths(get_option('prefix'), get_option('datadir'),
-                                 def_path)
+      completiondir = datadir / def_path
     endif
   endif
 
@@ -235,13 +264,12 @@ foreach tuple : _completiondirs
   if completiondir != 'no'
     foreach comp : _completions
       install_data(
-        files(ins_path.format(comp)),
+        files('shell-completion' / tuple[0] / ins_name.format(comp)),
         install_dir : completiondir,
       )
     endforeach
   endif
 
-  # NEEDED solely for bash/kmod below
   set_variable(dir_option, completiondir)
 endforeach
 
@@ -367,8 +395,8 @@ libkmod = shared_library(
   libkmod_files,
   dependencies : libkmod_deps,
   link_with : libshared,
-  link_args : ['-Wl,--version-script', join_paths(meson.current_source_dir(),
-                                                  'libkmod/libkmod.sym')],
+  link_args : ['-Wl,--version-script', meson.current_source_dir() /
+                                                  'libkmod/libkmod.sym'],
   link_depends : files('libkmod/libkmod.sym'),
   gnu_symbol_visibility : 'hidden',
   version : '2.5.0',
@@ -430,7 +458,7 @@ endif
 pkg.generate(
   name : 'kmod',
   description : 'Tools to deal with kernel modules',
-  install_dir : join_paths(get_option('datadir'), 'pkgconfig'),
+  install_dir : datadir / 'pkgconfig',
   variables : _kmod_variables,
 )
 
@@ -443,11 +471,9 @@ _tools = [
   'rmmod',
 ]
 
-kmod_symlink = find_program('scripts/kmod-symlink.sh')
 foreach tool : _tools
   if get_option('tools')
-    symlink = join_paths(bindir, tool)
-    meson.add_install_script(kmod_symlink, symlink)
+    install_symlink(tool, pointing_to: 'kmod', install_dir: bindir)
   endif
 endforeach
 
@@ -491,14 +517,24 @@ if get_option('docs')
 endif
 
 summary({
-  'moduledir'   : moduledir,
-  'prefix'      : get_option('prefix'),
+  'prefix'      : prefixdir,
   'sysconfdir'  : sysconfdir,
-  'distconfdir' : distconfdir,
-  'libdir'      : libdir,
+  'bindir'      : bindir,
   'includedir'  : includedir,
-  'bindir'      : bindir
+  'libdir'      : libdir,
+  'datadir'     : datadir,
 }, section : 'Directories')
+
+summary({
+  'distconfdir' : distconfdir,
+  'moduledir'   : moduledir,
+}, section : 'Kmod specific')
+
+summary({
+  'bashcompletiondir' : bashcompletiondir,
+  'fishcompletiondir' : fishcompletiondir,
+  'zshcompletiondir'  : zshcompletiondir,
+}, section : 'Shell completions')
 
 summary({
   'tools'           : get_option('tools'),

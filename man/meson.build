@@ -31,7 +31,7 @@ foreach tuple : _man_pages
     capture : true,
     build_by_default : get_option('manpages'),
     install : true,
-    install_dir : join_paths(get_option('mandir'), 'man@0@'.format(section))
+    install_dir : get_option('mandir') / 'man@0@'.format(section)
   )
 endforeach
 
@@ -51,6 +51,6 @@ foreach tuple : _man_aliases
     capture : true,
     build_by_default : get_option('manpages'),
     install : true,
-    install_dir : join_paths(get_option('mandir'), 'man@0@'.format(section))
+    install_dir : get_option('mandir') / 'man@0@'.format(section)
   )
 endforeach
