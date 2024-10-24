@@ -122,7 +122,7 @@ _nonnull_all_ const char * const *kmod_weakdep_get_weak(const struct kmod_list *
 
 /* libkmod-module.c */
 int kmod_module_new_from_alias(struct kmod_ctx *ctx, const char *alias, const char *name, struct kmod_module **mod);
-_nonnull_all_ int kmod_module_parse_depline(struct kmod_module *mod, char *line);
+_nonnull_all_ void kmod_module_parse_depline(struct kmod_module *mod, char *line);
 _nonnull_(1) void kmod_module_set_install_commands(struct kmod_module *mod, const char *cmd);
 _nonnull_(1) void kmod_module_set_remove_commands(struct kmod_module *mod, const char *cmd);
 _nonnull_(1)void kmod_module_set_visited(struct kmod_module *mod, bool visited);
