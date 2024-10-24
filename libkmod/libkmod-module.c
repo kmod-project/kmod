@@ -506,14 +506,14 @@ KMOD_EXPORT int kmod_module_get_filtered_blacklist(const struct kmod_ctx *ctx,
 	return kmod_module_apply_filter(ctx, KMOD_FILTER_BLACKLIST, input, output);
 }
 
-static void module_get_dependencies_noref(const struct kmod_module *mod)
+static void module_get_dependencies_noref(struct kmod_module *mod)
 {
 	if (!mod->init.dep) {
 		/* lazy init */
 		char *line = kmod_search_moddep(mod->ctx, mod->name);
 
 		if (line != NULL) {
-			kmod_module_parse_depline((struct kmod_module *)mod, line);
+			kmod_module_parse_depline(mod, line);
 			free(line);
 		}
 	}
@@ -526,7 +526,7 @@ KMOD_EXPORT struct kmod_list *kmod_module_get_dependencies(const struct kmod_mod
 	if (mod == NULL)
 		return NULL;
 
-	module_get_dependencies_noref(mod);
+	module_get_dependencies_noref((struct kmod_module *)mod);
 
 	kmod_list_foreach(l, mod->dep) {
 		l_new = kmod_list_append(list_new, kmod_module_ref(l->data));
@@ -575,7 +575,7 @@ KMOD_EXPORT const char *kmod_module_get_path(const struct kmod_module *mod)
 		return NULL;
 
 	/* lazy init */
-	module_get_dependencies_noref(mod);
+	module_get_dependencies_noref((struct kmod_module *)mod);
 
 	return mod->path;
 }
