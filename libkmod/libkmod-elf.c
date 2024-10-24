@@ -647,7 +647,7 @@ static int kmod_elf_get_symbols_symtab(const struct kmod_elf *elf,
 	char *itr;
 	struct kmod_modversion *a;
 	int count, err;
-	size_t vec_size, tmp_size, total_size;
+	size_t vec_size, total_size;
 
 	*array = NULL;
 
@@ -664,6 +664,11 @@ static int kmod_elf_get_symbols_symtab(const struct kmod_elf *elf,
 	if (size <= 1)
 		return 0;
 
+	if (strings[size - 1] != '\0') {
+		ELFDBG(elf, "section __ksymtab_strings does not end with \\0 byte");
+		return -EINVAL;
+	}
+
 	last = 0;
 	for (i = 0, count = 0; i < size; i++) {
 		if (strings[i] == '\0') {
@@ -675,13 +680,10 @@ static int kmod_elf_get_symbols_symtab(const struct kmod_elf *elf,
 			last = i + 1;
 		}
 	}
-	if (strings[i - 1] != '\0')
-		count++;
 
-	/* sizeof(struct kmod_modversion) * count + size + 1 */
+	/* sizeof(struct kmod_modversion) * count + size */
 	if (umulsz_overflow(sizeof(struct kmod_modversion), count, &vec_size) ||
-	    uaddsz_overflow(size, vec_size, &tmp_size) ||
-	    uaddsz_overflow(1, tmp_size, &total_size)) {
+	    uaddsz_overflow(size, vec_size, &total_size)) {
 		return -ENOMEM;
 	}
 
@@ -707,15 +709,6 @@ static int kmod_elf_get_symbols_symtab(const struct kmod_elf *elf,
 			count++;
 			last = i + 1;
 		}
-	}
-	if (strings[i - 1] != '\0') {
-		size_t slen = i - last;
-		a[count].crc = 0;
-		a[count].bind = KMOD_SYMBOL_GLOBAL;
-		a[count].symbol = itr;
-		memcpy(itr, strings + last, slen);
-		itr[slen] = '\0';
-		count++;
 	}
 
 	return count;
