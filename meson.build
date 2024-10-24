@@ -247,7 +247,6 @@ foreach tuple : _completiondirs
     endforeach
   endif
 
-  # NEEDED solely for bash/kmod below
   set_variable(dir_option, completiondir)
 endforeach
 
@@ -497,14 +496,24 @@ if get_option('docs')
 endif
 
 summary({
-  'moduledir'   : moduledir,
   'prefix'      : prefixdir,
   'sysconfdir'  : sysconfdir,
-  'distconfdir' : distconfdir,
-  'libdir'      : libdir,
+  'bindir'      : bindir,
   'includedir'  : includedir,
-  'bindir'      : bindir
+  'libdir'      : libdir,
+  'datadir'     : datadir,
 }, section : 'Directories')
+
+summary({
+  'distconfdir' : distconfdir,
+  'moduledir'   : moduledir,
+}, section : 'Kmod specific')
+
+summary({
+  'bashcompletiondir' : bashcompletiondir,
+  'fishcompletiondir' : fishcompletiondir,
+  'zshcompletiondir'  : zshcompletiondir,
+}, section : 'Shell completions')
 
 summary({
   'tools'           : get_option('tools'),
