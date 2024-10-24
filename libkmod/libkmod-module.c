@@ -44,7 +44,6 @@ struct kmod_module {
 	const char *remove_commands; /* owned by kmod_config */
 	char *alias; /* only set if this module was created from an alias */
 	struct kmod_file *file;
-	int n_dep;
 	int refcount;
 	struct {
 		bool dep : 1;
@@ -105,30 +104,30 @@ static inline bool module_is_inkernel(struct kmod_module *mod)
 	return false;
 }
 
-int kmod_module_parse_depline(struct kmod_module *mod, char *line)
+void kmod_module_parse_depline(struct kmod_module *mod, char *line)
 {
 	struct kmod_ctx *ctx = mod->ctx;
 	struct kmod_list *list = NULL;
 	const char *dirname;
 	char buf[PATH_MAX];
 	char *p, *saveptr;
-	int err = 0, n = 0;
+	size_t n = 0;
 	size_t dirnamelen;
 
 	if (mod->init.dep)
-		return mod->n_dep;
+		return;
 	assert(mod->dep == NULL);
 	mod->init.dep = true;
 
 	p = strchr(line, ':');
 	if (p == NULL)
-		return 0;
+		return;
 
 	*p = '\0';
 	dirname = kmod_get_dirname(mod->ctx);
 	dirnamelen = strlen(dirname);
 	if (dirnamelen + 2 >= PATH_MAX)
-		return 0;
+		return;
 
 	memcpy(buf, dirname, dirnamelen);
 	buf[dirnamelen] = '/';
@@ -138,10 +137,10 @@ int kmod_module_parse_depline(struct kmod_module *mod, char *line)
 	if (mod->path == NULL) {
 		const char *str = path_join(line, dirnamelen, buf);
 		if (str == NULL)
-			return 0;
+			return;
 		mod->path = strdup(str);
 		if (mod->path == NULL)
-			return 0;
+			return;
 	}
 
 	p++;
@@ -149,6 +148,7 @@ int kmod_module_parse_depline(struct kmod_module *mod, char *line)
 	     p = strtok_r(NULL, " \t", &saveptr)) {
 		struct kmod_module *depmod = NULL;
 		const char *path;
+		int err;
 
 		path = path_join(p, dirnamelen, buf);
 		if (path == NULL) {
@@ -165,19 +165,16 @@ int kmod_module_parse_depline(struct kmod_module *mod, char *line)
 		DBG(ctx, "add dep: %s\n", path);
 
 		list = kmod_list_prepend(list, depmod);
-		n++;
 	}
 
-	DBG(ctx, "%d dependencies for %s\n", n, mod->name);
+	DBG(ctx, "%zu dependencies for %s\n", n, mod->name);
 
 	mod->dep = list;
-	mod->n_dep = n;
-	return n;
+	return;
 
 fail:
 	kmod_module_unref_list(list);
 	mod->init.dep = false;
-	return err;
 }
 
 void kmod_module_set_visited(struct kmod_module *mod, bool visited)
@@ -509,23 +506,17 @@ KMOD_EXPORT int kmod_module_get_filtered_blacklist(const struct kmod_ctx *ctx,
 	return kmod_module_apply_filter(ctx, KMOD_FILTER_BLACKLIST, input, output);
 }
 
-static const struct kmod_list *module_get_dependencies_noref(const struct kmod_module *mod)
+static void module_get_dependencies_noref(const struct kmod_module *mod)
 {
 	if (!mod->init.dep) {
 		/* lazy init */
 		char *line = kmod_search_moddep(mod->ctx, mod->name);
 
-		if (line == NULL)
-			return NULL;
-
-		kmod_module_parse_depline((struct kmod_module *)mod, line);
-		free(line);
-
-		if (!mod->init.dep)
-			return NULL;
+		if (line != NULL) {
+			kmod_module_parse_depline((struct kmod_module *)mod, line);
+			free(line);
+		}
 	}
-
-	return mod->dep;
 }
 
 KMOD_EXPORT struct kmod_list *kmod_module_get_dependencies(const struct kmod_module *mod)
