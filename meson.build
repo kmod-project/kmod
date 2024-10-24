@@ -186,9 +186,9 @@ features = []
 sysconfdir = get_option('sysconfdir')
 cdata.set_quoted('SYSCONFDIR', sysconfdir)
 
-bindir = join_paths(get_option('prefix'), get_option('bindir'))
-includedir = join_paths(get_option('prefix'), get_option('includedir'))
-libdir = join_paths(get_option('prefix'), get_option('libdir'))
+bindir = get_option('prefix') / get_option('bindir')
+includedir = get_option('prefix') / get_option('includedir')
+libdir = get_option('prefix') / get_option('libdir')
 
 distconfdir = get_option('distconfdir')
 if distconfdir == ''
@@ -221,8 +221,7 @@ foreach tuple : _completiondirs
     if completion.found()
       completiondir = completion.get_variable(pkgconfig : 'completionsdir')
     else
-      completiondir = join_paths(get_option('prefix'), get_option('datadir'),
-                                 def_path)
+      completiondir = get_option('prefix') / get_option('datadir') / def_path
     endif
   endif
 
@@ -367,8 +366,8 @@ libkmod = shared_library(
   libkmod_files,
   dependencies : libkmod_deps,
   link_with : libshared,
-  link_args : ['-Wl,--version-script', join_paths(meson.current_source_dir(),
-                                                  'libkmod/libkmod.sym')],
+  link_args : ['-Wl,--version-script', meson.current_source_dir() /
+                                                  'libkmod/libkmod.sym'],
   link_depends : files('libkmod/libkmod.sym'),
   gnu_symbol_visibility : 'hidden',
   version : '2.5.0',
@@ -430,7 +429,7 @@ endif
 pkg.generate(
   name : 'kmod',
   description : 'Tools to deal with kernel modules',
-  install_dir : join_paths(get_option('datadir'), 'pkgconfig'),
+  install_dir : get_option('datadir') / 'pkgconfig',
   variables : _kmod_variables,
 )
 
@@ -446,7 +445,7 @@ _tools = [
 kmod_symlink = find_program('scripts/kmod-symlink.sh')
 foreach tool : _tools
   if get_option('tools')
-    symlink = join_paths(bindir, tool)
+    symlink = bindir / tool
     meson.add_install_script(kmod_symlink, symlink)
   endif
 endforeach
