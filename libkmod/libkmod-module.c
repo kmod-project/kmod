@@ -291,7 +291,6 @@ KMOD_EXPORT int kmod_module_new_from_name(struct kmod_ctx *ctx, const char *name
 int kmod_module_new_from_alias(struct kmod_ctx *ctx, const char *alias, const char *name,
 			       struct kmod_module **mod)
 {
-	int err;
 	char key[PATH_MAX];
 	size_t namelen = strlen(name);
 	size_t aliaslen = strlen(alias);
@@ -303,11 +302,7 @@ int kmod_module_new_from_alias(struct kmod_ctx *ctx, const char *alias, const ch
 	memcpy(key + namelen + 1, alias, aliaslen + 1);
 	key[namelen] = '\\';
 
-	err = kmod_module_new(ctx, key, name, namelen, alias, aliaslen, mod);
-	if (err < 0)
-		return err;
-
-	return 0;
+	return kmod_module_new(ctx, key, name, namelen, alias, aliaslen, mod);
 }
 
 KMOD_EXPORT int kmod_module_new_from_path(struct kmod_ctx *ctx, const char *path,
