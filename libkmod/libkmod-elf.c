@@ -803,7 +803,7 @@ int kmod_elf_get_symbols(const struct kmod_elf *elf, struct kmod_modversion **ar
 	count = 0;
 	slen = 0;
 	str_off = str_sec_off;
-	sym_off = sym_sec_off;
+	sym_off = sym_sec_off + symlen;
 	for (i = 1; i < symcount; i++, sym_off += symlen) {
 		const char *name;
 		uint32_t name_off;
@@ -847,7 +847,7 @@ int kmod_elf_get_symbols(const struct kmod_elf *elf, struct kmod_modversion **ar
 	itr = (char *)(a + count);
 	count = 0;
 	str_off = str_sec_off;
-	sym_off = sym_sec_off;
+	sym_off = sym_sec_off + symlen;
 	for (i = 1; i < symcount; i++, sym_off += symlen) {
 		const char *name;
 		uint32_t name_off;
