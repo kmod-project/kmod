@@ -199,9 +199,9 @@ zshcompletiondir = get_option('zshcompletiondir')
 cdata.set_quoted('SYSCONFDIR', sysconfdir)
 
 _customdirs = [
-  ['distconfdir', libdir,         'DISTCONFDIR'],
-  # The default moduledir is hard-coded due to historical reasons
-  ['moduledir',   '/lib/modules', 'MODULE_DIRECTORY'],
+  # The defaults are hard-coded due to historical reasons
+  ['distconfdir', prefixdir / 'lib',  'DISTCONFDIR'],
+  ['moduledir',   '/lib/modules',     'MODULE_DIRECTORY'],
 ]
 
 foreach tuple : _customdirs
