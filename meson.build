@@ -446,19 +446,25 @@ _kmod_variables = [
   'sysconfdir=' + sysconfdir,
   'distconfdir=' + distconfdir,
   'module_directory=' + moduledir,
+]
+
+# Don't (space) escape variables with space-separated lists, for consistency
+# with the autotools build.
+_kmod_unescaped_variables = [
   'module_signatures=' + module_signatures,
 ]
 
 # XXX: Support for empty variables was added in meson v1.4.0.
 # pkgconf behaves identically on missing and empty variable.
 if module_compressions != ''
-  _kmod_variables += ['module_compressions=' + module_compressions]
+  _kmod_unescaped_variables += ['module_compressions=' + module_compressions]
 endif
 
 pkg.generate(
   name : 'kmod',
   description : 'Tools to deal with kernel modules',
   install_dir : datadir / 'pkgconfig',
+  unescaped_variables : _kmod_unescaped_variables,
   variables : _kmod_variables,
 )
 
