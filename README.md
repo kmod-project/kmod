@@ -52,6 +52,10 @@ Typical configuration and installation
     meson compile -C builddir/
     sudo meson install -C builddir/
 
+For end-user and distributions builds, it's recommended to use:
+
+    meson setup --buildtype release builddir/
+
 Alternatively you can try autotools build.
 NOTE: The autotools build is slated for removal with kmod v35
 
