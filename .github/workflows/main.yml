@@ -45,7 +45,7 @@ jobs:
 
     steps:
       - name: Sparse checkout the local actions
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           sparse-checkout: .github
 
@@ -61,7 +61,7 @@ jobs:
         if: ${{ startsWith(matrix.container.name, 'ubuntu') }}
 
       - name: Checkout the whole project
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Set the environment
         run: |
