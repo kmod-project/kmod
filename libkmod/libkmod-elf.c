@@ -460,22 +460,34 @@ int kmod_elf_get_strings(const struct kmod_elf *elf, const char *section, char *
 	return count;
 }
 
+static inline void elf_get_modversion_lengths(const struct kmod_elf *elf, size_t *verlen,
+					      size_t *crclen)
+{
+	assert_cc(sizeof(struct kmod_modversion64) == sizeof(struct kmod_modversion32));
+
+	if (elf->x32) {
+		struct kmod_modversion32 *mv;
+
+		*verlen = sizeof(*mv);
+		*crclen = sizeof(mv->crc);
+	} else {
+		struct kmod_modversion64 *mv;
+
+		*verlen = sizeof(*mv);
+		*crclen = sizeof(mv->crc);
+	}
+}
+
 /* array will be allocated with strings in a single malloc, just free *array */
 int kmod_elf_get_modversions(const struct kmod_elf *elf, struct kmod_modversion **array)
 {
-	size_t off, offcrc, slen;
+	size_t off, crclen, slen, verlen;
 	uint64_t sec_off, size;
 	struct kmod_modversion *a;
 	char *itr;
 	int i, count, err;
-#define MODVERSION_SEC_SIZE (sizeof(struct kmod_modversion64))
 
-	assert_cc(sizeof(struct kmod_modversion64) == sizeof(struct kmod_modversion32));
-
-	if (elf->x32)
-		offcrc = sizeof(uint32_t);
-	else
-		offcrc = sizeof(uint64_t);
+	elf_get_modversion_lengths(elf, &verlen, &crclen);
 
 	*array = NULL;
 
@@ -486,16 +498,16 @@ int kmod_elf_get_modversions(const struct kmod_elf *elf, struct kmod_modversion 
 	if (size == 0)
 		return 0;
 
-	if (size % MODVERSION_SEC_SIZE != 0)
+	if (size % verlen != 0)
 		return -EINVAL;
 
-	count = size / MODVERSION_SEC_SIZE;
+	count = size / verlen;
 
 	off = sec_off;
 	slen = 0;
 
-	for (i = 0; i < count; i++, off += MODVERSION_SEC_SIZE) {
-		const char *symbol = elf_get_mem(elf, off + offcrc);
+	for (i = 0; i < count; i++, off += verlen) {
+		const char *symbol = elf_get_mem(elf, off + crclen);
 
 		if (symbol[0] == '.')
 			symbol++;
@@ -510,9 +522,9 @@ int kmod_elf_get_modversions(const struct kmod_elf *elf, struct kmod_modversion 
 	itr = (char *)(a + count);
 	off = sec_off;
 
-	for (i = 0; i < count; i++, off += MODVERSION_SEC_SIZE) {
-		uint64_t crc = elf_get_uint(elf, off, offcrc);
-		const char *symbol = elf_get_mem(elf, off + offcrc);
+	for (i = 0; i < count; i++, off += verlen) {
+		uint64_t crc = elf_get_uint(elf, off, crclen);
+		const char *symbol = elf_get_mem(elf, off + crclen);
 		size_t symbollen;
 
 		if (symbol[0] == '.')
@@ -905,15 +917,7 @@ static int kmod_elf_crc_find(const struct kmod_elf *elf, uint64_t off,
 	size_t verlen, crclen;
 	uint64_t i;
 
-	if (elf->x32) {
-		struct kmod_modversion32 *mv;
-		verlen = sizeof(*mv);
-		crclen = sizeof(mv->crc);
-	} else {
-		struct kmod_modversion64 *mv;
-		verlen = sizeof(*mv);
-		crclen = sizeof(mv->crc);
-	}
+	elf_get_modversion_lengths(elf, &verlen, &crclen);
 
 	for (i = 0; i < versionslen; i += verlen) {
 		const char *symbol = elf_get_mem(elf, off + i + crclen);
@@ -953,15 +957,7 @@ int kmod_elf_get_dependency_symbols(const struct kmod_elf *elf,
 		verlen = 0;
 		crclen = 0;
 	} else {
-		if (elf->x32) {
-			struct kmod_modversion32 *mv;
-			verlen = sizeof(*mv);
-			crclen = sizeof(mv->crc);
-		} else {
-			struct kmod_modversion64 *mv;
-			verlen = sizeof(*mv);
-			crclen = sizeof(mv->crc);
-		}
+		elf_get_modversion_lengths(elf, &verlen, &crclen);
 		if (versionslen % verlen != 0) {
 			ELFDBG(elf,
 			       "unexpected __versions of length %" PRIu64
