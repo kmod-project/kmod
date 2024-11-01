@@ -34,7 +34,6 @@ jobs:
           - name: 'debian:unstable'
             multilib: 'true'
           - name: 'fedora:latest'
-            meson_setup: '-D b_sanitize=none'
           - name: 'ubuntu:22.04'
             multilib: 'true'
           - name: 'ubuntu:24.04'
