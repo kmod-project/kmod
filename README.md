@@ -57,11 +57,6 @@ NOTE: The autotools build is slated for removal with kmod v35
 
     ./configure CFLAGS="-g -O2" --prefix=/usr \
                 --sysconfdir=/etc --libdir=/usr/lib
-
-Configure automatically searches for all required components and packages.
-
-To compile and install run:
-
     make && make install
 
 Hacking
