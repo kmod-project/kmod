@@ -16,7 +16,7 @@ EOF
     OUR_PRELOAD=$(gcc -print-file-name=libasan.so)
 fi
 
-if test -n "$OUR_PRELOAD"; then
+if test -f "$OUR_PRELOAD"; then
     # In some cases, like in Fedora, the file is a script which cannot be
     # preloaded. Attempt to extract the details from within.
     if grep -q INPUT "$OUR_PRELOAD"; then
@@ -30,6 +30,17 @@ if test -n "$OUR_PRELOAD"; then
 
     LD_PRELOAD has been set to "$LD_PRELOAD".
     The sanitizer might report issues with ANY process you execute.
+
+EOF
+else
+    cat <<- EOF >&2
+
+    WARNING: compiler returned non-existing library name "$OUR_PRELOAD".
+
+    Make sure to install the relevant packages and ensure this script
+    references the correct library name.
+
+    LD_PRELOAD will NOT be set.
 
 EOF
 fi
