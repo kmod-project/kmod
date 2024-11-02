@@ -573,10 +573,7 @@ static char *weakdep_to_char(struct kmod_weakdep *dep)
 	const char *start, *end;
 	char *s, *itr;
 
-	/*
-	 * Rely on the fact that dep->weak[] and are strv's that point to a
-	 * contiguous buffer
-	 */
+	/* Rely on the fact that dep->weak[] is a strv that points to a contiguous buffer */
 	if (dep->n_weak > 0) {
 		start = dep->weak[0];
 		end = dep->weak[dep->n_weak - 1] + strlen(dep->weak[dep->n_weak - 1]);
