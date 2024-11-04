@@ -112,7 +112,6 @@ endif
 
 add_project_arguments(
   cc.get_supported_arguments([
-    '-Wno-inline',
     '-Wvla',
     '-Wundef',
     '-Wformat=2',
@@ -135,10 +134,7 @@ add_project_arguments(
     '-Wendif-labels',
     '-Wstrict-aliasing=3',
     '-Wwrite-strings',
-    '-Wno-long-long',
-    '-Wno-overlength-strings',
     '-Wno-unused-parameter',
-    '-Wno-missing-field-initializers',
     '-Wnested-externs',
     '-Wchar-subscripts',
     '-Wtype-limits',
