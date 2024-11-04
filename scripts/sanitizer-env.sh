@@ -7,9 +7,12 @@ if [[ ${CC-} == *gcc* ]]; then
 elif [[ ${CC-} == *clang* ]]; then
     OUR_PRELOAD=$("$CC" -print-file-name=libclang_rt.asan-x86_64.so)
 else
-    echo "Unknown compiler CC=\"${CC-}\" - gcc and clang are supported."
-    echo "Assuming \"gcc\", manually set the variable and retry if needed."
-    echo
+    cat <<- EOF
+
+    Unknown compiler CC="${CC-}" - gcc and clang are supported.
+    Assuming "gcc", manually set the variable and retry if needed.
+
+EOF
     OUR_PRELOAD=$(gcc -print-file-name=libasan.so)
 fi
 
@@ -23,7 +26,11 @@ if test -n "$OUR_PRELOAD"; then
 
     LD_PRELOAD=${LD_PRELOAD+${LD_PRELOAD}:}$OUR_PRELOAD
     export LD_PRELOAD
-    echo "LD_PRELOAD has been set to \"$LD_PRELOAD\"."
-    echo "The sanitizer might report issues with ANY process you execute."
+    cat <<- EOF
+
+    LD_PRELOAD has been set to "$LD_PRELOAD".
+    The sanitizer might report issues with ANY process you execute.
+
+EOF
 fi
 unset OUR_PRELOAD
