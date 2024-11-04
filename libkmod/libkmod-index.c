@@ -599,8 +599,6 @@ struct index_value *index_searchwild(struct index_file *in, const char *key)
 #include <sys/stat.h>
 #include <unistd.h>
 
-static const char _idx_empty_str[] = "";
-
 struct index_mm {
 	const struct kmod_ctx *ctx;
 	void *mm;
@@ -673,7 +671,7 @@ static struct index_mm_node *index_mm_read_node(struct index_mm *idx, uint32_t o
 		size_t len;
 		node->prefix = read_chars_mm(&p, &len);
 	} else {
-		node->prefix = _idx_empty_str;
+		node->prefix = "";
 	}
 
 	if (offset & INDEX_NODE_CHILDS) {
