@@ -146,7 +146,7 @@ void index_values_free(struct index_value *values)
 }
 
 static int add_value(struct index_value **values, const char *value, size_t len,
-		     unsigned int priority)
+		     uint32_t priority)
 {
 	struct index_value *v;
 
@@ -270,7 +270,7 @@ static struct index_node_f *index_read(struct index_file *idx, uint32_t offset)
 	node->values = NULL;
 	if (offset & INDEX_NODE_VALUES) {
 		uint32_t value_count;
-		unsigned int priority;
+		uint32_t priority;
 
 		if (!read_u32(fp, &value_count))
 			goto err;
@@ -609,7 +609,7 @@ struct index_mm {
 };
 
 struct index_mm_value {
-	unsigned int priority;
+	uint32_t priority;
 	size_t len;
 	const char *value;
 };
