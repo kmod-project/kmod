@@ -9,7 +9,7 @@
 
 struct index_value {
 	struct index_value *next;
-	unsigned int priority;
+	uint32_t priority;
 	size_t len;
 	char value[0];
 };
