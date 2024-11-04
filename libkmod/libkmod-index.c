@@ -401,7 +401,7 @@ void index_dump(struct index_file *in, int fd, const char *prefix)
 		return;
 
 	strbuf_init(&buf);
-	if (strbuf_pushchars(&buf, prefix))
+	if (prefix[0] == '\0' || strbuf_pushchars(&buf, prefix))
 		index_dump_node(root, &buf, fd);
 	strbuf_release(&buf);
 }
@@ -866,7 +866,7 @@ void index_mm_dump(struct index_mm *idx, int fd, const char *prefix)
 		return;
 
 	strbuf_init(&buf);
-	if (strbuf_pushchars(&buf, prefix))
+	if (prefix[0] == '\0' || strbuf_pushchars(&buf, prefix))
 		index_mm_dump_node(root, &buf, fd);
 	strbuf_release(&buf);
 }
