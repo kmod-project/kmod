@@ -7,9 +7,9 @@ if [[ ${CC-} == *gcc* ]]; then
 elif [[ ${CC-} == *clang* ]]; then
     OUR_PRELOAD=$("$CC" -print-file-name=libclang_rt.asan-x86_64.so)
 else
-    cat <<- EOF
+    cat <<- EOF >&2
 
-    Unknown compiler CC="${CC-}" - gcc and clang are supported.
+    WARNING: Unknown compiler CC="${CC-}" - gcc and clang are supported.
     Assuming "gcc", manually set the variable and retry if needed.
 
 EOF
