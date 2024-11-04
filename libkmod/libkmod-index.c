@@ -613,7 +613,7 @@ struct index_mm_value {
 };
 
 struct index_mm_node {
-	struct index_mm *idx;
+	const struct index_mm *idx;
 	const char *prefix; /* mmap'ed value */
 	unsigned char first;
 	unsigned char last;
@@ -657,7 +657,8 @@ static inline void read_value_mm(const void **p, struct index_mm_value *v)
 }
 
 /* reads node into given node struct and returns its address on success or NULL on error. */
-static struct index_mm_node *index_mm_read_node(struct index_mm *idx, uint32_t offset,
+static struct index_mm_node *index_mm_read_node(const struct index_mm *idx,
+						uint32_t offset,
 						struct index_mm_node *node)
 {
 	const void *p;
@@ -797,7 +798,7 @@ void index_mm_close(struct index_mm *idx)
 	free(idx);
 }
 
-static struct index_mm_node *index_mm_readroot(struct index_mm *idx,
+static struct index_mm_node *index_mm_readroot(const struct index_mm *idx,
 					       struct index_mm_node *root)
 {
 	return index_mm_read_node(idx, idx->root_offset, root);
@@ -854,7 +855,7 @@ static void index_mm_dump_node(struct index_mm_node *node, struct strbuf *buf, i
 	strbuf_popchars(buf, pushed);
 }
 
-void index_mm_dump(struct index_mm *idx, int fd, bool alias_prefix)
+void index_mm_dump(const struct index_mm *idx, int fd, bool alias_prefix)
 {
 	struct index_mm_node nbuf, *root;
 	struct strbuf buf;
@@ -911,7 +912,7 @@ static char *index_mm_search_node(struct index_mm_node *node, const char *key)
  *
  * Returns the value of the first match
  */
-char *index_mm_search(struct index_mm *idx, const char *key)
+char *index_mm_search(const struct index_mm *idx, const char *key)
 {
 	// FIXME: return value by reference instead of strdup
 	struct index_mm_node nbuf, *root;
@@ -1035,7 +1036,7 @@ static void index_mm_searchwild_node(struct index_mm_node *node, struct strbuf *
  *
  * Returns a list of all the values of matching keys.
  */
-struct index_value *index_mm_searchwild(struct index_mm *idx, const char *key)
+struct index_value *index_mm_searchwild(const struct index_mm *idx, const char *key)
 {
 	struct index_mm_node nbuf, *root;
 	struct strbuf buf;
