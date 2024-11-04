@@ -391,7 +391,7 @@ static void index_dump_node(struct index_node_f *node, struct strbuf *buf, int f
 	index_close(node);
 }
 
-void index_dump(struct index_file *in, int fd, const char *prefix)
+void index_dump(struct index_file *in, int fd, bool alias_prefix)
 {
 	struct index_node_f *root;
 	struct strbuf buf;
@@ -401,7 +401,7 @@ void index_dump(struct index_file *in, int fd, const char *prefix)
 		return;
 
 	strbuf_init(&buf);
-	if (prefix[0] == '\0' || strbuf_pushchars(&buf, prefix))
+	if (!alias_prefix || strbuf_pushchars(&buf, "alias "))
 		index_dump_node(root, &buf, fd);
 	strbuf_release(&buf);
 }
@@ -856,7 +856,7 @@ static void index_mm_dump_node(struct index_mm_node *node, struct strbuf *buf, i
 	strbuf_popchars(buf, pushed);
 }
 
-void index_mm_dump(struct index_mm *idx, int fd, const char *prefix)
+void index_mm_dump(struct index_mm *idx, int fd, bool alias_prefix)
 {
 	struct index_mm_node nbuf, *root;
 	struct strbuf buf;
@@ -866,7 +866,7 @@ void index_mm_dump(struct index_mm *idx, int fd, const char *prefix)
 		return;
 
 	strbuf_init(&buf);
-	if (prefix[0] == '\0' || strbuf_pushchars(&buf, prefix))
+	if (!alias_prefix || strbuf_pushchars(&buf, "alias "))
 		index_mm_dump_node(root, &buf, fd);
 	strbuf_release(&buf);
 }
