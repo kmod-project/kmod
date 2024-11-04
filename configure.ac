@@ -258,41 +258,41 @@ PKG_NOARCH_INSTALLDIR
 CC_CHECK_FLAGS_APPEND(with_cflags, [CFLAGS], [\
 		       -pipe \
 		       -DANOTHER_BRICK_IN_THE \
-		       -Wall \
+		       -fdata-sections \
+		       -fdiagnostics-show-option \
+		       -ffunction-sections \
+		       -fno-common \
+		       -fvisibility=hidden \
 		       -W \
+		       -Wall \
+		       -Wchar-subscripts \
+		       -Wdeclaration-after-statement \
+		       -Wendif-labels \
 		       -Wextra \
-		       -Wvla \
-		       -Wundef \
+		       -Wfloat-equal \
 		       -Wformat=2 \
-		       -Wlogical-op \
-		       -Wsign-compare \
-		       -Wformat-security \
-		       -Wmissing-include-dirs \
 		       -Wformat-nonliteral \
+		       -Wformat-security \
+		       -Winit-self \
+		       -Wlogical-op \
+		       -Wmissing-declarations \
+		       -Wmissing-include-dirs \
+		       -Wmissing-noreturn \
+		       -Wmissing-prototypes \
+		       -Wnested-externs \
+		       -Wno-unused-parameter \
 		       -Wold-style-definition \
 		       -Wpointer-arith \
-		       -Winit-self \
-		       -Wdeclaration-after-statement \
-		       -Wfloat-equal \
-		       -Wmissing-prototypes \
-		       -Wstrict-prototypes \
 		       -Wredundant-decls \
-		       -Wmissing-declarations \
-		       -Wmissing-noreturn \
 		       -Wshadow \
-		       -Wendif-labels \
+		       -Wsign-compare \
 		       -Wstrict-aliasing=3 \
-		       -Wwrite-strings \
-		       -Wno-unused-parameter \
-		       -Wnested-externs \
-		       -Wchar-subscripts \
+		       -Wstrict-prototypes \
 		       -Wtype-limits \
+		       -Wundef \
 		       -Wuninitialized \
-		       -fno-common \
-		       -fdiagnostics-show-option \
-		       -fvisibility=hidden \
-		       -ffunction-sections \
-		       -fdata-sections])
+		       -Wvla \
+		       -Wwrite-strings])
 AC_SUBST([OUR_CFLAGS], "$with_cflags $with_coverage_cflags")
 
 
