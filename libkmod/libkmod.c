@@ -415,20 +415,21 @@ int kmod_lookup_alias_from_aliases_file(struct kmod_ctx *ctx, const char *name,
 	return kmod_lookup_alias_from_alias_bin(ctx, KMOD_INDEX_MODULES_ALIAS, name, list);
 }
 
-static char *lookup_builtin_file(struct kmod_ctx *ctx, const char *name)
+static char *lookup_file(struct kmod_ctx *ctx, enum kmod_index index_number,
+			 const char *name)
 {
 	char *line;
 
-	if (ctx->indexes[KMOD_INDEX_MODULES_BUILTIN]) {
+	if (ctx->indexes[index_number]) {
 		DBG(ctx, "use mmapped index '%s' modname=%s\n",
-		    index_files[KMOD_INDEX_MODULES_BUILTIN].fn, name);
-		line = index_mm_search(ctx->indexes[KMOD_INDEX_MODULES_BUILTIN], name);
+		    index_files[index_number].fn, name);
+		line = index_mm_search(ctx->indexes[index_number], name);
 	} else {
 		struct index_file *idx;
 		char fn[PATH_MAX];
 
 		snprintf(fn, sizeof(fn), "%s/%s.bin", ctx->dirname,
-			 index_files[KMOD_INDEX_MODULES_BUILTIN].fn);
+			 index_files[index_number].fn);
 		DBG(ctx, "file=%s modname=%s\n", fn, name);
 
 		idx = index_file_open(fn);
@@ -442,6 +443,11 @@ static char *lookup_builtin_file(struct kmod_ctx *ctx, const char *name)
 	}
 
 	return line;
+}
+
+static char *lookup_builtin_file(struct kmod_ctx *ctx, const char *name)
+{
+	return lookup_file(ctx, KMOD_INDEX_MODULES_BUILTIN, name);
 }
 
 int kmod_lookup_alias_from_kernel_builtin_file(struct kmod_ctx *ctx, const char *name,
@@ -506,31 +512,7 @@ bool kmod_lookup_alias_is_builtin(struct kmod_ctx *ctx, const char *name)
 
 char *kmod_search_moddep(struct kmod_ctx *ctx, const char *name)
 {
-	struct index_file *idx;
-	char fn[PATH_MAX];
-	char *line;
-
-	if (ctx->indexes[KMOD_INDEX_MODULES_DEP]) {
-		DBG(ctx, "use mmapped index '%s' modname=%s\n",
-		    index_files[KMOD_INDEX_MODULES_DEP].fn, name);
-		return index_mm_search(ctx->indexes[KMOD_INDEX_MODULES_DEP], name);
-	}
-
-	snprintf(fn, sizeof(fn), "%s/%s.bin", ctx->dirname,
-		 index_files[KMOD_INDEX_MODULES_DEP].fn);
-
-	DBG(ctx, "file=%s modname=%s\n", fn, name);
-
-	idx = index_file_open(fn);
-	if (idx == NULL) {
-		DBG(ctx, "could not open moddep file '%s'\n", fn);
-		return NULL;
-	}
-
-	line = index_search(idx, name);
-	index_file_close(idx);
-
-	return line;
+	return lookup_file(ctx, KMOD_INDEX_MODULES_DEP, name);
 }
 
 int kmod_lookup_alias_from_moddep_file(struct kmod_ctx *ctx, const char *name,
