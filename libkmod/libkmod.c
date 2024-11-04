@@ -445,9 +445,13 @@ static char *lookup_file(struct kmod_ctx *ctx, enum kmod_index index_number,
 	return line;
 }
 
-static char *lookup_builtin_file(struct kmod_ctx *ctx, const char *name)
+static bool lookup_builtin_file(struct kmod_ctx *ctx, const char *name)
 {
-	return lookup_file(ctx, KMOD_INDEX_MODULES_BUILTIN, name);
+	char *line = lookup_file(ctx, KMOD_INDEX_MODULES_BUILTIN, name);
+	bool found = line != NULL;
+
+	free(line);
+	return found;
 }
 
 int kmod_lookup_alias_from_kernel_builtin_file(struct kmod_ctx *ctx, const char *name,
@@ -472,20 +476,17 @@ int kmod_lookup_alias_from_kernel_builtin_file(struct kmod_ctx *ctx, const char 
 int kmod_lookup_alias_from_builtin_file(struct kmod_ctx *ctx, const char *name,
 					struct kmod_list **list)
 {
-	char *line;
-	int err = 0;
-
 	assert(*list == NULL);
 
-	line = lookup_builtin_file(ctx, name);
-	if (line != NULL) {
+	if (lookup_builtin_file(ctx, name)) {
 		struct kmod_module *mod;
+		int err;
 
 		err = kmod_module_new_from_name(ctx, name, &mod);
 		if (err < 0) {
 			ERR(ctx, "Could not create module from name %s: %s\n", name,
 			    strerror(-err));
-			goto finish;
+			return err;
 		}
 
 		/* already mark it as builtin since it's being created from
@@ -493,21 +494,15 @@ int kmod_lookup_alias_from_builtin_file(struct kmod_ctx *ctx, const char *name,
 		kmod_module_set_builtin(mod, true);
 		*list = kmod_list_append(*list, mod);
 		if (*list == NULL)
-			err = -ENOMEM;
+			return -ENOMEM;
 	}
 
-finish:
-	free(line);
-	return err;
+	return 0;
 }
 
 bool kmod_lookup_alias_is_builtin(struct kmod_ctx *ctx, const char *name)
 {
-	_cleanup_free_ char *line;
-
-	line = lookup_builtin_file(ctx, name);
-
-	return line != NULL;
+	return lookup_builtin_file(ctx, name);
 }
 
 char *kmod_search_moddep(struct kmod_ctx *ctx, const char *name)
