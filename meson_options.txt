@@ -34,30 +34,30 @@ option(
 option(
   'zstd',
   type : 'feature',
-  value : 'disabled',
-  description : 'Handle Zstandard-compressed modulesi. Default: disabled',
+  value : 'enabled',
+  description : 'Handle Zstandard-compressed modulesi. Default: enabled',
 )
 
 option(
   'xz',
   type : 'feature',
-  value : 'disabled',
-  description : 'Handle Xz-compressed modules. Default: disabled',
+  value : 'enabled',
+  description : 'Handle Xz-compressed modules. Default: enabled',
 )
 
 option(
   'zlib',
   type : 'feature',
-  value : 'disabled',
-  description : 'Handle gzip-compressed modules. Default: disabled',
+  value : 'enabled',
+  description : 'Handle gzip-compressed modules. Default: enabled',
 )
 
 # Signed modules
 option(
   'openssl',
   type : 'feature',
-  value : 'disabled',
-  description : 'Openssl support, PKCS7 signatures. Default: disabled',
+  value : 'enabled',
+  description : 'Openssl support, PKCS7 signatures. Default: enabled',
 )
 
 option(
