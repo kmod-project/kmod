@@ -29,6 +29,6 @@ struct index_mm;
 int index_mm_open(const struct kmod_ctx *ctx, const char *filename,
 		  unsigned long long *stamp, struct index_mm **pidx);
 void index_mm_close(struct index_mm *index);
-char *index_mm_search(struct index_mm *idx, const char *key);
-struct index_value *index_mm_searchwild(struct index_mm *idx, const char *key);
-void index_mm_dump(struct index_mm *idx, int fd, bool alias_prefix);
+char *index_mm_search(const struct index_mm *idx, const char *key);
+struct index_value *index_mm_searchwild(const struct index_mm *idx, const char *key);
+void index_mm_dump(const struct index_mm *idx, int fd, bool alias_prefix);
