@@ -40,7 +40,7 @@ In order to compile the source code you need the following software packages:
 - GCC/CLANG compiler
 - GNU C library / musl / uClibc
 
-Optional dependencies:
+Optional dependencies, required with the default build configuration:
 - ZLIB library
 - LZMA library
 - ZSTD library
