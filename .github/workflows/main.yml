@@ -113,7 +113,9 @@ jobs:
 
       - name: configure (32bit) (meson)
         if: ${{ matrix.build == 'meson' && matrix.container.multilib == 'true' }}
-        run: mkdir build32 && cd build32 && CC="$CC -m32" meson setup . ..
+        run: |
+          cross_options="-D zstd=disabled -D xz=disabled -D zlib=disabled -D openssl=disabled"
+          CC="$CC -m32" meson setup $cross_options build32/
 
       - name: build (32bit) (meson)
         if: ${{ matrix.build == 'meson' && matrix.container.multilib == 'true' }}
