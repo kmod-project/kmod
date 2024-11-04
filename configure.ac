@@ -261,7 +261,6 @@ CC_CHECK_FLAGS_APPEND(with_cflags, [CFLAGS], [\
 		       -Wall \
 		       -W \
 		       -Wextra \
-		       -Wno-inline \
 		       -Wvla \
 		       -Wundef \
 		       -Wformat=2 \
@@ -284,10 +283,7 @@ CC_CHECK_FLAGS_APPEND(with_cflags, [CFLAGS], [\
 		       -Wendif-labels \
 		       -Wstrict-aliasing=3 \
 		       -Wwrite-strings \
-		       -Wno-long-long \
-		       -Wno-overlength-strings \
 		       -Wno-unused-parameter \
-		       -Wno-missing-field-initializers \
 		       -Wnested-externs \
 		       -Wchar-subscripts \
 		       -Wtype-limits \
