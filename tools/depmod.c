@@ -1867,6 +1867,7 @@ static int depmod_report_cycles_from_root(struct depmod *depmod, struct mod *roo
 	l = kmod_list_append(free_list, root);
 	if (l == NULL) {
 		ERR("No memory to report cycles\n");
+		free(root);
 		goto out;
 	}
 	free_list = l;
@@ -1922,6 +1923,7 @@ static int depmod_report_cycles_from_root(struct depmod *depmod, struct mod *roo
 			l = kmod_list_append(free_list, v);
 			if (l == NULL) {
 				ERR("No memory to report cycles\n");
+				free(v);
 				goto out;
 			}
 			free_list = l;
