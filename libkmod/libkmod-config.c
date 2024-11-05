@@ -151,15 +151,6 @@ static int kmod_config_add_command(struct kmod_config *config, const char *modna
 	return 0;
 }
 
-static void kmod_config_free_command(struct kmod_config *config, struct kmod_list *l,
-				     struct kmod_list **list)
-{
-	struct kmod_command *cmd = l->data;
-
-	free(cmd);
-	*list = kmod_list_remove(l);
-}
-
 static int kmod_config_add_options(struct kmod_config *config, const char *modname,
 				   const char *options)
 {
@@ -189,15 +180,6 @@ static int kmod_config_add_options(struct kmod_config *config, const char *modna
 	return 0;
 }
 
-static void kmod_config_free_options(struct kmod_config *config, struct kmod_list *l)
-{
-	struct kmod_options *opt = l->data;
-
-	free(opt);
-
-	config->options = kmod_list_remove(l);
-}
-
 static int kmod_config_add_alias(struct kmod_config *config, const char *name,
 				 const char *modname)
 {
@@ -225,15 +207,6 @@ static int kmod_config_add_alias(struct kmod_config *config, const char *name,
 	return 0;
 }
 
-static void kmod_config_free_alias(struct kmod_config *config, struct kmod_list *l)
-{
-	struct kmod_alias *alias = l->data;
-
-	free(alias);
-
-	config->aliases = kmod_list_remove(l);
-}
-
 static int kmod_config_add_blacklist(struct kmod_config *config, const char *modname)
 {
 	_cleanup_free_ char *p;
@@ -252,12 +225,6 @@ static int kmod_config_add_blacklist(struct kmod_config *config, const char *mod
 	p = NULL;
 	config->blacklists = list;
 	return 0;
-}
-
-static void kmod_config_free_blacklist(struct kmod_config *config, struct kmod_list *l)
-{
-	free(l->data);
-	config->blacklists = kmod_list_remove(l);
 }
 
 static int kmod_config_add_softdep(struct kmod_config *config, const char *modname,
@@ -636,18 +603,6 @@ static char *weakdep_to_char(struct kmod_weakdep *dep)
 	return s;
 }
 
-static void kmod_config_free_softdep(struct kmod_config *config, struct kmod_list *l)
-{
-	free(l->data);
-	config->softdeps = kmod_list_remove(l);
-}
-
-static void kmod_config_free_weakdep(struct kmod_config *config, struct kmod_list *l)
-{
-	free(l->data);
-	config->weakdeps = kmod_list_remove(l);
-}
-
 static void kcmdline_parse_result(struct kmod_config *config, char *modname, char *param,
 				  char *value)
 {
@@ -913,34 +868,14 @@ done_next:
 
 void kmod_config_free(struct kmod_config *config)
 {
-	while (config->aliases)
-		kmod_config_free_alias(config, config->aliases);
-
-	while (config->blacklists)
-		kmod_config_free_blacklist(config, config->blacklists);
-
-	while (config->options)
-		kmod_config_free_options(config, config->options);
-
-	while (config->install_commands) {
-		kmod_config_free_command(config, config->install_commands,
-					 &config->install_commands);
-	}
-
-	while (config->remove_commands) {
-		kmod_config_free_command(config, config->remove_commands,
-					 &config->remove_commands);
-	}
-
-	while (config->softdeps)
-		kmod_config_free_softdep(config, config->softdeps);
-
-	while (config->weakdeps)
-		kmod_config_free_weakdep(config, config->weakdeps);
-
-	for (; config->paths != NULL; config->paths = kmod_list_remove(config->paths))
-		free(config->paths->data);
-
+	kmod_list_release(config->aliases, free);
+	kmod_list_release(config->blacklists, free);
+	kmod_list_release(config->options, free);
+	kmod_list_release(config->install_commands, free);
+	kmod_list_release(config->remove_commands, free);
+	kmod_list_release(config->softdeps, free);
+	kmod_list_release(config->weakdeps, free);
+	kmod_list_release(config->paths, free);
 	free(config);
 }
 
@@ -1146,11 +1081,8 @@ int kmod_config_new(struct kmod_ctx *ctx, struct kmod_config **p_config,
 	return 0;
 
 oom:
-	for (; list != NULL; list = kmod_list_remove(list))
-		free(list->data);
-
-	for (; path_list != NULL; path_list = kmod_list_remove(path_list))
-		free(path_list->data);
+	kmod_list_release(list, free);
+	kmod_list_release(path_list, free);
 
 	return -ENOMEM;
 }

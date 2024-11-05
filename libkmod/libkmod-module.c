@@ -495,8 +495,7 @@ KMOD_EXPORT int kmod_module_new_from_name_lookup(struct kmod_ctx *ctx,
 
 KMOD_EXPORT int kmod_module_unref_list(struct kmod_list *list)
 {
-	for (; list != NULL; list = kmod_list_remove(list))
-		kmod_module_unref(list->data);
+	kmod_list_release(list, kmod_module_unref);
 
 	return 0;
 }
@@ -1728,10 +1727,7 @@ KMOD_EXPORT unsigned long kmod_module_section_get_address(const struct kmod_list
 
 KMOD_EXPORT void kmod_module_section_free_list(struct kmod_list *list)
 {
-	while (list) {
-		kmod_module_section_free(list->data);
-		list = kmod_list_remove(list);
-	}
+	kmod_list_release(list, kmod_module_section_free);
 }
 
 static struct kmod_elf *kmod_module_get_elf(const struct kmod_module *mod)
@@ -1980,10 +1976,7 @@ KMOD_EXPORT const char *kmod_module_info_get_value(const struct kmod_list *entry
 
 KMOD_EXPORT void kmod_module_info_free_list(struct kmod_list *list)
 {
-	while (list) {
-		kmod_module_info_free(list->data);
-		list = kmod_list_remove(list);
-	}
+	kmod_list_release(list, kmod_module_info_free);
 }
 
 struct kmod_module_version {
@@ -2085,10 +2078,7 @@ KMOD_EXPORT uint64_t kmod_module_version_get_crc(const struct kmod_list *entry)
 
 KMOD_EXPORT void kmod_module_versions_free_list(struct kmod_list *list)
 {
-	while (list) {
-		kmod_module_version_free(list->data);
-		list = kmod_list_remove(list);
-	}
+	kmod_list_release(list, kmod_module_version_free);
 }
 
 struct kmod_module_symbol {
@@ -2189,10 +2179,7 @@ KMOD_EXPORT uint64_t kmod_module_symbol_get_crc(const struct kmod_list *entry)
 
 KMOD_EXPORT void kmod_module_symbols_free_list(struct kmod_list *list)
 {
-	while (list) {
-		kmod_module_symbol_free(list->data);
-		list = kmod_list_remove(list);
-	}
+	kmod_list_release(list, kmod_module_symbol_free);
 }
 
 struct kmod_module_dependency_symbol {
@@ -2312,8 +2299,5 @@ KMOD_EXPORT int kmod_module_dependency_symbol_get_bind(const struct kmod_list *e
 
 KMOD_EXPORT void kmod_module_dependency_symbols_free_list(struct kmod_list *list)
 {
-	while (list) {
-		kmod_module_dependency_symbol_free(list->data);
-		list = kmod_list_remove(list);
-	}
+	kmod_list_release(list, kmod_module_dependency_symbol_free);
 }
