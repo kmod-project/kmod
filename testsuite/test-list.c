@@ -76,33 +76,6 @@ static int test_list_prev(const struct test *t)
 }
 DEFINE_TEST(test_list_prev, .description = "test list prev");
 
-static int test_list_remove_n_latest(const struct test *t)
-{
-	struct kmod_list *list = NULL, *l;
-	int i;
-	const char *v[] = { "v1", "v2", "v3", "v4", "v5" };
-	const int N = ARRAY_SIZE(v), M = N / 2;
-
-	for (i = 0; i < N; i++)
-		list = kmod_list_append(list, v[i]);
-	assert_return(len(list) == N, EXIT_FAILURE);
-
-	list = kmod_list_remove_n_latest(list, M);
-	assert_return(len(list) == N - M, EXIT_FAILURE);
-
-	i = 0;
-	kmod_list_foreach(l, list) {
-		assert_return(l->data == v[i], EXIT_FAILURE);
-		i++;
-	}
-
-	kmod_list_remove_all(list);
-
-	return 0;
-}
-DEFINE_TEST(test_list_remove_n_latest,
-	    .description = "test list function to remove n latest elements");
-
 static int test_list_remove_data(const struct test *t)
 {
 	struct kmod_list *list = NULL, *l;

@@ -356,6 +356,8 @@ static int kmod_lookup_alias_from_alias_bin(struct kmod_ctx *ctx,
 	struct index_file *idx;
 	struct index_value *realnames, *realname;
 
+	assert(*list == NULL);
+
 	if (ctx->indexes[index_number] != NULL) {
 		DBG(ctx, "use mmapped index '%s' for name=%s\n",
 		    index_files[index_number].fn, name);
@@ -378,6 +380,7 @@ static int kmod_lookup_alias_from_alias_bin(struct kmod_ctx *ctx,
 
 	for (realname = realnames; realname; realname = realname->next) {
 		struct kmod_module *mod;
+		struct kmod_list *node;
 
 		err = kmod_module_new_from_alias(ctx, name, realname->value, &mod);
 		if (err < 0) {
@@ -386,7 +389,14 @@ static int kmod_lookup_alias_from_alias_bin(struct kmod_ctx *ctx,
 			goto fail;
 		}
 
-		*list = kmod_list_append(*list, mod);
+		node = kmod_list_append(*list, mod);
+		if (node == NULL) {
+			ERR(ctx, "out of memory\n");
+			kmod_module_unref(mod);
+			err = -ENOMEM;
+			goto fail;
+		}
+		*list = node;
 		nmatch++;
 	}
 
@@ -394,7 +404,7 @@ static int kmod_lookup_alias_from_alias_bin(struct kmod_ctx *ctx,
 	return nmatch;
 
 fail:
-	*list = kmod_list_remove_n_latest(*list, nmatch);
+	kmod_list_release(*list, kmod_module_unref);
 	index_values_free(realnames);
 	return err;
 }
@@ -458,8 +468,6 @@ int kmod_lookup_alias_from_kernel_builtin_file(struct kmod_ctx *ctx, const char 
 	struct kmod_list *l;
 	int ret;
 
-	assert(*list == NULL);
-
 	ret = kmod_lookup_alias_from_alias_bin(ctx, KMOD_INDEX_MODULES_BUILTIN_ALIAS,
 					       name, list);
 
@@ -478,6 +486,7 @@ int kmod_lookup_alias_from_builtin_file(struct kmod_ctx *ctx, const char *name,
 
 	if (lookup_builtin_file(ctx, name)) {
 		struct kmod_module *mod;
+		struct kmod_list *node;
 		int err;
 
 		err = kmod_module_new_from_name(ctx, name, &mod);
@@ -490,9 +499,13 @@ int kmod_lookup_alias_from_builtin_file(struct kmod_ctx *ctx, const char *name,
 		/* already mark it as builtin since it's being created from
 		 * this index */
 		kmod_module_set_builtin(mod, true);
-		*list = kmod_list_append(*list, mod);
-		if (*list == NULL)
+		node = kmod_list_append(*list, mod);
+		if (node == NULL) {
+			ERR(ctx, "out of memory\n");
+			kmod_module_unref(mod);
 			return -ENOMEM;
+		}
+		*list = node;
 	}
 
 	return 0;
@@ -514,6 +527,8 @@ int kmod_lookup_alias_from_moddep_file(struct kmod_ctx *ctx, const char *name,
 	char *line;
 	int n = 0;
 
+	assert(*list == NULL);
+
 	/*
 	 * Module names do not contain ':'. Return early if we know it will
 	 * not be found.
@@ -524,6 +539,7 @@ int kmod_lookup_alias_from_moddep_file(struct kmod_ctx *ctx, const char *name,
 	line = kmod_search_moddep(ctx, name);
 	if (line != NULL) {
 		struct kmod_module *mod;
+		struct kmod_list *node;
 
 		n = kmod_module_new_from_name(ctx, name, &mod);
 		if (n < 0) {
@@ -532,7 +548,14 @@ int kmod_lookup_alias_from_moddep_file(struct kmod_ctx *ctx, const char *name,
 			goto finish;
 		}
 
-		*list = kmod_list_append(*list, mod);
+		node = kmod_list_append(*list, mod);
+		if (node == NULL) {
+			ERR(ctx, "out of memory\n");
+			kmod_module_unref(mod);
+			n = -ENOMEM;
+			goto finish;
+		}
+		*list = node;
 		kmod_module_parse_depline(mod, line);
 	}
 
@@ -549,12 +572,15 @@ int kmod_lookup_alias_from_config(struct kmod_ctx *ctx, const char *name,
 	struct kmod_list *l;
 	int err, nmatch = 0;
 
+	assert(*list == NULL);
+
 	kmod_list_foreach(l, config->aliases) {
 		const char *aliasname = kmod_alias_get_name(l);
 		const char *modname = kmod_alias_get_modname(l);
 
 		if (fnmatch(aliasname, name, 0) == 0) {
 			struct kmod_module *mod;
+			struct kmod_list *node;
 
 			err = kmod_module_new_from_alias(ctx, aliasname, modname, &mod);
 			if (err < 0) {
@@ -564,7 +590,14 @@ int kmod_lookup_alias_from_config(struct kmod_ctx *ctx, const char *name,
 				goto fail;
 			}
 
-			*list = kmod_list_append(*list, mod);
+			node = kmod_list_append(*list, mod);
+			if (node == NULL) {
+				ERR(ctx, "out of memory\n");
+				kmod_module_unref(mod);
+				err = -ENOMEM;
+				goto fail;
+			}
+			*list = node;
 			nmatch++;
 		}
 	}
@@ -572,7 +605,7 @@ int kmod_lookup_alias_from_config(struct kmod_ctx *ctx, const char *name,
 	return nmatch;
 
 fail:
-	*list = kmod_list_remove_n_latest(*list, nmatch);
+	kmod_list_release(*list, kmod_module_unref);
 	return err;
 }
 
@@ -582,6 +615,8 @@ int kmod_lookup_alias_from_commands(struct kmod_ctx *ctx, const char *name,
 	struct kmod_config *config = ctx->config;
 	struct kmod_list *l, *node;
 	int err, nmatch = 0;
+
+	assert(*list == NULL);
 
 	kmod_list_foreach(l, config->install_commands) {
 		const char *modname = kmod_command_get_modname(l);
@@ -600,6 +635,7 @@ int kmod_lookup_alias_from_commands(struct kmod_ctx *ctx, const char *name,
 			node = kmod_list_append(*list, mod);
 			if (node == NULL) {
 				ERR(ctx, "out of memory\n");
+				kmod_module_unref(mod);
 				return -ENOMEM;
 			}
 
@@ -636,6 +672,7 @@ int kmod_lookup_alias_from_commands(struct kmod_ctx *ctx, const char *name,
 			node = kmod_list_append(*list, mod);
 			if (node == NULL) {
 				ERR(ctx, "out of memory\n");
+				kmod_module_unref(mod);
 				return -ENOMEM;
 			}
 
