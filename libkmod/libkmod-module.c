@@ -1382,7 +1382,7 @@ KMOD_EXPORT int kmod_module_new_from_loaded(struct kmod_ctx *ctx, struct kmod_li
 			kmod_module_unref(m);
 		}
 eat_line:
-		while (line[len - 1] != '\n' && fgets(line, sizeof(line), fp))
+		while (len > 0 && line[len - 1] != '\n' && fgets(line, sizeof(line), fp))
 			len = strlen(line);
 	}
 
