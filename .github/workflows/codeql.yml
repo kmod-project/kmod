@@ -28,8 +28,8 @@ jobs:
       fail-fast: false
       matrix:
         container:
-          - name: 'ubuntu:22.04'
-            meson_setup: '-D manpages=false -D docs=false'
+          - name: 'ubuntu:24.04'
+            meson_setup: '-D b_sanitize=none -D build-tests=false'
 
     container:
       image: ${{ matrix.container.name }}
