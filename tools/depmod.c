@@ -1930,12 +1930,7 @@ static int depmod_report_cycles_from_root(struct depmod *depmod, struct mod *roo
 	ret = 0;
 
 out:
-	while (free_list) {
-		v = free_list->data;
-		l = kmod_list_remove(free_list);
-		free_list = l;
-		free(v);
-	}
+	kmod_list_release(free_list, free);
 
 	return ret;
 }

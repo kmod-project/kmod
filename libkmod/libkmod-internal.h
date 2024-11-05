@@ -62,6 +62,11 @@ _must_check_ struct kmod_list *kmod_list_remove_n_latest(struct kmod_list *list,
 _nonnull_(2) struct kmod_list *kmod_list_insert_after(struct kmod_list *list, const void *data);
 _nonnull_(2) struct kmod_list *kmod_list_insert_before(struct kmod_list *list, const void *data);
 _must_check_ struct kmod_list *kmod_list_append_list(struct kmod_list *list1, struct kmod_list *list2);
+#define kmod_list_release(list, free_data)     \
+	while (list) {                         \
+		free_data((list)->data);       \
+		list = kmod_list_remove(list); \
+	}
 
 /* libkmod.c */
 _nonnull_all_ int kmod_lookup_alias_from_config(struct kmod_ctx *ctx, const char *name, struct kmod_list **list);
