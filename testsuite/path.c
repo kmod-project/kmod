@@ -32,8 +32,16 @@ static size_t rootpathlen;
 
 static inline bool need_trap(const char *path)
 {
-	return path != NULL && path[0] == '/' &&
-	       !strnstartswith(path, rootpath, rootpathlen);
+	/*
+	 * Always consider the ABS_TOP_BUILDDIR as the base root of anything we do.
+	 *
+	 * Changing this to rootpath is tempting but incorrect, since it won't consider
+	 * any third-party files managed through this LD_PRELOAD library, eg coverage.
+	 *
+	 * In other words: if using rootpath, the coverage gcna files will end up created
+	 * in the wrong location eg. $rootpath/$ABS_TOP_BUILDDIR.
+	 */
+	return path != NULL && path[0] == '/' && !strstartswith(path, ABS_TOP_BUILDDIR);
 }
 
 static const char *trap_path(const char *path, char buf[PATH_MAX * 2])
