@@ -51,6 +51,7 @@ foreach mod : _test_override_mods
     mod,
     files('@0@.c'.format(mod)),
     include_directories : top_include,
+    c_args : '-DABS_TOP_BUILDDIR="@0@"'.format(meson.project_build_root()),
     dependencies : libdl,
     link_with : [libshared, libkmod_internal],
     gnu_symbol_visibility : 'hidden',
