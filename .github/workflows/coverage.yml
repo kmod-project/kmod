@@ -1,0 +1,65 @@
+# SPDX-FileCopyrightText: 2024 Emil Velikov <emil.l.velikov@gmail.com>
+# SPDX-FileCopyrightText: 2024 Lucas De Marchi <lucas.de.marchi@gmail.com>
+#
+# SPDX-License-Identifier: LGPL-2.1-or-later
+
+name: Code Coverage
+
+on:
+  push:
+    branches: [master, ci-test]
+  pull_request:
+    branches: [master]
+  schedule:
+    - cron: "30 2 * * 0"
+
+permissions:
+  contents: read
+
+jobs:
+  analyze:
+    name: Analyze
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        container:
+          - name: 'ubuntu:24.04'
+            meson_setup: '-D b_sanitize=none -D b_coverage=true'
+
+    container:
+      image: ${{ matrix.container.name }}
+
+    steps:
+      - name: Sparse checkout the local actions
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        with:
+          sparse-checkout: .github
+
+      - uses: ./.github/actions/setup-ubuntu
+        if: ${{ startsWith(matrix.container.name, 'ubuntu') }}
+
+      - name: Checkout the whole project
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+
+      - name: Set the environment
+        run: |
+          # The second checkout above claims to set safe.directory, yet it
+          # doesn't quite work. Perhaps our double/sparse checkout is to blame?
+          git config --global --add safe.directory '*'
+
+          .github/print-kdir.sh >> "$GITHUB_ENV"
+
+      - name: Build
+        run: |
+          mkdir build && cd build
+          meson setup --native-file ../build-dev.ini ${{ matrix.container.meson_setup }} . ..
+          meson compile
+          meson test
+          ninja coverage-xml
+
+      - name: Upload Coverage
+        uses: codecov/codecov-action@b9fd7d16f6d7d1b5d2bec1a2887e65ceed900238 # v4.6.0
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          file: build/meson-logs/coverage.xml
