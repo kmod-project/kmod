@@ -20,6 +20,7 @@ runs:
           build-essential \
           clang \
           gcc-multilib \
+          gcovr \
           git \
           gtk-doc-tools \
           liblzma-dev \
