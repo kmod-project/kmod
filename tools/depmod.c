@@ -714,7 +714,11 @@ static int cfg_files_filter_out(DIR *d, const char *dir, const char *name)
 		return 1;
 	}
 
-	fstatat(dirfd(d), name, &st, 0);
+	if (fstatat(dirfd(d), name, &st, 0) < 0) {
+		ERR("Cannot stat directory entry: %s%s\n", dir, name);
+		return 1;
+	}
+
 	if (S_ISDIR(st.st_mode)) {
 		ERR("Directories inside directories are not supported: %s/%s\n", dir,
 		    name);
