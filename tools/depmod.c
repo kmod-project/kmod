@@ -1802,7 +1802,7 @@ static int depmod_report_one_cycle(struct depmod *depmod, struct vertex *vertex,
 	int i;
 	int n;
 	struct vertex *v;
-	int rc;
+	int rc = 0;
 
 	array_init(&reverse, 3);
 
@@ -1820,6 +1820,10 @@ static int depmod_report_one_cycle(struct depmod *depmod, struct vertex *vertex,
 	sz += vertex->mod->modnamesz - 1;
 
 	buf = malloc(sz + n * strlen(sep) + 1);
+	if (buf == NULL) {
+		rc = -ENOMEM;
+		goto out;
+	}
 
 	sz = 0;
 	for (i = reverse.count - 1; i >= 0; i--) {
@@ -1839,9 +1843,10 @@ static int depmod_report_one_cycle(struct depmod *depmod, struct vertex *vertex,
 	ERR("Cycle detected: %s\n", buf);
 
 	free(buf);
+out:
 	array_free_array(&reverse);
 
-	return 0;
+	return rc;
 }
 
 static int depmod_report_cycles_from_root(struct depmod *depmod, struct mod *root_mod,
