@@ -35,7 +35,7 @@ option(
   'zstd',
   type : 'feature',
   value : 'enabled',
-  description : 'Handle Zstandard-compressed modulesi. Default: enabled',
+  description : 'Handle Zstandard-compressed modules. Default: enabled',
 )
 
 option(
