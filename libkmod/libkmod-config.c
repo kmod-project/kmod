@@ -269,7 +269,7 @@ static int kmod_config_add_softdep(struct kmod_config *config, const char *modna
 	char *itr;
 	unsigned int n_pre = 0, n_post = 0;
 	size_t modnamelen = strlen(modname) + 1;
-	size_t buflen = 0;
+	size_t buflen = 0, size, size_pre, size_post;
 	bool was_space = false;
 	enum { S_NONE, S_PRE, S_POST } mode = S_NONE;
 
@@ -305,10 +305,20 @@ static int kmod_config_add_softdep(struct kmod_config *config, const char *modna
 		else if (*s != '\0' || (*s == '\0' && !was_space)) {
 			if (mode == S_PRE) {
 				buflen += plen + 1;
-				n_pre++;
+				if (uadd32_overflow(n_pre, 1, &n_pre)) {
+					ERR(config->ctx,
+					    "too many pre softdeps for modname=%s\n",
+					    modname);
+					return -EINVAL;
+				}
 			} else if (mode == S_POST) {
 				buflen += plen + 1;
-				n_post++;
+				if (uadd32_overflow(n_post, 1, &n_post)) {
+					ERR(config->ctx,
+					    "too many post softdeps for modname=%s\n",
+					    modname);
+					return -EINVAL;
+				}
 			}
 		}
 		p = s + 1;
@@ -318,9 +328,21 @@ static int kmod_config_add_softdep(struct kmod_config *config, const char *modna
 
 	DBG(config->ctx, "%u pre, %u post\n", n_pre, n_post);
 
-	dep = malloc(sizeof(struct kmod_softdep) + modnamelen +
-		     n_pre * sizeof(const char *) + n_post * sizeof(const char *) +
-		     buflen);
+	/*
+	 * sizeof(struct kmod_softdep) + modnamelen +
+	 * n_pre * sizeof(const char *) + n_post * sizeof(const char *) + buflen
+	 */
+	if (uaddsz_overflow(sizeof(struct kmod_softdep), modnamelen, &size) ||
+	    umulsz_overflow(n_pre, sizeof(const char *), &size_pre) ||
+	    uaddsz_overflow(size, size_pre, &size) ||
+	    umulsz_overflow(n_post, sizeof(const char *), &size_post) ||
+	    uaddsz_overflow(size, size_post, &size) ||
+	    uaddsz_overflow(size, buflen, &size)) {
+		ERR(config->ctx, "out-of-memory modname=%s\n", modname);
+		return -ENOMEM;
+	}
+
+	dep = malloc(size);
 	if (dep == NULL) {
 		ERR(config->ctx, "out-of-memory modname=%s\n", modname);
 		return -ENOMEM;
@@ -404,7 +426,7 @@ static int kmod_config_add_weakdep(struct kmod_config *config, const char *modna
 	char *itr;
 	unsigned int n_weak = 0;
 	size_t modnamelen = strlen(modname) + 1;
-	size_t buflen = 0;
+	size_t buflen = 0, size, size_weak;
 	bool was_space = false;
 
 	DBG(config->ctx, "modname=%s\n", modname);
@@ -432,7 +454,11 @@ static int kmod_config_add_weakdep(struct kmod_config *config, const char *modna
 
 		if (*s != '\0' || (*s == '\0' && !was_space)) {
 			buflen += plen + 1;
-			n_weak++;
+			if (uadd32_overflow(n_weak, 1, &n_weak)) {
+				ERR(config->ctx, "too many weakdeps for modname=%s\n",
+				    modname);
+				return -EINVAL;
+			}
 		}
 		p = s + 1;
 		if (*s == '\0')
@@ -441,8 +467,16 @@ static int kmod_config_add_weakdep(struct kmod_config *config, const char *modna
 
 	DBG(config->ctx, "%u weak\n", n_weak);
 
-	dep = malloc(sizeof(struct kmod_weakdep) + modnamelen +
-		     n_weak * sizeof(const char *) + buflen);
+	/* sizeof(struct kmod_weakdep) + modnamelen + n_weak * sizeof(const char *) + buflen */
+	if (uaddsz_overflow(sizeof(struct kmod_weakdep), modnamelen, &size) ||
+	    umulsz_overflow(n_weak, sizeof(const char *), &size_weak) ||
+	    uaddsz_overflow(size, size_weak, &size) ||
+	    uaddsz_overflow(size, buflen, &size)) {
+		ERR(config->ctx, "out-of-memory modname=%s\n", modname);
+		return -ENOMEM;
+	}
+
+	dep = malloc(size);
 	if (dep == NULL) {
 		ERR(config->ctx, "out-of-memory modname=%s\n", modname);
 		return -ENOMEM;
