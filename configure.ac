@@ -257,7 +257,6 @@ PKG_NOARCH_INSTALLDIR
 
 CC_CHECK_FLAGS_APPEND(with_cflags, [CFLAGS], [\
 		       -pipe \
-		       -DANOTHER_BRICK_IN_THE \
 		       -fdata-sections \
 		       -fdiagnostics-show-option \
 		       -ffunction-sections \
