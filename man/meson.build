@@ -36,6 +36,7 @@ foreach tuple : _man_pages
 endforeach
 
 _man_aliases = [
+  ['5', 'modprobe.conf', 'modprobe.d.5'],
   ['5', 'modules.dep.bin', 'modules.dep.5'],
 ]
 
