@@ -221,6 +221,11 @@ foreach tuple : _customdirs
   set_variable(dir_option, customdir)
 endforeach
 
+foreach confdir : [sysconfdir, distconfdir]
+  install_emptydir(confdir / 'depmod.d')
+  install_emptydir(confdir / 'modprobe.d')
+endforeach
+
 _completiondirs = [
   ['bash', 'bash-completion', 'bash-completion' / 'completions', '@0@'],
   ['fish', 'fish',            'fish' / 'vendor_functions.d',     '@0@.fish'],
