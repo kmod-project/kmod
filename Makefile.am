@@ -145,7 +145,8 @@ dist_zshcompletion_DATA = \
 install-exec-hook:
 if BUILD_TOOLS
 	for tool in insmod lsmod rmmod depmod modprobe modinfo; do \
-		$(LN_S) -f kmod $(DESTDIR)$(bindir)/$$tool; \
+		$(MKDIR_P) $(DESTDIR)$(sbindir); \
+		$(LN_S) --force --relative $(DESTDIR)$(bindir)/kmod $(DESTDIR)$(sbindir)/$$tool; \
 	done
 endif
 

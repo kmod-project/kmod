@@ -181,6 +181,7 @@ features = []
 prefixdir = get_option('prefix')
 sysconfdir = get_option('sysconfdir')
 bindir = prefixdir / get_option('bindir')
+sbindir = prefixdir / get_option('sbindir')
 includedir = prefixdir / get_option('includedir')
 libdir = prefixdir / get_option('libdir')
 datadir = prefixdir / get_option('datadir')
@@ -473,11 +474,15 @@ _tools = [
   'rmmod',
 ]
 
-foreach tool : _tools
-  if get_option('tools')
-    install_symlink(tool, pointing_to: 'kmod', install_dir: bindir)
-  endif
-endforeach
+if get_option('tools')
+  mkdir_p = 'mkdir -p "$DESTDIR@0@"'
+  meson.add_install_script('sh', '-c', mkdir_p.format(sbindir))
+
+  ln_s = 'ln --symbolic --force --relative "$DESTDIR@0@/kmod" "$DESTDIR@1@"'
+  foreach tool : _tools
+    meson.add_install_script('sh', '-c', ln_s.format(bindir, sbindir / tool))
+  endforeach
+endif
 
 internal_kmod_symlinks = []
 
@@ -522,6 +527,7 @@ summary({
   'prefix'      : prefixdir,
   'sysconfdir'  : sysconfdir,
   'bindir'      : bindir,
+  'sbindir'     : sbindir,
   'includedir'  : includedir,
   'libdir'      : libdir,
   'datadir'     : datadir,
