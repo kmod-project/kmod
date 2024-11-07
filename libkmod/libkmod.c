@@ -447,11 +447,9 @@ static char *lookup_file(struct kmod_ctx *ctx, enum kmod_index index_number,
 
 static bool lookup_builtin_file(struct kmod_ctx *ctx, const char *name)
 {
-	char *line = lookup_file(ctx, KMOD_INDEX_MODULES_BUILTIN, name);
-	bool found = line != NULL;
+	_cleanup_free_ char *line = lookup_file(ctx, KMOD_INDEX_MODULES_BUILTIN, name);
 
-	free(line);
-	return found;
+	return line;
 }
 
 int kmod_lookup_alias_from_kernel_builtin_file(struct kmod_ctx *ctx, const char *name,
