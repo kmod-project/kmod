@@ -22,6 +22,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
+#include <shared/strbuf.h>
 #include <shared/util.h>
 
 #include "libkmod.h"
@@ -1798,29 +1799,29 @@ static struct kmod_list *kmod_module_info_append(struct kmod_list **list, const 
 
 static char *kmod_module_hex_to_str(const char *hex, size_t len)
 {
-	char *str;
-	int i;
-	int j;
+	static const char digits[] = "0123456789ABCDEF";
+	struct strbuf sbuf;
 	const size_t line_limit = 20;
-	size_t str_len;
 
-	str_len = len * 3; /* XX: or XX\0 */
-	str_len += ((str_len + line_limit - 1) / line_limit - 1) * 3; /* \n\t\t */
+	strbuf_init(&sbuf);
 
-	str = malloc(str_len);
-	if (str == NULL)
-		return NULL;
+	for (size_t i = 0; i < len; i++) {
+		if (!strbuf_pushchar(&sbuf, digits[(hex[i] >> 4) & 0x0F]) ||
+		    !strbuf_pushchar(&sbuf, digits[hex[i] & 0x0F]))
+			goto fail;
+		if (i < len - 1) {
+			if (!strbuf_pushchar(&sbuf, ':'))
+				goto fail;
 
-	for (i = 0, j = 0; i < (int)len; i++) {
-		j += sprintf(str + j, "%02X", (unsigned char)hex[i]);
-		if (i < (int)len - 1) {
-			str[j++] = ':';
-
-			if ((i + 1) % line_limit == 0)
-				j += sprintf(str + j, "\n\t\t");
+			if ((i + 1) % line_limit == 0 &&
+			    !strbuf_pushchars(&sbuf, "\n\t\t"))
+				goto fail;
 		}
 	}
-	return str;
+	return strbuf_steal(&sbuf);
+fail:
+	strbuf_release(&sbuf);
+	return NULL;
 }
 
 static struct kmod_list *kmod_module_info_append_hex(struct kmod_list **list,
