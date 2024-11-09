@@ -279,6 +279,7 @@ CC_CHECK_FLAGS_APPEND(with_cflags, [CFLAGS], [\
 		       -Wmissing-noreturn \
 		       -Wmissing-prototypes \
 		       -Wnested-externs \
+		       -Wno-attributes=clang::suppress \
 		       -Wno-unused-parameter \
 		       -Wold-style-definition \
 		       -Wpointer-arith \

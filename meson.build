@@ -131,6 +131,7 @@ add_project_arguments(
     '-Wmissing-prototypes',
     '-Wnested-externs',
     '-Wno-unused-parameter',
+    '-Wno-attributes=clang::suppress',
     '-Wold-style-definition',
     '-Wpointer-arith',
     '-Wredundant-decls',
