@@ -43,10 +43,19 @@
 #define _must_check_ __attribute__((warn_unused_result))
 #define _printf_format_(a, b) __attribute__((format(printf, a, b)))
 #define _always_inline_ __inline__ __attribute__((always_inline))
+
+#if defined(__clang_analyzer__)
+#define _clang_suppress_ __attribute__((suppress))
+#define _clang_suppress_alloc_ __attribute__((suppress))
+#else
+#define _clang_suppress_
+#define _clang_suppress_alloc_
+#endif
+
 #define _nonnull_(...) __attribute__((nonnull(__VA_ARGS__)))
 #define _nonnull_all_ __attribute__((nonnull))
 
-#define _cleanup_(x) __attribute__((cleanup(x)))
+#define _cleanup_(x) _clang_suppress_alloc_ __attribute__((cleanup(x)))
 
 static inline void freep(void *p)
 {
