@@ -87,11 +87,6 @@ static _always_inline_ unsigned int ALIGN_POWER2(unsigned int u)
 
 /* misc                                                                     */
 /* ************************************************************************ */
-static inline void freep(void *p)
-{
-	free(*(void **)p);
-}
-#define _cleanup_free_ _cleanup_(freep)
 
 static inline bool uadd32_overflow(uint32_t a, uint32_t b, uint32_t *res)
 {
