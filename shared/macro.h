@@ -43,9 +43,16 @@
 #define _must_check_ __attribute__((warn_unused_result))
 #define _printf_format_(a, b) __attribute__((format(printf, a, b)))
 #define _always_inline_ __inline__ __attribute__((always_inline))
-#define _cleanup_(x) __attribute__((cleanup(x)))
 #define _nonnull_(...) __attribute__((nonnull(__VA_ARGS__)))
 #define _nonnull_all_ __attribute__((nonnull))
+
+#define _cleanup_(x) __attribute__((cleanup(x)))
+
+static inline void freep(void *p)
+{
+	free(*(void **)p);
+}
+#define _cleanup_free_ _cleanup_(freep)
 
 /* Define C11 noreturn without <stdnoreturn.h> and even on older gcc
  * compiler versions */
