@@ -62,6 +62,7 @@ foreach mod : _test_override_mods
 endforeach
 
 testsuite_c_args = [
+  '-UNDEBUG',
   '-DTESTSUITE_ROOTFS="@0@/testsuite/rootfs/"'.format(meson.project_build_root()),
   '-DTOOLS_DIR="@0@/"'.format(meson.project_build_root()),
   '-DOVERRIDE_LIBDIR="@0@/testsuite/"'.format(meson.project_build_root()),
