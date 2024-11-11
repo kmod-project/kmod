@@ -241,7 +241,7 @@ static int kmod_config_add_blacklist(struct kmod_config *config, const char *mod
 
 	DBG(config->ctx, "modname=%s\n", modname);
 
-	p = strdup(modname);
+	_clang_suppress_alloc_ p = strdup(modname);
 	if (!p)
 		return -ENOMEM;
 

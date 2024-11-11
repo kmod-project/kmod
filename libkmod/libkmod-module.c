@@ -828,7 +828,7 @@ static int module_do_install_commands(struct kmod_module *mod, const char *optio
 		size_t suffixlen = cmdlen - prefixlen - varlen;
 		size_t slen = cmdlen - varlen + options_len;
 		char *suffix = p + varlen;
-		char *s = malloc(slen + 1);
+		_clang_suppress_alloc_ char *s = malloc(slen + 1);
 		if (!s)
 			return -ENOMEM;
 

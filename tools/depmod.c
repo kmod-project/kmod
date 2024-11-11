@@ -1913,7 +1913,7 @@ static void depmod_report_cycles(struct depmod *depmod, uint16_t n_mods, uint16_
 		n_r++;
 	}
 
-	stack = malloc(n_r * sizeof(void *));
+	_clang_suppress_alloc_ stack = malloc(n_r * sizeof(void *));
 	if (stack == NULL) {
 		ERR("No memory to report cycles\n");
 		goto out_list;
@@ -2920,7 +2920,8 @@ static int do_depmod(int argc, char *argv[])
 			break;
 		case 'C': {
 			size_t bytes = sizeof(char *) * (n_config_paths + 2);
-			void *tmp = realloc(config_paths, bytes);
+			_clang_suppress_alloc_ void *tmp = realloc(config_paths, bytes);
+
 			if (!tmp) {
 				fputs("Error: out-of-memory\n", stderr);
 				goto cmdline_failed;
