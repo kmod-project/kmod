@@ -419,7 +419,7 @@ int mkdir_p(const char *path, int len, mode_t mode)
 	_cleanup_free_ char *start;
 	char *end;
 
-	start = memdup(path, len + 1);
+	_clang_suppress_alloc_ start = memdup(path, len + 1);
 	if (!start)
 		return -ENOMEM;
 
