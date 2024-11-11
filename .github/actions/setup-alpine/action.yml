@@ -17,6 +17,7 @@ runs:
           automake \
           bash \
           build-base \
+          coreutils \
           clang \
           git \
           gtk-doc \
