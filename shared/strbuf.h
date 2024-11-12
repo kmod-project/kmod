@@ -2,6 +2,7 @@
 
 #include <stdbool.h>
 #include <stddef.h>
+#include <alloca.h>
 
 #include "macro.h"
 
@@ -12,7 +13,28 @@ struct strbuf {
 	char *bytes;
 	size_t size;
 	size_t used;
+	bool heap;
 };
+
+/*
+ * Declare and initialize strbuf without any initial storage
+ */
+#define DECLARE_STRBUF(name__)                    \
+	_cleanup_strbuf_ struct strbuf name__ = { \
+		.heap = true,                     \
+	}
+
+/*
+ * Declare and initialize strbuf with an initial buffer on stack. The @sz__ must be a
+ * build-time constant, as if the buffer had been declared on stack.
+ */
+#define DECLARE_STRBUF_WITH_STACK(name__, sz__)   \
+	assert_cc(__builtin_constant_p(sz__));    \
+	char name__##_storage__[sz__];            \
+	_cleanup_strbuf_ struct strbuf name__ = { \
+		.bytes = name__##_storage__,      \
+		.size = sz__,                     \
+	}
 
 void strbuf_init(struct strbuf *buf);
 
@@ -34,8 +56,9 @@ void strbuf_clear(struct strbuf *buf);
 char *strbuf_steal(struct strbuf *buf);
 
 /*
- * Return a C string owned by the buffer invalidated if the buffer is
- * changed).
+ * Return a C string owned by the buffer. It becomes an invalid
+ * pointer if strbuf is changed. It may also not survive a return
+ * from current function if it was initialized with stack space
  */
 const char *strbuf_str(struct strbuf *buf);
 

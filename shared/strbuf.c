@@ -8,6 +8,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/param.h>
 
 #include "util.h"
 #include "strbuf.h"
@@ -16,12 +17,17 @@
 
 static bool buf_realloc(struct strbuf *buf, size_t sz)
 {
-	void *tmp;
+	void *tmp = realloc(buf->heap ? buf->bytes : NULL, sz);
 
-	tmp = realloc(buf->bytes, sz);
-	if (sz > 0 && tmp == NULL)
-		return false;
+	if (sz > 0) {
+		if (tmp == NULL)
+			return false;
 
+		if (!buf->heap)
+			memcpy(tmp, buf->bytes, MIN(buf->size, sz));
+	}
+
+	buf->heap = true;
 	buf->bytes = tmp;
 	buf->size = sz;
 
@@ -44,11 +50,13 @@ void strbuf_init(struct strbuf *buf)
 	buf->bytes = NULL;
 	buf->size = 0;
 	buf->used = 0;
+	buf->heap = true;
 }
 
 void strbuf_release(struct strbuf *buf)
 {
-	free(buf->bytes);
+	if (buf->heap)
+		free(buf->bytes);
 }
 
 char *strbuf_steal(struct strbuf *buf)

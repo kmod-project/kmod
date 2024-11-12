@@ -106,4 +106,61 @@ static int test_strbuf_steal(const struct test *t)
 }
 DEFINE_TEST(test_strbuf_steal, .description = "test strbuf_steal with cleanup");
 
+static int test_strbuf_with_stack(const struct test *t)
+{
+	const char test[] = "test-something-small";
+	const char *stack_buf;
+	char *p;
+	DECLARE_STRBUF_WITH_STACK(buf, 256);
+	DECLARE_STRBUF_WITH_STACK(buf2, sizeof(test) + 1);
+	DECLARE_STRBUF_WITH_STACK(buf3, sizeof(test) + 1);
+
+	strbuf_pushchars(&buf, test);
+	assert_return(streq(test, strbuf_str(&buf)), EXIT_FAILURE);
+	p = strbuf_steal(&buf);
+	assert_return(streq(test, p), EXIT_FAILURE);
+	free(p);
+
+	strbuf_pushchars(&buf2, test);
+	assert_return(streq(test, strbuf_str(&buf2)), EXIT_FAILURE);
+	/* It fits on stack, but when we steal, we get a copy on heap */
+	p = strbuf_steal(&buf2);
+	assert_return(streq(test, p), EXIT_FAILURE);
+	free(p);
+
+	/*
+	 * Check assumption about buffer being on stack vs heap is indeed valid.
+	 * Not to be done in real code.
+	 */
+	strbuf_clear(&buf3);
+	stack_buf = buf3.bytes;
+	strbuf_pushchars(&buf3, test);
+	assert_return(stack_buf == buf3.bytes, EXIT_FAILURE);
+
+	assert_return(streq(test, strbuf_str(&buf3)), EXIT_FAILURE);
+	assert_return(stack_buf == buf3.bytes, EXIT_FAILURE);
+
+	strbuf_pushchars(&buf3, "-overflow");
+	assert_return(stack_buf != buf3.bytes, EXIT_FAILURE);
+
+	return 0;
+}
+DEFINE_TEST(test_strbuf_with_stack, .description = "test strbuf with stack");
+
+static int test_strbuf_with_heap(const struct test *t)
+{
+	DECLARE_STRBUF(heapbuf);
+
+	assert_return(heapbuf.bytes == NULL, EXIT_FAILURE);
+	assert_return(heapbuf.size == 0, EXIT_FAILURE);
+	assert_return(heapbuf.used == 0, EXIT_FAILURE);
+	strbuf_pushchars(&heapbuf, "-overflow");
+	assert_return(heapbuf.bytes != NULL, EXIT_FAILURE);
+	assert_return(heapbuf.size != 0, EXIT_FAILURE);
+	assert_return(heapbuf.used != 0, EXIT_FAILURE);
+
+	return 0;
+}
+DEFINE_TEST(test_strbuf_with_heap, .description = "test strbuf with heap only");
+
 TESTSUITE_MAIN();
