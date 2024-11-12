@@ -34,15 +34,18 @@ static bool buf_realloc(struct strbuf *buf, size_t sz)
 	return true;
 }
 
-static bool buf_grow(struct strbuf *buf, size_t newsize)
+bool strbuf_reserve_extra(struct strbuf *buf, size_t n)
 {
-	if (newsize <= buf->size)
+	if (uaddsz_overflow(buf->used, n, &n))
+		return false;
+
+	if (n <= buf->size)
 		return true;
 
-	if (newsize % BUF_STEP)
-		newsize = ((newsize / BUF_STEP) + 1) * BUF_STEP;
+	if (n % BUF_STEP)
+		n = ((n / BUF_STEP) + 1) * BUF_STEP;
 
-	return buf_realloc(buf, newsize);
+	return buf_realloc(buf, n);
 }
 
 void strbuf_init(struct strbuf *buf)
@@ -75,7 +78,7 @@ char *strbuf_steal(struct strbuf *buf)
 
 const char *strbuf_str(struct strbuf *buf)
 {
-	if (!buf_grow(buf, buf->used + 1))
+	if (!strbuf_reserve_extra(buf, 1))
 		return NULL;
 	buf->bytes[buf->used] = '\0';
 	return buf->bytes;
@@ -83,7 +86,7 @@ const char *strbuf_str(struct strbuf *buf)
 
 bool strbuf_pushchar(struct strbuf *buf, char ch)
 {
-	if (!buf_grow(buf, buf->used + 1))
+	if (!strbuf_reserve_extra(buf, 1))
 		return false;
 	buf->bytes[buf->used] = ch;
 	buf->used++;
@@ -99,7 +102,7 @@ size_t strbuf_pushchars(struct strbuf *buf, const char *str)
 
 	len = strlen(str);
 
-	if (!buf_grow(buf, buf->used + len))
+	if (!strbuf_reserve_extra(buf, len))
 		return 0;
 
 	memcpy(buf->bytes + buf->used, str, len);
