@@ -55,12 +55,14 @@ char *strbuf_steal(struct strbuf *buf)
 {
 	char *bytes;
 
-	bytes = realloc(buf->bytes, buf->used + 1);
-	if (!bytes) {
+	if (!buf_realloc(buf, buf->used + 1)) {
 		free(buf->bytes);
 		return NULL;
 	}
+
+	bytes = buf->bytes;
 	bytes[buf->used] = '\0';
+
 	return bytes;
 }
 
