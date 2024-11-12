@@ -78,9 +78,11 @@ char *strbuf_steal(struct strbuf *buf)
 
 const char *strbuf_str(struct strbuf *buf)
 {
-	if (!strbuf_reserve_extra(buf, 1))
-		return NULL;
-	buf->bytes[buf->used] = '\0';
+	if (!buf->used || buf->bytes[buf->used - 1]) {
+		if (!strbuf_reserve_extra(buf, 1))
+			return NULL;
+		buf->bytes[buf->used] = '\0';
+	}
 	return buf->bytes;
 }
 
