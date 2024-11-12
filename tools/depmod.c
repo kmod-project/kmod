@@ -25,7 +25,6 @@
 #include <shared/macro.h>
 #include <shared/strbuf.h>
 #include <shared/util.h>
-#include <shared/scratchbuf.h>
 
 #include <libkmod/libkmod-internal.h>
 
@@ -2336,11 +2335,10 @@ static int output_symbols(struct depmod *depmod, FILE *out)
 
 static int output_symbols_bin(struct depmod *depmod, FILE *out)
 {
+	DECLARE_STRBUF_WITH_STACK(salias, 1024);
 	struct index_node *idx;
-	char aliasbuf[1024] = "symbol:";
-	_cleanup_(scratchbuf_release) struct scratchbuf salias =
-		SCRATCHBUF_INITIALIZER(aliasbuf);
-	const size_t baselen = sizeof("symbol:") - 1;
+	const char *base = "symbol:";
+	const size_t baselen = strlen(base);
 	struct hash_iter iter;
 	const void *v;
 	int ret = 0;
@@ -2354,32 +2352,34 @@ static int output_symbols_bin(struct depmod *depmod, FILE *out)
 
 	hash_iter_init(depmod->symbols, &iter);
 
+	strbuf_pushchars(&salias, base);
+
 	while (hash_iter_next(&iter, NULL, &v)) {
 		int duplicate;
 		const struct symbol *sym = v;
-		size_t len;
-		char *s;
 
 		if (sym->owner == NULL)
 			continue;
 
-		len = strlen(sym->name);
+		strbuf_shrink_to(&salias, baselen);
 
-		if (scratchbuf_alloc(&salias, baselen + len + 1) < 0) {
+		if (!strbuf_pushchars(&salias, sym->name) ||
+		    !strbuf_reserve_extra(&salias, 1)) {
 			ret = -ENOMEM;
-			goto err_scratchbuf;
+			goto err_alloc;
 		}
-		s = scratchbuf_str(&salias);
-		memcpy(s + baselen, sym->name, len + 1);
-		duplicate = index_insert(idx, s, sym->owner->modname, sym->owner->idx);
+
+		duplicate = index_insert(idx, strbuf_str(&salias), sym->owner->modname,
+					 sym->owner->idx);
 
 		if (duplicate && depmod->cfg->warn_dups)
-			WRN("duplicate module syms:\n%s %s\n", s, sym->owner->modname);
+			WRN("duplicate module syms:\n%s %s\n", strbuf_str(&salias),
+			    sym->owner->modname);
 	}
 
 	index_write(idx, out);
 
-err_scratchbuf:
+err_alloc:
 	index_destroy(idx);
 
 	if (ret < 0)
