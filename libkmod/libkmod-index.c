@@ -167,24 +167,16 @@ static int add_value(struct index_value **values, const char *value, size_t len,
 	return 0;
 }
 
-static int read_char(FILE *in)
+static inline int read_char(FILE *in)
 {
-	int ch;
-
-	errno = 0;
-	ch = getc_unlocked(in);
-	if (ch == EOF)
-		errno = EINVAL;
-	return ch;
+	return getc_unlocked(in);
 }
 
 static bool read_u32s(FILE *in, uint32_t *l, size_t n)
 {
 	size_t i;
 
-	errno = 0;
 	if (fread_unlocked(l, sizeof(uint32_t), n, in) != n) {
-		errno = EINVAL;
 		return false;
 	}
 	for (i = 0; i < n; i++)
@@ -312,7 +304,6 @@ struct index_file *index_file_open(const char *filename)
 	file = fopen(filename, "re");
 	if (!file)
 		return NULL;
-	errno = EINVAL;
 
 	if (!read_u32(file, &magic) || magic != INDEX_MAGIC)
 		goto err;
@@ -332,7 +323,6 @@ struct index_file *index_file_open(const char *filename)
 	new->tmp = NULL;
 	new->tmp_size = 0;
 
-	errno = 0;
 	return new;
 err:
 	fclose(file);
