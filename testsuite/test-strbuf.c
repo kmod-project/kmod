@@ -62,6 +62,11 @@ static int test_strbuf_pushchars(const struct test *t)
 		lastwordlen = strlen(c);
 	}
 
+	/*
+	 * Replace the last space char, which also guarantees there's at least 1 char
+	 * available for the '\0' added by strbuf_str() so result1 == buf.bytes should be
+	 * true
+	 */
 	strbuf_popchar(&buf);
 	result1 = strbuf_str(&buf);
 	assert_return(result1 == buf.bytes, EXIT_FAILURE);
