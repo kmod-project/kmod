@@ -2,6 +2,7 @@
 
 #include <stdbool.h>
 #include <stddef.h>
+#include <string.h>
 #include <alloca.h>
 
 #include "macro.h"
@@ -67,8 +68,13 @@ const char *strbuf_str(struct strbuf *buf);
  * don't cause re-allocations
  */
 bool strbuf_reserve_extra(struct strbuf *buf, size_t n);
+
 bool strbuf_pushchar(struct strbuf *buf, char ch);
-size_t strbuf_pushchars(struct strbuf *buf, const char *str);
+size_t strbuf_pushmem(struct strbuf *buf, const char *src, size_t sz);
+static inline size_t strbuf_pushchars(struct strbuf *buf, const char *str)
+{
+	return strbuf_pushmem(buf, str, strlen(str));
+}
 
 /*
  * Remove the last char from buf.

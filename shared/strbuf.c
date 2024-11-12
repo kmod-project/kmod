@@ -95,22 +95,18 @@ bool strbuf_pushchar(struct strbuf *buf, char ch)
 	return true;
 }
 
-size_t strbuf_pushchars(struct strbuf *buf, const char *str)
+size_t strbuf_pushmem(struct strbuf *buf, const char *src, size_t sz)
 {
-	size_t len;
-
-	assert(str != NULL);
+	assert(src != NULL);
 	assert(buf != NULL);
 
-	len = strlen(str);
-
-	if (!strbuf_reserve_extra(buf, len))
+	if (!strbuf_reserve_extra(buf, sz))
 		return 0;
 
-	memcpy(buf->bytes + buf->used, str, len);
-	buf->used += len;
+	memcpy(buf->bytes + buf->used, src, sz);
+	buf->used += sz;
 
-	return len;
+	return sz;
 }
 
 void strbuf_popchar(struct strbuf *buf)
