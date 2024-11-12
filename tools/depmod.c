@@ -1345,12 +1345,11 @@ static bool should_exclude_dir(const struct cfg *cfg, const char *name)
 	return false;
 }
 
-static int depmod_modules_search_dir(struct depmod *depmod, DIR *d, size_t baselen,
-				     struct scratchbuf *s_path)
+static int depmod_modules_search_dir(struct depmod *depmod, DIR *d, struct strbuf *path)
 {
 	struct dirent *de;
 	int err = 0, dfd = dirfd(d);
-	char *path;
+	const size_t baselen = strbuf_used(path);
 
 	while ((de = readdir(d)) != NULL) {
 		const char *name = de->d_name;
@@ -1360,15 +1359,17 @@ static int depmod_modules_search_dir(struct depmod *depmod, DIR *d, size_t basel
 		if (should_exclude_dir(depmod->cfg, name))
 			continue;
 
+		strbuf_shrink_to(path, baselen);
+
 		namelen = strlen(name);
-		if (scratchbuf_alloc(s_path, baselen + namelen + 2) < 0) {
+
+		if (!strbuf_pushchars(path, name) ||
+		    /* Ensure space for (possible) '/' or '\0' */
+		    !strbuf_reserve_extra(path, 1)) {
 			err = -ENOMEM;
 			ERR("No memory\n");
 			continue;
 		}
-
-		path = scratchbuf_str(s_path);
-		memcpy(path + baselen, name, namelen + 1);
 
 		if (de->d_type == DT_REG)
 			is_dir = 0;
@@ -1384,7 +1385,7 @@ static int depmod_modules_search_dir(struct depmod *depmod, DIR *d, size_t basel
 			else if (S_ISDIR(st.st_mode))
 				is_dir = 1;
 			else {
-				ERR("unsupported file type %s: %o\n", path,
+				ERR("unsupported file type %s: %o\n", strbuf_str(path),
 				    st.st_mode & S_IFMT);
 				continue;
 			}
@@ -1404,32 +1405,28 @@ static int depmod_modules_search_dir(struct depmod *depmod, DIR *d, size_t basel
 				close(fd);
 				continue;
 			}
-			path[baselen + namelen] = '/';
-			path[baselen + namelen + 1] = '\0';
-			err = depmod_modules_search_dir(depmod, subdir,
-							baselen + namelen + 1, s_path);
+
+			strbuf_pushchar(path, '/');
+			err = depmod_modules_search_dir(depmod, subdir, path);
 			closedir(subdir);
 		} else {
-			err = depmod_modules_search_file(depmod, baselen, namelen, path);
+			err = depmod_modules_search_file(depmod, baselen, namelen,
+							 strbuf_str(path));
 		}
 
 		if (err < 0) {
-			path[baselen + namelen] = '\0';
-			ERR("failed %s: %s\n", path, strerror(-err));
+			ERR("failed %s: %s\n", strbuf_str(path), strerror(-err));
 			err = 0; /* ignore errors */
 		}
 	}
+
 	return err;
 }
 
 static int depmod_modules_search_path(struct depmod *depmod, const char *path)
 {
-	char buf[256];
-	_cleanup_(scratchbuf_release) struct scratchbuf s_path_buf =
-		SCRATCHBUF_INITIALIZER(buf);
-	char *path_buf;
+	DECLARE_STRBUF_WITH_STACK(s_path_buf, 256);
 	DIR *d;
-	size_t baselen;
 	int err;
 
 	d = opendir(path);
@@ -1439,20 +1436,12 @@ static int depmod_modules_search_path(struct depmod *depmod, const char *path)
 		return err;
 	}
 
-	baselen = strlen(path);
-
-	if (scratchbuf_alloc(&s_path_buf, baselen + 2) < 0) {
+	if (!strbuf_pushchars(&s_path_buf, path) || !strbuf_pushchar(&s_path_buf, '/')) {
 		err = -ENOMEM;
 		goto out;
 	}
-	path_buf = scratchbuf_str(&s_path_buf);
 
-	memcpy(path_buf, path, baselen);
-	path_buf[baselen] = '/';
-	baselen++;
-	path_buf[baselen] = '\0';
-
-	err = depmod_modules_search_dir(depmod, d, baselen, &s_path_buf);
+	err = depmod_modules_search_dir(depmod, d, &s_path_buf);
 out:
 	closedir(d);
 	return err;
