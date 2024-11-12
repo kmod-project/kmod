@@ -27,5 +27,29 @@ const char *strbuf_str(struct strbuf *buf);
 
 bool strbuf_pushchar(struct strbuf *buf, char ch);
 size_t strbuf_pushchars(struct strbuf *buf, const char *str);
+
+/*
+ * Remove the last char from buf.
+ *
+ * No reallocation is done, so it's guaranteed @buf will have at least 1 char available to
+ * be filled after this call, as long as @buf wasn't empty.
+ */
 void strbuf_popchar(struct strbuf *buf);
+
+/*
+ * Remove the last @n chars from buf.
+ *
+ * No reallocation is done, so it's guaranteed @buf will have at least @n chars available
+ * to be filled after this call, as long as @buf had @n chars allocated before.
+ *
+ * Example:
+ *
+ * 	struct strbuf buf;
+ * 	strbuf_init(&buf);
+ * 	strbuf_pushchars(&buf, "foobar");
+ * 	strbuf_popchars(&buf, 5);
+ *
+ * After these calls @buf is [ 'f', x, x, x, ... ], where "x" means undefined. However it's
+ * guaranteed to have (at least) 5 chars available without needing to reallocate.
+ */
 void strbuf_popchars(struct strbuf *buf, size_t n);
