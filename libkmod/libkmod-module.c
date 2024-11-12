@@ -1796,7 +1796,7 @@ static struct kmod_list *kmod_module_info_append(struct kmod_list **list, const 
 static char *kmod_module_hex_to_str(const char *hex, size_t len)
 {
 	static const char digits[] = "0123456789ABCDEF";
-	struct strbuf sbuf;
+	_cleanup_strbuf_ struct strbuf sbuf;
 	const size_t line_limit = 20;
 
 	strbuf_init(&sbuf);
@@ -1804,20 +1804,19 @@ static char *kmod_module_hex_to_str(const char *hex, size_t len)
 	for (size_t i = 0; i < len; i++) {
 		if (!strbuf_pushchar(&sbuf, digits[(hex[i] >> 4) & 0x0F]) ||
 		    !strbuf_pushchar(&sbuf, digits[hex[i] & 0x0F]))
-			goto fail;
+			return NULL;
+
 		if (i < len - 1) {
 			if (!strbuf_pushchar(&sbuf, ':'))
-				goto fail;
+				return NULL;
 
 			if ((i + 1) % line_limit == 0 &&
 			    !strbuf_pushchars(&sbuf, "\n\t\t"))
-				goto fail;
+				return NULL;
 		}
 	}
+
 	return strbuf_steal(&sbuf);
-fail:
-	strbuf_release(&sbuf);
-	return NULL;
 }
 
 static struct kmod_list *kmod_module_info_append_hex(struct kmod_list **list,

@@ -87,4 +87,23 @@ static int test_strbuf_pushchars(const struct test *t)
 DEFINE_TEST(test_strbuf_pushchars,
 	    .description = "test strbuf_{pushchars, popchar, popchars}");
 
+static int test_strbuf_steal(const struct test *t)
+{
+	char *result;
+
+	{
+		_cleanup_strbuf_ struct strbuf buf;
+
+		strbuf_init(&buf);
+		strbuf_pushchars(&buf, TEXT);
+		result = strbuf_steal(&buf);
+	}
+
+	assert_return(streq(result, TEXT), EXIT_FAILURE);
+	free(result);
+
+	return 0;
+}
+DEFINE_TEST(test_strbuf_steal, .description = "test strbuf_steal with cleanup");
+
 TESTSUITE_MAIN();
