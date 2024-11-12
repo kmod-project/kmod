@@ -14,25 +14,29 @@
 
 #define BUF_STEP 128
 
-static bool buf_grow(struct strbuf *buf, size_t newsize)
+static bool buf_realloc(struct strbuf *buf, size_t sz)
 {
 	void *tmp;
-	size_t sz;
-
-	if (newsize <= buf->size)
-		return true;
-
-	if (newsize % BUF_STEP == 0)
-		sz = newsize;
-	else
-		sz = ((newsize / BUF_STEP) + 1) * BUF_STEP;
 
 	tmp = realloc(buf->bytes, sz);
 	if (sz > 0 && tmp == NULL)
 		return false;
+
 	buf->bytes = tmp;
 	buf->size = sz;
+
 	return true;
+}
+
+static bool buf_grow(struct strbuf *buf, size_t newsize)
+{
+	if (newsize <= buf->size)
+		return true;
+
+	if (newsize % BUF_STEP)
+		newsize = ((newsize / BUF_STEP) + 1) * BUF_STEP;
+
+	return buf_realloc(buf, newsize);
 }
 
 void strbuf_init(struct strbuf *buf)
