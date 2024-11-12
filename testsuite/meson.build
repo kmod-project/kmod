@@ -91,7 +91,6 @@ _testsuite = [
   'test-modinfo',
   'test-modprobe',
   'test-new-module',
-  'test-scratchbuf',
   'test-strbuf',
   'test-testsuite',
   'test-util',

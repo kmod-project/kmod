@@ -343,8 +343,6 @@ libshared = static_library(
     'shared/hash.h',
     'shared/macro.h',
     'shared/missing.h',
-    'shared/scratchbuf.c',
-    'shared/scratchbuf.h',
     'shared/strbuf.c',
     'shared/strbuf.h',
     'shared/util.c',

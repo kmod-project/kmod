@@ -62,8 +62,6 @@ shared_libshared_la_SOURCES = \
 	shared/hash.h \
 	shared/macro.h \
 	shared/missing.h \
-	shared/scratchbuf.c \
-	shared/scratchbuf.h \
 	shared/strbuf.c \
 	shared/strbuf.h \
 	shared/util.c \
@@ -295,7 +293,6 @@ TESTSUITE = \
 	testsuite/test-modinfo \
 	testsuite/test-modprobe \
 	testsuite/test-new-module \
-	testsuite/test-scratchbuf \
 	testsuite/test-strbuf \
 	testsuite/test-testsuite \
 	testsuite/test-util \
@@ -313,9 +310,6 @@ testsuite_test_hash_CPPFLAGS = $(TESTSUITE_CPPFLAGS)
 
 testsuite_test_array_LDADD = $(TESTSUITE_LDADD)
 testsuite_test_array_CPPFLAGS = $(TESTSUITE_CPPFLAGS)
-
-testsuite_test_scratchbuf_LDADD = $(TESTSUITE_LDADD)
-testsuite_test_scratchbuf_CPPFLAGS = $(TESTSUITE_CPPFLAGS)
 
 testsuite_test_strbuf_LDADD = $(TESTSUITE_LDADD)
 testsuite_test_strbuf_CPPFLAGS = $(TESTSUITE_CPPFLAGS)
