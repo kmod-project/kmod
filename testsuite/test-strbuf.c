@@ -185,4 +185,22 @@ static int test_strbuf_reserve_extra(const struct test *t)
 }
 DEFINE_TEST(test_strbuf_reserve_extra, .description = "test strbuf_reserve_extra");
 
+static int test_strbuf_pushmem(const struct test *t)
+{
+	_cleanup_strbuf_ struct strbuf buf;
+	size_t size;
+
+	strbuf_init(&buf);
+	strbuf_reserve_extra(&buf, strlen(TEXT) + 1);
+	size = buf.size;
+	strbuf_pushmem(&buf, TEXT, strlen(TEXT) + 1);
+
+	assert_return(size == buf.size, EXIT_FAILURE);
+	assert_return(streq(TEXT, strbuf_str(&buf)), EXIT_FAILURE);
+	assert_return(size == buf.size, EXIT_FAILURE);
+
+	return 0;
+}
+DEFINE_TEST(test_strbuf_pushmem, .description = "test strbuf_reserve");
+
 TESTSUITE_MAIN();
