@@ -67,7 +67,7 @@ struct kmod_elf *kmod_file_get_elf(struct kmod_file *file)
 
 	err = kmod_file_load_contents(file);
 	if (err) {
-		errno = err;
+		errno = -err;
 		return NULL;
 	}
 
