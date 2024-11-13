@@ -67,6 +67,7 @@ int kmod_file_load_zstd(struct kmod_file *file)
 	ret = ZSTD_decompress(dst_buf, dst_size, src_buf, src_size);
 	if (ZSTD_isError(ret)) {
 		ERR(file->ctx, "zstd: %s\n", ZSTD_getErrorName(ret));
+		ret = -EINVAL;
 		goto out;
 	}
 
