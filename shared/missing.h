@@ -6,7 +6,7 @@
 /*
  * Macros pulled from linux/module.h, to avoid pulling the header.
  *
- * In practise very few people have it installed and distros do not install the
+ * In practice, very few people have it installed and distros do not install the
  * relevant package during their build.
  *
  * Values are UAPI, so they cannot change.
