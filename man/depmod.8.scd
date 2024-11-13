@@ -6,7 +6,7 @@ depmod - Generate modules.dep and map files.
 
 # SYNOPSIS
 
-*depmod* [*-b* _basedir_] [*-m* _moduledir_] [*-o* _outdir_][*-o* _outdir_] [*-e*] [*-E* _Module.symvers_]
+*depmod* [*-b* _basedir_] [*-m* _moduledir_] [*-o* _outdir_] [*-e*] [*-E* _Module.symvers_]
 \ \ \ \ \ \ \ \[*-F* _System.map_] [*-n*] [*-v*] [*-A*] [*-P* _prefix_] [*-w*] [_version_]
 
 *depmod* [*-e*] [*-E* _Module.symvers_] [*-F* _System.map_] [*-n*] [*-v*] [*-P* _prefix_]
