@@ -25,10 +25,9 @@
  * Integers are stored as 32 bit unsigned in "network" order, i.e. MSB first.
  * All files start with a magic number.
  *
- * Magic spells "BOOTFAST". Second one used on newer versioned binary files.
- * #define INDEX_MAGIC_OLD 0xB007FA57
+ * Magic spells "BOOTFAST". Deprecated versions encoded it as 0xB007FA57.
  *
- * We use a version string to keep track of changes to the binary format
+ * We use a version string to keep track of changes to the binary format.
  * This is stored in the form: INDEX_MAJOR (hi) INDEX_MINOR (lo) just in
  * case we ever decide to have minor changes that are not incompatible.
  */
