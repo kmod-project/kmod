@@ -143,7 +143,7 @@ int test_run(const struct test *t);
 	int main(int argc, char *argv[])                                                 \
 	{                                                                                \
 		const struct test *t;                                                    \
-		int arg;                                                                 \
+		int arg, ret = EXIT_SUCCESS;                                             \
                                                                                          \
 		arg = test_init(__start_kmod_tests, __stop_kmod_tests, argc, argv);      \
 		if (arg == 0)                                                            \
@@ -163,8 +163,8 @@ int test_run(const struct test *t);
                                                                                          \
 		for (t = __start_kmod_tests; t < __stop_kmod_tests; t++) {               \
 			if (test_run(t) != 0)                                            \
-				exit(EXIT_FAILURE);                                      \
+				ret = EXIT_FAILURE;                                      \
 		}                                                                        \
                                                                                          \
-		exit(EXIT_SUCCESS);                                                      \
+		exit(ret);                                                               \
 	}
