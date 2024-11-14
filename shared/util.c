@@ -369,13 +369,6 @@ char *freadline_wrapped(FILE *fp, unsigned int *linenum)
 /* path handling functions                                                  */
 /* ************************************************************************ */
 
-static bool path_is_absolute(const char *p)
-{
-	assert(p != NULL);
-
-	return p[0] == '/';
-}
-
 char *path_make_absolute_cwd(const char *p)
 {
 	_cleanup_free_ char *cwd = NULL;
