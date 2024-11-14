@@ -104,6 +104,7 @@ map=(
     ["test-depmod/modules-outdir$MODULE_DIRECTORY/4.4.4/kernel/drivers/scsi/hpsa.ko"]="mod-fake-hpsa.ko"
     ["test-depmod/modules-outdir$MODULE_DIRECTORY/4.4.4/kernel/drivers/scsi/scsi_mod.ko"]="mod-fake-scsi-mod.ko"
     ["test-depmod/another-moddir/foobar/4.4.4/kernel/"]="mod-simple.ko"
+    ["test-depmod/another-moddir/foobar2/4.4.4/kernel/"]="mod-simple.ko"
     # TODO: add cross-compiled modules to the test
     ["test-modinfo/mod-simple.ko"]="mod-simple.ko"
     ["test-modinfo/mod-simple-sha1.ko"]="mod-simple.ko"
