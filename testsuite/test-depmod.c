@@ -5,6 +5,7 @@
 
 #include <errno.h>
 #include <inttypes.h>
+#include <stdarg.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -13,21 +14,18 @@
 
 #include "testsuite.h"
 
+#define EXEC_DEPMOD(...)                     \
+	test_spawn_prog(TOOLS_DIR "/depmod", \
+			(const char *[]){ TOOLS_DIR "/depmod", ##__VA_ARGS__, NULL })
+
 #define MODULES_UNAME "4.4.4"
 #define MODULES_ORDER_ROOTFS TESTSUITE_ROOTFS "test-depmod/modules-order-compressed"
 #define MODULES_ORDER_LIB_MODULES MODULES_ORDER_ROOTFS MODULE_DIRECTORY "/" MODULES_UNAME
 static noreturn int depmod_modules_order_for_compressed(const struct test *t)
 {
-	const char *progname = TOOLS_DIR "/depmod";
-	const char *const args[] = {
-		progname,
-		NULL,
-	};
-
-	test_spawn_prog(progname, args);
+	EXEC_DEPMOD();
 	exit(EXIT_FAILURE);
 }
-
 DEFINE_TEST(depmod_modules_order_for_compressed,
 	.description = "check if depmod let aliases in right order when using compressed modules",
 	.config = {
@@ -49,16 +47,7 @@ DEFINE_TEST(depmod_modules_order_for_compressed,
 	MODULES_OUTDIR_ROOTFS MODULE_DIRECTORY "/" MODULES_UNAME
 static noreturn int depmod_modules_outdir(const struct test *t)
 {
-	const char *progname = TOOLS_DIR "/depmod";
-	const char *const args[] = {
-		// clang-format off
-		progname,
-		"--outdir", "/outdir/",
-		NULL,
-		// clang-format on
-	};
-
-	test_spawn_prog(progname, args);
+	EXEC_DEPMOD("--outdir", "/outdir/");
 	exit(EXIT_FAILURE);
 }
 DEFINE_TEST(depmod_modules_outdir,
@@ -82,13 +71,7 @@ DEFINE_TEST(depmod_modules_outdir,
 	SEARCH_ORDER_SIMPLE_ROOTFS MODULE_DIRECTORY "/" MODULES_UNAME
 static noreturn int depmod_search_order_simple(const struct test *t)
 {
-	const char *progname = TOOLS_DIR "/depmod";
-	const char *const args[] = {
-		progname,
-		NULL,
-	};
-
-	test_spawn_prog(progname, args);
+	EXEC_DEPMOD();
 	exit(EXIT_FAILURE);
 }
 DEFINE_TEST(depmod_search_order_simple,
@@ -111,15 +94,7 @@ DEFINE_TEST(depmod_search_order_simple,
 	MODULES_ANOTHER_MODDIR_ROOTFS ANOTHER_MODDIR "/" MODULES_UNAME
 static noreturn int depmod_another_moddir(const struct test *t)
 {
-	const char *progname = TOOLS_DIR "/depmod";
-	const char *const args[] = {
-		progname,
-		"-m",
-		ANOTHER_MODDIR,
-		NULL,
-	};
-
-	test_spawn_prog(progname, args);
+	EXEC_DEPMOD("-m", ANOTHER_MODDIR);
 	exit(EXIT_FAILURE);
 }
 DEFINE_TEST(depmod_another_moddir,
@@ -142,13 +117,7 @@ DEFINE_TEST(depmod_another_moddir,
 	SEARCH_ORDER_SAME_PREFIX_ROOTFS MODULE_DIRECTORY "/" MODULES_UNAME
 static noreturn int depmod_search_order_same_prefix(const struct test *t)
 {
-	const char *progname = TOOLS_DIR "/depmod";
-	const char *const args[] = {
-		progname,
-		NULL,
-	};
-
-	test_spawn_prog(progname, args);
+	EXEC_DEPMOD();
 	exit(EXIT_FAILURE);
 }
 DEFINE_TEST(depmod_search_order_same_prefix,
@@ -168,13 +137,7 @@ DEFINE_TEST(depmod_search_order_same_prefix,
 #define DETECT_LOOP_ROOTFS TESTSUITE_ROOTFS "test-depmod/detect-loop"
 static noreturn int depmod_detect_loop(const struct test *t)
 {
-	const char *progname = TOOLS_DIR "/depmod";
-	const char *const args[] = {
-		progname,
-		NULL,
-	};
-
-	test_spawn_prog(progname, args);
+	EXEC_DEPMOD();
 	exit(EXIT_FAILURE);
 }
 DEFINE_TEST(depmod_detect_loop,
@@ -194,13 +157,7 @@ DEFINE_TEST(depmod_detect_loop,
 	SEARCH_ORDER_EXTERNAL_FIRST_ROOTFS MODULE_DIRECTORY "/" MODULES_UNAME
 static noreturn int depmod_search_order_external_first(const struct test *t)
 {
-	const char *progname = TOOLS_DIR "/depmod";
-	const char *const args[] = {
-		progname,
-		NULL,
-	};
-
-	test_spawn_prog(progname, args);
+	EXEC_DEPMOD();
 	exit(EXIT_FAILURE);
 }
 DEFINE_TEST(depmod_search_order_external_first,
@@ -223,13 +180,7 @@ DEFINE_TEST(depmod_search_order_external_first,
 	SEARCH_ORDER_EXTERNAL_LAST_ROOTFS MODULE_DIRECTORY "/" MODULES_UNAME
 static noreturn int depmod_search_order_external_last(const struct test *t)
 {
-	const char *progname = TOOLS_DIR "/depmod";
-	const char *const args[] = {
-		progname,
-		NULL,
-	};
-
-	test_spawn_prog(progname, args);
+	EXEC_DEPMOD();
 	exit(EXIT_FAILURE);
 }
 DEFINE_TEST(depmod_search_order_external_last,
@@ -251,13 +202,7 @@ DEFINE_TEST(depmod_search_order_external_last,
 	SEARCH_ORDER_OVERRIDE_ROOTFS MODULE_DIRECTORY "/" MODULES_UNAME
 static noreturn int depmod_search_order_override(const struct test *t)
 {
-	const char *progname = TOOLS_DIR "/depmod";
-	const char *const args[] = {
-		progname,
-		NULL,
-	};
-
-	test_spawn_prog(progname, args);
+	EXEC_DEPMOD();
 	exit(EXIT_FAILURE);
 }
 DEFINE_TEST(depmod_search_order_override,
@@ -278,13 +223,7 @@ DEFINE_TEST(depmod_search_order_override,
 #define CHECK_WEAKDEP_LIB_MODULES CHECK_WEAKDEP_ROOTFS MODULE_DIRECTORY "/" MODULES_UNAME
 static noreturn int depmod_check_weakdep(const struct test *t)
 {
-	const char *progname = TOOLS_DIR "/depmod";
-	const char *const args[] = {
-		progname,
-		NULL,
-	};
-
-	test_spawn_prog(progname, args);
+	EXEC_DEPMOD();
 	exit(EXIT_FAILURE);
 }
 DEFINE_TEST(depmod_check_weakdep,
