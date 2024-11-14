@@ -3034,8 +3034,8 @@ static int do_depmod(int argc, char *argv[])
 	cfg.dirnamelen = snprintf(cfg.dirname, PATH_MAX, "%s%s/%s", root ?: "",
 				  module_directory, cfg.kversion);
 	if (cfg.dirnamelen >= PATH_MAX) {
-		ERR("Bad directory %s" MODULE_DIRECTORY "/%s: path too long\n",
-		    root ?: "", cfg.kversion);
+		ERR("Bad directory %s%s/%s: path too long\n", root ?: "",
+		    module_directory, cfg.kversion);
 		goto cmdline_failed;
 	}
 
@@ -3043,8 +3043,8 @@ static int do_depmod(int argc, char *argv[])
 				     out_root ?: (root ?: ""), module_directory,
 				     cfg.kversion);
 	if (cfg.outdirnamelen >= PATH_MAX) {
-		ERR("Bad directory %s" MODULE_DIRECTORY "/%s: path too long\n",
-		    out_root ?: (root ?: ""), cfg.kversion);
+		ERR("Bad directory %s%s/%s: path too long\n", out_root ?: (root ?: ""),
+		    module_directory, cfg.kversion);
 		goto cmdline_failed;
 	}
 
