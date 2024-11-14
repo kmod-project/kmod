@@ -369,7 +369,7 @@ static void index_dump_node(struct index_node_f *node, struct strbuf *buf, int f
 	pushed = strbuf_pushchars(buf, node->prefix);
 
 	for (v = node->values; v != NULL; v = v->next) {
-		write_str_safe(fd, buf->bytes, buf->used);
+		write_str_safe(fd, buf->bytes, strbuf_used(buf));
 		write_str_safe(fd, " ", 1);
 		write_str_safe(fd, v->value, strlen(v->value));
 		write_str_safe(fd, "\n", 1);
@@ -833,7 +833,7 @@ static void index_mm_dump_node(struct index_mm_node *node, struct strbuf *buf, i
 		struct index_mm_value v;
 
 		read_value_mm(&p, &v);
-		write_str_safe(fd, buf->bytes, buf->used);
+		write_str_safe(fd, buf->bytes, strbuf_used(buf));
 		write_str_safe(fd, " ", 1);
 		write_str_safe(fd, v.value, v.len);
 		write_str_safe(fd, "\n", 1);
