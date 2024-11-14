@@ -89,10 +89,16 @@ DEFINE_TEST(depmod_search_order_simple,
 	});
 
 #define ANOTHER_MODDIR "/foobar"
+#define RELATIVE_MODDIR "foobar2"
 #define MODULES_ANOTHER_MODDIR_ROOTFS TESTSUITE_ROOTFS "test-depmod/another-moddir"
 static noreturn int depmod_another_moddir(const struct test *t)
 {
 	EXEC_DEPMOD("-m", ANOTHER_MODDIR);
+	exit(EXIT_FAILURE);
+}
+static noreturn int depmod_another_moddir_relative(const struct test *t)
+{
+	EXEC_DEPMOD("-m", RELATIVE_MODDIR);
 	exit(EXIT_FAILURE);
 }
 DEFINE_TEST(depmod_another_moddir,
@@ -105,6 +111,19 @@ DEFINE_TEST(depmod_another_moddir,
 		.files = (const struct keyval[]) {
 			{ MODULES_ANOTHER_MODDIR_ROOTFS "/correct-modules.dep",
 			  MODULES_ANOTHER_MODDIR_ROOTFS ANOTHER_MODDIR "/" MODULES_UNAME "/modules.dep" },
+			{ },
+		},
+	});
+DEFINE_TEST(depmod_another_moddir_relative,
+	.description = "check depmod -m flag with relative dir",
+	.config = {
+		[TC_UNAME_R] = MODULES_UNAME,
+		[TC_ROOTFS] = MODULES_ANOTHER_MODDIR_ROOTFS,
+	},
+	.output = {
+		.files = (const struct keyval[]) {
+			{ MODULES_ANOTHER_MODDIR_ROOTFS "/correct-modules.dep",
+			  MODULES_ANOTHER_MODDIR_ROOTFS "/" RELATIVE_MODDIR "/" MODULES_UNAME "/modules.dep" },
 			{ },
 		},
 	});
