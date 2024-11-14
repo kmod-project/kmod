@@ -56,6 +56,9 @@ rather than the current kernel version (as returned by *uname -r*).
 	distribution vendor who needs to pre-generate the meta-data files rather
 	than running *depmod* again later.
 
+	If a relative path is given, it's relative to the current working
+	directory.
+
 	Example:
 		depmod -b /my/build/staging/dir/
 
@@ -69,12 +72,26 @@ rather than the current kernel version (as returned by *uname -r*).
 	building *modules.dep* file in _basedir_ for a system that uses a
 	different prefix, e.g. _/usr/lib/modules_ vs _/lib/modules_.
 
-	Example:
-		depmod -b /tmp/build -m /kernel-modules
+	Relative and absolute paths are accepted, but they are always relative
+	to the _basedir_.
+
+	Examples:
+		depmod -b /tmp/build -m /kernel-modules++
+depmod -b /tmp/build -m kernel-modules
 
 	This expects all input files under
 	_/tmp/build/kernel-modules/$(uname -r)_ and generates index files under
 	that same directory.
+
+	Without an accompanying *-b* argument, the moduledir is relative to _/_.
+	Example:
+
+		depmod -m foo/bar
+
+	This expects all input files under _/foo/bar/$(uname -r)_ and generates
+	index files under the same directory. Unless libkmod is prepared to
+	handle that arbitrary location, it won't work in runtime.
+
 
 *-o* _outdir_, *--outdir* _outdir_
 	Set the output directory where *depmod* will store any generated file.
@@ -82,6 +99,9 @@ rather than the current kernel version (as returned by *uname -r*).
 	used. Also this setting takes precedence and if used together with
 	_basedir_ it will result in the input being that directory, but the output
 	being the one set by _outdir_.
+
+	If a relative path is given, it's relative to the current working
+	directory.
 
 	Example:
 		depmod -o /my/build/staging/dir/
