@@ -400,4 +400,42 @@ DEFINE_TEST(depmod_test_big_01,
 		},
 	});
 
+#define TEST_BIG_01_INCREMENTAL_ROOTFS TESTSUITE_ROOTFS "test-depmod/big-01-incremental"
+static noreturn int depmod_test_big_01_incremental(const struct test *t)
+{
+	const char *progname = TOOLS_DIR "/depmod";
+	const char *const args[] = {
+		progname, "-e",
+		"-E",	  TEST_BIG_01_INCREMENTAL_ROOTFS "/lib/modules/5.3.18/symvers",
+		"-I",	  "-a",
+		NULL,
+	};
+
+	test_spawn_prog(progname, args);
+	exit(EXIT_FAILURE);
+}
+DEFINE_TEST(depmod_test_big_01_incremental,
+#if defined(KMOD_SYSCONFDIR_NOT_ETC)
+        .skip = true,
+#endif
+	.description = "check generating incremental dependencies the big-01 module set",
+	.config = {
+		[TC_UNAME_R] = "5.3.18",
+		[TC_ROOTFS] = TEST_BIG_01_INCREMENTAL_ROOTFS,
+	},
+	.output = {
+		.regex = true,
+		.files = (const struct keyval[]) {
+			{ TEST_BIG_01_INCREMENTAL_ROOTFS "/lib/modules/5.3.18/correct-modules.dep",
+			  TEST_BIG_01_INCREMENTAL_ROOTFS "/lib/modules/5.3.18/modules.dep" },
+			{ TEST_BIG_01_INCREMENTAL_ROOTFS "/lib/modules/5.3.18/correct-modules.dep.bin",
+			  TEST_BIG_01_INCREMENTAL_ROOTFS "/lib/modules/5.3.18/modules.dep.bin" },
+			{ TEST_BIG_01_INCREMENTAL_ROOTFS "/lib/modules/5.3.18/correct-modules.symbols",
+			  TEST_BIG_01_INCREMENTAL_ROOTFS "/lib/modules/5.3.18/modules.symbols" },
+			{ TEST_BIG_01_INCREMENTAL_ROOTFS "/lib/modules/5.3.18/correct-modules.symbols.bin",
+			  TEST_BIG_01_INCREMENTAL_ROOTFS "/lib/modules/5.3.18/modules.symbols.bin" },
+			{ }
+		},
+	});
+
 TESTSUITE_MAIN();
