@@ -2917,12 +2917,13 @@ static int do_depmod(int argc, char *argv[])
 {
 	FILE *out = NULL;
 	int err = 0, all = 0, maybe_all = 0, n_config_paths = 0;
-	_cleanup_free_ char *root = NULL;
+	_cleanup_free_ char *root_arg = NULL;
 	_cleanup_free_ char *out_root = NULL;
 	_cleanup_free_ const char **config_paths = NULL;
 	const char *system_map = NULL;
 	const char *module_symvers = NULL;
 	const char *null_kmod_config = NULL;
+	const char *root = "";
 	struct utsname un;
 	struct kmod_ctx *ctx = NULL;
 	struct cfg cfg;
@@ -2944,12 +2945,13 @@ static int do_depmod(int argc, char *argv[])
 			maybe_all = 1;
 			break;
 		case 'b':
-			free(root);
-			root = path_make_absolute_cwd(optarg);
-			if (root == NULL) {
+			free(root_arg);
+			root_arg = path_make_absolute_cwd(optarg);
+			if (root_arg == NULL) {
 				ERR("invalid image path %s\n", optarg);
 				goto cmdline_failed;
 			}
+			root = root_arg;
 			break;
 		case 'm':
 			module_directory = optarg;
@@ -3031,19 +3033,19 @@ static int do_depmod(int argc, char *argv[])
 		cfg.kversion = un.release;
 	}
 
-	cfg.dirnamelen = snprintf(cfg.dirname, PATH_MAX, "%s%s/%s", root ?: "",
+	cfg.dirnamelen = snprintf(cfg.dirname, PATH_MAX, "%s%s/%s", root,
 				  module_directory, cfg.kversion);
 	if (cfg.dirnamelen >= PATH_MAX) {
-		ERR("Bad directory %s%s/%s: path too long\n", root ?: "",
+		ERR("Bad directory %s%s/%s: path too long\n", root,
 		    module_directory, cfg.kversion);
 		goto cmdline_failed;
 	}
 
 	cfg.outdirnamelen = snprintf(cfg.outdirname, PATH_MAX, "%s%s/%s",
-				     out_root ?: (root ?: ""), module_directory,
+				     out_root ?: root, module_directory,
 				     cfg.kversion);
 	if (cfg.outdirnamelen >= PATH_MAX) {
-		ERR("Bad directory %s%s/%s: path too long\n", out_root ?: (root ?: ""),
+		ERR("Bad directory %s%s/%s: path too long\n", out_root ?: root,
 		    module_directory, cfg.kversion);
 		goto cmdline_failed;
 	}
