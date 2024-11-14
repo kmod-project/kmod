@@ -227,4 +227,35 @@ static int test_strbuf_used(const struct test *t)
 }
 DEFINE_TEST(test_strbuf_used, .description = "test strbuf_used");
 
+static int test_strbuf_shrink_to(const struct test *t)
+{
+	_cleanup_strbuf_ struct strbuf buf;
+
+	strbuf_init(&buf);
+	strbuf_shrink_to(&buf, 0);
+	assert_return(strbuf_used(&buf) == 0, EXIT_FAILURE);
+
+	strbuf_pushchars(&buf, TEXT);
+	strbuf_shrink_to(&buf, strlen(TEXT) - 1);
+	assert_return(strbuf_used(&buf) == strlen(TEXT) - 1, EXIT_FAILURE);
+
+	return 0;
+}
+DEFINE_TEST(test_strbuf_shrink_to, .description = "test strbuf_shrink_to");
+
+static int xfail_strbuf_shrink_to(const struct test *t)
+{
+	_cleanup_strbuf_ struct strbuf buf;
+
+	strbuf_init(&buf);
+	strbuf_pushchar(&buf, '/');
+
+	/* This should crash on assert */
+	strbuf_shrink_to(&buf, 2);
+
+	return 0;
+}
+DEFINE_TEST(xfail_strbuf_shrink_to, .description = "xfail strbuf_shrink_to",
+	    .expected_fail = true);
+
 TESTSUITE_MAIN();

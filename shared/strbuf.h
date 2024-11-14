@@ -103,6 +103,11 @@ void strbuf_popchar(struct strbuf *buf);
 void strbuf_popchars(struct strbuf *buf, size_t n);
 
 /*
+ * Shrink buffer to the final size @sz, which must be less or equal the current size.
+ */
+void strbuf_shrink_to(struct strbuf *buf, size_t sz);
+
+/*
  * Return number of used chars. This may different than calling strlen() in a C string
  * since '\0' is considered a valid char - this only keeps track of how many slots are
  * used in the underlying storage.

@@ -121,6 +121,12 @@ void strbuf_popchars(struct strbuf *buf, size_t n)
 	buf->used -= n;
 }
 
+void strbuf_shrink_to(struct strbuf *buf, size_t sz)
+{
+	assert(buf->used >= sz);
+	buf->used = sz;
+}
+
 void strbuf_clear(struct strbuf *buf)
 {
 	buf->used = 0;
