@@ -36,7 +36,6 @@
 #define DEFAULT_VERBOSE LOG_WARNING
 static int verbose = DEFAULT_VERBOSE;
 
-static const char *module_directory = MODULE_DIRECTORY;
 static const char CFG_BUILTIN_KEY[] = "built-in";
 static const char CFG_EXTERNAL_KEY[] = "external";
 static const char *const default_cfg_paths[] = {
@@ -2924,6 +2923,7 @@ static int do_depmod(int argc, char *argv[])
 	const char *module_symvers = NULL;
 	const char *null_kmod_config = NULL;
 	const char *root = "";
+	const char *module_directory = MODULE_DIRECTORY;
 	struct utsname un;
 	struct kmod_ctx *ctx = NULL;
 	struct cfg cfg;
@@ -3033,19 +3033,22 @@ static int do_depmod(int argc, char *argv[])
 		cfg.kversion = un.release;
 	}
 
-	cfg.dirnamelen = snprintf(cfg.dirname, PATH_MAX, "%s%s/%s", root,
+	/* module directory is always relative to basedir/outdir */
+	while (module_directory[0] == '/')
+		module_directory++;
+
+	cfg.dirnamelen = snprintf(cfg.dirname, PATH_MAX, "%s/%s/%s", root,
 				  module_directory, cfg.kversion);
 	if (cfg.dirnamelen >= PATH_MAX) {
-		ERR("Bad directory %s%s/%s: path too long\n", root,
-		    module_directory, cfg.kversion);
+		ERR("Bad directory %s/%s/%s: path too long\n", root, module_directory,
+		    cfg.kversion);
 		goto cmdline_failed;
 	}
 
-	cfg.outdirnamelen = snprintf(cfg.outdirname, PATH_MAX, "%s%s/%s",
-				     out_root ?: root, module_directory,
-				     cfg.kversion);
+	cfg.outdirnamelen = snprintf(cfg.outdirname, PATH_MAX, "%s/%s/%s",
+				     out_root ?: root, module_directory, cfg.kversion);
 	if (cfg.outdirnamelen >= PATH_MAX) {
-		ERR("Bad directory %s%s/%s: path too long\n", out_root ?: root,
+		ERR("Bad directory %s/%s/%s: path too long\n", out_root ?: root,
 		    module_directory, cfg.kversion);
 		goto cmdline_failed;
 	}
