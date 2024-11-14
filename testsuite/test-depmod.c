@@ -53,7 +53,7 @@ static noreturn int depmod_modules_outdir(const struct test *t)
 	const char *const args[] = {
 		// clang-format off
 		progname,
-		"--outdir", MODULES_OUTDIR_ROOTFS "/outdir/",
+		"--outdir", "/outdir/",
 		NULL,
 		// clang-format on
 	};
@@ -61,7 +61,6 @@ static noreturn int depmod_modules_outdir(const struct test *t)
 	test_spawn_prog(progname, args);
 	exit(EXIT_FAILURE);
 }
-
 DEFINE_TEST(depmod_modules_outdir,
 	.description = "check if depmod honours the outdir option",
 	.config = {
