@@ -252,7 +252,8 @@ EXTRA_DIST += \
 	testsuite/module-playground/mod-loop.h \
 	testsuite/module-playground/mod-simple.c \
 	testsuite/module-playground/mod-weakdep.c \
-	testsuite/module-playground/README
+	testsuite/module-playground/README \
+	testsuite/module-playground/other/Kbuild
 
 check_LTLIBRARIES = $(TESTSUITE_OVERRIDE_LIBS)
 
