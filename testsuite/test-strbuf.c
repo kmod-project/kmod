@@ -203,4 +203,28 @@ static int test_strbuf_pushmem(const struct test *t)
 }
 DEFINE_TEST(test_strbuf_pushmem, .description = "test strbuf_reserve");
 
+static int test_strbuf_used(const struct test *t)
+{
+	_cleanup_strbuf_ struct strbuf buf;
+
+	strbuf_init(&buf);
+	assert_return(strbuf_used(&buf) == 0, EXIT_FAILURE);
+
+	strbuf_pushchars(&buf, TEXT);
+	assert_return(strbuf_used(&buf) == strlen(TEXT), EXIT_FAILURE);
+
+	strbuf_reserve_extra(&buf, 1);
+	assert_return(strbuf_used(&buf) == strlen(TEXT), EXIT_FAILURE);
+
+	assert_return(streq(TEXT, strbuf_str(&buf)), EXIT_FAILURE);
+	assert_return(strbuf_used(&buf) == strlen(TEXT), EXIT_FAILURE);
+
+	strbuf_pushchar(&buf, '\0');
+	assert_return(streq(TEXT, strbuf_str(&buf)), EXIT_FAILURE);
+	assert_return(strbuf_used(&buf) == strlen(TEXT) + 1, EXIT_FAILURE);
+
+	return 0;
+}
+DEFINE_TEST(test_strbuf_used, .description = "test strbuf_used");
+
 TESTSUITE_MAIN();

@@ -139,10 +139,10 @@ static char **strbuf_to_vector(struct strbuf *buf, size_t count)
 	char *s;
 	size_t n;
 
-	/* (string vector + NULL) * sizeof(char *) + buf->used */
+	/* (string vector + NULL) * sizeof(char *) + strbuf_used() */
 	if (uaddsz_overflow(count, 1, &n) ||
 	    umulsz_overflow(sizeof(char *), n, &vec_size) ||
-	    uaddsz_overflow(buf->used, vec_size, &total_size)) {
+	    uaddsz_overflow(strbuf_used(buf), vec_size, &total_size)) {
 		errno = ENOMEM;
 		return NULL;
 	}
@@ -151,7 +151,7 @@ static char **strbuf_to_vector(struct strbuf *buf, size_t count)
 	if (vector == NULL)
 		return NULL;
 	buf->bytes = NULL;
-	memmove(vector + count + 1, vector, buf->used);
+	memmove(vector + count + 1, vector, strbuf_used(buf));
 	s = (char *)(vector + count + 1);
 
 	for (n = 0; n < count; n++) {

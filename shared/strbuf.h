@@ -101,3 +101,16 @@ void strbuf_popchar(struct strbuf *buf);
  * guaranteed to have (at least) 5 chars available without needing to reallocate.
  */
 void strbuf_popchars(struct strbuf *buf, size_t n);
+
+/*
+ * Return number of used chars. This may different than calling strlen() in a C string
+ * since '\0' is considered a valid char - this only keeps track of how many slots are
+ * used in the underlying storage.
+ *
+ * If used knows '\0' has not been added (e.g. when calling just strbuf_pushchars() and
+ * similar), then the result matches the output of strlen().
+ */
+static inline size_t strbuf_used(struct strbuf *buf)
+{
+	return buf->used;
+}
