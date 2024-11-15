@@ -82,7 +82,7 @@ _nonnull_(1) void kmod_set_modules_required(struct kmod_ctx *ctx, bool required)
 _nonnull_all_ char *kmod_search_moddep(struct kmod_ctx *ctx, const char *name);
 
 _nonnull_all_ struct kmod_module *kmod_pool_get_module(struct kmod_ctx *ctx, const char *key);
-_nonnull_all_ void kmod_pool_add_module(struct kmod_ctx *ctx, struct kmod_module *mod, const char *key);
+_nonnull_all_ int kmod_pool_add_module(struct kmod_ctx *ctx, struct kmod_module *mod, const char *key);
 _nonnull_all_ void kmod_pool_del_module(struct kmod_ctx *ctx, struct kmod_module *mod, const char *key);
 
 _nonnull_all_ const struct kmod_config *kmod_get_config(const struct kmod_ctx *ctx);

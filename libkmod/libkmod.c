@@ -334,11 +334,11 @@ struct kmod_module *kmod_pool_get_module(struct kmod_ctx *ctx, const char *key)
 	return mod;
 }
 
-void kmod_pool_add_module(struct kmod_ctx *ctx, struct kmod_module *mod, const char *key)
+int kmod_pool_add_module(struct kmod_ctx *ctx, struct kmod_module *mod, const char *key)
 {
 	DBG(ctx, "add %p key='%s'\n", mod, key);
 
-	hash_add(ctx->modules_by_name, key, mod);
+	return hash_add(ctx->modules_by_name, key, mod);
 }
 
 void kmod_pool_del_module(struct kmod_ctx *ctx, struct kmod_module *mod, const char *key)

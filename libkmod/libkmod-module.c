@@ -237,6 +237,7 @@ static int kmod_module_new(struct kmod_ctx *ctx, const char *key, const char *na
 {
 	struct kmod_module *m;
 	size_t keylen;
+	int err;
 
 	m = kmod_pool_get_module(ctx, key);
 	if (m != NULL) {
@@ -269,7 +270,11 @@ static int kmod_module_new(struct kmod_ctx *ctx, const char *key, const char *na
 	}
 
 	m->refcount = 1;
-	kmod_pool_add_module(ctx, m, m->hashkey);
+	err = kmod_pool_add_module(ctx, m, m->hashkey);
+	if (err < 0) {
+		free(m);
+		return err;
+	}
 	*mod = m;
 
 	return 0;
