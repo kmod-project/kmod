@@ -5,6 +5,7 @@
 
 #include <errno.h>
 #include <inttypes.h>
+#include <stdarg.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -13,17 +14,13 @@
 
 #include "testsuite.h"
 
+#define EXEC_MODPROBE(...)                     \
+	test_spawn_prog(TOOLS_DIR "/modprobe", \
+			(const char *[]){ TOOLS_DIR "/modprobe", ##__VA_ARGS__, NULL })
+
 static noreturn int modprobe_show_depends(const struct test *t)
 {
-	const char *progname = TOOLS_DIR "/modprobe";
-	const char *const args[] = {
-		progname,
-		"--show-depends",
-		"mod-loop-a",
-		NULL,
-	};
-
-	test_spawn_prog(progname, args);
+	EXEC_MODPROBE("--show-depends", "mod-loop-a");
 	exit(EXIT_FAILURE);
 }
 DEFINE_TEST(modprobe_show_depends,
@@ -38,15 +35,7 @@ DEFINE_TEST(modprobe_show_depends,
 
 static noreturn int modprobe_show_depends2(const struct test *t)
 {
-	const char *progname = TOOLS_DIR "/modprobe";
-	const char *const args[] = {
-		progname,
-		"--show-depends",
-		"mod-simple",
-		NULL,
-	};
-
-	test_spawn_prog(progname, args);
+	EXEC_MODPROBE("--show-depends", "mod-simple");
 	exit(EXIT_FAILURE);
 }
 DEFINE_TEST(modprobe_show_depends2,
@@ -61,17 +50,7 @@ DEFINE_TEST(modprobe_show_depends2,
 
 static noreturn int modprobe_show_alias_to_none(const struct test *t)
 {
-	const char *progname = TOOLS_DIR "/modprobe";
-	const char *const args[] = {
-		// clang-format off
-		progname,
-		"--show-depends", "--ignore-install", "--quiet",
-		"mod-simple",
-		NULL,
-		// clang-format on
-	};
-
-	test_spawn_prog(progname, args);
+	EXEC_MODPROBE("--show-depends", "--ignore-install", "--quiet", "mod-simple");
 	exit(EXIT_FAILURE);
 }
 DEFINE_TEST(modprobe_show_alias_to_none,
@@ -88,17 +67,7 @@ DEFINE_TEST(modprobe_show_alias_to_none,
 
 static noreturn int modprobe_show_exports(const struct test *t)
 {
-	const char *progname = TOOLS_DIR "/modprobe";
-	const char *const args[] = {
-		// clang-format off
-		progname,
-		"--show-exports", "--quiet",
-		"/mod-loop-a.ko",
-		NULL,
-		// clang-format on
-	};
-
-	test_spawn_prog(progname, args);
+	EXEC_MODPROBE("--show-exports", "--quiet", "/mod-loop-a.ko");
 	exit(EXIT_FAILURE);
 }
 DEFINE_TEST(modprobe_show_exports,
@@ -113,14 +82,7 @@ DEFINE_TEST(modprobe_show_exports,
 
 static noreturn int modprobe_builtin(const struct test *t)
 {
-	const char *progname = TOOLS_DIR "/modprobe";
-	const char *const args[] = {
-		progname,
-		"unix",
-		NULL,
-	};
-
-	test_spawn_prog(progname, args);
+	EXEC_MODPROBE("unix");
 	exit(EXIT_FAILURE);
 }
 DEFINE_TEST(modprobe_builtin, .description = "check if modprobe return 0 for builtin",
@@ -131,15 +93,7 @@ DEFINE_TEST(modprobe_builtin, .description = "check if modprobe return 0 for bui
 
 static noreturn int modprobe_builtin_lookup_only(const struct test *t)
 {
-	const char *progname = TOOLS_DIR "/modprobe";
-	const char *const args[] = {
-		progname,
-		"-R",
-		"unix",
-		NULL,
-	};
-
-	test_spawn_prog(progname, args);
+	EXEC_MODPROBE("-R", "unix");
 	exit(EXIT_FAILURE);
 }
 DEFINE_TEST(modprobe_builtin_lookup_only,
@@ -154,14 +108,7 @@ DEFINE_TEST(modprobe_builtin_lookup_only,
 
 static noreturn int modprobe_softdep_loop(const struct test *t)
 {
-	const char *progname = TOOLS_DIR "/modprobe";
-	const char *const args[] = {
-		progname,
-		"mod-loop-b",
-		NULL,
-	};
-
-	test_spawn_prog(progname, args);
+	EXEC_MODPROBE("mod-loop-b");
 	exit(EXIT_FAILURE);
 }
 DEFINE_TEST(modprobe_softdep_loop,
@@ -176,14 +123,7 @@ DEFINE_TEST(modprobe_softdep_loop,
 
 static noreturn int modprobe_weakdep_loop(const struct test *t)
 {
-	const char *progname = TOOLS_DIR "/modprobe";
-	const char *const args[] = {
-		progname,
-		"mod-loop-b",
-		NULL,
-	};
-
-	test_spawn_prog(progname, args);
+	EXEC_MODPROBE("mod-loop-b");
 	exit(EXIT_FAILURE);
 }
 DEFINE_TEST(modprobe_weakdep_loop,
@@ -199,14 +139,7 @@ DEFINE_TEST(modprobe_weakdep_loop,
 
 static noreturn int modprobe_install_cmd_loop(const struct test *t)
 {
-	const char *progname = TOOLS_DIR "/modprobe";
-	const char *const args[] = {
-		progname,
-		"mod-loop-a",
-		NULL,
-	};
-
-	test_spawn_prog(progname, args);
+	EXEC_MODPROBE("mod-loop-a");
 	exit(EXIT_FAILURE);
 }
 DEFINE_TEST(modprobe_install_cmd_loop,
@@ -225,15 +158,7 @@ DEFINE_TEST(modprobe_install_cmd_loop,
 
 static noreturn int modprobe_param_kcmdline_show_deps(const struct test *t)
 {
-	const char *progname = TOOLS_DIR "/modprobe";
-	const char *const args[] = {
-		progname,
-		"--show-depends",
-		"mod-simple",
-		NULL,
-	};
-
-	test_spawn_prog(progname, args);
+	EXEC_MODPROBE("--show-depends", "mod-simple");
 	exit(EXIT_FAILURE);
 }
 DEFINE_TEST(modprobe_param_kcmdline_show_deps,
@@ -250,14 +175,7 @@ DEFINE_TEST(modprobe_param_kcmdline_show_deps,
 
 static noreturn int modprobe_param_kcmdline(const struct test *t)
 {
-	const char *progname = TOOLS_DIR "/modprobe";
-	const char *const args[] = {
-		progname,
-		"-c",
-		NULL,
-	};
-
-	test_spawn_prog(progname, args);
+	EXEC_MODPROBE("-c");
 	exit(EXIT_FAILURE);
 }
 DEFINE_TEST_WITH_FUNC(modprobe_param_kcmdline2, modprobe_param_kcmdline,
@@ -346,15 +264,7 @@ DEFINE_TEST_WITH_FUNC(modprobe_param_kcmdline8, modprobe_param_kcmdline,
 
 static noreturn int modprobe_force(const struct test *t)
 {
-	const char *progname = TOOLS_DIR "/modprobe";
-	const char *const args[] = {
-		progname,
-		"--force",
-		"mod-simple",
-		NULL,
-	};
-
-	test_spawn_prog(progname, args);
+	EXEC_MODPROBE("--force", "mod-simple");
 	exit(EXIT_FAILURE);
 }
 DEFINE_TEST(modprobe_force,
@@ -369,14 +279,7 @@ DEFINE_TEST(modprobe_force,
 
 static noreturn int modprobe_oldkernel(const struct test *t)
 {
-	const char *progname = TOOLS_DIR "/modprobe";
-	const char *const args[] = {
-		progname,
-		"mod-simple",
-		NULL,
-	};
-
-	test_spawn_prog(progname, args);
+	EXEC_MODPROBE("mod-simple");
 	exit(EXIT_FAILURE);
 }
 DEFINE_TEST(modprobe_oldkernel,
@@ -391,15 +294,7 @@ DEFINE_TEST(modprobe_oldkernel,
 
 static noreturn int modprobe_oldkernel_force(const struct test *t)
 {
-	const char *progname = TOOLS_DIR "/modprobe";
-	const char *const args[] = {
-		progname,
-		"--force",
-		"mod-simple",
-		NULL,
-	};
-
-	test_spawn_prog(progname, args);
+	EXEC_MODPROBE("--force", "mod-simple");
 	exit(EXIT_FAILURE);
 }
 DEFINE_TEST(modprobe_oldkernel_force,
@@ -414,14 +309,7 @@ DEFINE_TEST(modprobe_oldkernel_force,
 
 static noreturn int modprobe_external(const struct test *t)
 {
-	const char *progname = TOOLS_DIR "/modprobe";
-	const char *const args[] = {
-		progname,
-		"mod-simple",
-		NULL,
-	};
-
-	test_spawn_prog(progname, args);
+	EXEC_MODPROBE("mod-simple");
 	exit(EXIT_FAILURE);
 }
 DEFINE_TEST(modprobe_external,
@@ -436,14 +324,7 @@ DEFINE_TEST(modprobe_external,
 
 static noreturn int modprobe_module_from_abspath(const struct test *t)
 {
-	const char *progname = TOOLS_DIR "/modprobe";
-	const char *const args[] = {
-		progname,
-		"/home/foo/mod-simple.ko",
-		NULL,
-	};
-
-	test_spawn_prog(progname, args);
+	EXEC_MODPROBE("/home/foo/mod-simple.ko");
 	exit(EXIT_FAILURE);
 }
 DEFINE_TEST(modprobe_module_from_abspath,
@@ -458,19 +339,12 @@ DEFINE_TEST(modprobe_module_from_abspath,
 
 static noreturn int modprobe_module_from_relpath(const struct test *t)
 {
-	const char *progname = TOOLS_DIR "/modprobe";
-	const char *const args[] = {
-		progname,
-		"./mod-simple.ko",
-		NULL,
-	};
-
 	if (chdir("/home/foo") != 0) {
 		perror("failed to change into /home/foo");
 		exit(EXIT_FAILURE);
 	}
 
-	test_spawn_prog(progname, args);
+	EXEC_MODPROBE("./mod-simple.ko");
 	exit(EXIT_FAILURE);
 }
 DEFINE_TEST(modprobe_module_from_relpath,
