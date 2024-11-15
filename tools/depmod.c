@@ -123,7 +123,7 @@ _printf_format_(1, 2) static inline void _show(const char *fmt, ...)
 #define INDEX_VERSION_MAJOR 0x0002
 #define INDEX_VERSION_MINOR 0x0001
 #define INDEX_VERSION ((INDEX_VERSION_MAJOR << 16) | INDEX_VERSION_MINOR)
-#define INDEX_CHILDMAX 128
+#define INDEX_CHILDMAX 128u
 
 struct index_value {
 	struct index_value *next;
@@ -207,7 +207,7 @@ static void index__checkstring(const char *str)
 	int i;
 
 	for (i = 0; str[i]; i++) {
-		int ch = str[i];
+		unsigned char ch = (unsigned char)str[i];
 
 		if (ch >= INDEX_CHILDMAX)
 			CRIT("Module index: bad character '%c'=0x%x - only 7-bit ASCII is supported:"
