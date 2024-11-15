@@ -200,8 +200,7 @@ static int test_hash_del_nonexistent(const struct test *t)
 	return 0;
 }
 DEFINE_TEST(test_hash_del_nonexistent,
-	    .description = "test deleting an element that doesn't exist",
-	    .expected_fail = true);
+	    .description = "test deleting an element that doesn't exist");
 
 static int test_hash_free(const struct test *t)
 {
