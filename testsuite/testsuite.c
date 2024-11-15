@@ -1018,7 +1018,7 @@ static inline int test_run_parent(const struct test *t, int fdout[2], int fderr[
 	if (t->skip) {
 		LOG("%sSKIPPED%s: %s\n", ANSI_HIGHLIGHT_YELLOW_ON, ANSI_HIGHLIGHT_OFF,
 		    t->name);
-		err = EXIT_SUCCESS;
+		err = 77;
 		goto exit;
 	}
 
