@@ -202,8 +202,7 @@ static int test_strbuf_pushmem(const struct test *t)
 
 	return 0;
 }
-DEFINE_TEST(test_strbuf_pushmem, .description = "test strbuf_reserve",
-	    .expected_fail = true);
+DEFINE_TEST(test_strbuf_pushmem, .description = "test strbuf_reserve");
 
 static int test_strbuf_used(const struct test *t)
 {

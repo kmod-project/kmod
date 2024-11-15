@@ -100,6 +100,9 @@ size_t strbuf_pushmem(struct strbuf *buf, const char *src, size_t sz)
 	assert(src != NULL);
 	assert(buf != NULL);
 
+	if (sz == 0)
+		return 0;
+
 	if (!strbuf_reserve_extra(buf, sz))
 		return 0;
 
