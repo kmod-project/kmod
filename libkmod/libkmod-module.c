@@ -1527,7 +1527,7 @@ KMOD_EXPORT long kmod_module_get_size(const struct kmod_module *mod)
 		size = value;
 		break;
 eat_line:
-		while (line[len - 1] != '\n' && fgets(line, sizeof(line), fp))
+		while (len > 0 && line[len - 1] != '\n' && fgets(line, sizeof(line), fp))
 			len = strlen(line);
 	}
 	fclose(fp);
