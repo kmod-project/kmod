@@ -258,7 +258,7 @@ int hash_del(struct hash *hash, const char *key)
 		hash->free_value((void *)entry->value);
 
 	entry_end = bucket->entries + bucket->used;
-	memmove(entry, entry + 1, (entry_end - entry) * sizeof(struct hash_entry));
+	memmove(entry, entry + 1, (entry_end - entry - 1) * sizeof(struct hash_entry));
 
 	bucket->used--;
 	hash->count--;
