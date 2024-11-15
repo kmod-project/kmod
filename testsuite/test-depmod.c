@@ -476,4 +476,47 @@ DEFINE_TEST(depmod_test_big_01_delete,
 		},
 	});
 
+#define TEST_BIG_01_REPLACE_ROOTFS TESTSUITE_ROOTFS "test-depmod/big-01-replace"
+static noreturn int depmod_test_big_01_replace(const struct test *t)
+{
+	const char *progname = TOOLS_DIR "/depmod";
+	const char *const args[] = {
+		progname,
+		"-e",
+		"-E",
+		TEST_BIG_01_REPLACE_ROOTFS "/lib/modules/5.3.18/symvers",
+		"-I",
+		"5.3.18",
+		"kernel/drivers/scsi/qla2xxx/qla2xxx.ko",
+		"kernel/drivers/scsi/qla2xxx/tcm_qla2xxx.ko",
+		NULL,
+	};
+
+	test_spawn_prog(progname, args);
+	exit(EXIT_FAILURE);
+}
+DEFINE_TEST(depmod_test_big_01_replace,
+#if defined(KMOD_SYSCONFDIR_NOT_ETC)
+        .skip = true,
+#endif
+	.description = "check depmod -I with module deletion from the big-01 module set",
+	.config = {
+		[TC_UNAME_R] = "5.3.18",
+		[TC_ROOTFS] = TEST_BIG_01_REPLACE_ROOTFS,
+	},
+	.output = {
+		.regex = true,
+		.files = (const struct keyval[]) {
+			{ TEST_BIG_01_REPLACE_ROOTFS "/lib/modules/5.3.18/correct-modules.dep",
+			  TEST_BIG_01_REPLACE_ROOTFS "/lib/modules/5.3.18/modules.dep" },
+			{ TEST_BIG_01_REPLACE_ROOTFS "/lib/modules/5.3.18/correct-modules.dep.bin",
+			  TEST_BIG_01_REPLACE_ROOTFS "/lib/modules/5.3.18/modules.dep.bin" },
+			{ TEST_BIG_01_REPLACE_ROOTFS "/lib/modules/5.3.18/correct-modules.symbols",
+			  TEST_BIG_01_REPLACE_ROOTFS "/lib/modules/5.3.18/modules.symbols" },
+			{ TEST_BIG_01_REPLACE_ROOTFS "/lib/modules/5.3.18/correct-modules.symbols.bin",
+			  TEST_BIG_01_REPLACE_ROOTFS "/lib/modules/5.3.18/modules.symbols.bin" },
+			{ }
+		},
+	});
+
 TESTSUITE_MAIN();
