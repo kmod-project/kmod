@@ -1604,7 +1604,7 @@ static int depmod_load_modules(struct depmod *depmod)
 {
 	struct mod **itr, **itr_end;
 
-	DBG("load symbols (%zd modules)\n", depmod->modules.count);
+	DBG("load symbols (%zu modules)\n", depmod->modules.count);
 
 	itr = (struct mod **)depmod->modules.array;
 	itr_end = itr + depmod->modules.count;
@@ -1659,7 +1659,7 @@ load_info:
 		mod->kmod = NULL;
 	}
 
-	DBG("loaded symbols (%zd modules, %u symbols)\n", depmod->modules.count,
+	DBG("loaded symbols (%zu modules, %u symbols)\n", depmod->modules.count,
 	    hash_get_count(depmod->symbols));
 
 	return 0;
@@ -1709,7 +1709,7 @@ static int depmod_load_dependencies(struct depmod *depmod)
 	struct mod **itr, **itr_end;
 	int ret = 0;
 
-	DBG("load dependencies (%zd modules, %u symbols)\n", depmod->modules.count,
+	DBG("load dependencies (%zu modules, %u symbols)\n", depmod->modules.count,
 	    hash_get_count(depmod->symbols));
 
 	itr = (struct mod **)depmod->modules.array;
@@ -1728,7 +1728,7 @@ static int depmod_load_dependencies(struct depmod *depmod)
 			ret = err;
 	}
 
-	DBG("loaded dependencies (%zd modules, %u symbols)\n", depmod->modules.count,
+	DBG("loaded dependencies (%zu modules, %u symbols)\n", depmod->modules.count,
 	    hash_get_count(depmod->symbols));
 
 	return ret;

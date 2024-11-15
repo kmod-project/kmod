@@ -654,7 +654,7 @@ static int elf_strip_vermagic(const struct kmod_elf *elf, uint8_t *changed)
 		off = (const uint8_t *)s - elf->memory;
 
 		len = strlen(s);
-		ELFDBG(elf, "clear .modinfo vermagic \"%s\" (%zd bytes)\n", s, len);
+		ELFDBG(elf, "clear .modinfo vermagic \"%s\" (%zu bytes)\n", s, len);
 		memset(changed + off, '\0', len);
 		return 0;
 	}
@@ -991,7 +991,7 @@ int kmod_elf_get_dependency_symbols(const struct kmod_elf *elf,
 		if (versionslen % verlen != 0) {
 			ELFDBG(elf,
 			       "unexpected __versions of length %" PRIu64
-			       ", not multiple of %zd as expected.\n",
+			       ", not multiple of %zu as expected.\n",
 			       versionslen, verlen);
 			ver_off = 0;
 			versionslen = 0;
