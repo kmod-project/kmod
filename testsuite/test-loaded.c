@@ -71,7 +71,6 @@ DEFINE_TEST(loaded_1,
 	.config = {
 		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-loaded/",
 	},
-	.need_spawn = true,
 	.output = {
 		.out = TESTSUITE_ROOTFS "test-loaded/correct.txt",
 	});

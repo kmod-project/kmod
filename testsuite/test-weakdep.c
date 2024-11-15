@@ -90,7 +90,6 @@ DEFINE_TEST(test_weakdep,
 		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-weakdep",
 		[TC_INIT_MODULE_RETCODES] = "",
 	},
-	.need_spawn = true,
 	.output = {
 		.out = TESTSUITE_ROOTFS "test-weakdep/correct-weakdep.txt",
 	});

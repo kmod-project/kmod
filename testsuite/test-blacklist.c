@@ -81,12 +81,9 @@ fail_lookup:
 	return EXIT_FAILURE;
 }
 
-DEFINE_TEST(blacklist_1,
-	.description = "check if modules are correctly blacklisted",
-	.config = {
-		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-blacklist/",
-	},
-	.need_spawn = true,
-);
+DEFINE_TEST(blacklist_1, .description = "check if modules are correctly blacklisted",
+	    .config = {
+		    [TC_ROOTFS] = TESTSUITE_ROOTFS "test-blacklist/",
+	    });
 
 TESTSUITE_MAIN();

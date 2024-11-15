@@ -39,27 +39,22 @@ pay attention when writing a test:
 
 4 - Fill in the config vector. Setting any of these configuration will make
     testsuite to export LD_PRELOAD with the necessary override libs before
-    executing the test. If you are not exec'ing an external binary, you need to
-    pass "need_spawn = true" below, otherwise it will not work (LD_PRELOAD is
-    only applied when exec'ing a binary). See each config description in
-    testsuite.h
+    executing the test. See each config description in testsuite.h
 
-5 - need_spawn: if testsuite will exec itself before running a test
-
-6 - expected_fail: if that test is expected to fail, i.e. the return code is
+5 - expected_fail: if that test is expected to fail, i.e. the return code is
     expected not to be 0.
 
-7 - The rootfs is populated by copying the entire contents of rootfs-pristine
+6 - The rootfs is populated by copying the entire contents of rootfs-pristine
     through setup-rootfs.sh then running setup-modules.sh to copy generated
     modules from module-playground. Update the latter script to include any
     modules your test needs.
 
-8 - Tests can be run individually, outside of 'meson test'. strace and gdb
+7 - Tests can be run individually, outside of 'meson test'. strace and gdb
     work too, as long as you tell them to operate on child process.
 
     When running with sanitizers, make sure to 'source scripts/sanitizer-env.sh'.
     Sanitizers are not guaranteed to work well with other tools like strace and gdb.
 
-9 - Make sure test passes when using "default" build flags, i.e. by running
+8 - Make sure test passes when using "default" build flags, i.e. by running
     'meson setup --native-file build-dev.ini ...', which by default enables the
     sanitizers.

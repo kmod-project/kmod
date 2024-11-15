@@ -57,13 +57,14 @@ static noreturn int test_initstate_from_lookup(const struct test *t)
 
 	exit(EXIT_SUCCESS);
 }
-DEFINE_TEST(test_initstate_from_lookup,
-	.description = "test if libkmod return correct initstate for builtin module from lookup",
+DEFINE_TEST(
+	test_initstate_from_lookup,
+	.description =
+		"test if libkmod return correct initstate for builtin module from lookup",
 	.config = {
 		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-initstate",
 		[TC_UNAME_R] = "4.4.4",
-	},
-	.need_spawn = true);
+	});
 
 static noreturn int test_initstate_from_name(const struct test *t)
 {
@@ -100,11 +101,11 @@ static noreturn int test_initstate_from_name(const struct test *t)
 	exit(EXIT_SUCCESS);
 }
 DEFINE_TEST(test_initstate_from_name,
-	.description = "test if libkmod return correct initstate for builtin module from name",
-	.config = {
-		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-initstate",
-		[TC_UNAME_R] = "4.4.4",
-	},
-	.need_spawn = true);
+	    .description =
+		    "test if libkmod return correct initstate for builtin module from name",
+	    .config = {
+		    [TC_ROOTFS] = TESTSUITE_ROOTFS "test-initstate",
+		    [TC_UNAME_R] = "4.4.4",
+	    });
 
 TESTSUITE_MAIN();

@@ -264,10 +264,7 @@ static inline int test_run_child(const struct test *t, int fdout[2], int fderr[2
 		}
 	}
 
-	if (t->need_spawn)
-		return test_spawn_test(t);
-	else
-		return test_run_spawned(t);
+	return test_spawn_test(t);
 }
 
 #define BUFSZ 4096
@@ -1149,7 +1146,7 @@ int test_run(const struct test *t)
 	int fderr[2];
 	int fdmonitor[2];
 
-	if (t->need_spawn && oneshot)
+	if (oneshot)
 		test_run_spawned(t);
 
 	if (t->output.out != NULL) {

@@ -67,11 +67,10 @@ static noreturn int test_dependencies(const struct test *t)
 	exit(EXIT_SUCCESS);
 }
 DEFINE_TEST(test_dependencies,
-	.description = "test if kmod_module_get_dependencies works",
-	.config = {
-		[TC_UNAME_R] = TEST_UNAME,
-		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-dependencies/",
-	},
-	.need_spawn = true);
+	    .description = "test if kmod_module_get_dependencies works",
+	    .config = {
+		    [TC_UNAME_R] = TEST_UNAME,
+		    [TC_ROOTFS] = TESTSUITE_ROOTFS "test-dependencies/",
+	    });
 
 TESTSUITE_MAIN();

@@ -55,7 +55,6 @@ DEFINE_TEST(from_name,
 	.config = {
 		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-new-module/from_name/",
 	},
-	.need_spawn = true,
 	.output = {
 		.out = TESTSUITE_ROOTFS "test-new-module/from_name/correct.txt",
 	});
@@ -100,7 +99,6 @@ DEFINE_TEST(from_alias,
 	.config = {
 		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-new-module/from_alias/",
 	},
-	.need_spawn = true,
 	.output = {
 		.out = TESTSUITE_ROOTFS "test-new-module/from_alias/correct.txt",
 	});
