@@ -184,8 +184,7 @@ static int test_hash_del(const struct test *t)
 
 	return 0;
 }
-DEFINE_TEST(test_hash_del, .description = "test add / delete a single element",
-	    .expected_fail = true);
+DEFINE_TEST(test_hash_del, .description = "test add / delete a single element");
 
 static int test_hash_free(const struct test *t)
 {
