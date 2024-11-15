@@ -70,6 +70,19 @@ jobs:
 
           .github/print-kdir.sh >> "$GITHUB_ENV"
 
+      - name: configure checks (meson)
+        if: ${{ matrix.build == 'meson' }}
+        run: |
+          should_fail() {
+            if meson setup "$@" build/; then
+              echo Command was expected to fail, but was successful
+              return 1
+            fi
+          }
+          should_fail -D distconfdir=relative/
+          should_fail -D moduledir=relative/
+          rm -rf build/
+
       - name: configure (meson)
         if: ${{ matrix.build == 'meson' }}
         run: mkdir build && cd build && meson setup --native-file ../build-dev.ini ${{ matrix.container.meson_setup }} . ..
