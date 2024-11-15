@@ -96,7 +96,6 @@ struct test {
 	const char *config[_TC_LAST];
 	const char *path;
 	const struct keyval *env_vars;
-	bool need_spawn;
 	bool expected_fail;
 	/* allow to skip tests that don't meet compile-time dependencies */
 	bool skip;

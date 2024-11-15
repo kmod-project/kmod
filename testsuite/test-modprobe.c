@@ -354,7 +354,6 @@ DEFINE_TEST(modprobe_module_from_relpath,
 		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-modprobe/module-from-relpath",
 		[TC_INIT_MODULE_RETCODES] = "",
 	},
-	.need_spawn = true,
 	.modules_loaded = "mod-simple",
 	);
 

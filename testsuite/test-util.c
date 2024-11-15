@@ -56,7 +56,6 @@ DEFINE_TEST(alias_1,
 	.config = {
 		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-util/",
 	},
-	.need_spawn = true,
 	.output = {
 		.out = TESTSUITE_ROOTFS "test-util/alias-correct.txt",
 	});
@@ -86,7 +85,6 @@ DEFINE_TEST(test_freadline_wrapped,
 	.config = {
 		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-util/",
 	},
-	.need_spawn = true,
 	.output = {
 		.out = TESTSUITE_ROOTFS "test-util/freadline_wrapped-correct.txt",
 	});
@@ -182,7 +180,6 @@ DEFINE_TEST(test_write_str_safe,
 	.config = {
 		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-util2/",
 	},
-	.need_spawn = true,
 	.output = {
 		.files = (const struct keyval[]) {
 			{ TEST_WRITE_STR_SAFE_PATH ".txt",
