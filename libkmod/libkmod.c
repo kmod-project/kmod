@@ -810,22 +810,37 @@ KMOD_EXPORT void kmod_unload_resources(struct kmod_ctx *ctx)
 
 KMOD_EXPORT int kmod_dump_index(struct kmod_ctx *ctx, enum kmod_index type, int fd)
 {
+	int err = 0, fd2;
+	FILE *fp;
+
 	if (ctx == NULL)
 		return -ENOSYS;
+
+	fd2 = dup(fd);
+	if (fd2 == -1)
+		return -errno;
+	fp = fdopen(fd2, "ae");
+	if (fp == NULL) {
+		err = -errno;
+		close(fd2);
+		return err;
+	}
 
 #if defined(__clang__)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wtautological-unsigned-enum-zero-compare"
 #endif
-	if (type < 0 || type >= _KMOD_INDEX_MODULES_SIZE)
-		return -ENOENT;
+	if (type < 0 || type >= _KMOD_INDEX_MODULES_SIZE) {
+		err = -ENOENT;
+		goto done;
+	}
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
 
 	if (ctx->indexes[type] != NULL) {
 		DBG(ctx, "use mmapped index '%s'\n", index_files[type].fn);
-		index_mm_dump(ctx->indexes[type], fd, index_files[type].alias_prefix);
+		index_mm_dump(ctx->indexes[type], fp, index_files[type].alias_prefix);
 	} else {
 		char fn[PATH_MAX];
 		struct index_file *idx;
@@ -835,14 +850,18 @@ KMOD_EXPORT int kmod_dump_index(struct kmod_ctx *ctx, enum kmod_index type, int 
 		DBG(ctx, "file=%s\n", fn);
 
 		idx = index_file_open(fn);
-		if (idx == NULL)
-			return -ENOSYS;
+		if (idx == NULL) {
+			err = -ENOSYS;
+			goto done;
+		}
 
-		index_dump(idx, fd, index_files[type].alias_prefix);
+		index_dump(idx, fp, index_files[type].alias_prefix);
 		index_file_close(idx);
 	}
 
-	return 0;
+done:
+	fclose(fp);
+	return err;
 }
 
 const struct kmod_config *kmod_get_config(const struct kmod_ctx *ctx)

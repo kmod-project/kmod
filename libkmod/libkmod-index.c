@@ -360,7 +360,7 @@ static struct index_node_f *index_readchild(const struct index_node_f *parent, i
 	return NULL;
 }
 
-static void index_dump_node(struct index_node_f *node, struct strbuf *buf, int fd)
+static void index_dump_node(struct index_node_f *node, struct strbuf *buf, FILE *fp)
 {
 	struct index_value *v;
 	size_t pushed;
@@ -369,10 +369,10 @@ static void index_dump_node(struct index_node_f *node, struct strbuf *buf, int f
 	pushed = strbuf_pushchars(buf, node->prefix);
 
 	for (v = node->values; v != NULL; v = v->next) {
-		write_str_safe(fd, buf->bytes, buf->used);
-		write_str_safe(fd, " ", 1);
-		write_str_safe(fd, v->value, strlen(v->value));
-		write_str_safe(fd, "\n", 1);
+		fwrite(buf->bytes, 1, buf->used, fp);
+		fputc(' ', fp);
+		fputs(v->value, fp);
+		fputc('\n', fp);
 	}
 
 	for (ch = node->first; ch <= node->last; ch++) {
@@ -382,7 +382,7 @@ static void index_dump_node(struct index_node_f *node, struct strbuf *buf, int f
 			continue;
 
 		if (strbuf_pushchar(buf, ch)) {
-			index_dump_node(child, buf, fd);
+			index_dump_node(child, buf, fp);
 			strbuf_popchar(buf);
 		}
 	}
@@ -391,7 +391,7 @@ static void index_dump_node(struct index_node_f *node, struct strbuf *buf, int f
 	index_close(node);
 }
 
-void index_dump(struct index_file *in, int fd, bool alias_prefix)
+void index_dump(struct index_file *in, FILE *fp, bool alias_prefix)
 {
 	struct index_node_f *root;
 	struct strbuf buf;
@@ -402,7 +402,7 @@ void index_dump(struct index_file *in, int fd, bool alias_prefix)
 
 	strbuf_init(&buf);
 	if (!alias_prefix || strbuf_pushchars(&buf, "alias "))
-		index_dump_node(root, &buf, fd);
+		index_dump_node(root, &buf, fp);
 	strbuf_release(&buf);
 }
 
@@ -821,7 +821,7 @@ static struct index_mm_node *index_mm_readchild(const struct index_mm_node *pare
 	return NULL;
 }
 
-static void index_mm_dump_node(struct index_mm_node *node, struct strbuf *buf, int fd)
+static void index_mm_dump_node(struct index_mm_node *node, struct strbuf *buf, FILE *fp)
 {
 	const void *p;
 	size_t i, pushed;
@@ -833,10 +833,10 @@ static void index_mm_dump_node(struct index_mm_node *node, struct strbuf *buf, i
 		struct index_mm_value v;
 
 		read_value_mm(&p, &v);
-		write_str_safe(fd, buf->bytes, buf->used);
-		write_str_safe(fd, " ", 1);
-		write_str_safe(fd, v.value, v.len);
-		write_str_safe(fd, "\n", 1);
+		fwrite(buf->bytes, 1, buf->used, fp);
+		fputc(' ', fp);
+		fwrite(v.value, 1, v.len, fp);
+		fputc('\n', fp);
 	}
 
 	for (ch = node->first; ch <= node->last; ch++) {
@@ -847,7 +847,7 @@ static void index_mm_dump_node(struct index_mm_node *node, struct strbuf *buf, i
 			continue;
 
 		if (strbuf_pushchar(buf, ch)) {
-			index_mm_dump_node(child, buf, fd);
+			index_mm_dump_node(child, buf, fp);
 			strbuf_popchar(buf);
 		}
 	}
@@ -855,7 +855,7 @@ static void index_mm_dump_node(struct index_mm_node *node, struct strbuf *buf, i
 	strbuf_popchars(buf, pushed);
 }
 
-void index_mm_dump(const struct index_mm *idx, int fd, bool alias_prefix)
+void index_mm_dump(const struct index_mm *idx, FILE *fp, bool alias_prefix)
 {
 	struct index_mm_node nbuf, *root;
 	struct strbuf buf;
@@ -866,7 +866,7 @@ void index_mm_dump(const struct index_mm *idx, int fd, bool alias_prefix)
 
 	strbuf_init(&buf);
 	if (!alias_prefix || strbuf_pushchars(&buf, "alias "))
-		index_mm_dump_node(root, &buf, fd);
+		index_mm_dump_node(root, &buf, fp);
 	strbuf_release(&buf);
 }
 

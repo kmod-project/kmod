@@ -37,7 +37,6 @@ _nonnull_all_ bool path_ends_with_kmod_ext(const char *path, size_t len);
 _must_check_ _nonnull_(2) ssize_t pread_str_safe(int fd, char *buf, size_t buflen,
 						 off_t off);
 _must_check_ _nonnull_(2) ssize_t read_str_safe(int fd, char *buf, size_t buflen);
-_nonnull_(2) ssize_t write_str_safe(int fd, const char *buf, size_t buflen);
 _must_check_ _nonnull_(2) int read_str_long(int fd, long *value, int base);
 _must_check_ _nonnull_(2) int read_str_ulong(int fd, unsigned long *value, int base);
 _nonnull_(1) char *freadline_wrapped(FILE *fp, unsigned int *linenum);

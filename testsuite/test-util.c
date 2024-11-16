@@ -162,35 +162,6 @@ static int test_path_ends_with_kmod_ext(const struct test *t)
 DEFINE_TEST(test_path_ends_with_kmod_ext,
 	    .description = "check implementation of path_ends_with_kmod_ext()")
 
-#define TEST_WRITE_STR_SAFE_FILE "/write-str-safe"
-#define TEST_WRITE_STR_SAFE_PATH TESTSUITE_ROOTFS "test-util2/" TEST_WRITE_STR_SAFE_FILE
-static int test_write_str_safe(const struct test *t)
-{
-	const char *s = "test";
-	int fd;
-
-	fd = open(TEST_WRITE_STR_SAFE_FILE ".txt", O_CREAT | O_TRUNC | O_WRONLY, 0644);
-	assert_return(fd >= 0, EXIT_FAILURE);
-
-	write_str_safe(fd, s, strlen(s));
-	close(fd);
-
-	return EXIT_SUCCESS;
-}
-DEFINE_TEST(test_write_str_safe,
-	.description = "check implementation of write_str_safe()",
-	.config = {
-		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-util2/",
-	},
-	.need_spawn = true,
-	.output = {
-		.files = (const struct keyval[]) {
-			{ TEST_WRITE_STR_SAFE_PATH ".txt",
-			  TEST_WRITE_STR_SAFE_PATH "-correct.txt" },
-			{ },
-		},
-	});
-
 static int test_uadd32_overflow(const struct test *t)
 {
 	uint32_t res;
