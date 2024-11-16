@@ -55,8 +55,8 @@
  *
  *       char[] prefix; // nul terminated
  *
- *       unsigned char first;
- *       unsigned char last;
+ *       uint8_t first;
+ *       uint8_t last;
  *       uint32_t children[last - first + 1];
  *
  *       uint32_t value_count;
@@ -202,8 +202,8 @@ struct index_node_f {
 	struct index_file *idx;
 	char *prefix; /* path compression */
 	struct index_value *values;
-	unsigned char first; /* range of child nodes */
-	unsigned char last;
+	uint8_t first; /* range of child nodes */
+	uint8_t last;
 	uint32_t children[0];
 };
 
@@ -244,8 +244,8 @@ static struct index_node_f *index_read(struct index_file *idx, uint32_t offset)
 		if (node == NULL)
 			goto err;
 
-		node->first = (unsigned char)first;
-		node->last = (unsigned char)last;
+		node->first = (uint8_t)first;
+		node->last = (uint8_t)last;
 
 		if (!read_u32s(fp, node->children, child_count))
 			goto err;
@@ -340,7 +340,7 @@ static struct index_node_f *index_readroot(struct index_file *in)
 	return index_read(in, in->root_offset);
 }
 
-static struct index_node_f *index_readchild(const struct index_node_f *parent, int ch)
+static struct index_node_f *index_readchild(const struct index_node_f *parent, uint8_t ch)
 {
 	if (parent->first <= ch && ch <= parent->last) {
 		return index_read(parent->idx, parent->children[ch - parent->first]);
@@ -353,7 +353,6 @@ static void index_dump_node(struct index_node_f *node, struct strbuf *buf, int f
 {
 	struct index_value *v;
 	size_t pushed;
-	int ch;
 
 	pushed = strbuf_pushchars(buf, node->prefix);
 
@@ -364,7 +363,7 @@ static void index_dump_node(struct index_node_f *node, struct strbuf *buf, int f
 		write_str_safe(fd, "\n", 1);
 	}
 
-	for (ch = node->first; ch <= node->last; ch++) {
+	for (uint8_t ch = node->first; ch <= node->last; ch++) {
 		struct index_node_f *child = index_readchild(node, ch);
 
 		if (!child)
@@ -399,12 +398,11 @@ static char *index_search__node(struct index_node_f *node, const char *key, int 
 {
 	char *value;
 	struct index_node_f *child;
-	int ch;
 	int j;
 
 	while (node) {
 		for (j = 0; node->prefix[j]; j++) {
-			ch = node->prefix[j];
+			uint8_t ch = node->prefix[j];
 
 			if (ch != key[i + j]) {
 				index_close(node);
@@ -470,11 +468,10 @@ static void index_searchwild__all(struct index_node_f *node, int j, struct strbu
 				  const char *subkey, struct index_value **out)
 {
 	size_t pushed;
-	int ch;
 
 	pushed = strbuf_pushchars(buf, &node->prefix[j]);
 
-	for (ch = node->first; ch <= node->last; ch++) {
+	for (uint8_t ch = node->first; ch <= node->last; ch++) {
 		struct index_node_f *child = index_readchild(node, ch);
 
 		if (!child)
@@ -506,11 +503,10 @@ static void index_searchwild__node(struct index_node_f *node, struct strbuf *buf
 {
 	struct index_node_f *child;
 	int j;
-	int ch;
 
 	while (node) {
 		for (j = 0; node->prefix[j]; j++) {
-			ch = node->prefix[j];
+			uint8_t ch = node->prefix[j];
 
 			if (ch == '*' || ch == '?' || ch == '[') {
 				index_searchwild__all(node, j, buf, &key[j], out);
@@ -794,7 +790,7 @@ static struct index_mm_node *index_mm_readroot(const struct index_mm *idx,
 }
 
 static struct index_mm_node *index_mm_readchild(const struct index_mm_node *parent,
-						int ch, struct index_mm_node *child)
+						uint8_t ch, struct index_mm_node *child)
 {
 	if (parent->first <= ch && ch <= parent->last) {
 		const void *p;
@@ -814,7 +810,6 @@ static void index_mm_dump_node(struct index_mm_node *node, struct strbuf *buf, i
 {
 	const void *p;
 	size_t i, pushed;
-	int ch;
 
 	pushed = strbuf_pushchars(buf, node->prefix);
 
@@ -828,7 +823,7 @@ static void index_mm_dump_node(struct index_mm_node *node, struct strbuf *buf, i
 		write_str_safe(fd, "\n", 1);
 	}
 
-	for (ch = node->first; ch <= node->last; ch++) {
+	for (uint8_t ch = node->first; ch <= node->last; ch++) {
 		struct index_mm_node *child, nbuf;
 
 		child = index_mm_readchild(node, ch, &nbuf);
@@ -862,12 +857,11 @@ void index_mm_dump(const struct index_mm *idx, int fd, bool alias_prefix)
 static char *index_mm_search_node(struct index_mm_node *node, const char *key)
 {
 	char *value;
-	int ch;
 	int j;
 
 	while (node) {
 		for (j = 0; node->prefix[j]; j++) {
-			ch = node->prefix[j];
+			uint8_t ch = node->prefix[j];
 
 			if (ch != key[j])
 				return NULL;
@@ -936,11 +930,10 @@ static void index_mm_searchwild_all(struct index_mm_node *node, int j, struct st
 				    const char *subkey, struct index_value **out)
 {
 	size_t pushed;
-	int ch;
 
 	pushed = strbuf_pushchars(buf, &node->prefix[j]);
 
-	for (ch = node->first; ch <= node->last; ch++) {
+	for (uint8_t ch = node->first; ch <= node->last; ch++) {
 		struct index_mm_node *child, nbuf;
 
 		child = index_mm_readchild(node, ch, &nbuf);
@@ -972,7 +965,7 @@ static void index_mm_searchwild_node(struct index_mm_node *node, struct strbuf *
 		int j;
 
 		for (j = 0; node->prefix[j]; j++) {
-			int ch = node->prefix[j];
+			uint8_t ch = node->prefix[j];
 
 			if (ch == '*' || ch == '?' || ch == '[') {
 				index_mm_searchwild_all(node, j, buf, key + j, out);
