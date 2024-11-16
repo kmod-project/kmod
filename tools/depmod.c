@@ -134,8 +134,8 @@ struct index_value {
 struct index_node {
 	char *prefix; /* path compression */
 	struct index_value *values;
-	unsigned char first; /* range of child nodes */
-	unsigned char last;
+	uint8_t first; /* range of child nodes */
+	uint8_t last;
 	uint32_t size; /* size of node */
 	uint32_t total; /* size of node and its children */
 	struct index_node *children[INDEX_CHILDMAX]; /* indexed by character */
@@ -206,7 +206,7 @@ static void index__checkstring(const char *str)
 	int i;
 
 	for (i = 0; str[i]; i++) {
-		unsigned char ch = (unsigned char)str[i];
+		uint8_t ch = (uint8_t)str[i];
 
 		if (ch >= INDEX_CHILDMAX)
 			CRIT("Module index: bad character '%c'=0x%x - only 7-bit ASCII is supported:"
@@ -248,7 +248,7 @@ static int index_insert(struct index_node *node, const char *key, const char *va
 			unsigned int priority)
 {
 	int i = 0; /* index within str */
-	int ch;
+	uint8_t ch;
 
 	index__checkstring(key);
 	index__checkstring(value);
@@ -346,7 +346,7 @@ static uint32_t index_calculate_size(struct index_node *node)
 	if (index__haschildren(node)) {
 		int i;
 
-		node->size += 2; /* first + last, unsigned char */
+		node->size += 2; /* first + last, uint8_t */
 		node->size += (node->last - node->first + 1) * sizeof(uint32_t);
 
 		for (i = node->first; i <= node->last; i++) {
@@ -556,7 +556,7 @@ static int cfg_search_add(struct cfg *cfg, const char *path)
 		memcpy(s->path, path, len);
 	}
 
-	DBG("search add: %s, search type=%hhu\n", path, (unsigned char)type);
+	DBG("search add: %s, search type=%hhu\n", path, (uint8_t)type);
 
 	s->next = cfg->searches;
 	cfg->searches = s;
