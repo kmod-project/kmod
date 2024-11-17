@@ -3,6 +3,8 @@
  * Copyright (C) 2011-2013  ProFUSION embedded systems
  */
 
+#include <sys/param.h>
+
 #include <arpa/inet.h>
 #include <assert.h>
 #include <errno.h>
@@ -133,6 +135,44 @@ enum node_offset {
 
 	INDEX_NODE_MASK = 0x0FFFFFFF, /* Offset value */
 };
+
+struct wrtbuf {
+	char bytes[4096];
+	size_t len;
+	int fd;
+};
+
+static void wrtbuf_init(struct wrtbuf *buf, int fd)
+{
+	buf->len = 0;
+	buf->fd = fd;
+}
+
+static void wrtbuf_flush(struct wrtbuf *buf)
+{
+	if (buf->len > 0) {
+		write_str_safe(buf->fd, buf->bytes, buf->len);
+		buf->len = 0;
+	}
+}
+
+static void wrtbuf_write(struct wrtbuf *buf, const char *p, size_t len)
+{
+	size_t todo = len;
+	size_t done = 0;
+
+	do {
+		size_t n = MIN(sizeof(buf->bytes) - buf->len, todo);
+
+		memcpy(buf->bytes + buf->len, p + done, n);
+		buf->len += n;
+		todo -= n;
+		done += n;
+
+		if (buf->len == sizeof(buf->bytes))
+			wrtbuf_flush(buf);
+	} while (todo > 0);
+}
 
 void index_values_free(struct index_value *values)
 {
@@ -349,7 +389,8 @@ static struct index_node_f *index_readchild(const struct index_node_f *parent, u
 	return NULL;
 }
 
-static void index_dump_node(struct index_node_f *node, struct strbuf *buf, int fd)
+static void index_dump_node(struct index_node_f *node, struct strbuf *buf,
+			    struct wrtbuf *wbuf)
 {
 	struct index_value *v;
 	size_t pushed;
@@ -357,10 +398,10 @@ static void index_dump_node(struct index_node_f *node, struct strbuf *buf, int f
 	pushed = strbuf_pushchars(buf, node->prefix);
 
 	for (v = node->values; v != NULL; v = v->next) {
-		write_str_safe(fd, buf->bytes, strbuf_used(buf));
-		write_str_safe(fd, " ", 1);
-		write_str_safe(fd, v->value, strlen(v->value));
-		write_str_safe(fd, "\n", 1);
+		wrtbuf_write(wbuf, buf->bytes, strbuf_used(buf));
+		wrtbuf_write(wbuf, " ", 1);
+		wrtbuf_write(wbuf, v->value, strlen(v->value));
+		wrtbuf_write(wbuf, "\n", 1);
 	}
 
 	for (uint8_t ch = node->first; ch <= node->last; ch++) {
@@ -370,7 +411,7 @@ static void index_dump_node(struct index_node_f *node, struct strbuf *buf, int f
 			continue;
 
 		if (strbuf_pushchar(buf, ch)) {
-			index_dump_node(child, buf, fd);
+			index_dump_node(child, buf, wbuf);
 			strbuf_popchar(buf);
 		}
 	}
@@ -383,14 +424,17 @@ void index_dump(struct index_file *in, int fd, bool alias_prefix)
 {
 	struct index_node_f *root;
 	struct strbuf buf;
+	struct wrtbuf wbuf;
 
 	root = index_readroot(in);
 	if (root == NULL)
 		return;
 
 	strbuf_init(&buf);
+	wrtbuf_init(&wbuf, fd);
 	if (!alias_prefix || strbuf_pushchars(&buf, "alias "))
-		index_dump_node(root, &buf, fd);
+		index_dump_node(root, &buf, &wbuf);
+	wrtbuf_flush(&wbuf);
 	strbuf_release(&buf);
 }
 
@@ -806,7 +850,8 @@ static struct index_mm_node *index_mm_readchild(const struct index_mm_node *pare
 	return NULL;
 }
 
-static void index_mm_dump_node(struct index_mm_node *node, struct strbuf *buf, int fd)
+static void index_mm_dump_node(struct index_mm_node *node, struct strbuf *buf,
+			       struct wrtbuf *wbuf)
 {
 	const void *p;
 	size_t i, pushed;
@@ -817,10 +862,10 @@ static void index_mm_dump_node(struct index_mm_node *node, struct strbuf *buf, i
 		struct index_mm_value v;
 
 		read_value_mm(&p, &v);
-		write_str_safe(fd, buf->bytes, strbuf_used(buf));
-		write_str_safe(fd, " ", 1);
-		write_str_safe(fd, v.value, v.len);
-		write_str_safe(fd, "\n", 1);
+		wrtbuf_write(wbuf, buf->bytes, strbuf_used(buf));
+		wrtbuf_write(wbuf, " ", 1);
+		wrtbuf_write(wbuf, v.value, v.len);
+		wrtbuf_write(wbuf, "\n", 1);
 	}
 
 	for (uint8_t ch = node->first; ch <= node->last; ch++) {
@@ -831,7 +876,7 @@ static void index_mm_dump_node(struct index_mm_node *node, struct strbuf *buf, i
 			continue;
 
 		if (strbuf_pushchar(buf, ch)) {
-			index_mm_dump_node(child, buf, fd);
+			index_mm_dump_node(child, buf, wbuf);
 			strbuf_popchar(buf);
 		}
 	}
@@ -843,14 +888,17 @@ void index_mm_dump(const struct index_mm *idx, int fd, bool alias_prefix)
 {
 	struct index_mm_node nbuf, *root;
 	struct strbuf buf;
+	struct wrtbuf wbuf;
 
 	root = index_mm_readroot(idx, &nbuf);
 	if (root == NULL)
 		return;
 
 	strbuf_init(&buf);
+	wrtbuf_init(&wbuf, fd);
 	if (!alias_prefix || strbuf_pushchars(&buf, "alias "))
-		index_mm_dump_node(root, &buf, fd);
+		index_mm_dump_node(root, &buf, &wbuf);
+	wrtbuf_flush(&wbuf);
 	strbuf_release(&buf);
 }
 
