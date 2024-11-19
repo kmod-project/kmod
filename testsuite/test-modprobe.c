@@ -169,9 +169,7 @@ DEFINE_TEST(modprobe_param_kcmdline_show_deps,
 	},
 	.output = {
 		.out = TESTSUITE_ROOTFS "test-modprobe/module-param-kcmdline/correct.txt",
-	},
-	.modules_loaded = "",
-	);
+	});
 
 static noreturn int modprobe_param_kcmdline(const struct test *t)
 {
@@ -186,9 +184,7 @@ DEFINE_TEST_WITH_FUNC(modprobe_param_kcmdline2, modprobe_param_kcmdline,
 	},
 	.output = {
 		.out = TESTSUITE_ROOTFS "test-modprobe/module-param-kcmdline2/correct.txt",
-	},
-	.modules_loaded = "",
-	);
+	});
 
 DEFINE_TEST_WITH_FUNC(modprobe_param_kcmdline3, modprobe_param_kcmdline,
 	.description = "check if unrelated strings in kcmdline are correctly ignored",
@@ -198,9 +194,7 @@ DEFINE_TEST_WITH_FUNC(modprobe_param_kcmdline3, modprobe_param_kcmdline,
 	},
 	.output = {
 		.out = TESTSUITE_ROOTFS "test-modprobe/module-param-kcmdline3/correct.txt",
-	},
-	.modules_loaded = "",
-	);
+	});
 
 DEFINE_TEST_WITH_FUNC(modprobe_param_kcmdline4, modprobe_param_kcmdline,
 	.description = "check if unrelated strings in kcmdline are correctly ignored",
@@ -210,9 +204,7 @@ DEFINE_TEST_WITH_FUNC(modprobe_param_kcmdline4, modprobe_param_kcmdline,
 	},
 	.output = {
 		.out = TESTSUITE_ROOTFS "test-modprobe/module-param-kcmdline4/correct.txt",
-	},
-	.modules_loaded = "",
-	);
+	});
 
 DEFINE_TEST_WITH_FUNC(modprobe_param_kcmdline5, modprobe_param_kcmdline,
 	.description = "check if params with spaces are parsed correctly from kcmdline",
@@ -234,9 +226,7 @@ DEFINE_TEST_WITH_FUNC(modprobe_param_kcmdline6, modprobe_param_kcmdline,
 	},
 	.output = {
 		.out = TESTSUITE_ROOTFS "test-modprobe/module-param-kcmdline6/correct.txt",
-	},
-	.modules_loaded = "",
-	);
+	});
 
 DEFINE_TEST_WITH_FUNC(modprobe_param_kcmdline7, modprobe_param_kcmdline,
 	.description = "check if dots on other parts of kcmdline don't confuse our parser",
@@ -246,9 +236,7 @@ DEFINE_TEST_WITH_FUNC(modprobe_param_kcmdline7, modprobe_param_kcmdline,
 	},
 	.output = {
 		.out = TESTSUITE_ROOTFS "test-modprobe/module-param-kcmdline7/correct.txt",
-	},
-	.modules_loaded = "",
-	);
+	});
 
 DEFINE_TEST_WITH_FUNC(modprobe_param_kcmdline8, modprobe_param_kcmdline,
 	.description = "check if dots on other parts of kcmdline don't confuse our parser",
@@ -268,9 +256,7 @@ DEFINE_TEST_WITH_FUNC(modprobe_param_kcmdline9, modprobe_param_kcmdline,
 	},
 	.output = {
 		.out = TESTSUITE_ROOTFS "test-modprobe/module-param-kcmdline9/correct.txt",
-	},
-	.modules_loaded = "",
-	);
+	});
 
 static noreturn int modprobe_force(const struct test *t)
 {
