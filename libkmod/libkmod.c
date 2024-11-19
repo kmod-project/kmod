@@ -163,6 +163,7 @@ static int log_priority(const char *priority)
 }
 
 static const char *dirname_default_prefix = MODULE_DIRECTORY;
+static const char *dirname_fallback_prefix = MODULE_FALLBACK_DIRECTORY;
 
 static char *get_kernel_release(const char *dirname)
 {
@@ -177,6 +178,13 @@ static char *get_kernel_release(const char *dirname)
 
 	if (asprintf(&p, "%s/%s", dirname_default_prefix, u.release) < 0)
 		return NULL;
+
+	/* If main path doesn't exist, try fallback */
+	if (is_dir(p) <= 0) {
+		free(p);
+		if (asprintf(&p, "%s/%s", dirname_fallback_prefix, u.release) < 0)
+			return NULL;
+	}
 
 	return p;
 }

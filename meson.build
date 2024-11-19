@@ -227,6 +227,12 @@ foreach confdir : [sysconfdir, distconfdir]
   install_emptydir(confdir / 'modprobe.d')
 endforeach
 
+moduledir = get_option('modulefallbackdir')
+if moduledir == ''
+  moduledir = '/run/modules'
+endif
+cdata.set_quoted('MODULE_FALLBACK_DIRECTORY', moduledir)
+
 _completiondirs = [
   ['bash', 'bash-completion', 'bash-completion' / 'completions', '@0@'],
   ['fish', 'fish',            'fish' / 'vendor_functions.d',     '@0@.fish'],
