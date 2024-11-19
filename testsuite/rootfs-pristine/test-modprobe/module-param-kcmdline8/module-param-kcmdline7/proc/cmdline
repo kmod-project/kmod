@@ -1,1 +1,0 @@
-psmouse.foo parport.dyndbg="file drivers/parport/ieee1284_ops.c +mpf" quiet rw
