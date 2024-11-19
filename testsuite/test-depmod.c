@@ -90,8 +90,6 @@ DEFINE_TEST(depmod_search_order_simple,
 
 #define ANOTHER_MODDIR "/foobar"
 #define MODULES_ANOTHER_MODDIR_ROOTFS TESTSUITE_ROOTFS "test-depmod/another-moddir"
-#define MODULES_ANOTHER_MODDIR_LIB_MODULES \
-	MODULES_ANOTHER_MODDIR_ROOTFS ANOTHER_MODDIR "/" MODULES_UNAME
 static noreturn int depmod_another_moddir(const struct test *t)
 {
 	EXEC_DEPMOD("-m", ANOTHER_MODDIR);
@@ -105,8 +103,8 @@ DEFINE_TEST(depmod_another_moddir,
 	},
 	.output = {
 		.files = (const struct keyval[]) {
-			{ MODULES_ANOTHER_MODDIR_LIB_MODULES "/correct-modules.dep",
-			  MODULES_ANOTHER_MODDIR_LIB_MODULES "/modules.dep" },
+			{ MODULES_ANOTHER_MODDIR_ROOTFS "/correct-modules.dep",
+			  MODULES_ANOTHER_MODDIR_ROOTFS ANOTHER_MODDIR "/" MODULES_UNAME "/modules.dep" },
 			{ },
 		},
 	});
