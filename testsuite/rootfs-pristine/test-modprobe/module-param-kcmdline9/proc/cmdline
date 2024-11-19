@@ -1,0 +1,1 @@
+modprobe.blacklist=foo,bar modprobe.blacklist=foo2 quiet modprobe.blacklist=bar2 rw modprobe.blacklist=foobar

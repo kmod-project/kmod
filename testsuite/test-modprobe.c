@@ -258,6 +258,16 @@ DEFINE_TEST_WITH_FUNC(modprobe_param_kcmdline8, modprobe_param_kcmdline,
 	},
 	.output = {
 		.out = TESTSUITE_ROOTFS "test-modprobe/module-param-kcmdline8/correct.txt",
+	});
+
+DEFINE_TEST_WITH_FUNC(modprobe_param_kcmdline9, modprobe_param_kcmdline,
+	.description = "check if multiple blacklists are parsed correctly",
+	.config = {
+		[TC_UNAME_R] = "4.4.4",
+		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-modprobe/module-param-kcmdline9",
+	},
+	.output = {
+		.out = TESTSUITE_ROOTFS "test-modprobe/module-param-kcmdline9/correct.txt",
 	},
 	.modules_loaded = "",
 	);

@@ -1,0 +1,8 @@
+blacklist foo
+blacklist bar
+blacklist foo2
+blacklist bar2
+blacklist foobar
+
+# End of configuration files. Dumping indexes now:
+
