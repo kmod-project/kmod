@@ -53,10 +53,10 @@ static int from_name(const struct test *t)
 DEFINE_TEST(from_name,
 	.description = "check if module names are parsed correctly",
 	.config = {
-		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-new-module/from_name/",
+		[TC_ROOTFS] = "test-new-module/from_name/",
 	},
 	.output = {
-		.out = TESTSUITE_ROOTFS "test-new-module/from_name/correct.txt",
+		.out = "test-new-module/from_name/correct.txt",
 	});
 
 static int from_alias(const struct test *t)
@@ -97,10 +97,10 @@ static int from_alias(const struct test *t)
 DEFINE_TEST(from_alias,
 	.description = "check if aliases are parsed correctly",
 	.config = {
-		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-new-module/from_alias/",
+		[TC_ROOTFS] = "test-new-module/from_alias/",
 	},
 	.output = {
-		.out = TESTSUITE_ROOTFS "test-new-module/from_alias/correct.txt",
+		.out = "test-new-module/from_alias/correct.txt",
 	});
 
 TESTSUITE_MAIN();

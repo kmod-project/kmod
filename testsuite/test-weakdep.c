@@ -79,11 +79,11 @@ DEFINE_TEST(test_weakdep,
 	.description = "check if modprobe breaks weakdep",
 	.config = {
 		[TC_UNAME_R] = "4.4.4",
-		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-weakdep",
+		[TC_ROOTFS] = "test-weakdep",
 		[TC_INIT_MODULE_RETCODES] = "",
 	},
 	.output = {
-		.out = TESTSUITE_ROOTFS "test-weakdep/correct-weakdep.txt",
+		.out = "test-weakdep/correct-weakdep.txt",
 	});
 
 TESTSUITE_MAIN();

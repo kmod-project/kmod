@@ -19,7 +19,7 @@
 			(const char *[]){ TOOLS_DIR "/depmod", ##__VA_ARGS__, NULL })
 
 #define MODULES_UNAME "4.4.4"
-#define MODULES_ORDER_ROOTFS TESTSUITE_ROOTFS "test-depmod/modules-order-compressed"
+#define MODULES_ORDER_ROOTFS "test-depmod/modules-order-compressed"
 #define MODULES_ORDER_LIB_MODULES MODULES_ORDER_ROOTFS MODULE_DIRECTORY "/" MODULES_UNAME
 static noreturn int depmod_modules_order_for_compressed(const struct test *t)
 {
@@ -40,7 +40,7 @@ DEFINE_TEST(depmod_modules_order_for_compressed,
 		},
 	});
 
-#define MODULES_OUTDIR_ROOTFS TESTSUITE_ROOTFS "test-depmod/modules-outdir"
+#define MODULES_OUTDIR_ROOTFS "test-depmod/modules-outdir"
 #define MODULES_OUTDIR_LIB_MODULES_OUTPUT \
 	MODULES_OUTDIR_ROOTFS "/outdir" MODULE_DIRECTORY "/" MODULES_UNAME
 #define MODULES_OUTDIR_LIB_MODULES_INPUT \
@@ -66,7 +66,7 @@ DEFINE_TEST(depmod_modules_outdir,
 		},
 	});
 
-#define SEARCH_ORDER_SIMPLE_ROOTFS TESTSUITE_ROOTFS "test-depmod/search-order-simple"
+#define SEARCH_ORDER_SIMPLE_ROOTFS "test-depmod/search-order-simple"
 #define SEARCH_ORDER_SIMPLE_LIB_MODULES \
 	SEARCH_ORDER_SIMPLE_ROOTFS MODULE_DIRECTORY "/" MODULES_UNAME
 static noreturn int depmod_search_order_simple(const struct test *t)
@@ -90,7 +90,7 @@ DEFINE_TEST(depmod_search_order_simple,
 
 #define ANOTHER_MODDIR "/foobar"
 #define RELATIVE_MODDIR "foobar2"
-#define MODULES_ANOTHER_MODDIR_ROOTFS TESTSUITE_ROOTFS "test-depmod/another-moddir"
+#define MODULES_ANOTHER_MODDIR_ROOTFS "test-depmod/another-moddir"
 static noreturn int depmod_another_moddir(const struct test *t)
 {
 	EXEC_DEPMOD("-m", ANOTHER_MODDIR);
@@ -128,8 +128,7 @@ DEFINE_TEST(depmod_another_moddir_relative,
 		},
 	});
 
-#define SEARCH_ORDER_SAME_PREFIX_ROOTFS \
-	TESTSUITE_ROOTFS "test-depmod/search-order-same-prefix"
+#define SEARCH_ORDER_SAME_PREFIX_ROOTFS "test-depmod/search-order-same-prefix"
 #define SEARCH_ORDER_SAME_PREFIX_LIB_MODULES \
 	SEARCH_ORDER_SAME_PREFIX_ROOTFS MODULE_DIRECTORY "/" MODULES_UNAME
 static noreturn int depmod_search_order_same_prefix(const struct test *t)
@@ -151,7 +150,7 @@ DEFINE_TEST(depmod_search_order_same_prefix,
 		},
 	});
 
-#define DETECT_LOOP_ROOTFS TESTSUITE_ROOTFS "test-depmod/detect-loop"
+#define DETECT_LOOP_ROOTFS "test-depmod/detect-loop"
 static noreturn int depmod_detect_loop(const struct test *t)
 {
 	EXEC_DEPMOD();
@@ -168,8 +167,7 @@ DEFINE_TEST(depmod_detect_loop,
 		.err = DETECT_LOOP_ROOTFS "/correct.txt",
 	});
 
-#define SEARCH_ORDER_EXTERNAL_FIRST_ROOTFS \
-	TESTSUITE_ROOTFS "test-depmod/search-order-external-first"
+#define SEARCH_ORDER_EXTERNAL_FIRST_ROOTFS "test-depmod/search-order-external-first"
 #define SEARCH_ORDER_EXTERNAL_FIRST_LIB_MODULES \
 	SEARCH_ORDER_EXTERNAL_FIRST_ROOTFS MODULE_DIRECTORY "/" MODULES_UNAME
 static noreturn int depmod_search_order_external_first(const struct test *t)
@@ -191,8 +189,7 @@ DEFINE_TEST(depmod_search_order_external_first,
 		},
 	});
 
-#define SEARCH_ORDER_EXTERNAL_LAST_ROOTFS \
-	TESTSUITE_ROOTFS "test-depmod/search-order-external-last"
+#define SEARCH_ORDER_EXTERNAL_LAST_ROOTFS "test-depmod/search-order-external-last"
 #define SEARCH_ORDER_EXTERNAL_LAST_LIB_MODULES \
 	SEARCH_ORDER_EXTERNAL_LAST_ROOTFS MODULE_DIRECTORY "/" MODULES_UNAME
 static noreturn int depmod_search_order_external_last(const struct test *t)
@@ -214,7 +211,7 @@ DEFINE_TEST(depmod_search_order_external_last,
 		},
 	});
 
-#define SEARCH_ORDER_OVERRIDE_ROOTFS TESTSUITE_ROOTFS "test-depmod/search-order-override"
+#define SEARCH_ORDER_OVERRIDE_ROOTFS "test-depmod/search-order-override"
 #define SEARCH_ORDER_OVERRIDE_LIB_MODULES \
 	SEARCH_ORDER_OVERRIDE_ROOTFS MODULE_DIRECTORY "/" MODULES_UNAME
 static noreturn int depmod_search_order_override(const struct test *t)
@@ -236,7 +233,7 @@ DEFINE_TEST(depmod_search_order_override,
 		},
 	});
 
-#define CHECK_WEAKDEP_ROOTFS TESTSUITE_ROOTFS "test-depmod/check-weakdep"
+#define CHECK_WEAKDEP_ROOTFS "test-depmod/check-weakdep"
 #define CHECK_WEAKDEP_LIB_MODULES CHECK_WEAKDEP_ROOTFS MODULE_DIRECTORY "/" MODULES_UNAME
 static noreturn int depmod_check_weakdep(const struct test *t)
 {

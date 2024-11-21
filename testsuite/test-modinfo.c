@@ -27,10 +27,10 @@ static const char *progname = TOOLS_DIR "/modinfo";
 	DEFINE_TEST(test_modinfo_##_field, \
 	.description = "check " #_field " output of modinfo for different architectures", \
 	.config = { \
-		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-modinfo/", \
+		[TC_ROOTFS] = "test-modinfo/", \
 	}, \
 	.output = { \
-		.out = TESTSUITE_ROOTFS "test-modinfo/correct-" #_field #_flavor ".txt", \
+		.out = "test-modinfo/correct-" #_field #_flavor ".txt", \
 	})
 
 /* TODO: add cross-compiled modules to the test */
@@ -72,10 +72,10 @@ static noreturn int test_modinfo_signature(const struct test *t)
 DEFINE_TEST(test_modinfo_signature,
 	.description = "check signatures are correct for modinfo is correct for i686, ppc64, s390x and x86_64",
 	.config = {
-		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-modinfo/",
+		[TC_ROOTFS] = "test-modinfo/",
 	},
 	.output = {
-		.out = TESTSUITE_ROOTFS "test-modinfo/correct.txt",
+		.out = "test-modinfo/correct.txt",
 	});
 #endif
 
@@ -95,11 +95,11 @@ static noreturn int test_modinfo_external(const struct test *t)
 DEFINE_TEST(test_modinfo_external,
 	.description = "check if modinfo finds external module",
 	.config = {
-		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-modinfo/external",
+		[TC_ROOTFS] = "test-modinfo/external",
 		[TC_UNAME_R] = "4.4.4",
 	},
 	.output = {
-		.out = TESTSUITE_ROOTFS "test-modinfo/correct-external.txt",
+		.out = "test-modinfo/correct-external.txt",
 	})
 
 static noreturn int test_modinfo_builtin(const struct test *t)
@@ -117,11 +117,11 @@ static noreturn int test_modinfo_builtin(const struct test *t)
 DEFINE_TEST(test_modinfo_builtin,
 	.description = "check if modinfo finds builtin module",
 	.config = {
-		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-modinfo/builtin",
+		[TC_ROOTFS] = "test-modinfo/builtin",
 		[TC_UNAME_R] = "6.11.0",
 	},
 	.output = {
-		.out = TESTSUITE_ROOTFS "test-modinfo/correct-builtin.txt",
+		.out = "test-modinfo/correct-builtin.txt",
 	})
 
 TESTSUITE_MAIN();

@@ -64,7 +64,7 @@ static int testsuite_rootfs_fopen(const struct test *t)
 }
 DEFINE_TEST(testsuite_rootfs_fopen, .description = "test if rootfs works - fopen()",
 	    .config = {
-		    [TC_ROOTFS] = TESTSUITE_ROOTFS "test-rootfs/",
+		    [TC_ROOTFS] = "test-rootfs/",
 	    });
 
 static int testsuite_rootfs_open(const struct test *t)
@@ -95,7 +95,7 @@ static int testsuite_rootfs_open(const struct test *t)
 }
 DEFINE_TEST(testsuite_rootfs_open, .description = "test if rootfs works - open()",
 	    .config = {
-		    [TC_ROOTFS] = TESTSUITE_ROOTFS "test-rootfs/",
+		    [TC_ROOTFS] = "test-rootfs/",
 	    });
 
 static int testsuite_rootfs_stat(const struct test *t)
@@ -111,7 +111,7 @@ static int testsuite_rootfs_stat(const struct test *t)
 }
 DEFINE_TEST(testsuite_rootfs_stat, .description = "test if rootfs works - stat()",
 	    .config = {
-		    [TC_ROOTFS] = TESTSUITE_ROOTFS "test-rootfs/",
+		    [TC_ROOTFS] = "test-rootfs/",
 	    });
 
 static int testsuite_rootfs_opendir(const struct test *t)
@@ -129,7 +129,7 @@ static int testsuite_rootfs_opendir(const struct test *t)
 }
 DEFINE_TEST(testsuite_rootfs_opendir, .description = "test if rootfs works - opendir()",
 	    .config = {
-		    [TC_ROOTFS] = TESTSUITE_ROOTFS "test-rootfs/",
+		    [TC_ROOTFS] = "test-rootfs/",
 	    });
 
 TESTSUITE_MAIN();

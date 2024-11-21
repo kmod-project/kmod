@@ -59,7 +59,7 @@ static const char *test_rootfs(const struct test *t)
 	if (t->config[TC_ROOTFS] == NULL)
 		return NULL;
 
-	snprintf(dirname, sizeof(dirname), "%s", t->config[TC_ROOTFS]);
+	snprintf(dirname, sizeof(dirname), TESTSUITE_ROOTFS "%s", t->config[TC_ROOTFS]);
 	return dirname;
 }
 
@@ -69,7 +69,7 @@ static const char *test_actual_filename(const char *fn)
 	if (fn == NULL)
 		return NULL;
 
-	snprintf(filename, sizeof(filename), "%s", fn);
+	snprintf(filename, sizeof(filename), TESTSUITE_ROOTFS "%s", fn);
 	return filename;
 }
 
