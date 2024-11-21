@@ -41,7 +41,7 @@ struct hash *hash_new(unsigned int n_buckets, void (*free_value)(void *value))
 	hash->n_buckets = n_buckets;
 	hash->free_value = free_value;
 	hash->step = n_buckets / 32;
-	if (hash->step == 0)
+	if (hash->step < 4)
 		hash->step = 4;
 	else if (hash->step > 64)
 		hash->step = 64;
