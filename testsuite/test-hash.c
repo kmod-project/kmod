@@ -186,6 +186,23 @@ static int test_hash_del(const struct test *t)
 }
 DEFINE_TEST(test_hash_del, .description = "test add / delete a single element");
 
+static int test_hash_del_nonexistent(const struct test *t)
+{
+	struct hash *h = hash_new(32, NULL);
+	const char *k1 = "k1";
+	int rc;
+
+	rc = hash_del(h, k1);
+	assert_return(rc == -ENOENT, EXIT_FAILURE);
+
+	hash_free(h);
+
+	return 0;
+}
+DEFINE_TEST(test_hash_del_nonexistent,
+	    .description = "test deleting an element that doesn't exist",
+	    .expected_fail = true);
+
 static int test_hash_free(const struct test *t)
 {
 	struct hash *h = hash_new(8, countfreecalls);
