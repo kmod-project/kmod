@@ -171,6 +171,22 @@ static int test_hash_iter_after_del(const struct test *t)
 DEFINE_TEST(test_hash_iter_after_del,
 	    .description = "test hash_iter, after deleting element");
 
+static int test_hash_del(const struct test *t)
+{
+	struct hash *h = hash_new(32, NULL);
+	const char *k1 = "k1";
+	const char *v1 = "v1";
+
+	hash_add(h, k1, v1);
+	hash_del(h, k1);
+
+	hash_free(h);
+
+	return 0;
+}
+DEFINE_TEST(test_hash_del, .description = "test add / delete a single element",
+	    .expected_fail = true);
+
 static int test_hash_free(const struct test *t)
 {
 	struct hash *h = hash_new(8, countfreecalls);
