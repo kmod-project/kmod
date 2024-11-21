@@ -47,6 +47,14 @@ DEFINE_TEST(modprobe_show_depends2,
 	.output = {
 		.out = TESTSUITE_ROOTFS "test-modprobe/show-depends/correct-mod-simple.txt",
 	});
+DEFINE_TEST_WITH_FUNC(modprobe_show_depends_no_load, modprobe_show_depends2,
+	.description = "check that --show-depends doesn't load any module",
+	.config = {
+		[TC_UNAME_R] = "4.4.4",
+		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-modprobe/show-depends",
+	},
+	.modules_loaded = "",
+	);
 
 static noreturn int modprobe_show_alias_to_none(const struct test *t)
 {
