@@ -63,6 +63,16 @@ static const char *test_rootfs(const struct test *t)
 	return dirname;
 }
 
+static const char *test_actual_filename(const char *fn)
+{
+	static char filename[PATH_MAX];
+	if (fn == NULL)
+		return NULL;
+
+	snprintf(filename, sizeof(filename), "%s", fn);
+	return filename;
+}
+
 static void help(void)
 {
 	const struct option *itr;
@@ -699,13 +709,13 @@ static bool check_generated_files(const struct test *t)
 		char bufa[4096];
 		char bufb[4096];
 
-		fda = open(k->key, O_RDONLY);
+		fda = open(test_actual_filename(k->key), O_RDONLY);
 		if (fda < 0) {
 			ERR("could not open %s\n - %m\n", k->key);
 			goto fail;
 		}
 
-		fdb = open(k->val, O_RDONLY);
+		fdb = open(test_actual_filename(k->val), O_RDONLY);
 		if (fdb < 0) {
 			ERR("could not open %s\n - %m\n", k->val);
 			goto fail;
