@@ -191,6 +191,7 @@ static int test_strbuf_pushmem(const struct test *t)
 	size_t size;
 
 	strbuf_init(&buf);
+	strbuf_pushmem(&buf, "", 0);
 	strbuf_reserve_extra(&buf, strlen(TEXT) + 1);
 	size = buf.size;
 	strbuf_pushmem(&buf, TEXT, strlen(TEXT) + 1);
@@ -201,7 +202,8 @@ static int test_strbuf_pushmem(const struct test *t)
 
 	return 0;
 }
-DEFINE_TEST(test_strbuf_pushmem, .description = "test strbuf_reserve");
+DEFINE_TEST(test_strbuf_pushmem, .description = "test strbuf_reserve",
+	    .expected_fail = true);
 
 static int test_strbuf_used(const struct test *t)
 {
