@@ -25,7 +25,13 @@
  * Integers are stored as 32 bit unsigned in "network" order, i.e. MSB first.
  * All files start with a magic number.
  *
- * Magic spells "BOOTFAST". Deprecated versions encoded it as 0xB007FA57.
+ * Magic spells "BOOTFAST", where the exact encoding varies across versions.
+ *
+ * The original implementation in modutils/module-init-tools used 0xB007FA57, but also
+ * lacked the version fields. Thus later on, with module-init-tools commit 44d7ac4
+ * ("add versioning to the binary module files"), the encoding was changed to 0xB007F457
+ * (A -> 4) and the version fields were introduced. Shortly afterwards the format was
+ * changed in backwards incompatible way and the major version was bumped to 2.
  *
  * We use a version string to keep track of changes to the binary format.
  * This is stored in the form: INDEX_MAJOR (hi) INDEX_MINOR (lo) just in
