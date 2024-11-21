@@ -73,6 +73,16 @@ static const char *test_actual_filename(const char *fn)
 	return filename;
 }
 
+static const char *test_stdout(const struct test *t)
+{
+	return test_actual_filename(t->output.out);
+}
+
+static const char *test_stderr(const struct test *t)
+{
+	return test_actual_filename(t->output.err);
+}
+
 static void help(void)
 {
 	const struct option *itr;
@@ -245,7 +255,7 @@ static inline int test_run_child(const struct test *t, int fdout[2], int fderr[2
 	test_export_environ(t);
 
 	/* Close read-fds and redirect std{out,err} to the write-fds */
-	if (t->output.out != NULL) {
+	if (test_stdout(t) != NULL) {
 		close(fdout[0]);
 		if (dup2(fdout[1], STDOUT_FILENO) < 0) {
 			ERR("could not redirect stdout to pipe: %m\n");
@@ -253,7 +263,7 @@ static inline int test_run_child(const struct test *t, int fdout[2], int fderr[2
 		}
 	}
 
-	if (t->output.err != NULL) {
+	if (test_stderr(t) != NULL) {
 		close(fderr[0]);
 		if (dup2(fderr[1], STDERR_FILENO) < 0) {
 			ERR("could not redirect stderr to pipe: %m\n");
@@ -600,15 +610,15 @@ static bool test_run_parent_check_outputs(const struct test *t, int fdout, int f
 		return false;
 	}
 
-	if (t->output.out != NULL) {
-		err = fd_cmp_open(&fd_cmp_out, FD_CMP_OUT, t->output.out, fdout, fd_ep);
+	if (test_stdout(t) != NULL) {
+		err = fd_cmp_open(&fd_cmp_out, FD_CMP_OUT, test_stdout(t), fdout, fd_ep);
 		if (err < 0)
 			goto out;
 		n_fd++;
 	}
 
-	if (t->output.err != NULL) {
-		err = fd_cmp_open(&fd_cmp_err, FD_CMP_ERR, t->output.err, fderr, fd_ep);
+	if (test_stderr(t) != NULL) {
+		err = fd_cmp_open(&fd_cmp_err, FD_CMP_ERR, test_stderr(t), fderr, fd_ep);
 		if (err < 0)
 			goto out;
 		n_fd++;
@@ -1041,9 +1051,9 @@ static inline int test_run_parent(const struct test *t, int fdout[2], int fderr[
 	}
 
 	/* Close write-fds */
-	if (t->output.out != NULL)
+	if (test_stdout(t) != NULL)
 		close(fdout[1]);
-	if (t->output.err != NULL)
+	if (test_stderr(t) != NULL)
 		close(fderr[1]);
 	close(fdmonitor[1]);
 
@@ -1054,9 +1064,9 @@ static inline int test_run_parent(const struct test *t, int fdout[2], int fderr[
 	 * break pipe on the other end: either child already closed or we want
 	 * to stop it
 	 */
-	if (t->output.out != NULL)
+	if (test_stdout(t) != NULL)
 		close(fdout[0]);
-	if (t->output.err != NULL)
+	if (test_stderr(t) != NULL)
 		close(fderr[0]);
 	close(fdmonitor[0]);
 
@@ -1170,14 +1180,14 @@ int test_run(const struct test *t)
 	if (oneshot)
 		test_run_spawned(t);
 
-	if (t->output.out != NULL) {
+	if (test_stdout(t) != NULL) {
 		if (pipe(fdout) != 0) {
 			ERR("could not create out pipe for %s\n", t->name);
 			return EXIT_FAILURE;
 		}
 	}
 
-	if (t->output.err != NULL) {
+	if (test_stderr(t) != NULL) {
 		if (pipe(fderr) != 0) {
 			ERR("could not create err pipe for %s\n", t->name);
 			return EXIT_FAILURE;
