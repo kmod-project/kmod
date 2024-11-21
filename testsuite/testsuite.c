@@ -53,6 +53,16 @@ static const struct {
 					OVERRIDE_LIBDIR "delete_module.so" },
 };
 
+static const char *test_rootfs(const struct test *t)
+{
+	static char dirname[PATH_MAX];
+	if (t->config[TC_ROOTFS] == NULL)
+		return NULL;
+
+	snprintf(dirname, sizeof(dirname), "%s", t->config[TC_ROOTFS]);
+	return dirname;
+}
+
 static void help(void)
 {
 	const struct option *itr;
@@ -169,7 +179,8 @@ static void test_export_environ(const struct test *t)
 		if (t->config[i] == NULL)
 			continue;
 
-		setenv(env_config[i].key, t->config[i], 1);
+		setenv(env_config[i].key, i == TC_ROOTFS ? test_rootfs(t) : t->config[i],
+		       1);
 
 		ldpreload = env_config[i].ldpreload;
 		ldpreloadlen = strlen(ldpreload);
@@ -242,9 +253,9 @@ static inline int test_run_child(const struct test *t, int fdout[2], int fderr[2
 
 	close(fdmonitor[0]);
 
-	if (t->config[TC_ROOTFS] != NULL) {
+	if (test_rootfs(t) != NULL) {
 		const char *stamp = TESTSUITE_ROOTFS "../stamp-rootfs";
-		const char *rootfs = t->config[TC_ROOTFS];
+		const char *rootfs = test_rootfs(t);
 		struct stat rootfsst, stampst;
 
 		if (stat(stamp, &stampst) != 0) {
@@ -850,7 +861,7 @@ static char **read_loaded_modules(const struct test *t, char **buf, int *count)
 	int len = 0, bufsz;
 	char **res = NULL;
 	char *p;
-	const char *rootfs = t->config[TC_ROOTFS] ? t->config[TC_ROOTFS] : "";
+	const char *rootfs = test_rootfs(t) ? test_rootfs(t) : "";
 
 	/* Store the entries in /sys/module to res */
 	if (snprintf(dirname, sizeof(dirname), "%s/sys/module", rootfs) >=
