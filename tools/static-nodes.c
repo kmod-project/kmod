@@ -144,7 +144,7 @@ static void help(void)
 static int do_static_nodes(int argc, char *argv[])
 {
 	struct utsname kernel;
-	char modules[PATH_MAX], buf[4096];
+	char modules[PATH_MAX], buf[PATH_MAX];
 	const char *output = "/dev/stdout";
 	FILE *in = NULL, *out = NULL;
 	const struct static_nodes_format *format = &static_nodes_format_human;
