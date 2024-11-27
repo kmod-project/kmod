@@ -27,7 +27,13 @@
 
 #include "kmod.h"
 
-static int log_priority = LOG_CRIT;
+/*
+ * Do NOT increase priority higher than LOG_ERR, because the main logic is
+ * called twice and if the first time it errors (expected), the log function
+ * will call exit(EXIT_FAILURE) and the second call to the main function will
+ * not be executed.
+ */
+static int log_priority = LOG_ERR;
 static int use_syslog = 0;
 #define LOG(...) log_printf(log_priority, __VA_ARGS__)
 
