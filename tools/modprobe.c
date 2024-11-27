@@ -210,7 +210,8 @@ static int show_modversions(struct kmod_ctx *ctx, const char *filename)
 	struct kmod_module *mod;
 	int err = kmod_module_new_from_path(ctx, filename, &mod);
 	if (err < 0) {
-		LOG("Module %s not found.\n", filename);
+		LOG("Module %s not found in %s.\n", filename,
+		    kmod_get_dirname(ctx));
 		return err;
 	}
 
@@ -237,7 +238,8 @@ static int show_exports(struct kmod_ctx *ctx, const char *filename)
 	struct kmod_module *mod;
 	int err = kmod_module_new_from_path(ctx, filename, &mod);
 	if (err < 0) {
-		LOG("Module %s not found.\n", filename);
+		LOG("Module %s not found in %s.\n", filename,
+		    kmod_get_dirname(ctx));
 		return err;
 	}
 
@@ -500,7 +502,7 @@ static int rmmod(struct kmod_ctx *ctx, const char *alias)
 		return err;
 
 	if (list == NULL) {
-		LOG("Module %s not found.\n", alias);
+		LOG("Module %s not found in %s.\n", alias, kmod_get_dirname(ctx));
 		err = -ENOENT;
 	}
 

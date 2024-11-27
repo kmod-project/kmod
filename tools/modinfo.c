@@ -265,7 +265,8 @@ static int modinfo_path_do(struct kmod_ctx *ctx, const char *path)
 	struct kmod_module *mod;
 	int err = kmod_module_new_from_path(ctx, path, &mod);
 	if (err < 0) {
-		ERR("Module file %s not found.\n", path);
+		ERR("Module file %s not found in %s.\n", path,
+		    kmod_get_dirname(ctx));
 		return err;
 	}
 	err = modinfo_do(mod);
@@ -280,7 +281,8 @@ static int modinfo_name_do(struct kmod_ctx *ctx, const char *name)
 
 	err = kmod_module_new_from_name_lookup(ctx, name, &mod);
 	if (err < 0 || mod == NULL) {
-		ERR("Module name %s not found.\n", name);
+		ERR("Module name %s not found in %s.\n", name,
+		    kmod_get_dirname(ctx));
 		return err < 0 ? err : -ENOENT;
 	}
 
@@ -295,12 +297,14 @@ static int modinfo_alias_do(struct kmod_ctx *ctx, const char *alias)
 	struct kmod_list *l, *list = NULL;
 	int err = kmod_module_new_from_lookup(ctx, alias, &list);
 	if (err < 0) {
-		ERR("Module alias %s not found.\n", alias);
+		ERR("Module alias %s not found in %s.\n", alias,
+		    kmod_get_dirname(ctx));
 		return err;
 	}
 
 	if (list == NULL) {
-		ERR("Module %s not found.\n", alias);
+		ERR("Module %s not found in %s.\n", alias,
+		    kmod_get_dirname(ctx));
 		return -ENOENT;
 	}
 
