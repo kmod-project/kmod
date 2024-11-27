@@ -492,13 +492,22 @@ static int do_modinfo(int argc, char *argv[])
 		kversion = u.release;
 	}
 
+	/* Try first with MODULE_DIRECTORY */
 	err = get_module_dirname(dirname_buf, sizeof(dirname_buf), root,
 				 MODULE_DIRECTORY, kversion);
-	if (err)
-		return EXIT_FAILURE;
-	err = _do_modinfo(dirname_buf, argc, argv, arg_is_modname);
+	if (!err)
+		err = _do_modinfo(dirname_buf, argc, argv, arg_is_modname);
+	if (!err)
+		/* MODULE_DIRECTORY was succesful */
+		return EXIT_SUCCESS;
 
-	return err;
+	/* If not found, look at MODULE_ALTERNATIVE_DIRECTORY */
+	err = get_module_dirname(dirname_buf, sizeof(dirname_buf), root,
+				 MODULE_ALTERNATIVE_DIRECTORY, kversion);
+	if (!err)
+		err = _do_modinfo(dirname_buf, argc, argv, arg_is_modname);
+
+	return err ? EXIT_FAILURE : EXIT_SUCCESS;
 }
 
 const struct kmod_cmd kmod_cmd_compat_modinfo = {
