@@ -141,12 +141,74 @@ static void help(void)
 	}
 }
 
+static int get_module_dirname(char *dirname_buf, size_t dirname_size,
+			      const char *module_directory,
+			      const char *kversion)
+{
+	int n;
+
+	n = snprintf(dirname_buf, dirname_size,
+		     "%s/%s/modules.devname", module_directory, kversion);
+	if (n >= (int)dirname_size) {
+		ERR("could not open %s/%s/modules.devname: path too long\n",
+		    module_directory, kversion);
+		return EXIT_FAILURE;
+	}
+
+	return EXIT_SUCCESS;
+}
+
+static int _do_static_nodes(char *modules, const char *path, char *kver,
+			    const struct static_nodes_format *format, FILE *out)
+{
+	char buf[PATH_MAX];
+	FILE *in = NULL;
+	int ret = EXIT_SUCCESS;
+
+	in = fopen(modules, "re");
+	if (in == NULL) {
+		if (errno == ENOENT) {
+			WRN("%s/%s/modules.devname not found - ignoring\n",
+			    path, kver);
+		} else {
+			ERR("could not open %s/%s/modules.devname - %m\n",
+			    path, kver);
+		}
+		return EXIT_FAILURE;
+	}
+
+	while (fgets(buf, sizeof(buf), in) != NULL) {
+		char modname[PATH_MAX];
+		char devname[PATH_MAX];
+		char type;
+		unsigned int maj, min;
+		int matches;
+
+		if (buf[0] == '#')
+			continue;
+
+		matches =
+			sscanf(buf, "%s %s %c%u:%u", modname, devname, &type, &maj, &min);
+		if (matches != 5 || (type != 'c' && type != 'b')) {
+			ERR("invalid devname entry: %s", buf);
+			ret = EXIT_FAILURE;
+			continue;
+		}
+
+		format->write(out, modname, devname, type, maj, min);
+	}
+
+	fclose(in);
+
+	return ret;
+}
+
 static int do_static_nodes(int argc, char *argv[])
 {
 	struct utsname kernel;
-	char modules[PATH_MAX], buf[PATH_MAX];
+	char modules[PATH_MAX];
 	const char *output = "/dev/stdout";
-	FILE *in = NULL, *out = NULL;
+	FILE *out = NULL;
 	const struct static_nodes_format *format = &static_nodes_format_human;
 	int r, ret = EXIT_SUCCESS;
 
@@ -199,38 +261,12 @@ static int do_static_nodes(int argc, char *argv[])
 		goto finish;
 	}
 
-	r = snprintf(modules, sizeof(modules), MODULE_DIRECTORY "/%s/modules.devname",
-		     kernel.release);
-	if (r >= (int)sizeof(modules)) {
-		ERR("could not open " MODULE_DIRECTORY
-		    "/%s/modules.devname - path too long\n", kernel.release);
-		ret = EXIT_FAILURE;
-		goto finish;
-	}
-	in = fopen(modules, "re");
-	if (in == NULL) {
-		if (errno == ENOENT) {
-			WRN(MODULE_DIRECTORY
-			    "/%s/modules.devname not found - ignoring\n",
-			    kernel.release);
-			ret = EXIT_SUCCESS;
-		} else {
-			ERR("could not open " MODULE_DIRECTORY
-			    "/%s/modules.devname - %m\n",
-			    kernel.release);
-			ret = EXIT_FAILURE;
-		}
-		goto finish;
-	}
-
 	r = mkdir_parents(output, 0755);
 	if (r < 0) {
 		ERR("could not create parent directory for %s - %m.\n",
 			output);
 		ret = EXIT_FAILURE;
-		goto finish;
 	}
-
 	out = fopen(output, "we");
 	if (out == NULL) {
 		ERR("could not create %s - %m\n", output);
@@ -238,30 +274,13 @@ static int do_static_nodes(int argc, char *argv[])
 		goto finish;
 	}
 
-	while (fgets(buf, sizeof(buf), in) != NULL) {
-		char modname[PATH_MAX];
-		char devname[PATH_MAX];
-		char type;
-		unsigned int maj, min;
-		int matches;
-
-		if (buf[0] == '#')
-			continue;
-
-		matches =
-			sscanf(buf, "%s %s %c%u:%u", modname, devname, &type, &maj, &min);
-		if (matches != 5 || (type != 'c' && type != 'b')) {
-			ERR("invalid devname entry: %s", buf);
-			ret = EXIT_FAILURE;
-			continue;
-		}
-
-		format->write(out, modname, devname, type, maj, min);
-	}
-
+	ret = get_module_dirname(modules, sizeof(modules), MODULE_DIRECTORY,
+				 kernel.release);
+	if (ret)
+		goto finish;
+	ret = _do_static_nodes(modules, MODULE_DIRECTORY, kernel.release,
+			       format, out);
 finish:
-	if (in)
-		fclose(in);
 	if (out)
 		fclose(out);
 	return ret;
