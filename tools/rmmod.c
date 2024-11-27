@@ -205,11 +205,20 @@ static int do_rmmod(int argc, char *argv[])
 		goto done;
 	}
 
+	/* Try first with MODULE_DIRECTORY */
 	r = get_module_dirname(dirname_buf, sizeof(dirname_buf),
 			       MODULE_DIRECTORY);
-	if (r)
+	if (!r)
+		r = _do_rmmod(dirname_buf, argc, argv, flags, verbose);
+	if (!r)
+		/* MODULE_DIRECTORY was succesful */
 		goto done;
-	r = _do_rmmod(dirname_buf, argc, argv, flags, verbose);
+
+	/* If not found, look at MODULE_ALTERNATIVE_DIRECTORY */
+	r = get_module_dirname(dirname_buf, sizeof(dirname_buf),
+			       MODULE_ALTERNATIVE_DIRECTORY);
+	if (!r)
+		r = _do_rmmod(dirname_buf, argc, argv, flags, verbose);
 
 done:
 	log_close();
