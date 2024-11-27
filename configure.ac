@@ -89,8 +89,13 @@ AC_ARG_WITH([module_directory],
         [], [with_module_directory=/lib/modules])
 AC_SUBST([module_directory], [$with_module_directory])
 
+AC_ARG_WITH([module_alternative_directory],
+        AS_HELP_STRING([--with-module-alternative_directory=DIR], [alternative directory in which to look for kernel modules @<:@default=/run/modules@:>@]),
+        [], [with_module_alternative_directory=/run/modules])
+AC_SUBST([module_alternative_directory], [$with_module_alternative_directory])
+
 # Check all directory arguments for consistency.
-for ac_var in	distconfdir module_directory
+for ac_var in	distconfdir module_directory module_alternative_directory
 do
   eval ac_val=\$$ac_var
   # Remove trailing slashes.
@@ -335,26 +340,27 @@ AC_MSG_RESULT([
 	$PACKAGE $VERSION
 	=======
 
-	module_directory:	${module_directory}
-	prefix:			${prefix}
-	sysconfdir:		${sysconfdir}
-	distconfdir:		${distconfdir}
-	libdir:			${libdir}
-	includedir:		${includedir}
-	bindir:			${bindir}
-	Bash completions dir:   ${with_bashcompletiondir}
+	module_directory:		${module_directory}
+	module_alternative_directory:	${module_alternative_directory}
+	prefix:				${prefix}
+	sysconfdir:			${sysconfdir}
+	distconfdir:			${distconfdir}
+	libdir:				${libdir}
+	includedir:			${includedir}
+	bindir:				${bindir}
+	Bash completions dir:   	${with_bashcompletiondir}
 
-	compiler:		${CC}
-	cflags:			${with_cflags} ${CFLAGS}
-	ldflags:		${with_ldflags} ${LDFLAGS}
+	compiler:			${CC}
+	cflags:				${with_cflags} ${CFLAGS}
+	ldflags:			${with_ldflags} ${LDFLAGS}
 
-	tools:			${enable_tools}
-	logging:		${enable_logging}
-	compression:		zstd=${with_zstd}  xz=${with_xz}  zlib=${with_zlib}
-	debug:			${enable_debug}
-	coverage:		${enable_coverage}
-	doc:			${enable_gtk_doc}
-	man:			${enable_manpages}
+	tools:				${enable_tools}
+	logging:			${enable_logging}
+	compression:			zstd=${with_zstd}  xz=${with_xz}  zlib=${with_zlib}
+	debug:				${enable_debug}
+	coverage:			${enable_coverage}
+	doc:				${enable_gtk_doc}
+	man:				${enable_manpages}
 
-	features:               ${with_features}
+	features:               	${with_features}
 ])

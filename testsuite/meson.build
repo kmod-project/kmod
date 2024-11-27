@@ -28,6 +28,7 @@ create_rootfs = custom_target(
     meson.project_build_root() / 'config.h',
     sysconfdir,
     moduledir,
+    modulealternativedir,
   ],
   output : 'stamp-rootfs',
   console : true,

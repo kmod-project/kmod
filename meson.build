@@ -193,6 +193,7 @@ datadir = prefixdir / get_option('datadir')
 
 distconfdir = get_option('distconfdir')
 moduledir = get_option('moduledir')
+modulealternativedir = get_option('modulealternativedir')
 
 bashcompletiondir = get_option('bashcompletiondir')
 fishcompletiondir = get_option('fishcompletiondir')
@@ -204,6 +205,7 @@ _customdirs = [
   # The defaults are hard-coded due to historical reasons
   ['distconfdir', prefixdir / 'lib',  'DISTCONFDIR'],
   ['moduledir',   '/lib/modules',     'MODULE_DIRECTORY'],
+  ['modulealternativedir', '/run/modules', 'MODULE_ALTERNATIVE_DIRECTORY'],
 ]
 
 foreach tuple : _customdirs
@@ -472,6 +474,7 @@ _kmod_variables = [
   'sysconfdir=' + sysconfdir,
   'distconfdir=' + distconfdir,
   'module_directory=' + moduledir,
+  'module_alternative_directory=' + modulealternativedir,
 ]
 
 # Don't (space) escape variables with space-separated lists, for consistency
@@ -565,6 +568,7 @@ summary({
 summary({
   'distconfdir' : distconfdir,
   'moduledir'   : moduledir,
+  'modulealternativedir'   : modulealternativedir,
 }, section : 'Kmod specific')
 
 summary({
