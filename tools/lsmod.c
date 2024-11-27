@@ -10,6 +10,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/utsname.h>
+
+#include <shared/util.h>
 
 #include <libkmod/libkmod.h>
 
@@ -38,14 +41,87 @@ static void help(void)
 	       program_invocation_short_name);
 }
 
-static int do_lsmod(int argc, char *argv[])
+static int get_module_dirname(char *dirname_buf, size_t dirname_size,
+			      const char *module_directory)
+{
+	struct utsname u;
+	int n;
+
+	if (uname(&u) < 0)
+		return EXIT_FAILURE;
+
+	n = snprintf(dirname_buf, dirname_size,
+		     "%s/%s", module_directory, u.release);
+	if (n >= (int)dirname_size) {
+		ERR("bad directory %s/%s: path too long\n",
+		    module_directory, u.release);
+		return EXIT_FAILURE;
+	}
+
+	return EXIT_SUCCESS;
+}
+
+static int _do_lsmod(const char *dirname, int verbose)
 {
 	struct kmod_ctx *ctx = NULL;
 	const char *null_config = NULL;
 	struct kmod_list *list, *itr;
+	int r, err;
+
+	ctx = kmod_new(dirname, &null_config);
+	if (!ctx) {
+		ERR("kmod_new() failed!\n");
+		r = EXIT_FAILURE;
+		goto finish;
+	}
+
+	log_setup_kmod_log(ctx, verbose);
+
+	err = kmod_module_new_from_loaded(ctx, &list);
+	if (err < 0) {
+		ERR("could not get list of modules: %s\n", strerror(-err));
+		r = EXIT_FAILURE;
+		goto finish;
+	}
+
+	puts("Module                  Size  Used by");
+
+	kmod_list_foreach(itr, list) {
+		struct kmod_module *mod = kmod_module_get_module(itr);
+		const char *name = kmod_module_get_name(mod);
+		int use_count = kmod_module_get_refcnt(mod);
+		long size = kmod_module_get_size(mod);
+		struct kmod_list *holders, *hitr;
+		int sep = ' ';
+
+		printf("%-19s %8ld  %d", name, size, use_count);
+		holders = kmod_module_get_holders(mod);
+		kmod_list_foreach(hitr, holders) {
+			struct kmod_module *hm = kmod_module_get_module(hitr);
+
+			putchar(sep);
+			sep = ',';
+
+			fputs(kmod_module_get_name(hm), stdout);
+			kmod_module_unref(hm);
+		}
+		putchar('\n');
+		kmod_module_unref_list(holders);
+		kmod_module_unref(mod);
+	}
+	kmod_module_unref_list(list);
+
+finish:
+	kmod_unref(ctx);
+	return r;
+}
+
+static int do_lsmod(int argc, char *argv[])
+{
+	char dirname_buf[PATH_MAX];
 	int verbose = LOG_ERR;
 	int use_syslog = 0;
-	int err, c, r = 0;
+	int c, r = 0;
 
 	while ((c = getopt_long(argc, argv, cmdopts_s, cmdopts, NULL)) != -1) {
 		switch (c) {
@@ -77,54 +153,16 @@ static int do_lsmod(int argc, char *argv[])
 		goto done;
 	}
 
-	ctx = kmod_new(NULL, &null_config);
-	if (!ctx) {
-		ERR("kmod_new() failed!\n");
-		r = EXIT_FAILURE;
+	r = get_module_dirname(dirname_buf, sizeof(dirname_buf),
+			       MODULE_DIRECTORY);
+	if (r)
 		goto done;
-	}
-
-	log_setup_kmod_log(ctx, verbose);
-
-	err = kmod_module_new_from_loaded(ctx, &list);
-	if (err < 0) {
-		ERR("could not get list of modules: %s\n", strerror(-err));
-		r = EXIT_FAILURE;
-		goto done;
-	}
-
-	puts("Module                  Size  Used by");
-
-	kmod_list_foreach(itr, list) {
-		struct kmod_module *mod = kmod_module_get_module(itr);
-		const char *name = kmod_module_get_name(mod);
-		int use_count = kmod_module_get_refcnt(mod);
-		long size = kmod_module_get_size(mod);
-		struct kmod_list *holders, *hitr;
-		int sep = ' ';
-
-		printf("%-19s %8ld  %d", name, size, use_count);
-		holders = kmod_module_get_holders(mod);
-		kmod_list_foreach(hitr, holders) {
-			struct kmod_module *hm = kmod_module_get_module(hitr);
-
-			putchar(sep);
-			sep = ',';
-
-			fputs(kmod_module_get_name(hm), stdout);
-			kmod_module_unref(hm);
-		}
-		putchar('\n');
-		kmod_module_unref_list(holders);
-		kmod_module_unref(mod);
-	}
-	kmod_module_unref_list(list);
+	r = _do_lsmod(dirname_buf, verbose);
 
 done:
-	kmod_unref(ctx);
 	log_close();
 
-	return r == 0 ? EXIT_SUCCESS : EXIT_FAILURE;
+	return r;
 }
 
 const struct kmod_cmd kmod_cmd_compat_lsmod = {
