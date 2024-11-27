@@ -13,7 +13,9 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <sys/utsname.h>
 
+#include <shared/util.h>
 #include <shared/macro.h>
 
 #include <libkmod/libkmod.h>
@@ -89,53 +91,38 @@ static int check_module_inuse(struct kmod_module *mod)
 	return ret;
 }
 
-static int do_rmmod(int argc, char *argv[])
+static int get_module_dirname(char *dirname_buf, size_t dirname_size,
+			      const char *module_directory)
 {
-	struct kmod_ctx *ctx;
+	struct utsname u;
+	int n;
+
+	if (uname(&u) < 0)
+		return EXIT_FAILURE;
+
+	n = snprintf(dirname_buf, dirname_size,
+		     "%s/%s", module_directory, u.release);
+	if (n >= (int)dirname_size) {
+		ERR("bad directory %s/%s: path too long\n",
+		    module_directory, u.release);
+		return EXIT_FAILURE;
+	}
+
+	return EXIT_SUCCESS;
+}
+
+static int _do_rmmod(const char *dirname, int argc, char *argv[], int flags,
+		     int verbose)
+{
+	struct kmod_ctx *ctx = NULL;
 	const char *null_config = NULL;
-	int verbose = LOG_ERR;
-	int use_syslog = 0;
-	int flags = 0;
-	int i, c, r = 0;
+	int r, i;
 
-	while ((c = getopt_long(argc, argv, cmdopts_s, cmdopts, NULL)) != -1) {
-		switch (c) {
-		case 'f':
-			flags |= KMOD_REMOVE_FORCE;
-			break;
-		case 's':
-			use_syslog = 1;
-			break;
-		case 'v':
-			verbose++;
-			break;
-		case 'h':
-			help();
-			return EXIT_SUCCESS;
-		case 'V':
-			kmod_version();
-			return EXIT_SUCCESS;
-		case '?':
-			return EXIT_FAILURE;
-		default:
-			ERR("unexpected getopt_long() value '%c'.\n", c);
-			return EXIT_FAILURE;
-		}
-	}
-
-	log_open(use_syslog);
-
-	if (optind >= argc) {
-		ERR("missing module name.\n");
-		r = EXIT_FAILURE;
-		goto done;
-	}
-
-	ctx = kmod_new(NULL, &null_config);
+	ctx = kmod_new(dirname, &null_config);
 	if (!ctx) {
 		ERR("kmod_new() failed!\n");
 		r = EXIT_FAILURE;
-		goto done;
+		goto finish;
 	}
 
 	log_setup_kmod_log(ctx, verbose);
@@ -172,12 +159,62 @@ static int do_rmmod(int argc, char *argv[])
 		kmod_module_unref(mod);
 	}
 
+finish:
 	kmod_unref(ctx);
+	return r;
+}
+
+static int do_rmmod(int argc, char *argv[])
+{
+	char dirname_buf[PATH_MAX];
+	int verbose = LOG_ERR;
+	int use_syslog = 0;
+	int flags = 0;
+	int c, r = 0;
+
+	while ((c = getopt_long(argc, argv, cmdopts_s, cmdopts, NULL)) != -1) {
+		switch (c) {
+		case 'f':
+			flags |= KMOD_REMOVE_FORCE;
+			break;
+		case 's':
+			use_syslog = 1;
+			break;
+		case 'v':
+			verbose++;
+			break;
+		case 'h':
+			help();
+			return EXIT_SUCCESS;
+		case 'V':
+			kmod_version();
+			return EXIT_SUCCESS;
+		case '?':
+			return EXIT_FAILURE;
+		default:
+			ERR("unexpected getopt_long() value '%c'.\n", c);
+			return EXIT_FAILURE;
+		}
+	}
+
+	log_open(use_syslog);
+
+	if (optind >= argc) {
+		ERR("missing module name.\n");
+		r = EXIT_FAILURE;
+		goto done;
+	}
+
+	r = get_module_dirname(dirname_buf, sizeof(dirname_buf),
+			       MODULE_DIRECTORY);
+	if (r)
+		goto done;
+	r = _do_rmmod(dirname_buf, argc, argv, flags, verbose);
 
 done:
 	log_close();
 
-	return r == 0 ? EXIT_SUCCESS : EXIT_FAILURE;
+	return r;
 }
 
 const struct kmod_cmd kmod_cmd_compat_rmmod = {
