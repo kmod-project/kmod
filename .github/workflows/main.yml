@@ -80,8 +80,18 @@ jobs:
               return 1
             fi
           }
+          should_pass() {
+            rm -rf build-setup-test/
+            meson setup "$@" build-setup-test/
+          }
+
           should_fail -D distconfdir=relative/
           should_fail -D moduledir=relative/
+          should_fail -D dlopen=nonexistent
+          should_fail -D xz=disabled -D dlopen=xz
+
+          should_pass -D dlopen=xz
+          should_pass -D dlopen=xz -D xz=enabled
 
       - name: configure (meson)
         if: ${{ matrix.build == 'meson' }}
