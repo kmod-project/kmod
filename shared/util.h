@@ -2,6 +2,7 @@
 
 #include <inttypes.h>
 #include <limits.h>
+#include <stdarg.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -165,3 +166,37 @@ static inline bool umulsz_overflow(size_t a, size_t b, size_t *res)
 		(x) = NULL;        \
 		x__;               \
 	})
+
+/* dlfcn helpers                                                            */
+/* ************************************************************************ */
+
+/*
+ * Load many various symbols from @filename.
+ * @dlp: pointer to the previous results of this call: it's set when it succeeds
+ * @filename: the library to dlopen() and look for symbols
+ * @...: or 1 more tuples created by DLSYM_ARG() with ( &var, "symbol name" ).
+ */
+_sentinel_ int dlsym_many(void **dlp, const char *filename, ...);
+
+/*
+ * Helper to create tuples passed as arguments to dlsym_many().
+ * @symbol__: symbol to create arguments for. Example: DLSYM_ARG(foo) expands to
+ * `&sym_foo, "foo"`
+ */
+#define DLSYM_ARG(symbol__) &sym_##symbol__, STRINGIFY(symbol__),
+
+/* For symbols being dynamically loaded */
+#define DECLARE_DLSYM(symbol) typeof(symbol) *sym_##symbol = NULL
+
+/* Pointer indirection to support linking directly */
+#define DECLARE_PTRSYM(symbol) typeof(symbol) *sym_##symbol = symbol
+
+/*
+ * Helper defines, to be done locally before including this header to switch between
+ * implementations
+ */
+#if defined(DLSYM_LOCALLY_ENABLED) && DLSYM_LOCALLY_ENABLED
+#define DECLARE_SYM(sym__) DECLARE_DLSYM(sym__);
+#else
+#define DECLARE_SYM(sym__) DECLARE_PTRSYM(sym__);
+#endif
