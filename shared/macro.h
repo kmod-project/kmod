@@ -43,6 +43,7 @@
 #define _must_check_ __attribute__((warn_unused_result))
 #define _printf_format_(a, b) __attribute__((format(printf, a, b)))
 #define _always_inline_ __inline__ __attribute__((always_inline))
+#define _sentinel_ __attribute__((sentinel))
 
 #if defined(__clang_analyzer__)
 #define _clang_suppress_ __attribute__((suppress))
