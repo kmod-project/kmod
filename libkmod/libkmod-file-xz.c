@@ -3,6 +3,9 @@
  * Copyright © 2024 Intel Corporation
  */
 
+/* TODO: replace with build system define once supported */
+#define DLSYM_LOCALLY_ENABLED 0
+
 #include <errno.h>
 #include <lzma.h>
 #include <stdio.h>
@@ -17,6 +20,23 @@
 #include "libkmod.h"
 #include "libkmod-internal.h"
 #include "libkmod-internal-file.h"
+
+#define DL_SYMBOL_TABLE(M)     \
+	M(lzma_stream_decoder) \
+	M(lzma_code)           \
+	M(lzma_end)
+
+DL_SYMBOL_TABLE(DECLARE_SYM)
+
+static int dlopen_lzma(void)
+{
+	static void *dl = NULL;
+
+	if (!DLSYM_LOCALLY_ENABLED)
+		return 0;
+
+	return dlsym_many(&dl, "liblzma.so.5", DL_SYMBOL_TABLE(DLSYM_ARG) NULL);
+}
 
 static void xz_uncompress_belch(struct kmod_file *file, lzma_ret ret)
 {
@@ -66,7 +86,7 @@ static int xz_uncompress(lzma_stream *strm, struct kmod_file *file)
 			if (rdret == 0)
 				action = LZMA_FINISH;
 		}
-		ret = lzma_code(strm, action);
+		ret = sym_lzma_code(strm, action);
 		if (strm->avail_out == 0 || ret != LZMA_OK) {
 			size_t write_size = BUFSIZ - strm->avail_out;
 			char *tmp = realloc(p, total + write_size);
@@ -102,7 +122,13 @@ int kmod_file_load_xz(struct kmod_file *file)
 	lzma_ret lzret;
 	int ret;
 
-	lzret = lzma_stream_decoder(&strm, UINT64_MAX, LZMA_CONCATENATED);
+	ret = dlopen_lzma();
+	if (ret < 0) {
+		ERR(file->ctx, "xz: can't load and resolve symbols (%s)", strerror(-ret));
+		return -EINVAL;
+	}
+
+	lzret = sym_lzma_stream_decoder(&strm, UINT64_MAX, LZMA_CONCATENATED);
 	if (lzret == LZMA_MEM_ERROR) {
 		ERR(file->ctx, "xz: %s\n", strerror(ENOMEM));
 		return -ENOMEM;
@@ -111,6 +137,6 @@ int kmod_file_load_xz(struct kmod_file *file)
 		return -EINVAL;
 	}
 	ret = xz_uncompress(&strm, file);
-	lzma_end(&strm);
+	sym_lzma_end(&strm);
 	return ret;
 }
