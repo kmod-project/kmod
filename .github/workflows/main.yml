@@ -74,14 +74,14 @@ jobs:
         if: ${{ matrix.build == 'meson' }}
         run: |
           should_fail() {
-            if meson setup "$@" build/; then
+            rm -rf build-setup-test/
+            if meson setup "$@" build-setup-test/; then
               echo Command was expected to fail, but was successful
               return 1
             fi
           }
           should_fail -D distconfdir=relative/
           should_fail -D moduledir=relative/
-          rm -rf build/
 
       - name: configure (meson)
         if: ${{ matrix.build == 'meson' }}
