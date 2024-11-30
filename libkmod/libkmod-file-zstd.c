@@ -22,9 +22,10 @@
 int kmod_file_load_zstd(struct kmod_file *file)
 {
 	void *src_buf = MAP_FAILED, *dst_buf = NULL;
-	size_t src_size, dst_size, ret;
+	size_t src_size, dst_size;
 	unsigned long long frame_size;
 	struct stat st;
+	int ret;
 
 	if (fstat(file->fd, &st) < 0) {
 		ret = -errno;
@@ -64,9 +65,9 @@ int kmod_file_load_zstd(struct kmod_file *file)
 		goto out;
 	}
 
-	ret = ZSTD_decompress(dst_buf, dst_size, src_buf, src_size);
-	if (ZSTD_isError(ret)) {
-		ERR(file->ctx, "zstd: %s\n", ZSTD_getErrorName(ret));
+	dst_size = ZSTD_decompress(dst_buf, dst_size, src_buf, src_size);
+	if (ZSTD_isError(dst_size)) {
+		ERR(file->ctx, "zstd: %s\n", ZSTD_getErrorName(dst_size));
 		ret = -EINVAL;
 		goto out;
 	}
