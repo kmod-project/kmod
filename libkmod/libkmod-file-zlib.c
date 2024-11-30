@@ -23,7 +23,7 @@
 int kmod_file_load_zlib(struct kmod_file *file)
 {
 	_cleanup_free_ unsigned char *p = NULL;
-	int err = 0;
+	int ret = 0;
 	off_t did = 0, total = 0;
 	gzFile gzf;
 	int gzfd;
@@ -45,7 +45,7 @@ int kmod_file_load_zlib(struct kmod_file *file)
 		if (did == total) {
 			void *tmp = realloc(p, total + READ_STEP);
 			if (tmp == NULL) {
-				err = -errno;
+				ret = -errno;
 				goto error;
 			}
 			total += READ_STEP;
@@ -62,7 +62,7 @@ int kmod_file_load_zlib(struct kmod_file *file)
 			ERR(file->ctx, "gzip: %s\n", gz_errmsg);
 
 			/* gzip might not set errno here */
-			err = gzerr == Z_ERRNO ? -errno : -EINVAL;
+			ret = gzerr == Z_ERRNO ? -errno : -EINVAL;
 			goto error;
 		}
 		did += r;
@@ -76,5 +76,5 @@ int kmod_file_load_zlib(struct kmod_file *file)
 
 error:
 	gzclose(gzf); /* closes the gzfd */
-	return err;
+	return ret;
 }
