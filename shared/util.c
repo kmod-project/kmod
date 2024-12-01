@@ -332,11 +332,12 @@ char *freadline_wrapped(FILE *fp, unsigned int *linenum)
 			n++;
 
 			{
-				char *ret = buf;
+				char *ret = TAKE_PTR(buf);
+
 				ret[i] = '\0';
-				buf = NULL;
 				if (linenum)
 					*linenum += n;
+
 				return ret;
 			}
 
@@ -390,7 +391,8 @@ char *path_make_absolute_cwd(const char *p)
 	if (r == NULL)
 		return NULL;
 
-	cwd = NULL;
+	TAKE_PTR(cwd);
+
 	r[cwdlen] = '/';
 	memcpy(&r[cwdlen + 1], p, plen + 1);
 

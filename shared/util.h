@@ -158,3 +158,10 @@ static inline bool umulsz_overflow(size_t a, size_t b, size_t *res)
 #error "Unknown sizeof(size_t)"
 #endif
 }
+
+#define TAKE_PTR(x)                \
+	({                         \
+		typeof(x) x__ = x; \
+		(x) = NULL;        \
+		x__;               \
+	})

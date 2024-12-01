@@ -648,9 +648,9 @@ static int do_finit_module(struct kmod_module *mod, unsigned int flags, const ch
 
 static int do_init_module(struct kmod_module *mod, unsigned int flags, const char *args)
 {
+	_cleanup_free_ const void *stripped = NULL;
 	struct kmod_elf *elf;
 	const void *mem;
-	_cleanup_free_ const void *stripped = NULL;
 	off_t size;
 	int err;
 
