@@ -55,7 +55,7 @@ jobs:
           .github/print-kdir.sh >> "$GITHUB_ENV"
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@4f3212b61783c3c68e8309a0f18a699764811cda # v3.27.1
+        uses: github/codeql-action/init@f09c1c0a94de965c15400f5634aa42fac8fb8f88 # v3.27.5
         with:
           languages: cpp
           queries: +security-and-quality
@@ -67,7 +67,7 @@ jobs:
           meson compile
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@4f3212b61783c3c68e8309a0f18a699764811cda # v3.27.1
+        uses: github/codeql-action/analyze@f09c1c0a94de965c15400f5634aa42fac8fb8f88 # v3.27.5
         with:
           category: "/language:cpp"
           upload: false
@@ -82,7 +82,7 @@ jobs:
           output: sarif-results/cpp.sarif
 
       - name: Upload CodeQL results to code scanning
-        uses: github/codeql-action/upload-sarif@4f3212b61783c3c68e8309a0f18a699764811cda # v3.27.1
+        uses: github/codeql-action/upload-sarif@f09c1c0a94de965c15400f5634aa42fac8fb8f88 # v3.27.5
         with:
           sarif_file: sarif-results/cpp.sarif
           category: "/language:cpp"
