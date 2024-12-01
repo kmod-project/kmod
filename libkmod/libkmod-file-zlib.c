@@ -22,9 +22,9 @@
 
 int kmod_file_load_zlib(struct kmod_file *file)
 {
+	_cleanup_free_ unsigned char *p = NULL;
 	int err = 0;
 	off_t did = 0, total = 0;
-	_cleanup_free_ unsigned char *p = NULL;
 	gzFile gzf;
 	int gzfd;
 
@@ -68,10 +68,10 @@ int kmod_file_load_zlib(struct kmod_file *file)
 		did += r;
 	}
 
-	file->memory = p;
+	file->memory = TAKE_PTR(p);
 	file->size = did;
-	p = NULL;
 	gzclose(gzf);
+
 	return 0;
 
 error:

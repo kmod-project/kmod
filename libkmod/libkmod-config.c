@@ -146,8 +146,9 @@ static int kmod_config_add_command(struct kmod_config *config, const char *modna
 	if (!l)
 		return -ENOMEM;
 
+	TAKE_PTR(cmd);
 	*list = l;
-	cmd = NULL;
+
 	return 0;
 }
 
@@ -175,8 +176,9 @@ static int kmod_config_add_options(struct kmod_config *config, const char *modna
 	if (!list)
 		return -ENOMEM;
 
-	opt = NULL;
+	TAKE_PTR(opt);
 	config->options = list;
+
 	return 0;
 }
 
@@ -202,8 +204,9 @@ static int kmod_config_add_alias(struct kmod_config *config, const char *name,
 	if (!list)
 		return -ENOMEM;
 
-	alias = NULL;
+	TAKE_PTR(alias);
 	config->aliases = list;
+
 	return 0;
 }
 
@@ -222,8 +225,9 @@ static int kmod_config_add_blacklist(struct kmod_config *config, const char *mod
 	if (!list)
 		return -ENOMEM;
 
-	p = NULL;
+	TAKE_PTR(p);
 	config->blacklists = list;
+
 	return 0;
 }
 
