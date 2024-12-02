@@ -274,5 +274,5 @@ finish:
 const struct kmod_cmd kmod_cmd_static_nodes = {
 	.name = "static-nodes",
 	.cmd = do_static_nodes,
-	.help = "outputs the static-node information installed with the currently running kernel",
+	.help = "output the static-node information installed with the currently running kernel",
 };

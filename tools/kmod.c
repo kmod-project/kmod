@@ -76,7 +76,7 @@ static int kmod_help(int argc, char *argv[])
 static const struct kmod_cmd kmod_cmd_help = {
 	.name = "help",
 	.cmd = kmod_help,
-	.help = "Show help message",
+	.help = "show help message",
 };
 
 static int handle_kmod_commands(int argc, char *argv[])
