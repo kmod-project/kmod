@@ -14,6 +14,7 @@
 #include <unistd.h>
 #include <zlib.h>
 
+#include <shared/elf-note.h>
 #include <shared/util.h>
 
 #include "libkmod.h"
@@ -32,12 +33,16 @@ DL_SYMBOL_TABLE(DECLARE_SYM)
 
 static int dlopen_zlib(void)
 {
+#if !DLSYM_LOCALLY_ENABLED
+	return 0;
+#else
 	static void *dl = NULL;
 
-	if (!DLSYM_LOCALLY_ENABLED)
-		return 0;
+	ELF_NOTE_DLOPEN("zlib", "Support for uncompressing zlib-compressed modules",
+			ELF_NOTE_DLOPEN_PRIORITY_RECOMMENDED, "libz.so.1");
 
 	return dlsym_many(&dl, "libz.so.1", DL_SYMBOL_TABLE(DLSYM_ARG) NULL);
+#endif
 }
 
 int kmod_file_load_zlib(struct kmod_file *file)

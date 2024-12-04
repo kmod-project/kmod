@@ -37,6 +37,7 @@
 #define XCONCATENATE(x, y) x##y
 #define CONCATENATE(x, y) XCONCATENATE(x, y)
 #define UNIQ(x) CONCATENATE(x, __COUNTER__)
+#define UNIQ_T(x, uniq) CONCATENATE(__unique_prefix_, CONCATENATE(x, uniq))
 
 /* Attributes */
 

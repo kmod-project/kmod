@@ -363,6 +363,7 @@ libshared = static_library(
   files(
     'shared/array.c',
     'shared/array.h',
+    'shared/elf-note.h',
     'shared/hash.c',
     'shared/hash.h',
     'shared/macro.h',
