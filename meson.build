@@ -289,23 +289,23 @@ endif
 
 zstd = dependency('libzstd', version : '>= 1.4.4', required : get_option('zstd'))
 if zstd.found()
-  cdata.set('ENABLE_ZSTD', true)
   module_compressions += 'zstd '
 endif
+cdata.set10('ENABLE_ZSTD', zstd.found())
 features += ['@0@ZSTD'.format(zstd.found() ? '+' : '-')]
 
 xz = dependency('liblzma', version : '>= 4.99', required : get_option('xz'))
 if xz.found()
-  cdata.set('ENABLE_XZ', true)
   module_compressions += 'xz '
 endif
+cdata.set10('ENABLE_XZ', xz.found())
 features += ['@0@XZ'.format(xz.found() ? '+' : '-')]
 
 zlib = dependency('zlib', required : get_option('zlib'))
 if zlib.found()
-  cdata.set('ENABLE_ZLIB', true)
   module_compressions += 'zlib '
 endif
+cdata.set10('ENABLE_ZLIB', zlib.found())
 features += ['@0@ZLIB'.format(zlib.found() ? '+' : '-')]
 
 #-------------------------------------------------------------------------------
@@ -314,11 +314,11 @@ features += ['@0@ZLIB'.format(zlib.found() ? '+' : '-')]
 
 crypto = dependency('libcrypto', version : '>= 1.1.0', required : get_option('openssl'))
 if crypto.found()
-  cdata.set('ENABLE_OPENSSL', true)
   module_signatures = 'PKCS7 legacy'
 else
   module_signatures = 'legacy'
 endif
+cdata.set10('ENABLE_OPENSSL', crypto.found())
 features += ['@0@LIBCRYPTO'.format(crypto.found() ? '+' : '-')]
 
 cdata.set_quoted('KMOD_FEATURES', ' '.join(features))

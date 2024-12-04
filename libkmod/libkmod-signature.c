@@ -5,7 +5,7 @@
 
 #include <endian.h>
 #include <inttypes.h>
-#ifdef ENABLE_OPENSSL
+#if ENABLE_OPENSSL
 #include <openssl/pkcs7.h>
 #include <openssl/ssl.h>
 #endif
@@ -109,7 +109,7 @@ static bool fill_default(const char *mem, off_t size,
 	return true;
 }
 
-#ifdef ENABLE_OPENSSL
+#if ENABLE_OPENSSL
 
 struct pkcs7_private {
 	PKCS7 *pkcs7;

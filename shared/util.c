@@ -27,13 +27,13 @@ static const struct kmod_ext {
 	size_t len;
 } kmod_exts[] = {
 	{ KMOD_EXTENSION_UNCOMPRESSED, sizeof(KMOD_EXTENSION_UNCOMPRESSED) - 1 },
-#ifdef ENABLE_ZLIB
+#if ENABLE_ZLIB
 	{ ".ko.gz", sizeof(".ko.gz") - 1 },
 #endif
-#ifdef ENABLE_XZ
+#if ENABLE_XZ
 	{ ".ko.xz", sizeof(".ko.xz") - 1 },
 #endif
-#ifdef ENABLE_ZSTD
+#if ENABLE_ZSTD
 	{ ".ko.zst", sizeof(".ko.zst") - 1 },
 #endif
 	{},
