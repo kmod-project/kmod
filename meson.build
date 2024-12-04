@@ -174,6 +174,7 @@ module_compressions = ''
 module_signatures = ''
 
 features = []
+dep_map = {}
 
 #-------------------------------------------------------------------------------
 # Directories
@@ -287,26 +288,29 @@ endif
 # Compression support
 #-------------------------------------------------------------------------------
 
-zstd = dependency('libzstd', version : '>= 1.4.4', required : get_option('zstd'))
-if zstd.found()
-  module_compressions += 'zstd '
-endif
-cdata.set10('ENABLE_ZSTD', zstd.found())
-features += ['@0@ZSTD'.format(zstd.found() ? '+' : '-')]
+_compression = [
+  ['zstd', 'libzstd', '>= 1.4.4'],
+  ['xz',   'liblzma', '>= 4.99'],
+  ['zlib', 'zlib',    '>= 0'],
+]
 
-xz = dependency('liblzma', version : '>= 4.99', required : get_option('xz'))
-if xz.found()
-  module_compressions += 'xz '
-endif
-cdata.set10('ENABLE_XZ', xz.found())
-features += ['@0@XZ'.format(xz.found() ? '+' : '-')]
+foreach tuple : _compression
+  opt = tuple[0]
+  pkg_dep = tuple[1]
+  pkg_dep_version = tuple[2]
 
-zlib = dependency('zlib', required : get_option('zlib'))
-if zlib.found()
-  module_compressions += 'zlib '
-endif
-cdata.set10('ENABLE_ZLIB', zlib.found())
-features += ['@0@ZLIB'.format(zlib.found() ? '+' : '-')]
+  dep = dependency(pkg_dep, version : pkg_dep_version, required : get_option(opt))
+  have = dep.found()
+
+  cdata.set10('ENABLE_' + opt.to_upper(), have)
+
+  if have
+    module_compressions += '@0@ '.format(opt)
+  endif
+
+  features += ['@0@@1@'.format(have ? '+' : '-', opt.to_upper())]
+  dep_map += {opt : dep}
+endforeach
 
 #-------------------------------------------------------------------------------
 # Signed modules
@@ -370,19 +374,19 @@ libkmod_files = files(
 
 libkmod_deps = []
 
-if zstd.found()
+if dep_map.get('zstd').found()
   libkmod_files += files('libkmod/libkmod-file-zstd.c')
-  libkmod_deps += zstd
+  libkmod_deps += dep_map['zstd']
 endif
 
-if xz.found()
+if dep_map.get('xz').found()
   libkmod_files += files('libkmod/libkmod-file-xz.c')
-  libkmod_deps += xz
+  libkmod_deps += dep_map['xz']
 endif
 
-if zlib.found()
+if dep_map.get('zlib').found()
   libkmod_files += files('libkmod/libkmod-file-zlib.c')
-  libkmod_deps += zlib
+  libkmod_deps += dep_map['zlib']
 endif
 
 if crypto.found()
