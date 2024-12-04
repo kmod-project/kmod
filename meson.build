@@ -176,6 +176,9 @@ module_signatures = ''
 features = []
 dep_map = {}
 
+# keep in sync with meson_options.txt
+dlopen_all = get_option('dlopen').contains('all')
+
 #-------------------------------------------------------------------------------
 # Directories
 #-------------------------------------------------------------------------------
@@ -299,10 +302,19 @@ foreach tuple : _compression
   pkg_dep = tuple[1]
   pkg_dep_version = tuple[2]
 
+  dlopen = dlopen_all or get_option('dlopen').contains(opt)
+  if not dlopen_all and dlopen and get_option(opt).disabled()
+    error('Incompatiable options: dlopen=@0@ for disabled @0@'.format(opt))
+  endif
+
   dep = dependency(pkg_dep, version : pkg_dep_version, required : get_option(opt))
   have = dep.found()
+  if have and dlopen
+    dep = dep.partial_dependency(compile_args : true, includes : true)
+  endif
 
   cdata.set10('ENABLE_' + opt.to_upper(), have)
+  cdata.set10('ENABLE_' + opt.to_upper() + '_DLOPEN', have and dlopen)
 
   if have
     module_compressions += '@0@ '.format(opt)
@@ -567,6 +579,7 @@ summary({
   'build-tests'     : get_option('build-tests'),
   'manpages'        : get_option('manpages'),
   'docs'            : get_option('docs'),
+  'dlopen'          : get_option('dlopen'),
 }, section : 'Options')
 
 summary({
