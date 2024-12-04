@@ -316,14 +316,22 @@ endforeach
 # Signed modules
 #-------------------------------------------------------------------------------
 
-crypto = dependency('libcrypto', version : '>= 1.1.0', required : get_option('openssl'))
-if crypto.found()
+opt = 'openssl'
+dep = dependency('libcrypto', version : '>= 1.1.0', required : get_option(opt))
+have = dep.found()
+
+if have
   module_signatures = 'PKCS7 legacy'
 else
   module_signatures = 'legacy'
 endif
-cdata.set10('ENABLE_OPENSSL', crypto.found())
-features += ['@0@LIBCRYPTO'.format(crypto.found() ? '+' : '-')]
+cdata.set10('ENABLE_' + opt.to_upper(), have)
+features += ['@0@@1@'.format(have ? '+' : '-', opt.to_upper())]
+dep_map += {opt : dep}
+
+#-------------------------------------------------------------------------------
+# Config output
+#-------------------------------------------------------------------------------
 
 cdata.set_quoted('KMOD_FEATURES', ' '.join(features))
 
@@ -389,8 +397,8 @@ if dep_map.get('zlib').found()
   libkmod_deps += dep_map['zlib']
 endif
 
-if crypto.found()
-  libkmod_deps += crypto
+if dep_map.get('openssl').found()
+  libkmod_deps += dep_map['openssl']
 endif
 
 install_headers('libkmod/libkmod.h')
