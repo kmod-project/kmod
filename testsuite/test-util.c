@@ -133,13 +133,13 @@ static int test_path_ends_with_kmod_ext(const struct test *t)
 		bool res;
 	} teststr[] = {
 		{ "/bla.ko", true },
-#ifdef ENABLE_ZLIB
+#if ENABLE_ZLIB
 		{ "/bla.ko.gz", true },
 #endif
-#ifdef ENABLE_XZ
+#if ENABLE_XZ
 		{ "/bla.ko.xz", true },
 #endif
-#ifdef ENABLE_ZSTD
+#if ENABLE_ZSTD
 		{ "/bla.ko.zst", true },
 #endif
 		{ "/bla.ko.x", false },
