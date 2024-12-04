@@ -58,6 +58,7 @@ noinst_LTLIBRARIES = shared/libshared.la
 shared_libshared_la_SOURCES = \
 	shared/array.c \
 	shared/array.h \
+	shared/elf-note.h \
 	shared/hash.c \
 	shared/hash.h \
 	shared/macro.h \

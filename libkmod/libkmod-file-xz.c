@@ -14,6 +14,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include <shared/elf-note.h>
 #include <shared/util.h>
 
 #include "libkmod.h"
@@ -29,12 +30,16 @@ DL_SYMBOL_TABLE(DECLARE_SYM)
 
 static int dlopen_lzma(void)
 {
+#if !DLSYM_LOCALLY_ENABLED
+	return 0;
+#else
 	static void *dl = NULL;
 
-	if (!DLSYM_LOCALLY_ENABLED)
-		return 0;
+	ELF_NOTE_DLOPEN("xz", "Support for uncompressing xz-compressed modules",
+			ELF_NOTE_DLOPEN_PRIORITY_RECOMMENDED, "liblzma.so.5");
 
 	return dlsym_many(&dl, "liblzma.so.5", DL_SYMBOL_TABLE(DLSYM_ARG) NULL);
+#endif
 }
 
 static void xz_uncompress_belch(struct kmod_file *file, lzma_ret ret)
