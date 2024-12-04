@@ -68,6 +68,14 @@ option(
 )
 
 option(
+  'dlopen',
+  type : 'array',
+  choices : ['zstd', 'xz', 'zlib', 'all'],
+  value : [],
+  description : 'Libraries to dlopen rather than linking. Use \'all\' to . Default: none',
+)
+
+option(
   'logging',
   type : 'boolean',
   value : true,

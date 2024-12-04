@@ -3,8 +3,7 @@
  * Copyright © 2024 Intel Corporation
  */
 
-/* TODO: replace with build system define once supported */
-#define DLSYM_LOCALLY_ENABLED 0
+#define DLSYM_LOCALLY_ENABLED ENABLE_ZSTD_DLOPEN
 
 #include <errno.h>
 #include <stdio.h>
