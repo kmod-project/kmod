@@ -34,8 +34,13 @@ jobs:
           - name: 'debian:unstable'
             multilib: 'true'
           - name: 'fedora:latest'
+          - name: 'fedora:latest'
+            meson_setup: '-D xz=disabled -D dlopen=all'
           - name: 'ubuntu:22.04'
             multilib: 'true'
+          - name: 'ubuntu:22.04'
+            multilib: 'true'
+            meson_setup: '-D dlopen=zstd,zlib'
           - name: 'ubuntu:24.04'
             multilib: 'true'
 
