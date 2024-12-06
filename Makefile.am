@@ -226,9 +226,11 @@ EXTRA_DIST += \
 	testsuite/module-playground/dummy.pkcs7 \
 	testsuite/module-playground/dummy.sha1 \
 	testsuite/module-playground/dummy.sha256 \
+	testsuite/module-playground/gen_mod.py \
 	testsuite/module-playground/Kbuild \
 	testsuite/module-playground/Makefile \
 	testsuite/module-playground/Makefile.arch \
+	testsuite/module-playground/mod-bar.c \
 	testsuite/module-playground/mod-fake-cciss.c \
 	testsuite/module-playground/mod-fake-hpsa.c \
 	testsuite/module-playground/mod-fake-scsi-mod.c \
@@ -250,7 +252,8 @@ EXTRA_DIST += \
 	testsuite/module-playground/mod-loop.h \
 	testsuite/module-playground/mod-simple.c \
 	testsuite/module-playground/mod-weakdep.c \
-	testsuite/module-playground/README
+	testsuite/module-playground/README \
+	testsuite/module-playground/other/Kbuild
 
 check_LTLIBRARIES = $(TESTSUITE_OVERRIDE_LIBS)
 

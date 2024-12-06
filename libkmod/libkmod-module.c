@@ -1780,9 +1780,9 @@ static void kmod_module_info_free(struct kmod_module_info *info)
 	free(info);
 }
 
-static struct kmod_list *kmod_module_info_append(struct kmod_list **list, const char *key,
-						 size_t keylen, const char *value,
-						 size_t valuelen)
+struct kmod_list *kmod_module_info_append(struct kmod_list **list, const char *key,
+					  size_t keylen, const char *value,
+					  size_t valuelen)
 {
 	struct kmod_module_info *info;
 	struct kmod_list *n;

@@ -43,6 +43,11 @@ jobs:
             meson_setup: '-D dlopen=zstd,zlib'
           - name: 'ubuntu:24.04'
             multilib: 'true'
+        exclude:
+          - build: 'meson'
+            container:
+              name: 'ubuntu:22.04'
+              multilib: 'true'
 
     container:
       image: ${{ matrix.container.name }}

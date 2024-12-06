@@ -2,6 +2,8 @@ if not get_option('tools')
   error('The test suite requires also building the tools')
 endif
 
+fs = import('fs')
+
 build_module_playground = custom_target(
   'build-module-playground',
   command : [
@@ -122,3 +124,5 @@ foreach input : _testsuite
     depends : [exec, internal_kmod_symlinks, create_rootfs, test_override_mods],
   )
 endforeach
+
+test_incremental = fs.copyfile('test-incremental.sh', 'test-incremental.sh')
