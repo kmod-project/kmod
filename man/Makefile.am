@@ -18,6 +18,7 @@ define generate_manpage
 	sed -e 's|@SYSCONFDIR@|$(sysconfdir)|g' | \
 	sed -e 's|@DISTCONFDIR@|$(distconfdir)|g' | \
 	sed -e 's|@MODULE_DIRECTORY@|$(module_directory)|g' | \
+	sed -e 's|@MODULE_ALTERNATIVE_DIRECTORY@|$(module_alternative_directory)|g' | \
 	$(SCDOC) > $@
 endef
 
