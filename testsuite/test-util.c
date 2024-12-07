@@ -54,10 +54,10 @@ static int alias_1(const struct test *t)
 DEFINE_TEST(alias_1,
 	.description = "check if alias_normalize does the right thing",
 	.config = {
-		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-util/",
+		[TC_ROOTFS] = "test-util/",
 	},
 	.output = {
-		.out = TESTSUITE_ROOTFS "test-util/alias-correct.txt",
+		.out = "test-util/alias-correct.txt",
 	});
 
 static int test_freadline_wrapped(const struct test *t)
@@ -83,10 +83,10 @@ static int test_freadline_wrapped(const struct test *t)
 DEFINE_TEST(test_freadline_wrapped,
 	.description = "check if freadline_wrapped() does the right thing",
 	.config = {
-		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-util/",
+		[TC_ROOTFS] = "test-util/",
 	},
 	.output = {
-		.out = TESTSUITE_ROOTFS "test-util/freadline_wrapped-correct.txt",
+		.out = "test-util/freadline_wrapped-correct.txt",
 	});
 
 static int test_strchr_replace(const struct test *t)
@@ -161,7 +161,7 @@ DEFINE_TEST(test_path_ends_with_kmod_ext,
 	    .description = "check implementation of path_ends_with_kmod_ext()")
 
 #define TEST_WRITE_STR_SAFE_FILE "/write-str-safe"
-#define TEST_WRITE_STR_SAFE_PATH TESTSUITE_ROOTFS "test-util2/" TEST_WRITE_STR_SAFE_FILE
+#define TEST_WRITE_STR_SAFE_PATH "test-util2/" TEST_WRITE_STR_SAFE_FILE
 static int test_write_str_safe(const struct test *t)
 {
 	const char *s = "test";
@@ -178,7 +178,7 @@ static int test_write_str_safe(const struct test *t)
 DEFINE_TEST(test_write_str_safe,
 	.description = "check implementation of write_str_safe()",
 	.config = {
-		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-util2/",
+		[TC_ROOTFS] = "test-util2/",
 	},
 	.output = {
 		.files = (const struct keyval[]) {

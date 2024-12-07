@@ -69,10 +69,10 @@ static int loaded_1(const struct test *t)
 DEFINE_TEST(loaded_1,
 	.description = "check if list of module is created",
 	.config = {
-		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-loaded/",
+		[TC_ROOTFS] = "test-loaded/",
 	},
 	.output = {
-		.out = TESTSUITE_ROOTFS "test-loaded/correct.txt",
+		.out = "test-loaded/correct.txt",
 	});
 
 TESTSUITE_MAIN();

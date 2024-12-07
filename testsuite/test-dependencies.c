@@ -70,7 +70,7 @@ DEFINE_TEST(test_dependencies,
 	    .description = "test if kmod_module_get_dependencies works",
 	    .config = {
 		    [TC_UNAME_R] = TEST_UNAME,
-		    [TC_ROOTFS] = TESTSUITE_ROOTFS "test-dependencies/",
+		    [TC_ROOTFS] = "test-dependencies/",
 	    });
 
 TESTSUITE_MAIN();

@@ -53,6 +53,36 @@ static const struct {
 					OVERRIDE_LIBDIR "delete_module.so" },
 };
 
+static const char *test_rootfs(const struct test *t)
+{
+	static char dirname[PATH_MAX];
+	if (t->config[TC_ROOTFS] == NULL)
+		return NULL;
+
+	snprintf(dirname, sizeof(dirname), TESTSUITE_ROOTFS "%s", t->config[TC_ROOTFS]);
+	return dirname;
+}
+
+static const char *test_actual_filename(const char *fn)
+{
+	static char filename[PATH_MAX];
+	if (fn == NULL)
+		return NULL;
+
+	snprintf(filename, sizeof(filename), TESTSUITE_ROOTFS "%s", fn);
+	return filename;
+}
+
+static const char *test_stdout(const struct test *t)
+{
+	return test_actual_filename(t->output.out);
+}
+
+static const char *test_stderr(const struct test *t)
+{
+	return test_actual_filename(t->output.err);
+}
+
 static void help(void)
 {
 	const struct option *itr;
@@ -169,7 +199,8 @@ static void test_export_environ(const struct test *t)
 		if (t->config[i] == NULL)
 			continue;
 
-		setenv(env_config[i].key, t->config[i], 1);
+		setenv(env_config[i].key, i == TC_ROOTFS ? test_rootfs(t) : t->config[i],
+		       1);
 
 		ldpreload = env_config[i].ldpreload;
 		ldpreloadlen = strlen(ldpreload);
@@ -224,7 +255,7 @@ static inline int test_run_child(const struct test *t, int fdout[2], int fderr[2
 	test_export_environ(t);
 
 	/* Close read-fds and redirect std{out,err} to the write-fds */
-	if (t->output.out != NULL) {
+	if (test_stdout(t) != NULL) {
 		close(fdout[0]);
 		if (dup2(fdout[1], STDOUT_FILENO) < 0) {
 			ERR("could not redirect stdout to pipe: %m\n");
@@ -232,7 +263,7 @@ static inline int test_run_child(const struct test *t, int fdout[2], int fderr[2
 		}
 	}
 
-	if (t->output.err != NULL) {
+	if (test_stderr(t) != NULL) {
 		close(fderr[0]);
 		if (dup2(fderr[1], STDERR_FILENO) < 0) {
 			ERR("could not redirect stderr to pipe: %m\n");
@@ -242,9 +273,9 @@ static inline int test_run_child(const struct test *t, int fdout[2], int fderr[2
 
 	close(fdmonitor[0]);
 
-	if (t->config[TC_ROOTFS] != NULL) {
+	if (test_rootfs(t) != NULL) {
 		const char *stamp = TESTSUITE_ROOTFS "../stamp-rootfs";
-		const char *rootfs = t->config[TC_ROOTFS];
+		const char *rootfs = test_rootfs(t);
 		struct stat rootfsst, stampst;
 
 		if (stat(stamp, &stampst) != 0) {
@@ -579,15 +610,15 @@ static bool test_run_parent_check_outputs(const struct test *t, int fdout, int f
 		return false;
 	}
 
-	if (t->output.out != NULL) {
-		err = fd_cmp_open(&fd_cmp_out, FD_CMP_OUT, t->output.out, fdout, fd_ep);
+	if (test_stdout(t) != NULL) {
+		err = fd_cmp_open(&fd_cmp_out, FD_CMP_OUT, test_stdout(t), fdout, fd_ep);
 		if (err < 0)
 			goto out;
 		n_fd++;
 	}
 
-	if (t->output.err != NULL) {
-		err = fd_cmp_open(&fd_cmp_err, FD_CMP_ERR, t->output.err, fderr, fd_ep);
+	if (test_stderr(t) != NULL) {
+		err = fd_cmp_open(&fd_cmp_err, FD_CMP_ERR, test_stderr(t), fderr, fd_ep);
 		if (err < 0)
 			goto out;
 		n_fd++;
@@ -688,13 +719,13 @@ static bool check_generated_files(const struct test *t)
 		char bufa[4096];
 		char bufb[4096];
 
-		fda = open(k->key, O_RDONLY);
+		fda = open(test_actual_filename(k->key), O_RDONLY);
 		if (fda < 0) {
 			ERR("could not open %s\n - %m\n", k->key);
 			goto fail;
 		}
 
-		fdb = open(k->val, O_RDONLY);
+		fdb = open(test_actual_filename(k->val), O_RDONLY);
 		if (fdb < 0) {
 			ERR("could not open %s\n - %m\n", k->val);
 			goto fail;
@@ -850,7 +881,7 @@ static char **read_loaded_modules(const struct test *t, char **buf, int *count)
 	int len = 0, bufsz;
 	char **res = NULL;
 	char *p;
-	const char *rootfs = t->config[TC_ROOTFS] ? t->config[TC_ROOTFS] : "";
+	const char *rootfs = test_rootfs(t) ? test_rootfs(t) : "";
 
 	/* Store the entries in /sys/module to res */
 	if (snprintf(dirname, sizeof(dirname), "%s/sys/module", rootfs) >=
@@ -1020,9 +1051,9 @@ static inline int test_run_parent(const struct test *t, int fdout[2], int fderr[
 	}
 
 	/* Close write-fds */
-	if (t->output.out != NULL)
+	if (test_stdout(t) != NULL)
 		close(fdout[1]);
-	if (t->output.err != NULL)
+	if (test_stderr(t) != NULL)
 		close(fderr[1]);
 	close(fdmonitor[1]);
 
@@ -1033,9 +1064,9 @@ static inline int test_run_parent(const struct test *t, int fdout[2], int fderr[
 	 * break pipe on the other end: either child already closed or we want
 	 * to stop it
 	 */
-	if (t->output.out != NULL)
+	if (test_stdout(t) != NULL)
 		close(fdout[0]);
-	if (t->output.err != NULL)
+	if (test_stderr(t) != NULL)
 		close(fderr[0]);
 	close(fdmonitor[0]);
 
@@ -1149,14 +1180,14 @@ int test_run(const struct test *t)
 	if (oneshot)
 		test_run_spawned(t);
 
-	if (t->output.out != NULL) {
+	if (test_stdout(t) != NULL) {
 		if (pipe(fdout) != 0) {
 			ERR("could not create out pipe for %s\n", t->name);
 			return EXIT_FAILURE;
 		}
 	}
 
-	if (t->output.err != NULL) {
+	if (test_stderr(t) != NULL) {
 		if (pipe(fderr) != 0) {
 			ERR("could not create err pipe for %s\n", t->name);
 			return EXIT_FAILURE;
