@@ -2380,6 +2380,7 @@ static int output_symbols_bin(struct depmod *depmod, FILE *out)
 
 err_alloc:
 	index_destroy(idx);
+	strbuf_release(&salias);
 
 	if (ret < 0)
 		ERR("output symbols: %s\n", strerror(-ret));
