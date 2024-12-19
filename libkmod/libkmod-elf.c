@@ -33,6 +33,8 @@ enum kmod_elf_section {
 	KMOD_ELF_SECTION_STRTAB,
 	KMOD_ELF_SECTION_SYMTAB,
 	KMOD_ELF_SECTION_VERSIONS,
+	KMOD_ELF_SECTION_VERSION_EXT_NAMES,
+	KMOD_ELF_SECTION_VERSION_EXT_CRCS,
 	KMOD_ELF_SECTION_MAX,
 };
 
@@ -42,6 +44,8 @@ static const char *const section_name_map[] = {
 	[KMOD_ELF_SECTION_STRTAB] = ".strtab",
 	[KMOD_ELF_SECTION_SYMTAB] = ".symtab",
 	[KMOD_ELF_SECTION_VERSIONS] = "__versions",
+	[KMOD_ELF_SECTION_VERSION_EXT_NAMES] = "__version_ext_names",
+	[KMOD_ELF_SECTION_VERSION_EXT_CRCS] = "__version_ext_crcs",
 };
 
 struct kmod_elf {
@@ -538,16 +542,14 @@ static inline void elf_get_modversion_lengths(const struct kmod_elf *elf, size_t
 	}
 }
 
-/* array will be allocated with strings in a single malloc, just free *array */
-int kmod_elf_get_modversions(const struct kmod_elf *elf, struct kmod_modversion **array)
+static int kmod_elf_get_basic_modversions(const struct kmod_elf *elf,
+					  struct kmod_modversion **array)
 {
 	size_t i, count, crclen, namlen, verlen;
 	uint64_t off, sec_off, size;
 	struct kmod_modversion *a;
 
 	elf_get_modversion_lengths(elf, &verlen, &crclen, &namlen);
-
-	*array = NULL;
 
 	sec_off = elf->sections[KMOD_ELF_SECTION_VERSIONS].offset;
 	size = elf->sections[KMOD_ELF_SECTION_VERSIONS].size;
@@ -589,6 +591,86 @@ int kmod_elf_get_modversions(const struct kmod_elf *elf, struct kmod_modversion 
 	}
 
 	return count;
+}
+
+static int kmod_elf_get_extended_modversions(const struct kmod_elf *elf,
+					     struct kmod_modversion **array)
+{
+	uint64_t name_off, name_size, crc_off, crc_size;
+	const char *name_cursor;
+	int count, i, ret;
+
+	name_off = elf->sections[KMOD_ELF_SECTION_VERSION_EXT_NAMES].offset;
+	name_size = elf->sections[KMOD_ELF_SECTION_VERSION_EXT_NAMES].size;
+	crc_off = elf->sections[KMOD_ELF_SECTION_VERSION_EXT_CRCS].offset;
+	crc_size = elf->sections[KMOD_ELF_SECTION_VERSION_EXT_CRCS].size;
+
+	if ((name_off == 0)  || (crc_off == 0))
+		return -ENODATA;
+
+	if (crc_size == 0)
+		return 0;
+
+	if (crc_size % sizeof(uint32_t) != 0)
+		return -EINVAL;
+
+	count = crc_size / sizeof(uint32_t);
+	*array = malloc(sizeof(struct kmod_modversion) * count);
+	if (*array == NULL)
+		return -errno;
+
+	for (name_cursor = elf_get_mem(elf, name_off), i = 0; i < count; i++) {
+		size_t len;
+		uint32_t crc;
+
+		if (name_size == 0) {
+			ELFDBG(elf, "fewer symbol names than crcs\n");
+			ret = -EINVAL;
+			goto release_array;
+		}
+		len = strnlen(name_cursor, name_size);
+		if (len == name_size) {
+			ELFDBG(elf, "last symbol name not null-terminated\n");
+			ret = -EINVAL;
+			goto release_array;
+		}
+		crc = elf_get_uint(elf, crc_off, sizeof(uint32_t));
+
+		/* PPC sometimes prefixes names with `.` */
+		if (name_cursor[0] == '.') {
+			name_cursor++;
+			len--;
+		}
+
+		(*array)[i].crc = crc;
+		(*array)[i].bind = KMOD_SYMBOL_UNDEF;
+		(*array)[i].symbol = name_cursor;
+
+		/* len doesn't include the NUL, but our pointers and size do */
+		name_cursor += len + 1;
+		name_size -= len + 1;
+		crc_off += sizeof(uint32_t);
+	}
+
+	return count;
+
+release_array:
+	free(*array);
+	return ret;
+}
+
+/* array will be allocated with strings in a single malloc, just free *array */
+int kmod_elf_get_modversions(const struct kmod_elf *elf, struct kmod_modversion **array)
+{
+	int ret;
+
+	*array = NULL;
+
+	ret = kmod_elf_get_extended_modversions(elf, array);
+	/* if no extended modversions, fall back, otherwise propagate error */
+	if (ret != -ENODATA)
+		return ret;
+	return kmod_elf_get_basic_modversions(elf, array);
 }
 
 static int elf_strip_versions_section(const struct kmod_elf *elf, uint8_t *changed)
