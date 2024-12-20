@@ -1,0 +1,11 @@
+0x........	single_open
+0x........	seq_write
+0x........	debugfs_remove
+0x........	seq_lseek
+0x........	seq_read
+0x........	single_release
+0x........	__fentry__
+0x........	debugfs_create_dir
+0x........	debugfs_create_file
+0x........	__x86_return_thunk
+0x........	module_layout
