@@ -541,10 +541,9 @@ static inline void elf_get_modversion_lengths(const struct kmod_elf *elf, size_t
 /* array will be allocated with strings in a single malloc, just free *array */
 int kmod_elf_get_modversions(const struct kmod_elf *elf, struct kmod_modversion **array)
 {
-	size_t off, crclen, namlen, verlen;
-	uint64_t sec_off, size;
+	size_t i, count, crclen, namlen, verlen;
+	uint64_t off, sec_off, size;
 	struct kmod_modversion *a;
-	int i, count;
 
 	elf_get_modversion_lengths(elf, &verlen, &crclen, &namlen);
 
@@ -562,6 +561,10 @@ int kmod_elf_get_modversions(const struct kmod_elf *elf, struct kmod_modversion 
 		return -EINVAL;
 
 	count = size / verlen;
+	if (count > INT_MAX) {
+		ELFDBG(elf, "too many modversions: %zu\n", count);
+		return -EINVAL;
+	}
 
 	*array = a = malloc(sizeof(struct kmod_modversion) * count);
 	if (*array == NULL)
@@ -573,7 +576,7 @@ int kmod_elf_get_modversions(const struct kmod_elf *elf, struct kmod_modversion 
 		size_t nlen = strnlen(symbol, namlen);
 
 		if (nlen == namlen) {
-			ELFDBG(elf, "symbol name at index %d too long\n", i);
+			ELFDBG(elf, "symbol name at index %zu too long\n", i);
 			return -EINVAL;
 		}
 
@@ -704,8 +707,7 @@ static int kmod_elf_get_symbols_symtab(const struct kmod_elf *elf,
 	uint64_t i, last, off, size;
 	const char *strings;
 	struct kmod_modversion *a;
-	int count;
-	size_t total_size;
+	size_t count, total_size;
 
 	*array = NULL;
 
@@ -738,6 +740,11 @@ static int kmod_elf_get_symbols_symtab(const struct kmod_elf *elf,
 			count++;
 			last = i + 1;
 		}
+	}
+
+	if (count > INT_MAX) {
+		ELFDBG(elf, "too many symbols: %zu\n", count);
+		return -EINVAL;
 	}
 
 	/* sizeof(struct kmod_modversion) * count */
@@ -973,8 +980,7 @@ int kmod_elf_get_dependency_symbols(const struct kmod_elf *elf,
 	uint64_t versionslen, strtablen, symtablen, str_off, sym_off, ver_off;
 	uint64_t str_sec_off, sym_sec_off;
 	struct kmod_modversion *a;
-	size_t namlen, verlen, symlen, crclen;
-	int i, count, symcount, vercount;
+	size_t i, count, namlen, vercount, verlen, symcount, symlen, crclen;
 	bool handle_register_symbols;
 	uint8_t *visited_versions;
 	uint64_t *symcrcs;
@@ -1095,7 +1101,7 @@ int kmod_elf_get_dependency_symbols(const struct kmod_elf *elf,
 		if (name_off >= strtablen) {
 			ELFDBG(elf,
 			       ".strtab is %" PRIu64
-			       " bytes, but .symtab entry %d wants to access offset %" PRIu32
+			       " bytes, but .symtab entry %zu wants to access offset %" PRIu32
 			       ".\n",
 			       strtablen, i, name_off);
 			free(visited_versions);
@@ -1105,7 +1111,7 @@ int kmod_elf_get_dependency_symbols(const struct kmod_elf *elf,
 
 		name = elf_get_mem(elf, str_off + name_off);
 		if (name[0] == '\0') {
-			ELFDBG(elf, "empty symbol name at index %d\n", i);
+			ELFDBG(elf, "empty symbol name at index %zu\n", i);
 			continue;
 		}
 
@@ -1128,7 +1134,7 @@ int kmod_elf_get_dependency_symbols(const struct kmod_elf *elf,
 				nlen = strnlen(name, namlen);
 
 				if (nlen == namlen) {
-					ELFDBG(elf, "symbol name at index %d too long\n",
+					ELFDBG(elf, "symbol name at index %zu too long\n",
 					       i);
 					free(visited_versions);
 					free(symcrcs);
@@ -1138,6 +1144,14 @@ int kmod_elf_get_dependency_symbols(const struct kmod_elf *elf,
 				count++;
 			}
 		}
+	}
+
+	if (count > INT_MAX) {
+		ELFDBG(elf, "too many symbols: %zu\n", count);
+		free(visited_versions);
+		free(symcrcs);
+		*array = NULL;
+		return -EINVAL;
 	}
 
 	if (count == 0) {
@@ -1201,7 +1215,7 @@ int kmod_elf_get_dependency_symbols(const struct kmod_elf *elf,
 
 		name = elf_get_mem(elf, str_off + name_off);
 		if (name[0] == '\0') {
-			ELFDBG(elf, "empty symbol name at index %d\n", i);
+			ELFDBG(elf, "empty symbol name at index %zu\n", i);
 			continue;
 		}
 
