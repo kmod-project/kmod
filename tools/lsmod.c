@@ -101,19 +101,15 @@ static int do_lsmod(int argc, char *argv[])
 		int use_count = kmod_module_get_refcnt(mod);
 		long size = kmod_module_get_size(mod);
 		struct kmod_list *holders, *hitr;
-		int first = 1;
+		int sep = ' ';
 
 		printf("%-19s %8ld  %d", name, size, use_count);
 		holders = kmod_module_get_holders(mod);
 		kmod_list_foreach(hitr, holders) {
 			struct kmod_module *hm = kmod_module_get_module(hitr);
 
-			if (!first) {
-				putchar(',');
-			} else {
-				putchar(' ');
-				first = 0;
-			}
+			putchar(sep);
+			sep = ',';
 
 			fputs(kmod_module_get_name(hm), stdout);
 			kmod_module_unref(hm);
