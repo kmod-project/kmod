@@ -32,6 +32,7 @@ AM_CPPFLAGS = \
 	-DSYSCONFDIR=\""$(sysconfdir)"\" \
 	-DDISTCONFDIR=\""$(distconfdir)"\" \
 	-DMODULE_DIRECTORY=\""$(module_directory)"\" \
+	-DMODULE_ALTERNATIVE_DIRECTORY=\""$(module_alternative_directory)"\" \
 	${zlib_CFLAGS}
 
 AM_CFLAGS = $(OUR_CFLAGS)
@@ -198,7 +199,7 @@ MODULE_PLAYGROUND = testsuite/module-playground
 BUILD_MODULES = $(AM_V_GEN) $(top_srcdir)/scripts/setup-modules.sh $(top_srcdir) $(top_builddir) $(MODULE_PLAYGROUND)
 ROOTFS = testsuite/rootfs
 ROOTFS_PRISTINE = $(top_srcdir)/testsuite/rootfs-pristine
-CREATE_ROOTFS = $(AM_V_GEN) $(top_srcdir)/scripts/setup-rootfs.sh $(ROOTFS_PRISTINE) $(ROOTFS) $(MODULE_PLAYGROUND) $(top_builddir)/config.h $(sysconfdir) $(module_directory)
+CREATE_ROOTFS = $(AM_V_GEN) $(top_srcdir)/scripts/setup-rootfs.sh $(ROOTFS_PRISTINE) $(ROOTFS) $(MODULE_PLAYGROUND) $(top_builddir)/config.h $(sysconfdir) $(module_directory) $(module_alternative_directory)
 
 build-module-playground:
 	$(BUILD_MODULES)
