@@ -45,6 +45,10 @@
 #define _printf_format_(a, b) __attribute__((format(printf, a, b)))
 #define _always_inline_ __inline__ __attribute__((always_inline))
 #define _sentinel_ __attribute__((sentinel))
+#define _used_ __attribute((used))
+#define _retain_ __attribute((retain))
+#define _section_(a) __attribute((section(a)))
+#define _aligned_(a) __attribute((aligned(a)))
 
 #if defined(__clang_analyzer__)
 #define _clang_suppress_ __attribute__((suppress))
