@@ -250,7 +250,7 @@ static int test_hash_add_unique(const struct test *t)
 	return 0;
 }
 DEFINE_TEST(test_hash_add_unique,
-	    .description = "test hash_add_unique with different key orders")
+	    .description = "test hash_add_unique with different key orders");
 
 static int test_hash_massive_add_del(const struct test *t)
 {
@@ -282,6 +282,6 @@ static int test_hash_massive_add_del(const struct test *t)
 	return 0;
 }
 DEFINE_TEST(test_hash_massive_add_del,
-	    .description = "test multiple adds followed by multiple dels")
+	    .description = "test multiple adds followed by multiple dels");
 
 TESTSUITE_MAIN();
