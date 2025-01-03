@@ -126,19 +126,20 @@ int test_run(const struct test *t);
 	} while (false)
 
 /* Test definitions */
-#define DEFINE_TEST_WITH_FUNC(_name, _func, ...)                             \
-	static const struct test UNIQ(s##_name)                              \
-		__attribute__((used, section("kmod_tests"), aligned(8))) = { \
-			.name = #_name, .func = _func, ##__VA_ARGS__         \
-		};
+// clang-format off: At least up to version 18, it just makes a mess with _Pragma()
+#define DEFINE_TEST_WITH_FUNC(_name, _func, ...)                                         \
+	_Pragma("GCC diagnostic ignored \"-Wattributes\"")                               \
+	static const struct test UNIQ(s##_name)                                          \
+	__attribute__((retain, used, section("kmod_tests"), aligned(8))) = {             \
+		.name = #_name, .func = _func, ##__VA_ARGS__                             \
+	};
+// clang-format on
 
 #define DEFINE_TEST(_name, ...) DEFINE_TEST_WITH_FUNC(_name, _name, __VA_ARGS__)
 
 #define TESTSUITE_MAIN()                                                                 \
-	extern struct test __start_kmod_tests[]                                          \
-		__attribute__((weak, visibility("hidden")));                             \
-	extern struct test __stop_kmod_tests[]                                           \
-		__attribute__((weak, visibility("hidden")));                             \
+	extern struct test __start_kmod_tests[] __attribute__((visibility("hidden")));   \
+	extern struct test __stop_kmod_tests[] __attribute__((visibility("hidden")));    \
 	int main(int argc, char *argv[])                                                 \
 	{                                                                                \
 		const struct test *t;                                                    \
