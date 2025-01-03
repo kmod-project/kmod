@@ -49,6 +49,7 @@
 #define _retain_ __attribute((retain))
 #define _section_(a) __attribute((section(a)))
 #define _aligned_(a) __attribute((aligned(a)))
+#define _alignedptr_ _aligned_(sizeof(void *))
 
 #if defined(__clang_analyzer__)
 #define _clang_suppress_ __attribute__((suppress))

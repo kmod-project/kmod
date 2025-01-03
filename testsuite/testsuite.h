@@ -132,7 +132,7 @@ int test_run(const struct test *t);
 	_used_                                                                           \
 	_retain_                                                                         \
 	_section_("kmod_tests")                                                          \
-	_aligned_(8)                                                                     \
+	_alignedptr_                                                                     \
 	static const struct test UNIQ(s##_name) = {                                      \
 		.name = #_name, .func = _func, ##__VA_ARGS__                             \
 	};
