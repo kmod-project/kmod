@@ -135,7 +135,7 @@ int test_run(const struct test *t);
 	_alignedptr_                                                                     \
 	static const struct test UNIQ(s##_name) = {                                      \
 		.name = #_name, .func = _func, ##__VA_ARGS__                             \
-	};
+	}
 // clang-format on
 
 #define DEFINE_TEST(_name, ...) DEFINE_TEST_WITH_FUNC(_name, _name, __VA_ARGS__)

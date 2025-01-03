@@ -99,7 +99,8 @@ static int test_strchr_replace(const struct test *t)
 
 	return EXIT_SUCCESS;
 }
-DEFINE_TEST(test_strchr_replace, .description = "check implementation of strchr_replace()")
+DEFINE_TEST(test_strchr_replace,
+	    .description = "check implementation of strchr_replace()");
 
 static int test_underscores(const struct test *t)
 {
@@ -124,7 +125,7 @@ static int test_underscores(const struct test *t)
 
 	return EXIT_SUCCESS;
 }
-DEFINE_TEST(test_underscores, .description = "check implementation of underscores()")
+DEFINE_TEST(test_underscores, .description = "check implementation of underscores()");
 
 static int test_path_ends_with_kmod_ext(const struct test *t)
 {
@@ -158,7 +159,7 @@ static int test_path_ends_with_kmod_ext(const struct test *t)
 	return EXIT_SUCCESS;
 }
 DEFINE_TEST(test_path_ends_with_kmod_ext,
-	    .description = "check implementation of path_ends_with_kmod_ext()")
+	    .description = "check implementation of path_ends_with_kmod_ext()");
 
 #define TEST_WRITE_STR_SAFE_FILE "/write-str-safe"
 #define TEST_WRITE_STR_SAFE_PATH TESTSUITE_ROOTFS "test-util2/" TEST_WRITE_STR_SAFE_FILE
@@ -203,7 +204,7 @@ static int test_uadd32_overflow(const struct test *t)
 	return EXIT_SUCCESS;
 }
 DEFINE_TEST(test_uadd32_overflow,
-	    .description = "check implementation of uadd32_overflow()")
+	    .description = "check implementation of uadd32_overflow()");
 
 static int test_uadd64_overflow(const struct test *t)
 {
@@ -220,7 +221,7 @@ static int test_uadd64_overflow(const struct test *t)
 	return EXIT_SUCCESS;
 }
 DEFINE_TEST(test_uadd64_overflow,
-	    .description = "check implementation of uadd64_overflow()")
+	    .description = "check implementation of uadd64_overflow()");
 
 static int test_umul32_overflow(const struct test *t)
 {
@@ -237,7 +238,7 @@ static int test_umul32_overflow(const struct test *t)
 	return EXIT_SUCCESS;
 }
 DEFINE_TEST(test_umul32_overflow,
-	    .description = "check implementation of umul32_overflow()")
+	    .description = "check implementation of umul32_overflow()");
 
 static int test_umul64_overflow(const struct test *t)
 {
@@ -254,7 +255,7 @@ static int test_umul64_overflow(const struct test *t)
 	return EXIT_SUCCESS;
 }
 DEFINE_TEST(test_umul64_overflow,
-	    .description = "check implementation of umul64_overflow()")
+	    .description = "check implementation of umul64_overflow()");
 
 static int test_backoff_time(const struct test *t)
 {
@@ -292,6 +293,6 @@ static int test_backoff_time(const struct test *t)
 	return EXIT_SUCCESS;
 }
 DEFINE_TEST(test_backoff_time,
-	    .description = "check implementation of get_backoff_delta_msec()")
+	    .description = "check implementation of get_backoff_delta_msec()");
 
 TESTSUITE_MAIN();

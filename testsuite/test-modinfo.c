@@ -100,7 +100,7 @@ DEFINE_TEST(test_modinfo_external,
 	},
 	.output = {
 		.out = TESTSUITE_ROOTFS "test-modinfo/correct-external.txt",
-	})
+	});
 
 static noreturn int test_modinfo_builtin(const struct test *t)
 {
@@ -122,6 +122,6 @@ DEFINE_TEST(test_modinfo_builtin,
 	},
 	.output = {
 		.out = TESTSUITE_ROOTFS "test-modinfo/correct-builtin.txt",
-	})
+	});
 
 TESTSUITE_MAIN();
