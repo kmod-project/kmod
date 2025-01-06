@@ -97,6 +97,13 @@ jobs:
             x32: 'true'
             meson_setup: '-Dzstd=disabled -Dxz=disabled -Dzlib=disabled -Dopenssl=disabled'
 
+          # Special configurations
+
+          # Variant with lld as linker
+          - compiler: 'clang'
+            container: 'archlinux:multilib-devel'
+            linker: 'lld'
+
     container:
       image: ${{ matrix.container }}
 
@@ -156,6 +163,10 @@ jobs:
 
           if [[ "${{ matrix.x32 }}" == "true" ]]; then
             export CC="$CC -m32"
+          fi
+
+          if [[ -n "${{ matrix.linker }}" ]]; then
+            export CC_LD="${{ matrix.linker }}"
           fi
 
           meson setup --native-file build-dev.ini $setup_options build
