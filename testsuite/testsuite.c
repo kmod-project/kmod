@@ -82,6 +82,9 @@ int test_init(const struct test *start, const struct test *stop, int argc,
 {
 	progname = argv[0];
 
+	/* An empty testsuite is not likely intended */
+	assert_return(start != stop, -EINVAL);
+
 	for (;;) {
 		int c, idx = 0;
 		c = getopt_long(argc, argv, options_short, options, &idx);
