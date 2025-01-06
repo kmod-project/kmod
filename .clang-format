@@ -80,12 +80,15 @@ ForEachMacros:
 AttributeMacros:
   - KMOD_EXPORT
   - TS_EXPORT
+  - _aligned_
+  - _alignedptr_
   - _always_inline_
   - _cleanup_
   - _must_check_
   - _nonnull_
   - _nonnull_all_
   - _printf_format_
+  - _section_
   - noreturn
 
 IncludeBlocks: Preserve
