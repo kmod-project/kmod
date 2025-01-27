@@ -18,6 +18,12 @@ Only the most general of error messages are reported: as the work of trying to
 link the module is now done inside the kernel, the *dmesg*(1) usually gives more
 information about errors.
 
+*insmod* will look by default at modules stored in @MODULE_DIRECTORY@, but if
+the folder is missing or the module is not found, it will automatically look at
+the fallback directory @MODULE_ALTERNATIVE_DIRECTORY@.
+This program will fail only if the provided module is not found in both
+directories.
+
 # OPTIONS
 
 *-f*, *--force*

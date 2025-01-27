@@ -15,9 +15,18 @@ modinfo - Show information about a Linux Kernel module
 # DESCRIPTION
 
 *modinfo* extracts information from the Linux Kernel modules given on the
-command line. If the module name is not a filename, then the @MODULE_DIRECTORY@/
-_version_ directory is searched, as is also done by *modprobe*(8) when loading
-kernel modules.
+command line.
+
+*modinfo* will search by default for modules stored in @MODULE_DIRECTORY@, but
+if the folder is missing or the module is not found, it will automatically look
+at the fallback directory @MODULE_ALTERNATIVE_DIRECTORY@.
+This program will fail only if the provided module is not found in both
+directories.
+
+If the module name is not a filename, then the @MODULE_DIRECTORY@/
+_version_ directory is searched first, and then
+@MODULE_ALTERNATIVE_DIRECTORY@/_version_, as is also done by *modprobe*(8) when
+loading kernel modules.
 
 *modinfo* by default lists each attribute of the module in form _fieldname_ :
 _value_, for easy reading. The filename is listed the same way (although it's

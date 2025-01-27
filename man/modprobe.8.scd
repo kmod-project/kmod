@@ -44,6 +44,29 @@ is relative, it must explicitly start with "./". Note that this may fail when
 using a path to a module with dependencies not matching the installed *depmod*
 database.
 
+*modprobe* will search by default for modules stored in @MODULE_DIRECTORY@, but
+if the folder is missing or the module is not found, it will automatically look
+at the fallback directory @MODULE_ALTERNATIVE_DIRECTORY@.
+This program will fail only if the provided module is not found in both
+directories.
+
+The rationale for @MODULE_ALTERNATIVE_DIRECTORY@ is that this folder could be
+used to reference pre-build or distro-provided default modules, and leave
+@MODULE_DIRECTORY@ to point custom locally generated modules. In this way, the
+first lookup always happens in @MODULE_DIRECTORY@ and will always reference the
+local modules, but if for some reason some module is missing,
+@MODULE_ALTERNATIVE_DIRECTORY@ could be used as fallback as source of default
+standard modules.
+
+Another specific use case for this is with UKIs (Unified Kernel Image).
+In this scenario, there is the possibility of not keeping two copies of the
+kernel modules (one for initramfs and not for rootfs), but instead copy the ones
+in initramfs to tmpfs, e.g. in /run/modules. Note that modules are not directly
+copied in rootfs because it might also be read-only mounted.
+This copy is feasible because an UKI ships kernel and initramfs together, so
+there is no need to locally build anything, avoiding kernel-initramfs version
+mismatches.
+
 # OPTIONS
 
 *-a*, *--all*
