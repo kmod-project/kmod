@@ -35,7 +35,8 @@
  */
 static int log_priority = LOG_ERR;
 static int use_syslog = 0;
-#define LOG(...) log_printf(log_priority, __VA_ARGS__)
+LOG_PTR_INIT(error_log)
+#define LOG(...) SET_LOG_PTR(error_log, __VA_ARGS__)
 
 #define DEFAULT_VERBOSE LOG_WARNING
 static int verbose = DEFAULT_VERBOSE;
@@ -827,6 +828,8 @@ static int do_modprobe(int argc, char **orig_argv)
 	int do_show_config = 0;
 	int do_show_modversions = 0;
 	int do_show_exports = 0;
+	char *module_dir_error = NULL;
+	char *module_alt_dir_error = NULL;
 	int err;
 	struct utsname u;
 	struct stat stat_buf;
@@ -989,7 +992,12 @@ static int do_modprobe(int argc, char **orig_argv)
 		err = _do_modprobe(dirname_buf, config_paths, args, nargs,
 				   do_show_config, do_show_modversions,
 				   do_show_exports, do_remove, use_all);
-	if (!err)
+
+	if (err)
+		/* Store the error and print it *if*
+		 * MODULE_ALTERNATIVE_DIRECTORY fails too */
+		module_dir_error = pop_log_str(&error_log);
+	else
 		/* MODULE_DIRECTORY was succesful */
 		goto done;
 
@@ -1001,9 +1009,20 @@ static int do_modprobe(int argc, char **orig_argv)
 		err = _do_modprobe(dirname_buf, config_paths, args, nargs,
 				   do_show_config, do_show_modversions,
 				   do_show_exports, do_remove, use_all);
+
+	if (err)
+		/* Store the error and print it after MODULE_DIRECTORY */
+		module_alt_dir_error = pop_log_str(&error_log);
+	else {
+		/* MODULE_ALTERNATIVE_DIRECTORY was succesful, no need to print
+		 * module_dir_error */
+		free(module_dir_error);
+		module_dir_error = NULL;
+	}
 	#endif
 
 done:
+	PRINT_LOG_PTR(log_priority, module_dir_error, module_alt_dir_error);
 	log_close();
 
 	if (argv != orig_argv)
