@@ -89,6 +89,9 @@ AC_ARG_WITH([module_directory],
         [], [with_module_directory=/lib/modules])
 AC_SUBST([module_directory], [$with_module_directory])
 
+AC_ARG_ENABLE([enable_alternative_dir],
+	AS_HELP_STRING([--enable-alternative-dir], [enable alternative module directory @<:@default=disabled@:>@]),
+	[], [enable_alternative_dir=no])
 AC_ARG_WITH([module_alternative_directory],
         AS_HELP_STRING([--with-module-alternative_directory=DIR], [alternative directory in which to look for kernel modules @<:@default=/run/modules@:>@]),
         [], [with_module_alternative_directory=/run/modules])
@@ -341,6 +344,7 @@ AC_MSG_RESULT([
 	=======
 
 	module_directory:		${module_directory}
+	enable_alternative_dir:		${enable_alternative_dir}
 	module_alternative_directory:	${module_alternative_directory}
 	prefix:				${prefix}
 	sysconfdir:			${sysconfdir}

@@ -32,6 +32,7 @@ AM_CPPFLAGS = \
 	-DSYSCONFDIR=\""$(sysconfdir)"\" \
 	-DDISTCONFDIR=\""$(distconfdir)"\" \
 	-DMODULE_DIRECTORY=\""$(module_directory)"\" \
+	-DENABLE_ALTERNATIVE_DIR=\""$(enable_alternative_dir)
 	-DMODULE_ALTERNATIVE_DIRECTORY=\""$(module_alternative_directory)"\" \
 	${zlib_CFLAGS}
 

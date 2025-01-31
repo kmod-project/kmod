@@ -13,9 +13,16 @@ option(
 )
 
 option(
+  'enable-alternative-dir',
+  type : 'boolean',
+  value : false,
+  description : 'Always use a fallback alternative directory to look for kernel modules. Default: false',
+)
+
+option(
   'modulealternativedir',
   type : 'string',
-  description : 'Alternative directory to look for kernel modules. Default: /run/modules',
+  description : 'Alternative directory to look for kernel modules, if enable-alternative-dir is true. Otherwise unused. Default: /run/modules',
 )
 
 option(

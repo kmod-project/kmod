@@ -193,7 +193,9 @@ datadir = prefixdir / get_option('datadir')
 
 distconfdir = get_option('distconfdir')
 moduledir = get_option('moduledir')
+enablealternativedir = get_option('enable-alternative-dir')
 modulealternativedir = get_option('modulealternativedir')
+cdata.set10('ENABLE_ALTERNATIVE_DIR', enablealternativedir)
 
 bashcompletiondir = get_option('bashcompletiondir')
 fishcompletiondir = get_option('fishcompletiondir')
@@ -578,13 +580,14 @@ summary({
 }, section : 'Shell completions')
 
 summary({
-  'tools'           : get_option('tools'),
-  'logging'         : get_option('logging'),
-  'debug-messages'  : get_option('debug-messages'),
-  'build-tests'     : get_option('build-tests'),
-  'manpages'        : get_option('manpages'),
-  'docs'            : get_option('docs'),
-  'dlopen'          : get_option('dlopen'),
+  'tools'                       : get_option('tools'),
+  'logging'                     : get_option('logging'),
+  'debug-messages'              : get_option('debug-messages'),
+  'build-tests'                 : get_option('build-tests'),
+  'enable-alternative-dir'      : get_option('enable-alternative-dir'),
+  'manpages'                    : get_option('manpages'),
+  'docs'                        : get_option('docs'),
+  'dlopen'                      : get_option('dlopen'),
 }, section : 'Options')
 
 summary({
