@@ -19,10 +19,11 @@ link the module is now done inside the kernel, the *dmesg*(1) usually gives more
 information about errors.
 
 *insmod* will look by default at modules stored in @MODULE_DIRECTORY@, but if
-the folder is missing or the module is not found, it will automatically look at
-the fallback directory @MODULE_ALTERNATIVE_DIRECTORY@.
-This program will fail only if the provided module is not found in both
-directories.
+the folder is missing or the module is not found and kmod is compiled with
+@enable-alternative-dir=true@, it will automatically look at the fallback
+directory @MODULE_ALTERNATIVE_DIRECTORY@.
+In that case, this program will only fail if the provided module is not found in
+both directories.
 
 # OPTIONS
 

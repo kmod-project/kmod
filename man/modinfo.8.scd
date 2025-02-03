@@ -18,13 +18,14 @@ modinfo - Show information about a Linux Kernel module
 command line.
 
 *modinfo* will search by default for modules stored in @MODULE_DIRECTORY@, but
-if the folder is missing or the module is not found, it will automatically look
-at the fallback directory @MODULE_ALTERNATIVE_DIRECTORY@.
-This program will fail only if the provided module is not found in both
-directories.
+if the folder is missing or the module is not found and kmod is compiled with
+@enable-alternative-dir=true@, it will automatically look at the fallback
+directory @MODULE_ALTERNATIVE_DIRECTORY@.
+In that case, this program will only fail if the provided module is not found in
+both directories.
 
 If the module name is not a filename, then the @MODULE_DIRECTORY@/
-_version_ directory is searched first, and then
+_version_ directory is searched first, and then if enabled
 @MODULE_ALTERNATIVE_DIRECTORY@/_version_, as is also done by *modprobe*(8) when
 loading kernel modules.
 

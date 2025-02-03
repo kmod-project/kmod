@@ -16,10 +16,11 @@ kernel (when module unloading support is provided). Most users will want to use
 modules as well.
 
 *rmmod* will look by default at modules stored in @MODULE_DIRECTORY@, but if
-the folder is missing or the module is not found, it will automatically look at
-the fallback directory @MODULE_ALTERNATIVE_DIRECTORY@.
-This program will fail only if the provided module is not found in both
-directories.
+the folder is missing or the module is not found and kmod is compiled with
+@enable-alternative-dir=true@, it will automatically look at the fallback
+directory @MODULE_ALTERNATIVE_DIRECTORY@.
+In that case, this program will only fail if the provided module is not found in
+both directories.
 
 When a list of modules is provided, the program will process them one at a time.
 If a module is not found, *rmmod* will immediately exit with an error code.

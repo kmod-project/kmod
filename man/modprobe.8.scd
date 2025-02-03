@@ -45,10 +45,11 @@ using a path to a module with dependencies not matching the installed *depmod*
 database.
 
 *modprobe* will search by default for modules stored in @MODULE_DIRECTORY@, but
-if the folder is missing or the module is not found, it will automatically look
-at the fallback directory @MODULE_ALTERNATIVE_DIRECTORY@.
-This program will fail only if the provided module is not found in both
-directories.
+if the folder is missing or the module is not found and kmod is compiled with
+@enable-alternative-dir=true@, it will automatically look at the fallback
+directory @MODULE_ALTERNATIVE_DIRECTORY@.
+In that case, this program will only fail if the provided module is not found in
+both directories.
 
 The rationale for @MODULE_ALTERNATIVE_DIRECTORY@ is that this folder could be
 used to reference pre-build or distro-provided default modules, and leave
