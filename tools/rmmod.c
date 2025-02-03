@@ -22,6 +22,9 @@
 
 #include "kmod.h"
 
+LOG_PTR_INIT(error_log)
+#define SET_ERR(...) SET_LOG_PTR(error_log, __VA_ARGS__)
+
 static const char cmdopts_s[] = "fsvVh";
 static const struct option cmdopts[] = {
 	// clang-format off
@@ -56,25 +59,33 @@ static int check_module_inuse(struct kmod_module *mod)
 	state = kmod_module_get_initstate(mod);
 
 	if (state == KMOD_MODULE_BUILTIN) {
-		ERR("Module %s is builtin.\n", kmod_module_get_name(mod));
+		SET_ERR("Module %s is builtin.\n", kmod_module_get_name(mod));
 		return -ENOENT;
 	} else if (state < 0) {
-		ERR("Module %s is not currently loaded\n", kmod_module_get_name(mod));
+		SET_ERR("Module %s is not currently loaded\n",
+			kmod_module_get_name(mod));
 		return -ENOENT;
 	}
 
 	holders = kmod_module_get_holders(mod);
 	if (holders != NULL) {
 		struct kmod_list *itr;
+		char *mod_list = NULL, *old_mod;
 
-		ERR("Module %s is in use by:", kmod_module_get_name(mod));
+		if (asprintf(&mod_list, "Module %s is in use by:", kmod_module_get_name(mod)) < 0)
+			return -ENOMEM;
 
 		kmod_list_foreach(itr, holders) {
 			struct kmod_module *hm = kmod_module_get_module(itr);
-			ERR(" %s", kmod_module_get_name(hm));
+			old_mod = mod_list;
+			ret = asprintf(&mod_list, "%s %s", old_mod, kmod_module_get_name(hm));
+			free(old_mod);
 			kmod_module_unref(hm);
+			if (ret < 0)
+				return -ENOMEM;
 		}
-		ERR("\n");
+		SET_ERR("%s\n", mod_list);
+		free(mod_list);
 
 		kmod_module_unref_list(holders);
 		return -EBUSY;
@@ -82,10 +93,10 @@ static int check_module_inuse(struct kmod_module *mod)
 
 	ret = kmod_module_get_refcnt(mod);
 	if (ret > 0) {
-		ERR("Module %s is in use\n", kmod_module_get_name(mod));
+		SET_ERR("Module %s is in use\n", kmod_module_get_name(mod));
 		return -EBUSY;
 	} else if (ret == -ENOENT) {
-		ERR("Module unloading is not supported\n");
+		SET_ERR("Module unloading is not supported\n");
 	}
 
 	return ret;
@@ -103,8 +114,8 @@ static int get_module_dirname(char *dirname_buf, size_t dirname_size,
 	n = snprintf(dirname_buf, dirname_size,
 		     "%s/%s", module_directory, u.release);
 	if (n >= (int)dirname_size) {
-		ERR("bad directory %s/%s: path too long\n",
-		    module_directory, u.release);
+		SET_ERR("bad directory %s/%s: path too long\n",
+			module_directory, u.release);
 		return EXIT_FAILURE;
 	}
 
@@ -120,7 +131,7 @@ static int _do_rmmod(const char *dirname, int argc, char *argv[], int flags,
 
 	ctx = kmod_new(dirname, &null_config);
 	if (!ctx) {
-		ERR("kmod_new() failed!\n");
+		SET_ERR("kmod_new() failed!\n");
 		r = EXIT_FAILURE;
 		goto finish;
 	}
@@ -139,7 +150,7 @@ static int _do_rmmod(const char *dirname, int argc, char *argv[], int flags,
 			err = kmod_module_new_from_name(ctx, arg, &mod);
 
 		if (err < 0) {
-			ERR("could not use module %s: %s\n", arg, strerror(-err));
+			SET_ERR("could not use module %s: %s\n", arg, strerror(-err));
 			r = EXIT_FAILURE;
 			break;
 		}
@@ -152,7 +163,7 @@ static int _do_rmmod(const char *dirname, int argc, char *argv[], int flags,
 
 		err = kmod_module_remove_module(mod, flags);
 		if (err < 0) {
-			ERR("could not remove module %s: %s\n", arg, strerror(-err));
+			SET_ERR("could not remove module %s: %s\n", arg, strerror(-err));
 			r = EXIT_FAILURE;
 		}
 
@@ -168,6 +179,8 @@ static int do_rmmod(int argc, char *argv[])
 {
 	char dirname_buf[PATH_MAX];
 	int verbose = LOG_ERR;
+	char *module_dir_error = NULL;
+	char *module_alt_dir_error = NULL;
 	int use_syslog = 0;
 	int flags = 0;
 	int c, r = 0;
@@ -210,7 +223,12 @@ static int do_rmmod(int argc, char *argv[])
 			       MODULE_DIRECTORY);
 	if (!r)
 		r = _do_rmmod(dirname_buf, argc, argv, flags, verbose);
-	if (!r)
+
+	if (r)
+		/* Store the error and print it *if*
+		 * MODULE_ALTERNATIVE_DIRECTORY fails too */
+		module_dir_error = pop_log_str(&error_log);
+	else
 		/* MODULE_DIRECTORY was succesful */
 		goto done;
 
@@ -220,8 +238,19 @@ static int do_rmmod(int argc, char *argv[])
 			       MODULE_ALTERNATIVE_DIRECTORY);
 	if (!r)
 		r = _do_rmmod(dirname_buf, argc, argv, flags, verbose);
+
+	if (r)
+		/* Store the error and print it after MODULE_DIRECTORY */
+		module_alt_dir_error = pop_log_str(&error_log);
+	else {
+		/* MODULE_ALTERNATIVE_DIRECTORY was succesful, no need to print
+		 * module_dir_error */
+		free(module_dir_error);
+		module_dir_error = NULL;
+	}
 	#endif
 
+	PRINT_LOG_PTR(LOG_ERR, module_dir_error, module_alt_dir_error);
 done:
 	log_close();
 
