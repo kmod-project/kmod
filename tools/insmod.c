@@ -17,6 +17,9 @@
 
 #include "kmod.h"
 
+LOG_PTR_INIT(error_log)
+#define SET_ERR(...) SET_LOG_PTR(error_log, __VA_ARGS__)
+
 static const char cmdopts_s[] = "fsvVh";
 static const struct option cmdopts[] = {
 	// clang-format off
@@ -71,8 +74,8 @@ static int get_module_dirname(char *dirname_buf, size_t dirname_size,
 	n = snprintf(dirname_buf, dirname_size, "%s/%s", module_directory,
 		     u.release);
 	if (n >= (int)dirname_size) {
-		ERR("bad directory %s/%s: path too long\n",
-		    module_directory, u.release);
+		SET_ERR("bad directory %s/%s: path too long\n",
+			module_directory, u.release);
 		return EXIT_FAILURE;
 	}
 
@@ -89,7 +92,7 @@ static int _do_insmod(const char *dirname, const char *filename,
 
 	ctx = kmod_new(dirname, &null_config);
 	if (!ctx) {
-		ERR("kmod_new() failed!\n");
+		SET_ERR("kmod_new() failed!\n");
 		r = EXIT_FAILURE;
 		goto finish;
 	}
@@ -98,13 +101,13 @@ static int _do_insmod(const char *dirname, const char *filename,
 
 	r = kmod_module_new_from_path(ctx, filename, &mod);
 	if (r < 0) {
-		ERR("could not load module %s: %s\n", filename, strerror(-r));
+		SET_ERR("could not load module %s: %s\n", filename, strerror(-r));
 		goto finish;
 	}
 
 	r = kmod_module_insert_module(mod, flags, opts);
 	if (r < 0)
-		ERR("could not insert module %s: %s\n", filename, mod_strerror(-r));
+		SET_ERR("could not insert module %s: %s\n", filename, mod_strerror(-r));
 
 	kmod_module_unref(mod);
 
@@ -118,6 +121,8 @@ static int do_insmod(int argc, char *argv[])
 	const char *filename;
 	char dirname_buf[PATH_MAX];
 	char *opts = NULL;
+	char *module_dir_error = NULL;
+	char *module_alt_dir_error = NULL;
 	int verbose = LOG_ERR;
 	int use_syslog = 0;
 	int c, r = 0;
@@ -173,7 +178,12 @@ static int do_insmod(int argc, char *argv[])
 			       MODULE_DIRECTORY);
 	if (!r)
 		r = _do_insmod(dirname_buf, filename, flags, opts, verbose);
-	if (!r)
+
+	if (r)
+		/* Store the error and print it *if*
+		 * MODULE_ALTERNATIVE_DIRECTORY fails too */
+		module_dir_error = pop_log_str(&error_log);
+	else
 		/* MODULE_DIRECTORY was succesful */
 		goto end;
 
@@ -183,8 +193,19 @@ static int do_insmod(int argc, char *argv[])
 			       MODULE_ALTERNATIVE_DIRECTORY);
 	if (!r)
 		r = _do_insmod(dirname_buf, filename, flags, opts, verbose);
+
+	if (r)
+		/* Store the error and print it after MODULE_DIRECTORY */
+		module_alt_dir_error = pop_log_str(&error_log);
+	else {
+		/* MODULE_ALTERNATIVE_DIRECTORY was succesful, no need to print
+		 * module_dir_error */
+		free(module_dir_error);
+		module_dir_error = NULL;
+	}
 	#endif
 
+	PRINT_LOG_PTR(LOG_ERR, module_dir_error, module_alt_dir_error);
 end:
 	free(opts);
 
