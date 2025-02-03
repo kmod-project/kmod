@@ -281,6 +281,7 @@ static int do_static_nodes(int argc, char *argv[])
 		ret = _do_static_nodes(modules, MODULE_DIRECTORY, kernel.release,
 				       format, out);
 
+	#if ENABLE_ALTERNATIVE_DIR
 	/* Whether MODULE_DIRECTORY went well or not, look at
 	 * MODULE_ALTERNATIVE_DIRECTORY */
 	ret = get_module_dirname(modules, sizeof(modules),
@@ -288,6 +289,7 @@ static int do_static_nodes(int argc, char *argv[])
 	if (!ret)
 		ret = _do_static_nodes(modules, MODULE_ALTERNATIVE_DIRECTORY,
 				       kernel.release, format, out);
+	#endif
 finish:
 	if (out)
 		fclose(out);
