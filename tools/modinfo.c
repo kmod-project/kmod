@@ -501,11 +501,13 @@ static int do_modinfo(int argc, char *argv[])
 		/* MODULE_DIRECTORY was succesful */
 		return EXIT_SUCCESS;
 
+	#if ENABLE_ALTERNATIVE_DIR
 	/* If not found, look at MODULE_ALTERNATIVE_DIRECTORY */
 	err = get_module_dirname(dirname_buf, sizeof(dirname_buf), root,
 				 MODULE_ALTERNATIVE_DIRECTORY, kversion);
 	if (!err)
 		err = _do_modinfo(dirname_buf, argc, argv, arg_is_modname);
+	#endif
 
 	return err ? EXIT_FAILURE : EXIT_SUCCESS;
 }
