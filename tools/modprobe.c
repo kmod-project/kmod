@@ -993,6 +993,7 @@ static int do_modprobe(int argc, char **orig_argv)
 		/* MODULE_DIRECTORY was succesful */
 		goto done;
 
+	#if ENABLE_ALTERNATIVE_DIR
 	/* If not found, look at MODULE_ALTERNATIVE_DIRECTORY */
 	err = get_module_dirname(dirname_buf, sizeof(dirname_buf), root,
 				 MODULE_ALTERNATIVE_DIRECTORY, kversion);
@@ -1000,6 +1001,7 @@ static int do_modprobe(int argc, char **orig_argv)
 		err = _do_modprobe(dirname_buf, config_paths, args, nargs,
 				   do_show_config, do_show_modversions,
 				   do_show_exports, do_remove, use_all);
+	#endif
 
 done:
 	log_close();
