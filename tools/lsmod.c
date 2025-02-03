@@ -18,6 +18,9 @@
 
 #include "kmod.h"
 
+LOG_PTR_INIT(error_log)
+#define SET_ERR(...) SET_LOG_PTR(error_log, __VA_ARGS__)
+
 static const char cmdopts_s[] = "svVh";
 static const struct option cmdopts[] = {
 	// clang-format off
@@ -53,8 +56,8 @@ static int get_module_dirname(char *dirname_buf, size_t dirname_size,
 	n = snprintf(dirname_buf, dirname_size,
 		     "%s/%s", module_directory, u.release);
 	if (n >= (int)dirname_size) {
-		ERR("bad directory %s/%s: path too long\n",
-		    module_directory, u.release);
+		SET_ERR("bad directory %s/%s: path too long\n",
+			module_directory, u.release);
 		return EXIT_FAILURE;
 	}
 
@@ -70,7 +73,7 @@ static int _do_lsmod(const char *dirname, int verbose)
 
 	ctx = kmod_new(dirname, &null_config);
 	if (!ctx) {
-		ERR("kmod_new() failed!\n");
+		SET_ERR("kmod_new() failed!\n");
 		r = EXIT_FAILURE;
 		goto finish;
 	}
@@ -79,7 +82,7 @@ static int _do_lsmod(const char *dirname, int verbose)
 
 	err = kmod_module_new_from_loaded(ctx, &list);
 	if (err < 0) {
-		ERR("could not get list of modules: %s\n", strerror(-err));
+		SET_ERR("could not get list of modules: %s\n", strerror(-err));
 		r = EXIT_FAILURE;
 		goto finish;
 	}
@@ -120,6 +123,8 @@ static int do_lsmod(int argc, char *argv[])
 {
 	char dirname_buf[PATH_MAX];
 	int verbose = LOG_ERR;
+	char *module_dir_error = NULL;
+	char *module_alt_dir_error = NULL;
 	int use_syslog = 0;
 	int c, r = 0;
 
@@ -158,7 +163,12 @@ static int do_lsmod(int argc, char *argv[])
 			       MODULE_DIRECTORY);
 	if (!r)
 		r = _do_lsmod(dirname_buf, verbose);
-	if (!r)
+
+	if (r)
+		/* Store the error and print it *if*
+		 * MODULE_ALTERNATIVE_DIRECTORY fails too */
+		module_dir_error = pop_log_str(&error_log);
+	else
 		/* MODULE_DIRECTORY was succesful */
 		goto done;
 
@@ -168,8 +178,19 @@ static int do_lsmod(int argc, char *argv[])
 			       MODULE_ALTERNATIVE_DIRECTORY);
 	if (!r)
 		r = _do_lsmod(dirname_buf, verbose);
+
+	if (r)
+		/* Store the error and print it after MODULE_DIRECTORY */
+		module_alt_dir_error = pop_log_str(&error_log);
+	else {
+		/* MODULE_ALTERNATIVE_DIRECTORY was succesful, no need to print
+		 * module_dir_error */
+		free(module_dir_error);
+		module_dir_error = NULL;
+	}
 	#endif
 
+	PRINT_LOG_PTR(LOG_ERR, module_dir_error, module_alt_dir_error);
 done:
 	log_close();
 
