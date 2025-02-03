@@ -162,11 +162,13 @@ static int do_lsmod(int argc, char *argv[])
 		/* MODULE_DIRECTORY was succesful */
 		goto done;
 
+	#if ENABLE_ALTERNATIVE_DIR
 	/* If not found, look at MODULE_ALTERNATIVE_DIRECTORY */
 	r = get_module_dirname(dirname_buf, sizeof(dirname_buf),
 			       MODULE_ALTERNATIVE_DIRECTORY);
 	if (!r)
 		r = _do_lsmod(dirname_buf, verbose);
+	#endif
 
 done:
 	log_close();
