@@ -24,6 +24,9 @@
 static char separator = '\n';
 static const char *field = NULL;
 
+LOG_PTR_INIT(error_log)
+#define SET_ERR(...) SET_LOG_PTR(error_log, __VA_ARGS__)
+
 struct param {
 	struct param *next;
 	const char *name;
@@ -84,7 +87,7 @@ static int process_parm(const char *key, const char *value, struct param **param
 	struct param *it;
 	const char *colon = strchr(value, ':');
 	if (colon == NULL) {
-		ERR("Found invalid \"%s=%s\": missing ':'\n", key, value);
+		SET_ERR("Found invalid \"%s=%s\": missing ':'\n", key, value);
 		return 0;
 	}
 
@@ -104,7 +107,7 @@ static int process_parm(const char *key, const char *value, struct param **param
 
 	it = add_param(name, namelen, param, paramlen, type, typelen, params);
 	if (it == NULL) {
-		ERR("Unable to add parameter: %m\n");
+		SET_ERR("Unable to add parameter: %m\n");
 		return -ENOMEM;
 	}
 
@@ -188,8 +191,8 @@ static int modinfo_do(struct kmod_module *mod)
 			 */
 			return 0;
 		}
-		ERR("could not get modinfo from '%s': %s\n", kmod_module_get_name(mod),
-		    strerror(-err));
+		SET_ERR("could not get modinfo from '%s': %s\n",
+			kmod_module_get_name(mod), strerror(-err));
 		return err;
 	}
 
@@ -265,8 +268,8 @@ static int modinfo_path_do(struct kmod_ctx *ctx, const char *path)
 	struct kmod_module *mod;
 	int err = kmod_module_new_from_path(ctx, path, &mod);
 	if (err < 0) {
-		ERR("Module file %s not found in %s.\n", path,
-		    kmod_get_dirname(ctx));
+		SET_ERR("Module file %s not found in %s.\n", path,
+			kmod_get_dirname(ctx));
 		return err;
 	}
 	err = modinfo_do(mod);
@@ -281,8 +284,8 @@ static int modinfo_name_do(struct kmod_ctx *ctx, const char *name)
 
 	err = kmod_module_new_from_name_lookup(ctx, name, &mod);
 	if (err < 0 || mod == NULL) {
-		ERR("Module name %s not found in %s.\n", name,
-		    kmod_get_dirname(ctx));
+		SET_ERR("Module name %s not found in %s.\n", name,
+			kmod_get_dirname(ctx));
 		return err < 0 ? err : -ENOENT;
 	}
 
@@ -297,14 +300,14 @@ static int modinfo_alias_do(struct kmod_ctx *ctx, const char *alias)
 	struct kmod_list *l, *list = NULL;
 	int err = kmod_module_new_from_lookup(ctx, alias, &list);
 	if (err < 0) {
-		ERR("Module alias %s not found in %s.\n", alias,
-		    kmod_get_dirname(ctx));
+		SET_ERR("Module alias %s not found in %s.\n", alias,
+			kmod_get_dirname(ctx));
 		return err;
 	}
 
 	if (list == NULL) {
-		ERR("Module %s not found in %s.\n", alias,
-		    kmod_get_dirname(ctx));
+		SET_ERR("Module %s not found in %s.\n", alias,
+			kmod_get_dirname(ctx));
 		return -ENOENT;
 	}
 
@@ -377,8 +380,8 @@ static int get_module_dirname(char *dirname_buf, size_t dirname_size,
 	n = snprintf(dirname_buf, dirname_size,
 		     "%s%s/%s", root, module_directory, kversion);
 	if (n >= (int)dirname_size) {
-		ERR("bad directory %s%s/%s: path too long\n",
-			root, module_directory, kversion);
+		SET_ERR("bad directory %s%s/%s: path too long\n", root,
+			module_directory, kversion);
 		return EXIT_FAILURE;
 	}
 
@@ -394,7 +397,7 @@ static int _do_modinfo(const char *dirname, int argc, char *argv[],
 
 	ctx = kmod_new(dirname, &null_config);
 	if (!ctx) {
-		ERR("kmod_new() failed!\n");
+		SET_ERR("kmod_new() failed!\n");
 		return EXIT_FAILURE;
 	}
 
@@ -424,6 +427,8 @@ static int do_modinfo(int argc, char *argv[])
 	const char *kversion = NULL;
 	const char *root = NULL;
 	bool arg_is_modname = false;
+	char *module_dir_error = NULL;
+	char *module_alt_dir_error = NULL;
 	struct utsname u;
 	int err;
 
@@ -497,7 +502,12 @@ static int do_modinfo(int argc, char *argv[])
 				 MODULE_DIRECTORY, kversion);
 	if (!err)
 		err = _do_modinfo(dirname_buf, argc, argv, arg_is_modname);
-	if (!err)
+
+	if (err)
+		/* Store the error and print it *if*
+		 * MODULE_ALTERNATIVE_DIRECTORY fails too */
+		module_dir_error = pop_log_str(&error_log);
+	else
 		/* MODULE_DIRECTORY was succesful */
 		return EXIT_SUCCESS;
 
@@ -507,8 +517,19 @@ static int do_modinfo(int argc, char *argv[])
 				 MODULE_ALTERNATIVE_DIRECTORY, kversion);
 	if (!err)
 		err = _do_modinfo(dirname_buf, argc, argv, arg_is_modname);
+
+	if (err)
+		/* Store the error and print it after MODULE_DIRECTORY */
+		module_alt_dir_error = pop_log_str(&error_log);
+	else {
+		/* MODULE_ALTERNATIVE_DIRECTORY was succesful, no need to print
+		 * module_dir_error */
+		free(module_dir_error);
+		module_dir_error = NULL;
+	}
 	#endif
 
+	PRINT_LOG_PTR(LOG_ERR, module_dir_error, module_alt_dir_error);
 	return err ? EXIT_FAILURE : EXIT_SUCCESS;
 }
 
