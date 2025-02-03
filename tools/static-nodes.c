@@ -202,26 +202,22 @@ static int do_static_nodes(int argc, char *argv[])
 	r = snprintf(modules, sizeof(modules), MODULE_DIRECTORY "/%s/modules.devname",
 		     kernel.release);
 	if (r >= (int)sizeof(modules)) {
-		fprintf(stderr,
-			"Error: could not open " MODULE_DIRECTORY
-			"/%s/modules.devname - path too long\n",
-			kernel.release);
+		ERR("could not open " MODULE_DIRECTORY
+		    "/%s/modules.devname - path too long\n", kernel.release);
 		ret = EXIT_FAILURE;
 		goto finish;
 	}
 	in = fopen(modules, "re");
 	if (in == NULL) {
 		if (errno == ENOENT) {
-			fprintf(stderr,
-				"Warning: " MODULE_DIRECTORY
-				"/%s/modules.devname not found - ignoring\n",
-				kernel.release);
+			WRN(MODULE_DIRECTORY
+			    "/%s/modules.devname not found - ignoring\n",
+			    kernel.release);
 			ret = EXIT_SUCCESS;
 		} else {
-			fprintf(stderr,
-				"Error: could not open " MODULE_DIRECTORY
-				"/%s/modules.devname - %m\n",
-				kernel.release);
+			ERR("could not open " MODULE_DIRECTORY
+			    "/%s/modules.devname - %m\n",
+			    kernel.release);
 			ret = EXIT_FAILURE;
 		}
 		goto finish;
@@ -229,7 +225,7 @@ static int do_static_nodes(int argc, char *argv[])
 
 	r = mkdir_parents(output, 0755);
 	if (r < 0) {
-		fprintf(stderr, "Error: could not create parent directory for %s - %m.\n",
+		ERR("could not create parent directory for %s - %m.\n",
 			output);
 		ret = EXIT_FAILURE;
 		goto finish;
@@ -237,7 +233,7 @@ static int do_static_nodes(int argc, char *argv[])
 
 	out = fopen(output, "we");
 	if (out == NULL) {
-		fprintf(stderr, "Error: could not create %s - %m\n", output);
+		ERR("could not create %s - %m\n", output);
 		ret = EXIT_FAILURE;
 		goto finish;
 	}
@@ -255,7 +251,7 @@ static int do_static_nodes(int argc, char *argv[])
 		matches =
 			sscanf(buf, "%s %s %c%u:%u", modname, devname, &type, &maj, &min);
 		if (matches != 5 || (type != 'c' && type != 'b')) {
-			fprintf(stderr, "Error: invalid devname entry: %s", buf);
+			ERR("invalid devname entry: %s", buf);
 			ret = EXIT_FAILURE;
 			continue;
 		}
