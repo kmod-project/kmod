@@ -349,14 +349,14 @@ struct kmod_elf *kmod_elf_new(const void *memory, off_t size)
 		Elf32_Ehdr *hdr;
 
 		shdr_size = sizeof(Elf32_Shdr);
-		if (!elf_range_valid(elf, 0, shdr_size))
+		if (!elf_range_valid(elf, 0, sizeof(*hdr)))
 			goto invalid;
 		LOAD_HEADER;
 	} else {
 		Elf64_Ehdr *hdr;
 
 		shdr_size = sizeof(Elf64_Shdr);
-		if (!elf_range_valid(elf, 0, shdr_size))
+		if (!elf_range_valid(elf, 0, sizeof(*hdr)))
 			goto invalid;
 		LOAD_HEADER;
 	}
