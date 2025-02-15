@@ -338,15 +338,34 @@ struct kmod_elf *kmod_elf_new(const void *memory, off_t size)
 	elf->size = size;
 
 #define READV(field) elf_get_uint(elf, offsetof(typeof(*hdr), field), sizeof(hdr->field))
+#define READXV(field)                                                                  \
+	elf_get_uint(elf, elf->header.section.offset + offsetof(typeof(*shdr), field), \
+		     sizeof(shdr->field))
 
-#define LOAD_HEADER                                          \
-	elf->header.section.offset = READV(e_shoff);         \
-	elf->header.section.count = READV(e_shnum);          \
-	elf->header.section.entry_size = READV(e_shentsize); \
-	elf->header.strings.section = READV(e_shstrndx);     \
-	elf->header.machine = READV(e_machine)
+#define LOAD_HEADER                                                               \
+	elf->header.section.offset = READV(e_shoff);                              \
+	elf->header.section.count = READV(e_shnum);                               \
+	elf->header.section.entry_size = READV(e_shentsize);                      \
+	elf->header.strings.section = READV(e_shstrndx);                          \
+	elf->header.machine = READV(e_machine);                                   \
+	if (elf->header.section.count == 0 ||                                     \
+	    elf->header.strings.section == SHN_XINDEX) {                          \
+		if (!elf_range_valid(elf, elf->header.section.offset, shdr_size)) \
+			goto invalid;                                             \
+		if (elf->header.section.count == 0) {                             \
+			uint64_t val = READXV(sh_size);                           \
+			if (val > UINT32_MAX)                                     \
+				goto invalid;                                     \
+			elf->header.section.count = val;                          \
+		}                                                                 \
+		if (elf->header.strings.section == SHN_XINDEX) {                  \
+			elf->header.strings.section = READXV(sh_link);            \
+		}                                                                 \
+	}
+
 	if (elf->x32) {
 		Elf32_Ehdr *hdr;
+		Elf32_Shdr *shdr;
 
 		shdr_size = sizeof(Elf32_Shdr);
 		if (!elf_range_valid(elf, 0, shdr_size))
@@ -354,6 +373,7 @@ struct kmod_elf *kmod_elf_new(const void *memory, off_t size)
 		LOAD_HEADER;
 	} else {
 		Elf64_Ehdr *hdr;
+		Elf64_Shdr *shdr;
 
 		shdr_size = sizeof(Elf64_Shdr);
 		if (!elf_range_valid(elf, 0, shdr_size))
@@ -375,8 +395,8 @@ struct kmod_elf *kmod_elf_new(const void *memory, off_t size)
 		goto invalid;
 	}
 	if (umulsz_overflow(shdr_size, elf->header.section.count, &shdrs_size)) {
-		ELFDBG(elf, "sections too large: %zu * %" PRIu32 "\n",
-		       shdr_size, elf->header.section.count);
+		ELFDBG(elf, "sections too large: %zu * %" PRIu32 "\n", shdr_size,
+		       elf->header.section.count);
 		goto invalid;
 	}
 	if (!elf_range_valid(elf, elf->header.section.offset, shdrs_size))
