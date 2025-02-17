@@ -1,3 +1,196 @@
+kmod 34
+=======
+
+- Improvements
+
+	- Drop pre-built .ko modules from git - distros/packages will need the
+	  linux-headers to be able to run the testsuite. There was limited use
+	  of the feature, while linters complained about "source-not-included"
+	  or "source-contains-prebuilt-binary".
+
+	- Switch build system to meson: autotools is still supported but slated
+	  for removal on next release. This is the transition release to help
+	  distros and integrators to move to the new build system. Default options
+	  target distros while developers can use the build-dev.ini configuration
+	  file.
+
+	- Allow to load decompression libraries ondemand: liblzma.so, libz.so,
+	  libxz.so and libzstd.so can now be loaded ondemand, only when there is
+	  such a need. For use during early boot for loading modules, if
+	  configured well it means none of these libraries are loaded: the
+	  module loading logic via finit_module() will just hand over to kernel
+	  the open file descriptor and kernel will use its own decompress routine.
+
+	  If kernel doesn't handle decompression or if the module is compressed
+	  with a different algorithm than the one configured in the kernel,
+	  libkmod can still open the module by dynamically loading the
+	  correspondent library.
+
+	  Tools inspecting the module contents, like modinfo, will load that
+	  single decompression library instead all of them.
+
+	  For distros building with meson it's possible to choose the behavior
+	  per library. Examples: a) -Ddlopen=all uses dlopen behavior for all
+	  the libraries; b) -Ddlopen=xz, will make only xz to be dlopen'ed
+	  while other enabled libraries will be linked in at build time.
+
+	  The use of dlopen is annotated in the ELF file by using the ELF
+	  Package Metadata spec as documented in
+	  https://systemd.io/ELF_PACKAGE_METADATA/. Example:
+
+	  $ dlopen-notes.py libkmod.so
+	  # build/libkmod.so
+	  [
+	    {
+	      "feature": "xz",
+	      "description": "Support for uncompressing xz-compressed modules",
+	      "priority": "recommended",
+	      "soname": [
+	        "liblzma.so.5"
+	      ]
+	    }
+	  ]
+
+	- Add -m / --moduledir to depmod to override in runtime the module
+	  directory that was already possible to set on build time. Document
+	  the interaction between the dir options: base, module and output.
+
+	- Better error propagation in libkmod for its internal APIs and libc
+	  functions up to the callers.
+
+	- Improve libkmod API documentation by adding new sections, documenting
+	  functions previously missing, rewording existing ones, adding version
+	  information, cross-referencing, etc.
+
+	- Remove deprecated arguments for depmod: --unresolved-error, --quiet,
+	  --root and --map.
+
+	- Remove deprecated arguments for rmmod: -w.
+
+	- Remove deprecated arguments for insmod: -p and -s.
+
+	- Add --syslog and --force for insmod to normalize it with other tools.
+
+	- Add bash, fish and zsh shell-completion for insmod, rmmod and lsmod.
+
+	- Remove depmod_module_directory_override from .pc as the kernel side
+	  is not making use of it and will likely not need it.
+
+	- Improve builtin module listing and retrieving information from its
+	  modinfo index which reduces the amount of needed syscalls by 90%.
+
+	- Improve zstd decompression by using streaming bufferless mode which
+	  reduces the amount of syscalls by 65%.
+
+	- Increase use of pread while parsing ELF and indexes in order to reduce
+	  syscalls and improve performance.
+
+	- Improve module sorting in depmod to speedup the use of the
+	  modules.order index and support duplicate lines in it.
+
+	- Avoid misaligned memory access while reading module signature in
+	  libkmod.
+
+	- Add more documentation for contributing to kmod. New developers are
+	  welcome to look at the new README.md and CONTRIBUTING.md files for
+	  information on process, coding style, build/installation, etc.
+
+	- Overhaul man pages with multiple clarifications, section rewrites and
+	  additional documentation.
+
+	- Drop --with-rootlibdir as it's seldom used and was partially broken.
+
+	- Drop strndupa() and alloca() for increased libc compatibility.
+
+	- Better handling of LFS for increased compatibility with libc.
+
+	- Protect kmod_get_dirname() and kmod_new() against NULL argument.
+
+	- Normalize --version / --help output across all tools.
+
+	- Always include log priority in messages, even when building with debug.
+
+	- Optimize index reading by lazily reading nodes on demand, reducing
+	  FILE overhead and reducing code duplication wrt FILE vs mmap
+	  implementations, etc.
+
+	- Switch index to pre-order to improve performance in both read and
+	  write, meaning faster lookup and faster depmod. Some examples:
+	  a) traversing all indexes via configuration dump shows a 9%
+	  improvement on Raspberry Pi 2. b) writing the indexes takes 90% less
+	  lseek() calls, leading to a performance gain of 13%.
+
+	- Make symlink install locations more similar to what distros are
+	  using: by default it installs the kmod binary as bin/kmod and the
+	  symlinks are located in e.g. `sbin/depmod -> ../bin/kmod`. Changing
+	  the sbin location is sufficient to move the symlinks to the
+	  appropriate place, so distros using `--sbin /usr/bin` will have them
+	  installed in that directory. This avoids distros having to remove the
+	  symlink and add the symlinks by themselves. (meson only)
+
+	- Install configuration directories,
+	  /{etc,usr/lib}/{depmod,modprobe}.d/ as part of installation, matching
+	  what several distros do during packaging. (mson only)
+
+- Bug fixes
+
+	- Fix testsuite using when using configurable module dir.
+
+	- Fix typos on documentation and source code.
+
+	- Fix out of bound access in multiple places when using long paths,
+	  synthetic huge files, or handling memory allocation errors, or
+	  inconsistent variable types, particularly on 32b builds.
+
+	- Fix internal array APIs, with better error checking: improve execution on
+	  very memory-constrained scenarios or very long paths.
+
+	- Fix absolute path handling in depmod.
+
+	- Fix libkmod memory leaks on error handling when getting builtin
+	  module list.
+
+	- Do not crash on invalid modules.builtin.modinfo file.
+
+	- Fix link with lld resulting in empty testsuite.
+
+	- Fix testsuite build/execution with musl.
+
+- Others
+
+	- Adopt clang-format and editorconfig for coding style and setup CI
+	  action to keep the codebase consistent.
+
+	- Adopt codespell in CI.
+
+	- Adopt CodeQL integration in CI.
+
+	- Adopt Codecov in CI.
+
+	- Adopt SPDX copyright and license identifiers throughout the project.
+
+	- Add more distros to CI, 32b builds, clang as compiler and lld as
+	  linker.
+
+	- Add support for clang sanitizers and squelch warnings.
+
+	- Add tests for builtin modules from modinfo index file.
+
+	- Multiple testsuite refactors and fixes to make it simpler to write tests.
+
+	- Add CI coverage for docs
+
+	- Improve strbuf implementation with more error checks and generalize
+	  it to cover the role of scratchbuf. This allows to remove the
+	  scratchbuf implementation.
+
+	- Use common array and strbuf code in depmod to remove duplication.
+
+	- Add abstraction and use more compiler builtins for addition and
+	  multiplication with overflow checking.
+
+	- Normalize use of C attributes throughout the project.
+
 kmod 33
 =======
 
