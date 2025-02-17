@@ -14,7 +14,7 @@ AC_USE_SYSTEM_EXTENSIONS
 AC_SYS_LARGEFILE
 AC_PREFIX_DEFAULT([/usr])
 AM_MAINTAINER_MODE([enable])
-AM_INIT_AUTOMAKE([check-news foreign 1.11 silent-rules tar-pax no-dist-gzip dist-xz subdir-objects color-tests parallel-tests])
+AM_INIT_AUTOMAKE([foreign 1.11 silent-rules tar-pax no-dist-gzip dist-xz subdir-objects color-tests parallel-tests])
 AM_SILENT_RULES([yes])
 LT_INIT([disable-static pic-only])
 
