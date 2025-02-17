@@ -124,4 +124,49 @@ DEFINE_TEST(test_modinfo_builtin,
 		.out = TESTSUITE_ROOTFS "test-modinfo/correct-builtin.txt",
 	});
 
+static noreturn int test_modinfo_alternative(const struct test *t)
+{
+	const char *const args[] = {
+		// clang-format off
+		progname,
+		"-F", "filename",
+		"mod-simple",
+		NULL,
+		// clang-format on
+	};
+	test_spawn_prog(progname, args);
+	exit(EXIT_FAILURE);
+}
+DEFINE_TEST(test_modinfo_alternative,
+	.description = "check if modinfo finds module in alternative directory",
+	.config = {
+		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-modinfo/builtin",
+		[TC_UNAME_R] = "6.11.0",
+	},
+	.output = {
+		.out = TESTSUITE_ROOTFS "test-modinfo/correct-external.txt",
+	});
+
+static noreturn int test_modinfo_alternative_inv(const struct test *t)
+{
+	const char *const args[] = {
+		// clang-format off
+		progname,
+		"intel_uncore",
+		NULL,
+		// clang-format on
+	};
+	test_spawn_prog(progname, args);
+	exit(EXIT_FAILURE);
+}
+DEFINE_TEST(test_modinfo_alternative_inv,
+	.description = "check if modinfo finds module in alternative directory",
+	.config = {
+		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-modinfo/external",
+		[TC_UNAME_R] = "4.4.4",
+	},
+	.output = {
+		.out = TESTSUITE_ROOTFS "test-modinfo/correct-builtin.txt",
+	});
+
 TESTSUITE_MAIN();

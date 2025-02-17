@@ -13,6 +13,9 @@ lsmod - Show the status of modules in the Linux Kernel
 *lsmod* is a trivial program which nicely formats the contents of the
 _/proc/modules_, showing what kernel modules are currently loaded.
 
+*lsmod* will look by default at modules stored in @MODULE_DIRECTORY@, but if
+the folder is missing , it will automatically look at the fallback directory @MODULE_ALTERNATIVE_DIRECTORY@.
+
 # OPTIONS
 
 *-s*, *--syslog*

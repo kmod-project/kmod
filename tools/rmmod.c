@@ -13,12 +13,17 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <sys/utsname.h>
 
+#include <shared/util.h>
 #include <shared/macro.h>
 
 #include <libkmod/libkmod.h>
 
 #include "kmod.h"
+
+LOG_PTR_INIT(error_log)
+#define SET_ERR(...) SET_LOG_PTR(error_log, __VA_ARGS__)
 
 static const char cmdopts_s[] = "fsvVh";
 static const struct option cmdopts[] = {
@@ -54,25 +59,33 @@ static int check_module_inuse(struct kmod_module *mod)
 	state = kmod_module_get_initstate(mod);
 
 	if (state == KMOD_MODULE_BUILTIN) {
-		ERR("Module %s is builtin.\n", kmod_module_get_name(mod));
+		SET_ERR("Module %s is builtin.\n", kmod_module_get_name(mod));
 		return -ENOENT;
 	} else if (state < 0) {
-		ERR("Module %s is not currently loaded\n", kmod_module_get_name(mod));
+		SET_ERR("Module %s is not currently loaded\n",
+			kmod_module_get_name(mod));
 		return -ENOENT;
 	}
 
 	holders = kmod_module_get_holders(mod);
 	if (holders != NULL) {
 		struct kmod_list *itr;
+		char *mod_list = NULL, *old_mod;
 
-		ERR("Module %s is in use by:", kmod_module_get_name(mod));
+		if (asprintf(&mod_list, "Module %s is in use by:", kmod_module_get_name(mod)) < 0)
+			return -ENOMEM;
 
 		kmod_list_foreach(itr, holders) {
 			struct kmod_module *hm = kmod_module_get_module(itr);
-			ERR(" %s", kmod_module_get_name(hm));
+			old_mod = mod_list;
+			ret = asprintf(&mod_list, "%s %s", old_mod, kmod_module_get_name(hm));
+			free(old_mod);
 			kmod_module_unref(hm);
+			if (ret < 0)
+				return -ENOMEM;
 		}
-		ERR("\n");
+		SET_ERR("%s\n", mod_list);
+		free(mod_list);
 
 		kmod_module_unref_list(holders);
 		return -EBUSY;
@@ -80,23 +93,97 @@ static int check_module_inuse(struct kmod_module *mod)
 
 	ret = kmod_module_get_refcnt(mod);
 	if (ret > 0) {
-		ERR("Module %s is in use\n", kmod_module_get_name(mod));
+		SET_ERR("Module %s is in use\n", kmod_module_get_name(mod));
 		return -EBUSY;
 	} else if (ret == -ENOENT) {
-		ERR("Module unloading is not supported\n");
+		SET_ERR("Module unloading is not supported\n");
 	}
 
 	return ret;
 }
 
+static int get_module_dirname(char *dirname_buf, size_t dirname_size,
+			      const char *module_directory)
+{
+	struct utsname u;
+	int n;
+
+	if (uname(&u) < 0)
+		return EXIT_FAILURE;
+
+	n = snprintf(dirname_buf, dirname_size,
+		     "%s/%s", module_directory, u.release);
+	if (n >= (int)dirname_size) {
+		SET_ERR("bad directory %s/%s: path too long\n",
+			module_directory, u.release);
+		return EXIT_FAILURE;
+	}
+
+	return EXIT_SUCCESS;
+}
+
+static int _do_rmmod(const char *dirname, int argc, char *argv[], int flags,
+		     int verbose)
+{
+	struct kmod_ctx *ctx = NULL;
+	const char *null_config = NULL;
+	int r, i;
+
+	ctx = kmod_new(dirname, &null_config);
+	if (!ctx) {
+		SET_ERR("kmod_new() failed!\n");
+		r = EXIT_FAILURE;
+		goto finish;
+	}
+
+	log_setup_kmod_log(ctx, verbose);
+
+	for (i = optind; i < argc; i++) {
+		struct kmod_module *mod;
+		const char *arg = argv[i];
+		struct stat st;
+		int err;
+
+		if (stat(arg, &st) == 0)
+			err = kmod_module_new_from_path(ctx, arg, &mod);
+		else
+			err = kmod_module_new_from_name(ctx, arg, &mod);
+
+		if (err < 0) {
+			SET_ERR("could not use module %s: %s\n", arg, strerror(-err));
+			r = EXIT_FAILURE;
+			break;
+		}
+
+		if (!(flags & KMOD_REMOVE_FORCE) && check_module_inuse(mod) < 0) {
+			r = EXIT_FAILURE;
+			kmod_module_unref(mod);
+			continue;
+		}
+
+		err = kmod_module_remove_module(mod, flags);
+		if (err < 0) {
+			SET_ERR("could not remove module %s: %s\n", arg, strerror(-err));
+			r = EXIT_FAILURE;
+		}
+
+		kmod_module_unref(mod);
+	}
+
+finish:
+	kmod_unref(ctx);
+	return r;
+}
+
 static int do_rmmod(int argc, char *argv[])
 {
-	struct kmod_ctx *ctx;
-	const char *null_config = NULL;
+	char dirname_buf[PATH_MAX];
 	int verbose = LOG_ERR;
+	char *module_dir_error = NULL;
+	char *module_alt_dir_error = NULL;
 	int use_syslog = 0;
 	int flags = 0;
-	int i, c, r = 0;
+	int c, r = 0;
 
 	while ((c = getopt_long(argc, argv, cmdopts_s, cmdopts, NULL)) != -1) {
 		switch (c) {
@@ -131,53 +218,43 @@ static int do_rmmod(int argc, char *argv[])
 		goto done;
 	}
 
-	ctx = kmod_new(NULL, &null_config);
-	if (!ctx) {
-		ERR("kmod_new() failed!\n");
-		r = EXIT_FAILURE;
+	/* Try first with MODULE_DIRECTORY */
+	r = get_module_dirname(dirname_buf, sizeof(dirname_buf),
+			       MODULE_DIRECTORY);
+	if (!r)
+		r = _do_rmmod(dirname_buf, argc, argv, flags, verbose);
+
+	if (r)
+		/* Store the error and print it *if*
+		 * MODULE_ALTERNATIVE_DIRECTORY fails too */
+		module_dir_error = pop_log_str(&error_log);
+	else
+		/* MODULE_DIRECTORY was succesful */
 		goto done;
+
+	#if ENABLE_ALTERNATIVE_DIR
+	/* If not found, look at MODULE_ALTERNATIVE_DIRECTORY */
+	r = get_module_dirname(dirname_buf, sizeof(dirname_buf),
+			       MODULE_ALTERNATIVE_DIRECTORY);
+	if (!r)
+		r = _do_rmmod(dirname_buf, argc, argv, flags, verbose);
+
+	if (r)
+		/* Store the error and print it after MODULE_DIRECTORY */
+		module_alt_dir_error = pop_log_str(&error_log);
+	else {
+		/* MODULE_ALTERNATIVE_DIRECTORY was succesful, no need to print
+		 * module_dir_error */
+		free(module_dir_error);
+		module_dir_error = NULL;
 	}
+	#endif
 
-	log_setup_kmod_log(ctx, verbose);
-
-	for (i = optind; i < argc; i++) {
-		struct kmod_module *mod;
-		const char *arg = argv[i];
-		struct stat st;
-		int err;
-
-		if (stat(arg, &st) == 0)
-			err = kmod_module_new_from_path(ctx, arg, &mod);
-		else
-			err = kmod_module_new_from_name(ctx, arg, &mod);
-
-		if (err < 0) {
-			ERR("could not use module %s: %s\n", arg, strerror(-err));
-			r = EXIT_FAILURE;
-			break;
-		}
-
-		if (!(flags & KMOD_REMOVE_FORCE) && check_module_inuse(mod) < 0) {
-			r = EXIT_FAILURE;
-			kmod_module_unref(mod);
-			continue;
-		}
-
-		err = kmod_module_remove_module(mod, flags);
-		if (err < 0) {
-			ERR("could not remove module %s: %s\n", arg, strerror(-err));
-			r = EXIT_FAILURE;
-		}
-
-		kmod_module_unref(mod);
-	}
-
-	kmod_unref(ctx);
-
+	PRINT_LOG_PTR(LOG_ERR, module_dir_error, module_alt_dir_error);
 done:
 	log_close();
 
-	return r == 0 ? EXIT_SUCCESS : EXIT_FAILURE;
+	return r;
 }
 
 const struct kmod_cmd kmod_cmd_compat_rmmod = {

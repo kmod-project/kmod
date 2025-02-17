@@ -27,9 +27,16 @@
 
 #include "kmod.h"
 
-static int log_priority = LOG_CRIT;
+/*
+ * Do NOT increase priority higher than LOG_ERR, because the main logic is
+ * called twice and if the first time it errors (expected), the log function
+ * will call exit(EXIT_FAILURE) and the second call to the main function will
+ * not be executed.
+ */
+static int log_priority = LOG_ERR;
 static int use_syslog = 0;
-#define LOG(...) log_printf(log_priority, __VA_ARGS__)
+LOG_PTR_INIT(error_log)
+#define LOG(...) SET_LOG_PTR(error_log, __VA_ARGS__)
 
 #define DEFAULT_VERBOSE LOG_WARNING
 static int verbose = DEFAULT_VERBOSE;
@@ -210,7 +217,8 @@ static int show_modversions(struct kmod_ctx *ctx, const char *filename)
 	struct kmod_module *mod;
 	int err = kmod_module_new_from_path(ctx, filename, &mod);
 	if (err < 0) {
-		LOG("Module %s not found.\n", filename);
+		LOG("Module %s not found in %s.\n", filename,
+		    kmod_get_dirname(ctx));
 		return err;
 	}
 
@@ -237,7 +245,8 @@ static int show_exports(struct kmod_ctx *ctx, const char *filename)
 	struct kmod_module *mod;
 	int err = kmod_module_new_from_path(ctx, filename, &mod);
 	if (err < 0) {
-		LOG("Module %s not found.\n", filename);
+		LOG("Module %s not found in %s.\n", filename,
+		    kmod_get_dirname(ctx));
 		return err;
 	}
 
@@ -500,7 +509,7 @@ static int rmmod(struct kmod_ctx *ctx, const char *alias)
 		return err;
 
 	if (list == NULL) {
-		LOG("Module %s not found.\n", alias);
+		LOG("Module %s not found in %s.\n", alias, kmod_get_dirname(ctx));
 		err = -ENOENT;
 	}
 
@@ -748,14 +757,70 @@ static char **prepend_options_from_env(int *p_argc, char **orig_argv)
 	return new_argv;
 }
 
-static int do_modprobe(int argc, char **orig_argv)
+static int get_module_dirname(char *dirname_buf, size_t dirname_size,
+			      const char *root, const char *module_directory,
+			      const char *kversion)
+{
+	int n;
+
+	n = snprintf(dirname_buf, dirname_size,
+		     "%s%s/%s", root, module_directory, kversion);
+	if (n >= (int)dirname_size) {
+		ERR("bad directory %s%s/%s: path too long\n",
+			root, module_directory, kversion);
+		return EXIT_FAILURE;
+	}
+
+	return EXIT_SUCCESS;
+}
+
+static int _do_modprobe(const char *dirname, const char **config_paths,
+			char **args, int nargs, int do_show_config,
+			int do_show_modversions, int do_show_exports,
+			int do_remove, int use_all)
 {
 	struct kmod_ctx *ctx;
+	int err;
+
+	ctx = kmod_new(dirname, config_paths);
+	if (!ctx) {
+		ERR("kmod_new() failed!\n");
+		return EXIT_FAILURE;
+	}
+
+	log_setup_kmod_log(ctx, verbose);
+
+	kmod_load_resources(ctx);
+
+	if (do_show_config)
+		err = show_config(ctx);
+	else if (do_show_modversions)
+		err = show_modversions(ctx, args[0]);
+	else if (do_show_exports)
+		err = show_exports(ctx, args[0]);
+	else if (do_remove)
+		err = rmmod_all(ctx, args, nargs);
+	else if (use_all)
+		err = insmod_all(ctx, args, nargs);
+	else {
+		char *opts;
+		err = options_from_array(args + 1, nargs - 1, &opts);
+		if (err == 0) {
+			err = insmod(ctx, args[0], opts);
+			free(opts);
+		}
+	}
+
+	kmod_unref(ctx);
+	return err >= 0 ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+static int do_modprobe(int argc, char **orig_argv)
+{
 	char **args = NULL, **argv;
 	const char **config_paths = NULL;
 	int nargs = 0, n_config_paths = 0;
 	char dirname_buf[PATH_MAX];
-	const char *dirname = NULL;
 	const char *root = NULL;
 	const char *kversion = NULL;
 	int use_all = 0;
@@ -763,7 +828,10 @@ static int do_modprobe(int argc, char **orig_argv)
 	int do_show_config = 0;
 	int do_show_modversions = 0;
 	int do_show_exports = 0;
+	char *module_dir_error = NULL;
+	char *module_alt_dir_error = NULL;
 	int err;
+	struct utsname u;
 	struct stat stat_buf;
 
 	argv = prepend_options_from_env(&argc, orig_argv);
@@ -906,63 +974,55 @@ static int do_modprobe(int argc, char **orig_argv)
 		}
 	}
 
-	if (root != NULL || kversion != NULL) {
-		struct utsname u;
-		int n;
-		if (root == NULL)
-			root = "";
-		if (kversion == NULL) {
-			if (uname(&u) < 0) {
-				ERR("uname() failed: %m\n");
-				err = -1;
-				goto done;
-			}
-			kversion = u.release;
-		}
-		n = snprintf(dirname_buf, sizeof(dirname_buf),
-			     "%s" MODULE_DIRECTORY "/%s", root, kversion);
-		if (n >= (int)sizeof(dirname_buf)) {
-			ERR("bad directory %s" MODULE_DIRECTORY "/%s: path too long\n",
-			    root, kversion);
+	if (root == NULL)
+		root = "";
+	if (kversion == NULL) {
+		if (uname(&u) < 0) {
+			ERR("uname() failed: %m\n");
 			err = -1;
 			goto done;
 		}
-		dirname = dirname_buf;
+		kversion = u.release;
 	}
 
-	ctx = kmod_new(dirname, config_paths);
-	if (!ctx) {
-		ERR("kmod_new() failed!\n");
-		err = -1;
+	/* Try first with MODULE_DIRECTORY */
+	err = get_module_dirname(dirname_buf, sizeof(dirname_buf), root,
+				 MODULE_DIRECTORY, kversion);
+	if (!err)
+		err = _do_modprobe(dirname_buf, config_paths, args, nargs,
+				   do_show_config, do_show_modversions,
+				   do_show_exports, do_remove, use_all);
+
+	if (err)
+		/* Store the error and print it *if*
+		 * MODULE_ALTERNATIVE_DIRECTORY fails too */
+		module_dir_error = pop_log_str(&error_log);
+	else
+		/* MODULE_DIRECTORY was succesful */
 		goto done;
-	}
 
-	log_setup_kmod_log(ctx, verbose);
+	#if ENABLE_ALTERNATIVE_DIR
+	/* If not found, look at MODULE_ALTERNATIVE_DIRECTORY */
+	err = get_module_dirname(dirname_buf, sizeof(dirname_buf), root,
+				 MODULE_ALTERNATIVE_DIRECTORY, kversion);
+	if (!err)
+		err = _do_modprobe(dirname_buf, config_paths, args, nargs,
+				   do_show_config, do_show_modversions,
+				   do_show_exports, do_remove, use_all);
 
-	kmod_load_resources(ctx);
-
-	if (do_show_config)
-		err = show_config(ctx);
-	else if (do_show_modversions)
-		err = show_modversions(ctx, args[0]);
-	else if (do_show_exports)
-		err = show_exports(ctx, args[0]);
-	else if (do_remove)
-		err = rmmod_all(ctx, args, nargs);
-	else if (use_all)
-		err = insmod_all(ctx, args, nargs);
+	if (err)
+		/* Store the error and print it after MODULE_DIRECTORY */
+		module_alt_dir_error = pop_log_str(&error_log);
 	else {
-		char *opts;
-		err = options_from_array(args + 1, nargs - 1, &opts);
-		if (err == 0) {
-			err = insmod(ctx, args[0], opts);
-			free(opts);
-		}
+		/* MODULE_ALTERNATIVE_DIRECTORY was succesful, no need to print
+		 * module_dir_error */
+		free(module_dir_error);
+		module_dir_error = NULL;
 	}
-
-	kmod_unref(ctx);
+	#endif
 
 done:
+	PRINT_LOG_PTR(log_priority, module_dir_error, module_alt_dir_error);
 	log_close();
 
 	if (argv != orig_argv)
@@ -970,7 +1030,7 @@ done:
 
 	free(config_paths);
 
-	return err >= 0 ? EXIT_SUCCESS : EXIT_FAILURE;
+	return err;
 }
 
 const struct kmod_cmd kmod_cmd_compat_modprobe = {

@@ -21,3 +21,36 @@ void log_printf(int prio, const char *fmt, ...) _printf_format_(2, 3);
 
 struct kmod_ctx;
 void log_setup_kmod_log(struct kmod_ctx *ctx, int priority);
+
+#define LOG_PTR_INIT(name) static char *name = NULL;
+
+/* SET_LOG_PTR: try to allocate the error message into a string pointed by
+ * msg_ptr, but if it fails it will just print it as ERR().
+ * msg_ptr must be defined by the caller and initialized to NULL  */
+#define SET_LOG_PTR(msg_ptr, ...)				\
+	do { 							\
+		if (msg_ptr) 					\
+			free(msg_ptr); 				\
+		if (asprintf(&msg_ptr, __VA_ARGS__) < 0)	\
+			ERR(__VA_ARGS__);			\
+	} while (0);
+
+static inline char *pop_log_str(char **msg_ptr)
+{
+       char *ret = *msg_ptr;
+       *msg_ptr = NULL;
+       return ret;
+}
+
+#define PRINT_LOG_PTR(prio, module_dir, module_alt_dir)			\
+	do { 								\
+		if (module_dir) {					\
+			log_printf(prio, "%s", module_dir);		\
+			if (module_alt_dir &&				\
+			    strcmp(module_dir, module_alt_dir) != 0) {	\
+				log_printf(prio, "%s", module_alt_dir);	\
+				free(module_alt_dir);			\
+			}						\
+			free(module_dir);				\
+		}							\
+	} while (0);
