@@ -145,7 +145,7 @@ static int do_static_nodes(int argc, char *argv[])
 {
 	struct utsname kernel;
 	char modules[PATH_MAX], buf[PATH_MAX];
-	const char *output = "/dev/stdout";
+	const char *output = NULL;
 	FILE *in = NULL, *out = NULL;
 	const struct static_nodes_format *format = &static_nodes_format_human;
 	int r, ret = EXIT_SUCCESS;
@@ -227,19 +227,24 @@ static int do_static_nodes(int argc, char *argv[])
 		goto finish;
 	}
 
-	r = mkdir_parents(output, 0755);
-	if (r < 0) {
-		fprintf(stderr, "Error: could not create parent directory for %s - %m.\n",
-			output);
-		ret = EXIT_FAILURE;
-		goto finish;
-	}
+	if (output == NULL) {
+		out = stdout;
+	} else {
+		r = mkdir_parents(output, 0755);
+		if (r < 0) {
+			fprintf(stderr,
+				"Error: could not create parent directory for %s - %m.\n",
+				output);
+			ret = EXIT_FAILURE;
+			goto finish;
+		}
 
-	out = fopen(output, "we");
-	if (out == NULL) {
-		fprintf(stderr, "Error: could not create %s - %m\n", output);
-		ret = EXIT_FAILURE;
-		goto finish;
+		out = fopen(output, "we");
+		if (out == NULL) {
+			fprintf(stderr, "Error: could not create %s - %m\n", output);
+			ret = EXIT_FAILURE;
+			goto finish;
+		}
 	}
 
 	while (fgets(buf, sizeof(buf), in) != NULL) {
