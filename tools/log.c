@@ -80,6 +80,7 @@ _printf_format_(6, 0) static void log_kmod(void *data, int priority, const char 
 	free(str);
 	(void)data;
 }
+
 void log_open(bool use_syslog)
 {
 	log_use_syslog = use_syslog;
