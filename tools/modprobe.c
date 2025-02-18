@@ -28,7 +28,6 @@
 #include "kmod.h"
 
 static int log_priority = LOG_CRIT;
-static bool use_syslog = false;
 #define LOG(...) log_printf(log_priority, __VA_ARGS__)
 
 #define DEFAULT_VERBOSE LOG_WARNING
@@ -765,6 +764,7 @@ static int do_modprobe(int argc, char **orig_argv)
 	int do_show_exports = 0;
 	int err;
 	struct stat stat_buf;
+	bool use_syslog = false;
 
 	argv = prepend_options_from_env(&argc, orig_argv);
 	if (argv == NULL) {
