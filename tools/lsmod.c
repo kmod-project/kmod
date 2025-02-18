@@ -44,13 +44,13 @@ static int do_lsmod(int argc, char *argv[])
 	const char *null_config = NULL;
 	struct kmod_list *list, *itr;
 	int verbose = LOG_ERR;
-	int use_syslog = 0;
+	bool use_syslog = false;
 	int err, c, r = 0;
 
 	while ((c = getopt_long(argc, argv, cmdopts_s, cmdopts, NULL)) != -1) {
 		switch (c) {
 		case 's':
-			use_syslog = 1;
+			use_syslog = true;
 			break;
 		case 'v':
 			verbose++;

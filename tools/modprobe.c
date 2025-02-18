@@ -28,7 +28,7 @@
 #include "kmod.h"
 
 static int log_priority = LOG_CRIT;
-static int use_syslog = 0;
+static bool use_syslog = false;
 #define LOG(...) log_printf(log_priority, __VA_ARGS__)
 
 #define DEFAULT_VERBOSE LOG_WARNING
@@ -861,7 +861,7 @@ static int do_modprobe(int argc, char **orig_argv)
 			break;
 		case 's':
 			env_modprobe_options_append("-s");
-			use_syslog = 1;
+			use_syslog = true;
 			break;
 		case 'q':
 			env_modprobe_options_append("-q");
@@ -894,7 +894,7 @@ static int do_modprobe(int argc, char **orig_argv)
 
 	if (!use_syslog &&
 	    (!stderr || fileno(stderr) == -1 || fstat(fileno(stderr), &stat_buf)))
-		use_syslog = 1;
+		use_syslog = true;
 
 	log_open(use_syslog);
 
