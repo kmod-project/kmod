@@ -94,7 +94,7 @@ static int do_rmmod(int argc, char *argv[])
 	struct kmod_ctx *ctx;
 	const char *null_config = NULL;
 	int verbose = LOG_ERR;
-	int use_syslog = 0;
+	bool use_syslog = false;
 	int flags = 0;
 	int i, c, r = 0;
 
@@ -104,7 +104,7 @@ static int do_rmmod(int argc, char *argv[])
 			flags |= KMOD_REMOVE_FORCE;
 			break;
 		case 's':
-			use_syslog = 1;
+			use_syslog = true;
 			break;
 		case 'v':
 			verbose++;
