@@ -3,7 +3,13 @@
 set -e
 
 oldpwd=$(pwd)
-topdir=$(dirname $0)
+
+if [ -n "$MESON_DIST_ROOT" ]; then
+    topdir="$MESON_DIST_ROOT"
+else
+    topdir=$(dirname $0)
+fi
+
 cd $topdir
 
 gtkdocize --docdir libkmod/docs || touch libkmod/docs/gtk-doc.make
