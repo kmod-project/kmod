@@ -54,7 +54,7 @@ database.
 	configuration files (if any) to module names as well. It is usually used
 	by *udev*(7).
 
-*-C* _directory_, *--config* _directory_
+*-C* _directory_, *--config*=_directory_
 	This option overrides the default configuration directory. See
 	*modprobe.d*(5).
 
@@ -150,14 +150,14 @@ database.
 	require it. Your distribution kernel may not have been built to support
 	removal of modules at all.
 
-*-w* _TIMEOUT_MSEC_, *--wait* _TIMEOUT_MSEC_
+*-w* _TIMEOUT_MSEC_, *--wait*=_TIMEOUT_MSEC_
 	This option causes *modprobe -r *to continue trying to remove a module
 	if it fails due to the module being busy, i.e. its refcount is not 0 at
 	the time the call is made. Modprobe tries to remove the module with an
 	incremental sleep time between each tentative up until the maximum wait
 	time in milliseconds passed in this option.
 
-*-S* _version_, *--set-version* _version_
+*-S* _version_, *--set-version*=_version_
 	Set the kernel version, rather than using *uname*(2) to decide on the
 	kernel version (which dictates where to find the modules).
 
