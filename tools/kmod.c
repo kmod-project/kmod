@@ -53,7 +53,7 @@ static int kmod_help(int argc, char *argv[])
 	       "\t-V, --version     show version\n"
 	       "\t-h, --help        show this help\n\n"
 	       "Commands:\n",
-	       basename(argv[0]));
+	       program_invocation_short_name);
 
 	for (i = 0; i < ARRAY_SIZE(kmod_cmds); i++) {
 		if (kmod_cmds[i]->help != NULL) {
@@ -136,13 +136,10 @@ fail:
 
 static int handle_kmod_compat_commands(int argc, char *argv[])
 {
-	const char *cmd;
 	size_t i;
 
-	cmd = basename(argv[0]);
-
 	for (i = 0; i < ARRAY_SIZE(kmod_compat_cmds); i++) {
-		if (streq(kmod_compat_cmds[i]->name, cmd))
+		if (streq(kmod_compat_cmds[i]->name, program_invocation_short_name))
 			return kmod_compat_cmds[i]->cmd(argc, argv);
 	}
 
