@@ -59,6 +59,9 @@ architecture.
 	license, parm and filename arguments, to ease the transition from the
 	old modutils *modinfo*.
 
+*-h*, *--help*
+	Print the help message and exit.
+
 # COPYRIGHT
 
 This manual page originally Copyright 2003, Rusty Russell, IBM Corporation.
