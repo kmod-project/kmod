@@ -59,10 +59,10 @@ static int write_human(FILE *out, char modname[], char devname[], char type,
 		      "\t\tMajor: %u\n"
 		      "\t\tMinor: %u\n",
 		      modname, devname, (type == 'c') ? "character" : "block", maj, min);
-	if (ret >= 0)
-		return EXIT_SUCCESS;
-	else
+	if (ret < 0)
 		return EXIT_FAILURE;
+
+	return EXIT_SUCCESS;
 }
 
 static const struct static_nodes_format static_nodes_format_human = {
@@ -104,10 +104,10 @@ static int write_devname(FILE *out, char modname[], char devname[], char type,
 	int ret;
 
 	ret = fprintf(out, "%s %s %c%u:%u\n", modname, devname, type, maj, min);
-	if (ret >= 0)
-		return EXIT_SUCCESS;
-	else
+	if (ret < 0)
 		return EXIT_FAILURE;
+
+	return EXIT_SUCCESS;
 }
 
 static const struct static_nodes_format static_nodes_format_devname = {
