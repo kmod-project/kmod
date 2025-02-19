@@ -102,7 +102,7 @@ static void help(void)
 	       "\t-r, --remove                Remove modules instead of inserting\n"
 	       "\t    --remove-dependencies   Deprecated: use --remove-holders\n"
 	       "\t    --remove-holders        Also remove module holders (use together with -r)\n"
-	       "\t-w, --wait <MSEC>           When removing a module, wait up to MSEC for\n"
+	       "\t-w, --wait=<MSEC>           When removing a module, wait up to MSEC for\n"
 	       "\t                            module's refcount to become 0 so it can be\n"
 	       "\t                            removed (use together with -r)\n"
 	       "\t    --first-time            Fail if module already inserted or removed\n"
