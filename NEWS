@@ -14,8 +14,8 @@ kmod 34
 	  target distros while developers can use the build-dev.ini configuration
 	  file.
 
-	- Allow to load decompression libraries ondemand: liblzma.so, libz.so,
-	  libxz.so and libzstd.so can now be loaded ondemand, only when there is
+	- Allow to load decompression libraries ondemand: liblzma.so, libz.so
+	  and libzstd.so can now be loaded ondemand, only when there is
 	  such a need. For use during early boot for loading modules, if
 	  configured well it means none of these libraries are loaded: the
 	  module loading logic via finit_module() will just hand over to kernel
