@@ -1,7 +1,7 @@
 project(
   'kmod',
   'c',
-  version : '33',
+  version : '34',
   license : ['LGPLv2.1', 'GPL-2.0-or-later'],
   meson_version : '>=0.61.0',
   default_options : [
@@ -425,7 +425,7 @@ libkmod = shared_library(
                                                   'libkmod/libkmod.sym'],
   link_depends : files('libkmod/libkmod.sym'),
   gnu_symbol_visibility : 'hidden',
-  version : '2.5.0',
+  version : '2.5.1',
   install : true,
 )
 
