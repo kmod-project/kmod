@@ -24,7 +24,6 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        build: ['meson', 'autotools']
         compiler: ['clang','gcc']
         container:
           - name: 'alpine:latest'
@@ -75,8 +74,7 @@ jobs:
 
           .github/print-kdir.sh >> "$GITHUB_ENV"
 
-      - name: configure checks (meson)
-        if: ${{ matrix.build == 'meson' }}
+      - name: configure checks
         run: |
           should_fail() {
             rm -rf build-setup-test/
@@ -98,56 +96,31 @@ jobs:
           should_pass -D dlopen=xz
           should_pass -D dlopen=xz -D xz=enabled
 
-      - name: configure (meson)
-        if: ${{ matrix.build == 'meson' }}
+      - name: configure
         run: mkdir build && cd build && meson setup --native-file ../build-dev.ini ${{ matrix.container.meson_setup }} . ..
 
-      - name: configure (autotools)
-        if: ${{ matrix.build == 'autotools' }}
-        run: mkdir build && cd build && ../autogen.sh c
-
-      - name: build (meson)
-        if: ${{ matrix.build == 'meson' }}
+      - name: build
         run: cd build && meson compile
 
-      - name: build (autotools)
-        if: ${{ matrix.build == 'autotools' }}
-        run: cd build && make -j$(nproc)
-
-      - name: test (meson)
-        if: ${{ matrix.build == 'meson' }}
+      - name: test
         run: cd build && meson test || meson test --verbose
 
-      - name: test (autotools)
-        if: ${{ matrix.build == 'autotools' }}
-        run: cd build && make -j$(nproc) check
-
-      - name: install (meson)
-        if: ${{ matrix.build == 'meson' }}
+      - name: install
         run: cd build && DESTDIR=$PWD/inst meson install
 
-      - name: install (autotools)
-        if: ${{ matrix.build == 'autotools' }}
-        run: cd build && DESTDIR=$PWD/inst make install
-
-      - name: distcheck (meson)
-        if: ${{ matrix.build == 'meson' }}
+      - name: distcheck
         run: cd build && meson dist
 
-      - name: distcheck (autotools)
-        if: ${{ matrix.build == 'autotools' }}
-        run: cd build && make distcheck
-
-      - name: configure (32bit) (meson)
-        if: ${{ matrix.build == 'meson' && matrix.container.multilib == 'true' }}
+      - name: configure (32bit)
+        if: ${{ matrix.container.multilib == 'true' }}
         run: |
           cross_options="-D zstd=disabled -D xz=disabled -D zlib=disabled -D openssl=disabled"
           CC="$CC -m32" meson setup $cross_options build32/
 
-      - name: build (32bit) (meson)
-        if: ${{ matrix.build == 'meson' && matrix.container.multilib == 'true' }}
+      - name: build (32bit)
+        if: ${{ matrix.container.multilib == 'true' }}
         run: cd build32 && meson compile
 
-      - name: test (32bit) (meson)
-        if: ${{ matrix.build == 'meson' && matrix.container.multilib == 'true' }}
+      - name: test (32bit)
+        if: ${{ matrix.container.multilib == 'true' }}
         run: cd build32 && meson test || meson test --verbose
