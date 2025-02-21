@@ -13,8 +13,6 @@ runs:
       run: |
         dnf update -y
         dnf install -y \
-          autoconf \
-          automake \
           clang \
           compiler-rt \
           gcc \

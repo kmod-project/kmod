@@ -15,8 +15,6 @@ runs:
         export TZ=Etc/UTC
         apt-get update
         apt-get install --yes \
-          autoconf \
-          automake \
           build-essential \
           clang \
           gcc-multilib \
@@ -25,7 +23,6 @@ runs:
           gtk-doc-tools \
           liblzma-dev \
           libssl-dev \
-          libtool \
           libzstd-dev \
           linux-headers-generic \
           meson \
