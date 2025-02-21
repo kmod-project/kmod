@@ -13,15 +13,12 @@ runs:
       run: |
         apk update
         apk add \
-          autoconf \
-          automake \
           bash \
           build-base \
           coreutils \
           clang \
           git \
           gtk-doc \
-          libtool \
           linux-edge-dev \
           meson \
           openssl-dev \
