@@ -150,9 +150,9 @@ static char **strbuf_to_vector(struct strbuf *buf, size_t count)
 	vector = realloc(buf->bytes, total_size);
 	if (vector == NULL)
 		return NULL;
-	buf->bytes = NULL;
 	memmove(vector + count + 1, vector, strbuf_used(buf));
 	s = (char *)(vector + count + 1);
+	strbuf_init(buf);
 
 	for (n = 0; n < count; n++) {
 		vector[n] = s;
@@ -167,13 +167,12 @@ static char **strbuf_to_vector(struct strbuf *buf, size_t count)
 ssize_t kmod_builtin_get_modinfo(struct kmod_ctx *ctx, const char *modname,
 				 char ***modinfo)
 {
+	DECLARE_STRBUF(buf);
 	struct kmod_builtin_info info;
-	struct strbuf buf;
 	ssize_t count;
 
 	if (!kmod_builtin_info_init(&info, ctx))
 		return -errno;
-	strbuf_init(&buf);
 
 	count = get_strings(&info, modname, &buf);
 	if (count == 0)
@@ -183,7 +182,6 @@ ssize_t kmod_builtin_get_modinfo(struct kmod_ctx *ctx, const char *modname,
 		if (*modinfo == NULL) {
 			count = -errno;
 			ERR(ctx, "strbuf_to_vector: %s\n", strerror(errno));
-			strbuf_release(&buf);
 		}
 	}
 
