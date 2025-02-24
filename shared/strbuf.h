@@ -50,12 +50,6 @@ void strbuf_clear(struct strbuf *buf);
  */
 const char *strbuf_str(struct strbuf *buf);
 
-/*
- * Reserve enough space for @n bytes, ensuring additional pushes up to @n bytes
- * don't cause re-allocations
- */
-bool strbuf_reserve_extra(struct strbuf *buf, size_t n);
-
 bool strbuf_pushchar(struct strbuf *buf, char ch);
 size_t strbuf_pushmem(struct strbuf *buf, const char *src, size_t sz);
 static inline size_t strbuf_pushchars(struct strbuf *buf, const char *str)
