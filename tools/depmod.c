@@ -1347,7 +1347,13 @@ static void depmod_modules_search_dir(struct depmod *depmod, DIR *d, struct strb
 {
 	struct dirent *de;
 	int dfd = dirfd(d);
-	const size_t baselen = strbuf_used(path);
+	size_t baselen;
+
+	if (!strbuf_pushchar(path, '/')) {
+		ERR("No memory\n");
+		return;
+	}
+	baselen = strbuf_used(path);
 
 	while ((de = readdir(d)) != NULL) {
 		const char *name = de->d_name;
@@ -1361,9 +1367,7 @@ static void depmod_modules_search_dir(struct depmod *depmod, DIR *d, struct strb
 
 		namelen = strlen(name);
 
-		if (!strbuf_pushchars(path, name) ||
-		    /* Ensure space for (possible) '/' */
-		    !strbuf_reserve_extra(path, 1)) {
+		if (!strbuf_pushchars(path, name)) {
 			ERR("No memory\n");
 			continue;
 		}
@@ -1403,7 +1407,6 @@ static void depmod_modules_search_dir(struct depmod *depmod, DIR *d, struct strb
 				continue;
 			}
 
-			strbuf_pushchar(path, '/');
 			depmod_modules_search_dir(depmod, subdir, path);
 			closedir(subdir);
 		} else {
@@ -1428,7 +1431,7 @@ static int depmod_modules_search_path(struct depmod *depmod, const char *path)
 		return err;
 	}
 
-	if (!strbuf_pushchars(&s_path_buf, path) || !strbuf_pushchar(&s_path_buf, '/')) {
+	if (!strbuf_pushchars(&s_path_buf, path)) {
 		err = -ENOMEM;
 		goto out;
 	}
