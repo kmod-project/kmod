@@ -428,20 +428,18 @@ static void index_dump_node(struct index_node_f *node, struct strbuf *buf,
 
 void index_dump(struct index_file *in, int fd, bool alias_prefix)
 {
+	DECLARE_STRBUF_WITH_STACK(buf, 128);
 	struct index_node_f *root;
-	struct strbuf buf;
 	struct wrtbuf wbuf;
 
 	root = index_readroot(in);
 	if (root == NULL)
 		return;
 
-	strbuf_init(&buf);
 	wrtbuf_init(&wbuf, fd);
 	if (!alias_prefix || strbuf_pushchars(&buf, "alias "))
 		index_dump_node(root, &buf, &wbuf);
 	wrtbuf_flush(&wbuf);
-	strbuf_release(&buf);
 }
 
 static char *index_search__node(struct index_node_f *node, const char *key, int i)
@@ -615,13 +613,11 @@ static void index_searchwild__node(struct index_node_f *node, struct strbuf *buf
  */
 struct index_value *index_searchwild(struct index_file *in, const char *key)
 {
+	DECLARE_STRBUF_WITH_STACK(buf, 128);
 	struct index_node_f *root = index_readroot(in);
-	struct strbuf buf;
 	struct index_value *out = NULL;
 
-	strbuf_init(&buf);
 	index_searchwild__node(root, &buf, key, &out);
-	strbuf_release(&buf);
 	return out;
 }
 
@@ -892,20 +888,18 @@ static void index_mm_dump_node(struct index_mm_node *node, struct strbuf *buf,
 
 void index_mm_dump(const struct index_mm *idx, int fd, bool alias_prefix)
 {
+	DECLARE_STRBUF_WITH_STACK(buf, 128);
 	struct index_mm_node nbuf, *root;
-	struct strbuf buf;
 	struct wrtbuf wbuf;
 
 	root = index_mm_readroot(idx, &nbuf);
 	if (root == NULL)
 		return;
 
-	strbuf_init(&buf);
 	wrtbuf_init(&wbuf, fd);
 	if (!alias_prefix || strbuf_pushchars(&buf, "alias "))
 		index_mm_dump_node(root, &buf, &wbuf);
 	wrtbuf_flush(&wbuf);
-	strbuf_release(&buf);
 }
 
 static char *index_mm_search_node(struct index_mm_node *node, const char *key)
@@ -1074,13 +1068,11 @@ static void index_mm_searchwild_node(struct index_mm_node *node, struct strbuf *
  */
 struct index_value *index_mm_searchwild(const struct index_mm *idx, const char *key)
 {
+	DECLARE_STRBUF_WITH_STACK(buf, 128);
 	struct index_mm_node nbuf, *root;
-	struct strbuf buf;
 	struct index_value *out = NULL;
 
 	root = index_mm_readroot(idx, &nbuf);
-	strbuf_init(&buf);
 	index_mm_searchwild_node(root, &buf, key, &out);
-	strbuf_release(&buf);
 	return out;
 }
