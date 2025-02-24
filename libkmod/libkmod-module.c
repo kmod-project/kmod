@@ -1835,8 +1835,6 @@ static struct kmod_list *kmod_module_info_append_hex(struct kmod_list **list,
 		if (!kmod_module_strbuf_pushhex(&sbuf, value, valuelen))
 			goto list_error;
 		hex = strbuf_str(&sbuf);
-		if (hex == NULL)
-			goto list_error;
 
 		n = kmod_module_info_append(list, key, keylen, hex, strlen(hex));
 		if (n == NULL)
