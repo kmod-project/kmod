@@ -1362,7 +1362,7 @@ static int depmod_modules_search_dir(struct depmod *depmod, DIR *d, struct strbu
 		namelen = strlen(name);
 
 		if (!strbuf_pushchars(path, name) ||
-		    /* Ensure space for (possible) '/' or '\0' */
+		    /* Ensure space for (possible) '/' */
 		    !strbuf_reserve_extra(path, 1)) {
 			err = -ENOMEM;
 			ERR("No memory\n");
@@ -2360,8 +2360,7 @@ static int output_symbols_bin(struct depmod *depmod, FILE *out)
 
 		strbuf_shrink_to(&salias, baselen);
 
-		if (!strbuf_pushchars(&salias, sym->name) ||
-		    !strbuf_reserve_extra(&salias, 1)) {
+		if (!strbuf_pushchars(&salias, sym->name)) {
 			ret = -ENOMEM;
 			goto err_alloc;
 		}
