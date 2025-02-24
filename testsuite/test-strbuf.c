@@ -133,42 +133,15 @@ static int test_strbuf_with_heap(const struct test *t)
 }
 DEFINE_TEST(test_strbuf_with_heap, .description = "test strbuf with heap only");
 
-static int test_strbuf_reserve_extra(const struct test *t)
-{
-	_cleanup_strbuf_ struct strbuf buf;
-	size_t size;
-
-	strbuf_init(&buf);
-	strbuf_reserve_extra(&buf, strlen(TEXT) + 1);
-	size = buf.size;
-	assert_return(size >= strlen(TEXT) + 1, EXIT_FAILURE);
-
-	strbuf_pushchars(&buf, TEXT);
-	strbuf_pushchar(&buf, '\0');
-	assert_return(size == buf.size, EXIT_FAILURE);
-
-	strbuf_clear(&buf);
-	strbuf_pushchars(&buf, TEXT);
-	assert_return(size == buf.size, EXIT_FAILURE);
-
-	return 0;
-}
-DEFINE_TEST(test_strbuf_reserve_extra, .description = "test strbuf_reserve_extra");
-
 static int test_strbuf_pushmem(const struct test *t)
 {
 	_cleanup_strbuf_ struct strbuf buf;
-	size_t size;
 
 	strbuf_init(&buf);
 	strbuf_pushmem(&buf, "", 0);
-	strbuf_reserve_extra(&buf, strlen(TEXT) + 1);
-	size = buf.size;
 	strbuf_pushmem(&buf, TEXT, strlen(TEXT) + 1);
 
-	assert_return(size == buf.size, EXIT_FAILURE);
 	assert_return(streq(TEXT, strbuf_str(&buf)), EXIT_FAILURE);
-	assert_return(size == buf.size, EXIT_FAILURE);
 
 	return 0;
 }
@@ -184,7 +157,8 @@ static int test_strbuf_used(const struct test *t)
 	strbuf_pushchars(&buf, TEXT);
 	assert_return(strbuf_used(&buf) == strlen(TEXT), EXIT_FAILURE);
 
-	strbuf_reserve_extra(&buf, 1);
+	strbuf_pushchar(&buf, 'a');
+	strbuf_popchar(&buf);
 	assert_return(strbuf_used(&buf) == strlen(TEXT), EXIT_FAILURE);
 
 	assert_return(streq(TEXT, strbuf_str(&buf)), EXIT_FAILURE);
