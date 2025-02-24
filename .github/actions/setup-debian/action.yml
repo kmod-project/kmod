@@ -28,6 +28,7 @@ runs:
           libzstd-dev \
           linux-headers-generic \
           meson \
+          pahole \
           scdoc \
           zlib1g-dev \
           zstd
