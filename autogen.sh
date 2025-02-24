@@ -12,7 +12,16 @@ fi
 
 cd $topdir
 
-gtkdocize --docdir libkmod/docs || touch libkmod/docs/gtk-doc.make
+gtkdocize --docdir libkmod/docs || NO_GTK_DOC="yes"
+if [ "x$NO_GTK_DOC" = "xyes" ]
+then
+	for f in libkmod/docs/gtk-doc.make m4/gtk-doc.m4
+	do
+		rm -f $f
+		touch $f
+	done
+fi
+
 autoreconf --force --install --symlink
 
 libdir() {
