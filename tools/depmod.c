@@ -2157,10 +2157,10 @@ end:
 
 static int output_deps_bin(struct depmod *depmod, FILE *out)
 {
+	DECLARE_STRBUF_WITH_STACK(sbuf, 2048);
 	struct index_node *idx;
 	size_t i;
 	struct array array;
-	struct strbuf sbuf;
 
 	if (out == stdout)
 		return 0;
@@ -2170,7 +2170,6 @@ static int output_deps_bin(struct depmod *depmod, FILE *out)
 		return -ENOMEM;
 
 	array_init(&array, 64);
-	strbuf_init(&sbuf);
 
 	for (i = 0; i < depmod->modules.count; i++) {
 		const struct mod *mod = depmod->modules.array[i];
@@ -2206,7 +2205,6 @@ static int output_deps_bin(struct depmod *depmod, FILE *out)
 			WRN("duplicate module deps:\n%s\n", line);
 	}
 
-	strbuf_release(&sbuf);
 	array_free_array(&array);
 	index_write(idx, out);
 	index_destroy(idx);
