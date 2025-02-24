@@ -20,9 +20,8 @@ static const char *TEXT =
 
 static int test_strbuf_pushchar(const struct test *t)
 {
-	struct strbuf buf;
+	_cleanup_strbuf_ struct strbuf buf;
 	const char *result;
-	char *result1, *result2;
 	const char *c;
 
 	strbuf_init(&buf);
@@ -33,13 +32,6 @@ static int test_strbuf_pushchar(const struct test *t)
 	result = strbuf_str(&buf);
 	assert_return(result == buf.bytes, EXIT_FAILURE);
 	assert_return(streq(result, TEXT), EXIT_FAILURE);
-	result1 = strdup(result);
-
-	result2 = strbuf_steal(&buf);
-	assert_return(streq(result1, result2), EXIT_FAILURE);
-
-	free(result1);
-	free(result2);
 
 	return 0;
 }
@@ -47,9 +39,9 @@ DEFINE_TEST(test_strbuf_pushchar, .description = "test strbuf_{pushchar, str, st
 
 static int test_strbuf_pushchars(const struct test *t)
 {
-	struct strbuf buf;
-	const char *result1;
-	char *saveptr = NULL, *str, *result2;
+	_cleanup_strbuf_ struct strbuf buf;
+	const char *result;
+	char *saveptr = NULL, *str;
 	const char *c;
 	size_t lastwordlen = 0;
 
@@ -68,65 +60,43 @@ static int test_strbuf_pushchars(const struct test *t)
 	 * true
 	 */
 	strbuf_popchar(&buf);
-	result1 = strbuf_str(&buf);
-	assert_return(result1 == buf.bytes, EXIT_FAILURE);
-	assert_return(streq(result1, TEXT), EXIT_FAILURE);
+	result = strbuf_str(&buf);
+	assert_return(result == buf.bytes, EXIT_FAILURE);
+	assert_return(streq(result, TEXT), EXIT_FAILURE);
 
 	strbuf_popchars(&buf, lastwordlen);
-	result2 = strbuf_steal(&buf);
-	assert_return(!streq(TEXT, result2), EXIT_FAILURE);
-	assert_return(strncmp(TEXT, result2, strlen(TEXT) - lastwordlen) == 0,
+	result = strbuf_str(&buf);
+	assert_return(!streq(TEXT, result), EXIT_FAILURE);
+	assert_return(strncmp(TEXT, result, strlen(TEXT) - lastwordlen) == 0,
 		      EXIT_FAILURE);
-	assert_return(result2[strlen(TEXT) - lastwordlen] == '\0', EXIT_FAILURE);
+	assert_return(result[strlen(TEXT) - lastwordlen] == '\0', EXIT_FAILURE);
 
 	free(str);
-	free(result2);
 
 	return 0;
 }
 DEFINE_TEST(test_strbuf_pushchars,
 	    .description = "test strbuf_{pushchars, popchar, popchars}");
 
-static int test_strbuf_steal(const struct test *t)
-{
-	char *result;
-
-	{
-		_cleanup_strbuf_ struct strbuf buf;
-
-		strbuf_init(&buf);
-		strbuf_pushchars(&buf, TEXT);
-		result = strbuf_steal(&buf);
-	}
-
-	assert_return(streq(result, TEXT), EXIT_FAILURE);
-	free(result);
-
-	return 0;
-}
-DEFINE_TEST(test_strbuf_steal, .description = "test strbuf_steal with cleanup");
-
 static int test_strbuf_with_stack(const struct test *t)
 {
 	const char test[] = "test-something-small";
 	const char *stack_buf;
-	char *p;
+	const char *p;
 	DECLARE_STRBUF_WITH_STACK(buf, 256);
 	DECLARE_STRBUF_WITH_STACK(buf2, sizeof(test) + 1);
 	DECLARE_STRBUF_WITH_STACK(buf3, sizeof(test) + 1);
 
 	strbuf_pushchars(&buf, test);
 	assert_return(streq(test, strbuf_str(&buf)), EXIT_FAILURE);
-	p = strbuf_steal(&buf);
+	p = strbuf_str(&buf);
 	assert_return(streq(test, p), EXIT_FAILURE);
-	free(p);
 
 	strbuf_pushchars(&buf2, test);
 	assert_return(streq(test, strbuf_str(&buf2)), EXIT_FAILURE);
 	/* It fits on stack, but when we steal, we get a copy on heap */
-	p = strbuf_steal(&buf2);
+	p = strbuf_str(&buf2);
 	assert_return(streq(test, p), EXIT_FAILURE);
-	free(p);
 
 	/*
 	 * Check assumption about buffer being on stack vs heap is indeed valid.

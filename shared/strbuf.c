@@ -62,20 +62,6 @@ void strbuf_release(struct strbuf *buf)
 		free(buf->bytes);
 }
 
-char *strbuf_steal(struct strbuf *buf)
-{
-	char *bytes;
-
-	if (!buf_realloc(buf, buf->used + 1))
-		return NULL;
-
-	bytes = buf->bytes;
-	buf->bytes = NULL;
-	bytes[buf->used] = '\0';
-
-	return bytes;
-}
-
 const char *strbuf_str(struct strbuf *buf)
 {
 	if (!buf->used || buf->bytes[buf->used - 1]) {
