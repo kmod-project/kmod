@@ -1799,46 +1799,46 @@ static struct kmod_list *kmod_module_info_append(struct kmod_list **list, const 
 	return n;
 }
 
-static char *kmod_module_hex_to_str(const char *hex, size_t len)
+static bool kmod_module_strbuf_pushhex(struct strbuf *sbuf, const char *hex, size_t len)
 {
 	static const char digits[] = "0123456789ABCDEF";
-	_cleanup_strbuf_ struct strbuf sbuf;
 	const size_t line_limit = 20;
 
-	strbuf_init(&sbuf);
-
 	for (size_t i = 0; i < len; i++) {
-		if (!strbuf_pushchar(&sbuf, digits[(hex[i] >> 4) & 0x0F]) ||
-		    !strbuf_pushchar(&sbuf, digits[hex[i] & 0x0F]))
-			return NULL;
+		if (!strbuf_pushchar(sbuf, digits[(hex[i] >> 4) & 0x0F]) ||
+		    !strbuf_pushchar(sbuf, digits[hex[i] & 0x0F]))
+			return false;
 
 		if (i < len - 1) {
-			if (!strbuf_pushchar(&sbuf, ':'))
-				return NULL;
+			if (!strbuf_pushchar(sbuf, ':'))
+				return false;
 
-			if ((i + 1) % line_limit == 0 &&
-			    !strbuf_pushchars(&sbuf, "\n\t\t"))
-				return NULL;
+			if ((i + 1) % line_limit == 0 && !strbuf_pushchars(sbuf, "\n\t\t"))
+				return false;
 		}
 	}
 
-	return strbuf_steal(&sbuf);
+	return true;
 }
 
 static struct kmod_list *kmod_module_info_append_hex(struct kmod_list **list,
 						     const char *key, size_t keylen,
 						     const char *value, size_t valuelen)
 {
-	char *hex;
 	struct kmod_list *n;
 
 	if (valuelen > 0) {
+		DECLARE_STRBUF_WITH_STACK(sbuf, 512);
+		const char *hex;
+
 		/* Display as 01:12:DE:AD:BE:EF:... */
-		hex = kmod_module_hex_to_str(value, valuelen);
+		if (!kmod_module_strbuf_pushhex(&sbuf, value, valuelen))
+			goto list_error;
+		hex = strbuf_str(&sbuf);
 		if (hex == NULL)
 			goto list_error;
+
 		n = kmod_module_info_append(list, key, keylen, hex, strlen(hex));
-		free(hex);
 		if (n == NULL)
 			goto list_error;
 	} else {
