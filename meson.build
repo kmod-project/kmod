@@ -394,6 +394,11 @@ libkmod_files = files(
 )
 
 libkmod_deps = []
+cdeps = []
+
+if not cc.has_function('dlopen')
+  cdeps += cc.find_library('dl', required : true)
+endif
 
 if dep_map.get('zstd').found()
   libkmod_files += files('libkmod/libkmod-file-zstd.c')
@@ -419,7 +424,7 @@ install_headers('libkmod/libkmod.h')
 libkmod = shared_library(
   'kmod',
   libkmod_files,
-  dependencies : libkmod_deps,
+  dependencies : libkmod_deps + cdeps,
   link_with : libshared,
   link_args : ['-Wl,--version-script', meson.current_source_dir() /
                                                   'libkmod/libkmod.sym'],
@@ -434,12 +439,13 @@ pkg.generate(
   description : 'Library to deal with kernel modules',
   libraries : libkmod,
   requires_private : libkmod_deps,
+  libraries_private : cdeps,
 )
 
 libkmod_internal = static_library(
   'kmod-internal',
   objects : libkmod.extract_all_objects(recursive : true),
-  dependencies : libkmod_deps,
+  dependencies : libkmod_deps + cdeps,
   install : false,
 )
 
