@@ -13,6 +13,18 @@ runs:
       run: |
         export DEBIAN_FRONTEND=noninteractive
         export TZ=Etc/UTC
+
+        . /etc/os-release
+
+        backports_pkgs=()
+        pkgs=()
+        if [[ "$VERSION_CODENAME" == "bullseye" ]]; then
+          echo "deb http://deb.debian.org/debian bullseye-backports main" >> /etc/apt/sources.list
+          backports_pkgs=("meson" "ninja-build")
+        else
+          pkgs+=("pahole")
+        fi
+
         apt-get update
         apt-get install --yes \
           build-essential \
@@ -25,7 +37,11 @@ runs:
           libzstd-dev \
           linux-headers-generic \
           meson \
-          pahole \
           scdoc \
           zlib1g-dev \
-          zstd
+          zstd \
+          "${pkgs[@]}"
+
+        if (( ${#backports_pkgs[@]} )); then
+          apt-get install --yes -t ${VERSION_CODENAME}-backports "${backports_pkgs[@]}"
+        fi
