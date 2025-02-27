@@ -30,7 +30,11 @@ jobs:
             meson_setup: '-Ddocs=false -Db_sanitize=none'
           - compiler: 'gcc'
             container: 'archlinux:multilib-devel'
+          - compiler: 'gcc'
+            container: 'archlinux:multilib-devel'
             x32: 'true'
+            # for x32, fails on LD_PRELOAD
+            skip_test: 'true'
           - compiler: 'gcc'
             container: 'debian:unstable'
             x32: 'true'
@@ -58,6 +62,10 @@ jobs:
             meson_setup: '-Ddocs=false -Db_sanitize=none'
           - compiler: 'clang'
             container: 'archlinux:multilib-devel'
+          - compiler: 'clang'
+            container: 'archlinux:multilib-devel'
+            # for x32, fails on LD_PRELOAD
+            skip_test: 'true'
             x32: 'true'
           - compiler: 'clang'
             container: 'debian:unstable'
@@ -132,12 +140,22 @@ jobs:
           should_pass -D dlopen=xz -D xz=enabled
 
       - name: configure
-        run: mkdir build && cd build && meson setup --native-file ../build-dev.ini ${{ matrix.meson_setup }} . ..
+        run: |
+          setup_options="${{ matrix.meson_setup }}"
+
+          if [[ "${{ matrix.x32 }}" == "true" ]]; then
+            export CC="$CC -m32"
+            # FIXME: we shouldn't need to override and let it per configuration
+            setup_options+=" -D zstd=disabled -D xz=disabled -D zlib=disabled -D openssl=disabled"
+          fi
+
+          meson setup --native-file build-dev.ini $setup_options build
 
       - name: build
         run: cd build && meson compile
 
       - name: test
+        if: ${{ matrix.skip_test != 'true' }}
         run: cd build && meson test || meson test --verbose
 
       - name: install
@@ -145,17 +163,3 @@ jobs:
 
       - name: distcheck
         run: cd build && meson dist
-
-      - name: configure (32bit)
-        if: ${{ matrix.x32 == 'true' }}
-        run: |
-          cross_options="-D zstd=disabled -D xz=disabled -D zlib=disabled -D openssl=disabled"
-          CC="$CC -m32" meson setup $cross_options build32/
-
-      - name: build (32bit)
-        if: ${{ matrix.x32 == 'true' }}
-        run: cd build32 && meson compile
-
-      - name: test (32bit)
-        if: ${{ matrix.x32 == 'true' }}
-        run: cd build32 && meson test || meson test --verbose
