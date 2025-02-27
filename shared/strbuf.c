@@ -34,15 +34,15 @@ static bool buf_realloc(struct strbuf *buf, size_t sz)
 	return true;
 }
 
-bool strbuf_reserve_extra(struct strbuf *buf, size_t n)
+static bool strbuf_reserve_extra(struct strbuf *buf, size_t n)
 {
-	if (uaddsz_overflow(buf->used, n, &n) || n > SIZE_MAX - BUF_STEP)
+	if (uaddsz_overflow(buf->used, n, &n) || n >= SIZE_MAX - BUF_STEP)
 		return false;
 
-	if (n <= buf->size)
+	if (n < buf->size)
 		return true;
 
-	if (n % BUF_STEP)
+	if (++n % BUF_STEP)
 		n = ((n / BUF_STEP) + 1) * BUF_STEP;
 
 	return buf_realloc(buf, n);
@@ -62,27 +62,13 @@ void strbuf_release(struct strbuf *buf)
 		free(buf->bytes);
 }
 
-char *strbuf_steal(struct strbuf *buf)
-{
-	char *bytes;
-
-	if (!buf_realloc(buf, buf->used + 1))
-		return NULL;
-
-	bytes = buf->bytes;
-	buf->bytes = NULL;
-	bytes[buf->used] = '\0';
-
-	return bytes;
-}
-
 const char *strbuf_str(struct strbuf *buf)
 {
-	if (!buf->used || buf->bytes[buf->used - 1]) {
-		if (!strbuf_reserve_extra(buf, 1))
-			return NULL;
+	if (!buf->used)
+		return "";
+
+	if (buf->bytes[buf->used - 1])
 		buf->bytes[buf->used] = '\0';
-	}
 	return buf->bytes;
 }
 

@@ -1343,11 +1343,17 @@ static bool should_exclude_dir(const struct cfg *cfg, const char *name)
 	return false;
 }
 
-static int depmod_modules_search_dir(struct depmod *depmod, DIR *d, struct strbuf *path)
+static void depmod_modules_search_dir(struct depmod *depmod, DIR *d, struct strbuf *path)
 {
 	struct dirent *de;
-	int err = 0, dfd = dirfd(d);
-	const size_t baselen = strbuf_used(path);
+	int dfd = dirfd(d);
+	size_t baselen;
+
+	if (!strbuf_pushchar(path, '/')) {
+		ERR("No memory\n");
+		return;
+	}
+	baselen = strbuf_used(path);
 
 	while ((de = readdir(d)) != NULL) {
 		const char *name = de->d_name;
@@ -1361,10 +1367,7 @@ static int depmod_modules_search_dir(struct depmod *depmod, DIR *d, struct strbu
 
 		namelen = strlen(name);
 
-		if (!strbuf_pushchars(path, name) ||
-		    /* Ensure space for (possible) '/' or '\0' */
-		    !strbuf_reserve_extra(path, 1)) {
-			err = -ENOMEM;
+		if (!strbuf_pushchars(path, name)) {
 			ERR("No memory\n");
 			continue;
 		}
@@ -1404,28 +1407,22 @@ static int depmod_modules_search_dir(struct depmod *depmod, DIR *d, struct strbu
 				continue;
 			}
 
-			strbuf_pushchar(path, '/');
-			err = depmod_modules_search_dir(depmod, subdir, path);
+			depmod_modules_search_dir(depmod, subdir, path);
 			closedir(subdir);
 		} else {
-			err = depmod_modules_search_file(depmod, baselen, namelen,
-							 strbuf_str(path));
-		}
-
-		if (err < 0) {
-			ERR("failed %s: %s\n", strbuf_str(path), strerror(-err));
-			err = 0; /* ignore errors */
+			int err = depmod_modules_search_file(depmod, baselen, namelen,
+							     strbuf_str(path));
+			if (err < 0)
+				ERR("failed %s: %s\n", strbuf_str(path), strerror(-err));
 		}
 	}
-
-	return err;
 }
 
 static int depmod_modules_search_path(struct depmod *depmod, const char *path)
 {
 	DECLARE_STRBUF_WITH_STACK(s_path_buf, 256);
 	DIR *d;
-	int err;
+	int err = 0;
 
 	d = opendir(path);
 	if (d == NULL) {
@@ -1434,12 +1431,12 @@ static int depmod_modules_search_path(struct depmod *depmod, const char *path)
 		return err;
 	}
 
-	if (!strbuf_pushchars(&s_path_buf, path) || !strbuf_pushchar(&s_path_buf, '/')) {
+	if (!strbuf_pushchars(&s_path_buf, path)) {
 		err = -ENOMEM;
 		goto out;
 	}
 
-	err = depmod_modules_search_dir(depmod, d, &s_path_buf);
+	depmod_modules_search_dir(depmod, d, &s_path_buf);
 out:
 	closedir(d);
 	return err;
@@ -2157,10 +2154,10 @@ end:
 
 static int output_deps_bin(struct depmod *depmod, FILE *out)
 {
+	DECLARE_STRBUF_WITH_STACK(sbuf, 2048);
 	struct index_node *idx;
 	size_t i;
 	struct array array;
-	struct strbuf sbuf;
 
 	if (out == stdout)
 		return 0;
@@ -2170,7 +2167,6 @@ static int output_deps_bin(struct depmod *depmod, FILE *out)
 		return -ENOMEM;
 
 	array_init(&array, 64);
-	strbuf_init(&sbuf);
 
 	for (i = 0; i < depmod->modules.count; i++) {
 		const struct mod *mod = depmod->modules.array[i];
@@ -2206,7 +2202,6 @@ static int output_deps_bin(struct depmod *depmod, FILE *out)
 			WRN("duplicate module deps:\n%s\n", line);
 	}
 
-	strbuf_release(&sbuf);
 	array_free_array(&array);
 	index_write(idx, out);
 	index_destroy(idx);
@@ -2362,8 +2357,7 @@ static int output_symbols_bin(struct depmod *depmod, FILE *out)
 
 		strbuf_shrink_to(&salias, baselen);
 
-		if (!strbuf_pushchars(&salias, sym->name) ||
-		    !strbuf_reserve_extra(&salias, 1)) {
+		if (!strbuf_pushchars(&salias, sym->name)) {
 			ret = -ENOMEM;
 			goto err_alloc;
 		}
