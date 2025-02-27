@@ -24,24 +24,72 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        compiler: ['clang','gcc']
-        container:
-          - name: 'alpine:latest'
-            meson_setup: '-D docs=false -D b_sanitize=none'
-          - name: 'archlinux:multilib-devel'
-            multilib: 'true'
-          - name: 'debian:unstable'
-            multilib: 'true'
-          - name: 'fedora:latest'
-          - name: 'fedora:latest'
-            meson_setup: '-D xz=disabled -D dlopen=all'
-          - name: 'ubuntu:22.04'
-            multilib: 'true'
-          - name: 'ubuntu:22.04'
-            multilib: 'true'
-            meson_setup: '-D dlopen=zstd,zlib'
-          - name: 'ubuntu:24.04'
-            multilib: 'true'
+        include:
+          - compiler: 'gcc'
+            container:
+              name: 'alpine:latest'
+              meson_setup: '-Ddocs=false -Db_sanitize=none'
+          - compiler: 'gcc'
+            container:
+              name: 'archlinux:multilib-devel'
+              multilib: 'true'
+          - compiler: 'gcc'
+            container:
+              name: 'debian:unstable'
+              multilib: 'true'
+          - compiler: 'gcc'
+            container:
+              name: 'fedora:latest'
+          - compiler: 'gcc'
+            container:
+              name: 'fedora:latest'
+              meson_setup: '-Dxz=disabled -Ddlopen=all'
+          - compiler: 'gcc'
+            container:
+              name: 'ubuntu:22.04'
+              multilib: 'true'
+          - compiler: 'gcc'
+            container:
+              name: 'ubuntu:22.04'
+              multilib: 'true'
+              meson_setup: '-Ddlopen=zstd,zlib'
+          - compiler: 'gcc'
+            container:
+              name: 'ubuntu:24.04'
+              multilib: 'true'
+
+          - compiler: 'clang'
+            container:
+              name: 'alpine:latest'
+              meson_setup: '-Ddocs=false -Db_sanitize=none'
+          - compiler: 'clang'
+            container:
+              name: 'archlinux:multilib-devel'
+              multilib: 'true'
+          - compiler: 'clang'
+            container:
+              name: 'debian:unstable'
+              multilib: 'true'
+          - compiler: 'clang'
+            container:
+              name: 'fedora:latest'
+          - compiler: 'clang'
+            container:
+              name: 'fedora:latest'
+              meson_setup: '-Dxz=disabled -Ddlopen=all'
+          - compiler: 'clang'
+            container:
+              name: 'ubuntu:22.04'
+              multilib: 'true'
+          - compiler: 'clang'
+            container:
+              name: 'ubuntu:22.04'
+              multilib: 'true'
+              meson_setup: '-Ddlopen=zstd,zlib'
+          - compiler: 'clang'
+            container:
+              name: 'ubuntu:24.04'
+              multilib: 'true'
 
     container:
       image: ${{ matrix.container.name }}
