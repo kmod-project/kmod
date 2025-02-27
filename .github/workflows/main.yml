@@ -33,7 +33,7 @@ jobs:
           - compiler: 'gcc'
             container: 'archlinux:multilib-devel'
             x32: 'true'
-            meson_setup: " -D zstd=disabled -D xz=disabled"
+            meson_setup: " -D zstd=disabled -D xz=disabled -D zlib=disabled -D openssl=disabled"
             # for x32, fails on LD_PRELOAD
             skip_test: 'true'
           - compiler: 'gcc'
@@ -66,7 +66,7 @@ jobs:
           - compiler: 'gcc'
             container: 'archlinux:multilib-devel'
             x32: 'true'
-            meson_setup: " -D zstd=disabled"
+            meson_setup: " -D zstd=disabled -D xz=disabled -D zlib=disabled -D openssl=disabled"
             # for x32, fails on LD_PRELOAD
             skip_test: 'true'
           - compiler: 'gcc'
