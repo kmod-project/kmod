@@ -26,73 +26,57 @@ jobs:
       matrix:
         include:
           - compiler: 'gcc'
-            container:
-              name: 'alpine:latest'
-              meson_setup: '-Ddocs=false -Db_sanitize=none'
+            container: 'alpine:latest'
+            meson_setup: '-Ddocs=false -Db_sanitize=none'
           - compiler: 'gcc'
-            container:
-              name: 'archlinux:multilib-devel'
-              multilib: 'true'
+            container: 'archlinux:multilib-devel'
+            multilib: 'true'
           - compiler: 'gcc'
-            container:
-              name: 'debian:unstable'
-              multilib: 'true'
+            container: 'debian:unstable'
+            multilib: 'true'
           - compiler: 'gcc'
-            container:
-              name: 'fedora:latest'
+            container: 'fedora:latest'
           - compiler: 'gcc'
-            container:
-              name: 'fedora:latest'
-              meson_setup: '-Dxz=disabled -Ddlopen=all'
+            container: 'fedora:latest'
+            meson_setup: '-Dxz=disabled -Ddlopen=all'
           - compiler: 'gcc'
-            container:
-              name: 'ubuntu:22.04'
-              multilib: 'true'
+            container: 'ubuntu:22.04'
+            multilib: 'true'
           - compiler: 'gcc'
-            container:
-              name: 'ubuntu:22.04'
-              multilib: 'true'
-              meson_setup: '-Ddlopen=zstd,zlib'
+            container: 'ubuntu:22.04'
+            multilib: 'true'
+            meson_setup: '-Ddlopen=zstd,zlib'
           - compiler: 'gcc'
-            container:
-              name: 'ubuntu:24.04'
-              multilib: 'true'
+            container: 'ubuntu:24.04'
+            multilib: 'true'
 
           - compiler: 'clang'
-            container:
-              name: 'alpine:latest'
-              meson_setup: '-Ddocs=false -Db_sanitize=none'
+            container: 'alpine:latest'
+            meson_setup: '-Ddocs=false -Db_sanitize=none'
           - compiler: 'clang'
-            container:
-              name: 'archlinux:multilib-devel'
-              multilib: 'true'
+            container: 'archlinux:multilib-devel'
+            multilib: 'true'
           - compiler: 'clang'
-            container:
-              name: 'debian:unstable'
-              multilib: 'true'
+            container: 'debian:unstable'
+            multilib: 'true'
           - compiler: 'clang'
-            container:
-              name: 'fedora:latest'
+            container: 'fedora:latest'
           - compiler: 'clang'
-            container:
-              name: 'fedora:latest'
-              meson_setup: '-Dxz=disabled -Ddlopen=all'
+            container: 'fedora:latest'
+            meson_setup: '-Dxz=disabled -Ddlopen=all'
           - compiler: 'clang'
-            container:
-              name: 'ubuntu:22.04'
-              multilib: 'true'
+            container: 'ubuntu:22.04'
+            multilib: 'true'
           - compiler: 'clang'
-            container:
-              name: 'ubuntu:22.04'
-              multilib: 'true'
-              meson_setup: '-Ddlopen=zstd,zlib'
+            container: 'ubuntu:22.04'
+            multilib: 'true'
+            meson_setup: '-Ddlopen=zstd,zlib'
           - compiler: 'clang'
-            container:
-              name: 'ubuntu:24.04'
-              multilib: 'true'
+            container: 'ubuntu:24.04'
+            multilib: 'true'
 
     container:
-      image: ${{ matrix.container.name }}
+      image: ${{ matrix.container }}
 
     steps:
       - name: Sparse checkout the local actions
@@ -101,15 +85,15 @@ jobs:
           sparse-checkout: .github
 
       - uses: ./.github/actions/setup-alpine
-        if: ${{ startsWith(matrix.container.name, 'alpine') }}
+        if: ${{ startsWith(matrix.container, 'alpine') }}
       - uses: ./.github/actions/setup-archlinux
-        if: ${{ startsWith(matrix.container.name, 'archlinux') }}
+        if: ${{ startsWith(matrix.container, 'archlinux') }}
       - uses: ./.github/actions/setup-debian
-        if: ${{ startsWith(matrix.container.name, 'debian') }}
+        if: ${{ startsWith(matrix.container, 'debian') }}
       - uses: ./.github/actions/setup-fedora
-        if: ${{ startsWith(matrix.container.name, 'fedora') }}
+        if: ${{ startsWith(matrix.container, 'fedora') }}
       - uses: ./.github/actions/setup-ubuntu
-        if: ${{ startsWith(matrix.container.name, 'ubuntu') }}
+        if: ${{ startsWith(matrix.container, 'ubuntu') }}
 
       - name: Checkout the whole project
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -145,7 +129,7 @@ jobs:
           should_pass -D dlopen=xz -D xz=enabled
 
       - name: configure
-        run: mkdir build && cd build && meson setup --native-file ../build-dev.ini ${{ matrix.container.meson_setup }} . ..
+        run: mkdir build && cd build && meson setup --native-file ../build-dev.ini ${{ matrix.meson_setup }} . ..
 
       - name: build
         run: cd build && meson compile
@@ -160,15 +144,15 @@ jobs:
         run: cd build && meson dist
 
       - name: configure (32bit)
-        if: ${{ matrix.container.multilib == 'true' }}
+        if: ${{ matrix.multilib == 'true' }}
         run: |
           cross_options="-D zstd=disabled -D xz=disabled -D zlib=disabled -D openssl=disabled"
           CC="$CC -m32" meson setup $cross_options build32/
 
       - name: build (32bit)
-        if: ${{ matrix.container.multilib == 'true' }}
+        if: ${{ matrix.multilib == 'true' }}
         run: cd build32 && meson compile
 
       - name: test (32bit)
-        if: ${{ matrix.container.multilib == 'true' }}
+        if: ${{ matrix.multilib == 'true' }}
         run: cd build32 && meson test || meson test --verbose
