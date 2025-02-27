@@ -30,10 +30,10 @@ jobs:
             meson_setup: '-Ddocs=false -Db_sanitize=none'
           - compiler: 'gcc'
             container: 'archlinux:multilib-devel'
-            multilib: 'true'
+            x32: 'true'
           - compiler: 'gcc'
             container: 'debian:unstable'
-            multilib: 'true'
+            x32: 'true'
           - compiler: 'gcc'
             container: 'debian:bullseye-slim'
             meson_setup: '-Dzstd=disabled -Dxz=disabled -Dzlib=disabled -Dopenssl=enabled -Dtools=true'
@@ -44,24 +44,24 @@ jobs:
             meson_setup: '-Dxz=disabled -Ddlopen=all'
           - compiler: 'gcc'
             container: 'ubuntu:22.04'
-            multilib: 'true'
+            x32: 'true'
           - compiler: 'gcc'
             container: 'ubuntu:22.04'
-            multilib: 'true'
+            x32: 'true'
             meson_setup: '-Ddlopen=zstd,zlib'
           - compiler: 'gcc'
             container: 'ubuntu:24.04'
-            multilib: 'true'
+            x32: 'true'
 
           - compiler: 'clang'
             container: 'alpine:latest'
             meson_setup: '-Ddocs=false -Db_sanitize=none'
           - compiler: 'clang'
             container: 'archlinux:multilib-devel'
-            multilib: 'true'
+            x32: 'true'
           - compiler: 'clang'
             container: 'debian:unstable'
-            multilib: 'true'
+            x32: 'true'
           - compiler: 'clang'
             container: 'fedora:latest'
           - compiler: 'clang'
@@ -69,14 +69,14 @@ jobs:
             meson_setup: '-Dxz=disabled -Ddlopen=all'
           - compiler: 'clang'
             container: 'ubuntu:22.04'
-            multilib: 'true'
+            x32: 'true'
           - compiler: 'clang'
             container: 'ubuntu:22.04'
-            multilib: 'true'
+            x32: 'true'
             meson_setup: '-Ddlopen=zstd,zlib'
           - compiler: 'clang'
             container: 'ubuntu:24.04'
-            multilib: 'true'
+            x32: 'true'
 
     container:
       image: ${{ matrix.container }}
@@ -147,15 +147,15 @@ jobs:
         run: cd build && meson dist
 
       - name: configure (32bit)
-        if: ${{ matrix.multilib == 'true' }}
+        if: ${{ matrix.x32 == 'true' }}
         run: |
           cross_options="-D zstd=disabled -D xz=disabled -D zlib=disabled -D openssl=disabled"
           CC="$CC -m32" meson setup $cross_options build32/
 
       - name: build (32bit)
-        if: ${{ matrix.multilib == 'true' }}
+        if: ${{ matrix.x32 == 'true' }}
         run: cd build32 && meson compile
 
       - name: test (32bit)
-        if: ${{ matrix.multilib == 'true' }}
+        if: ${{ matrix.x32 == 'true' }}
         run: cd build32 && meson test || meson test --verbose
