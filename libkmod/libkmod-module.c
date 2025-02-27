@@ -1770,7 +1770,8 @@ static struct kmod_module_info *kmod_module_info_new(const char *key, size_t key
 	info->key = (char *)info + sizeof(struct kmod_module_info) + valuelen + 1;
 	memcpy(info->key, key, keylen);
 	info->key[keylen] = '\0';
-	memcpy(info->value, value, valuelen);
+	if (value)
+		memcpy(info->value, value, valuelen);
 	info->value[valuelen] = '\0';
 	return info;
 }
