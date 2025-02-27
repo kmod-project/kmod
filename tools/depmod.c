@@ -2200,6 +2200,10 @@ static int output_deps_bin(struct depmod *depmod, FILE *out)
 			}
 		}
 		line = strbuf_str(&sbuf);
+		if (line == NULL) {
+			ERR("could not write dependencies of %s\n", p);
+			continue;
+		}
 
 		duplicate = index_insert(idx, mod->modname, line, mod->idx);
 		if (duplicate && depmod->cfg->warn_dups)
