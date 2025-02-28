@@ -558,6 +558,10 @@ if get_option('docs')
   subdir('libkmod/docs')
 endif
 
+# ------------------------------------------------------------------
+# summary
+# ------------------------------------------------------------------
+
 summary({
   'prefix'      : prefixdir,
   'sysconfdir'  : sysconfdir,
@@ -592,3 +596,8 @@ summary({
 summary({
   'features'    : ' '.join(features)
 }, section : '')
+
+summary({
+  'Compiler'        : cc.get_id() + ' (' + cc.version() + ')',
+  'Linker'          : cc.get_linker_id(),
+}, section : 'Build tools')
