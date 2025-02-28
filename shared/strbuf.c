@@ -36,13 +36,14 @@ static bool buf_realloc(struct strbuf *buf, size_t sz)
 
 static bool strbuf_reserve_extra(struct strbuf *buf, size_t n)
 {
-	if (uaddsz_overflow(buf->used, n, &n) || n >= SIZE_MAX - BUF_STEP)
-		return false;
-
-	if (n < buf->size)
+	if (n < buf->size - buf->used)
 		return true;
 
-	if (++n % BUF_STEP)
+	if (n >= SIZE_MAX - BUF_STEP - buf->used)
+		return false;
+
+	n += buf->used + 1;
+	if (n % BUF_STEP)
 		n = ((n / BUF_STEP) + 1) * BUF_STEP;
 
 	return buf_realloc(buf, n);
