@@ -24,5 +24,6 @@ runs:
           git \
           gtk-doc \
           linux-headers \
+          lld \
           meson \
           scdoc
