@@ -220,7 +220,7 @@ foreach tuple : _customdirs
           .format(dir_option, customdir))
     endif
     # Strip all leading/trailing and re-add only the leading one.
-    customdir = '' / customdir.strip('/')
+    customdir = '/' / customdir.strip('/')
   endif
   cdata.set_quoted(quoted, customdir)
   set_variable(dir_option, customdir)
