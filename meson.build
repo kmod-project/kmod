@@ -513,7 +513,7 @@ if get_option('tools')
   mkdir_p = 'mkdir -p "$DESTDIR@0@"'
   meson.add_install_script('sh', '-c', mkdir_p.format(sbindir))
 
-  ln_s = 'ln --symbolic --force --relative "$DESTDIR@0@/kmod" "$DESTDIR@1@"'
+  ln_s = 'ln -sfr "$DESTDIR@0@/kmod" "$DESTDIR@1@"'
   foreach tool : _tools
     meson.add_install_script('sh', '-c', ln_s.format(bindir, sbindir / tool))
   endforeach
