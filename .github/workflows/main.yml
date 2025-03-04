@@ -104,6 +104,14 @@ jobs:
             container: 'archlinux:multilib-devel'
             linker: 'lld'
 
+          # Variants with moduledir
+          - compiler: 'gcc'
+            container: 'archlinux:multilib-devel'
+            meson_setup: '-Dmoduledir=/usr/lib/modules'
+          - compiler: 'gcc'
+            container: 'archlinux:multilib-devel'
+            meson_setup: '-Dmoduledir=/kernel-modules'
+
     container:
       image: ${{ matrix.container }}
 
