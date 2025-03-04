@@ -372,6 +372,8 @@ libshared = static_library(
     'shared/strbuf.h',
     'shared/util.c',
     'shared/util.h',
+    'shared/tmpfile-util.c',
+    'shared/tmpfile-util.h',
   ),
   gnu_symbol_visibility : 'hidden',
   install : false,

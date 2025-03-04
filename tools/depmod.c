@@ -24,6 +24,7 @@
 #include <shared/hash.h>
 #include <shared/macro.h>
 #include <shared/strbuf.h>
+#include <shared/tmpfile-util.h>
 #include <shared/util.h>
 
 #include <libkmod/libkmod-internal.h>
@@ -2612,13 +2613,15 @@ static int depmod_output(struct depmod *depmod, FILE *out)
 
 	for (itr = depfiles; itr->name != NULL; itr++) {
 		FILE *fp = out;
-		char tmp[NAME_MAX] = "";
+		// char tmp[NAME_MAX] = "";
+        _cleanup_free_ char *tmp = NULL;
 		int r, ferr;
 
 		if (fp == NULL) {
 			int flags = O_CREAT | O_EXCL | O_WRONLY;
 			int mode = 0644;
 			int fd;
+#if 0
 			int n;
 
 			n = snprintf(tmp, sizeof(tmp), "%s.%i.%lli.%lli", itr->name,
@@ -2636,6 +2639,13 @@ static int depmod_output(struct depmod *depmod, FILE *out)
 				    mode);
 				continue;
 			}
+#else
+			if (fopen_temporary_at(dfd, dname, flags, mode, &fd, &tmp) < 0) {
+				ERR("openat(%s, %s, %o, %o): %m\n", dname, tmp, flags,
+				    mode);
+				continue;
+			}
+#endif
 			fp = fdopen(fd, "wb");
 			if (fp == NULL) {
 				ERR("fdopen(%d=%s/%s): %m\n", fd, dname, tmp);
