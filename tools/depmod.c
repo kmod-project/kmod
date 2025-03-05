@@ -2645,6 +2645,7 @@ static int depmod_output(struct depmod *depmod, FILE *out)
 				    mode);
 				continue;
 			}
+			printf("tmp: %s\n", tmp);
 #endif
 			fp = fdopen(fd, "wb");
 			if (fp == NULL) {

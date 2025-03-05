@@ -17,14 +17,9 @@ static int get_random_from_dev(void *p, size_t n)
 {
     int fd;
     ssize_t l;
-    ssize_t nbytes;
 
     if (!p || n == 0)
         return -EINVAL;
-
-    if (n > (size_t) SSIZE_MAX)
-        return -EINVAL;
-    nbytes = (ssize_t) n;
 
     fd = open("/dev/urandom", O_RDONLY | O_NOCTTY);
     if (fd < 0) {
@@ -46,27 +41,23 @@ static int get_random_from_dev(void *p, size_t n)
         }
 
         p = (uint8_t *)p + l;
-        nbytes -= l;
-    } while (nbytes > 0);
+        n -= l;
+    } while (n > 0);
     
     close(fd);
     return 0;
 }
 
-static int get_random_from_syscall(void *p, size_t n) {
+static int get_random_from_syscall(void *p, size_t n)
+{
     static bool have_grndinsecure = true;
     ssize_t l;
-    ssize_t nbytes;
 
     if (!p || n == 0)
         return -EINVAL;
 
-    if (n > (size_t) SSIZE_MAX)
-        return -EINVAL;
-    nbytes = (ssize_t) n;
-
     do {
-        l = getrandom(p, nbytes, have_grndinsecure ? GRND_INSECURE : GRND_NONBLOCK);
+        l = getrandom(p, n, have_grndinsecure ? GRND_INSECURE : GRND_NONBLOCK);
         if (l < 0) {
             if (errno == EINVAL && have_grndinsecure) {
                 // No GRND_INSECURE; fallback to GRND_NONBLOCK.
@@ -83,33 +74,46 @@ static int get_random_from_syscall(void *p, size_t n) {
         }
 
         p = (uint8_t *) p + l;
-        nbytes -= l;
-    } while (nbytes >= 0);
+        n -= l;
+    } while (n > 0);
 
     return 0;
 }
+
+#if 0
+static int get_random_from_rand(void *p, size_t n)
+{
+    size_t i = 0;
+    uint8_t *u8p = (uint8_t *)p;
+    if (!p || n == 0)
+        return -EINVAL;
+
+    srand(time(0));
+
+    for (i = 0; i < n; i ++) {
+        u8p[i] = rand() % 0xFF;
+    }
+    return 0;
+}
+#endif
 
 static int random_bytes(void *p, size_t n) {
     int err;
 
     err = get_random_from_syscall(p, n);
-    if (err < 0) {
-        err = get_random_from_dev(p, n);
-        if (err < 0) {
-            return err;
-        }
-    }
+    if (err == 0)
+        return 0;
 
-    return 0;
+    return get_random_from_dev(p, n);
 }
 
 static int __tempfn_random(const char *path, char **ret_file)
 {
     _cleanup_free_ char *tmp_file = NULL;
     struct timeval tv;
-    char tmp[NAME_MAX] = "";
     uint64_t rnd_u64;
     int err;
+    char tmp[NAME_MAX] = "";
     int n;
 
 	gettimeofday(&tv, NULL);
