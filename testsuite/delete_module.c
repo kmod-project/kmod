@@ -19,6 +19,7 @@
 #include <unistd.h>
 
 #include <shared/util.h>
+#include <shared/strbuf.h>
 
 #include "testsuite.h"
 
@@ -182,24 +183,27 @@ TS_EXPORT long delete_module(const char *name, unsigned int flags);
 
 long delete_module(const char *modname, unsigned int flags)
 {
+	DECLARE_STRBUF_WITH_STACK(buf, PATH_MAX);
 	struct mod *mod;
 	int ret = 0;
-	char buf[PATH_MAX];
-	const char *sysfsmod = "/sys/module/";
-	int len = strlen(sysfsmod);
 
 	init_retcodes();
 	mod = find_module(modules, modname);
 	if (mod == NULL)
 		return 0;
 
-	memcpy(buf, sysfsmod, len);
-	strcpy(buf + len, modname);
-	ret = remove_directory(buf);
+	if (!strbuf_pushchars(&buf, "/sys/module/") ||
+	    !strbuf_pushchars(&buf, modname)) {
+		errno = ENOMEM;
+		return -1;
+	}
+
+	ret = remove_directory(strbuf_str(&buf));
 	if (ret != 0)
 		return ret;
 
 	errno = mod->errcode;
+
 	return mod->ret;
 }
 
