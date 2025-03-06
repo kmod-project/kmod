@@ -122,15 +122,6 @@ static void init_retcodes(void)
 	}
 }
 
-TS_EXPORT long delete_module(const char *name, unsigned int flags);
-
-/*
- * FIXME: change /sys/module/<modname> to fake-remove a module
- *
- * Default behavior is to exit successfully. If this is not the intended
- * behavior, set TESTSUITE_DELETE_MODULE_RETCODES env var.
- */
-
 static int remove_directory(const char *path)
 {
 	struct stat st;
@@ -182,6 +173,12 @@ static int remove_directory(const char *path)
 	}
 	return 0;
 }
+
+/*
+ * Default behavior is to exit successfully. If this is not the intended
+ * behavior, set TESTSUITE_DELETE_MODULE_RETCODES env var.
+ */
+TS_EXPORT long delete_module(const char *name, unsigned int flags);
 
 long delete_module(const char *modname, unsigned int flags)
 {
