@@ -180,6 +180,8 @@ static void *get_libc_func(const char *f)
 
 WRAP_1ARG(DIR *, NULL, opendir);
 WRAP_1ARG(int, -1, chdir);
+WRAP_1ARG(int, -1, remove);
+WRAP_1ARG(int, -1, rmdir);
 
 WRAP_2ARGS(FILE *, NULL, fopen, const char *);
 WRAP_2ARGS(int, -1, mkdir, mode_t);
