@@ -718,6 +718,23 @@ KMOD_EXPORT int kmod_module_insert_module(struct kmod_module *mod, unsigned int 
 	return err;
 }
 
+static bool module_is_masked(const struct kmod_module *mod)
+{
+	const struct kmod_ctx *ctx = mod->ctx;
+	const struct kmod_config *config = kmod_get_config(ctx);
+	const struct kmod_list *bl = config->masks;
+	const struct kmod_list *l;
+
+	kmod_list_foreach(l, bl) {
+		const char *modname = kmod_mask_get_modname(l);
+
+		if (streq(modname, mod->name))
+			return true;
+	}
+
+	return false;
+}
+
 static bool module_is_blacklisted(const struct kmod_module *mod)
 {
 	const struct kmod_ctx *ctx = mod->ctx;
@@ -1019,6 +1036,9 @@ KMOD_EXPORT int kmod_module_probe_insert_module(
 		else
 			return 0;
 	}
+
+	if (module_is_masked(mod))
+		return 0;
 
 	if (module_is_blacklisted(mod)) {
 		if (mod->alias != NULL && (flags & KMOD_PROBE_APPLY_BLACKLIST_ALIAS_ONLY))
