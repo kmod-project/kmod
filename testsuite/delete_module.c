@@ -143,36 +143,37 @@ static int remove_directory(const char *path)
 	}
 
 	while ((entry = readdir(dir)) != NULL) {
-		if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
+		if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
 			continue;
-		}
 
 		snprintf(full_path, sizeof(full_path), "%s/%s", path, entry->d_name);
 
 		if (entry->d_type == DT_DIR) {
 			if (remove_directory(full_path) != 0) {
-				closedir(dir);
-				ERR("Failed to remove directory %s: %s (errno: %d)\n",
-				    full_path, strerror(errno), errno);
-				return -1;
+				ERR("Failed to remove directory %s: %m\n", full_path);
+				goto fail;
 			}
 		} else {
 			if (remove(full_path) != 0) {
-				closedir(dir);
-				ERR("Failed to remove file %s: %s (errno: %d)\n",
-				    full_path, strerror(errno), errno);
-				return -1;
+				ERR("Failed to remove file %s: %m\n", full_path);
+				goto fail;
 			}
 		}
 	}
 
 	closedir(dir);
+
 	if (rmdir(path) != 0) {
-		ERR("Failed to remove directory %s: %s (errno: %d)\n", path,
-		    strerror(errno), errno);
+		ERR("Failed to remove directory %s: %m\n", path);
 		return -1;
 	}
+
 	return 0;
+
+fail:
+	closedir(dir);
+
+	return -1;
 }
 
 /*
