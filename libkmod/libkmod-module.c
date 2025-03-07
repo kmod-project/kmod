@@ -1569,8 +1569,8 @@ KMOD_EXPORT struct kmod_list *kmod_module_get_holders(const struct kmod_module *
 {
 	char dname[PATH_MAX];
 	struct kmod_list *list = NULL;
+	_cleanup_closedir_ DIR *d = NULL;
 	struct dirent *dent;
-	DIR *d;
 
 	if (mod == NULL || mod->ctx == NULL)
 		return NULL;
@@ -1611,11 +1611,9 @@ KMOD_EXPORT struct kmod_list *kmod_module_get_holders(const struct kmod_module *
 		}
 	}
 
-	closedir(d);
 	return list;
 
 fail:
-	closedir(d);
 	kmod_module_unref_list(list);
 	return NULL;
 }
@@ -1632,10 +1630,10 @@ static void kmod_module_section_free(struct kmod_module_section *section)
 
 KMOD_EXPORT struct kmod_list *kmod_module_get_sections(const struct kmod_module *mod)
 {
-	char dname[PATH_MAX];
 	struct kmod_list *list = NULL;
+	_cleanup_closedir_ DIR *d = NULL;
+	char dname[PATH_MAX];
 	struct dirent *dent;
-	DIR *d;
 	int dfd;
 
 	if (mod == NULL)
@@ -1699,11 +1697,9 @@ KMOD_EXPORT struct kmod_list *kmod_module_get_sections(const struct kmod_module 
 		}
 	}
 
-	closedir(d);
 	return list;
 
 fail:
-	closedir(d);
 	kmod_module_unref_list(list);
 	return NULL;
 }
