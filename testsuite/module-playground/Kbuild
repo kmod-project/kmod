@@ -36,6 +36,9 @@ obj-m += mod-fake-cciss.o
 
 obj-m += mod-weakdep.o
 
+obj-m += mod-softdep-a.o
+obj-m += mod-softdep-b.o
+
 else
 # only build ARCH-specific module
 ifeq ($(ARCH),)
