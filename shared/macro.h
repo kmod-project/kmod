@@ -5,6 +5,8 @@
 #pragma once
 
 #include <stddef.h>
+#include <sys/types.h>
+#include <dirent.h>
 
 #if defined(HAVE_STATIC_ASSERT)
 #define assert_cc(expr) _Static_assert((expr), #expr)
@@ -69,6 +71,15 @@ static inline void freep(void *p)
 	free(*(void **)p);
 }
 #define _cleanup_free_ _cleanup_(freep)
+
+static inline void closedirp(void *p)
+{
+	void *dir = *(void **)p;
+
+	if (dir)
+		closedir(dir);
+}
+#define _cleanup_closedir_ _cleanup_(closedirp)
 
 /* Define C11 noreturn without <stdnoreturn.h> and even on older gcc
  * compiler versions */
