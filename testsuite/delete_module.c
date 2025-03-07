@@ -125,8 +125,8 @@ static void init_retcodes(void)
 
 static int remove_directory(const char *path)
 {
+	_cleanup_closedir_ DIR *dir = NULL;
 	struct stat st;
-	DIR *dir;
 	struct dirent *entry;
 	char full_path[PATH_MAX];
 
@@ -151,17 +151,15 @@ static int remove_directory(const char *path)
 		if (entry->d_type == DT_DIR) {
 			if (remove_directory(full_path) != 0) {
 				ERR("Failed to remove directory %s: %m\n", full_path);
-				goto fail;
+				return -1;
 			}
 		} else {
 			if (remove(full_path) != 0) {
 				ERR("Failed to remove file %s: %m\n", full_path);
-				goto fail;
+				return -1;
 			}
 		}
 	}
-
-	closedir(dir);
 
 	if (rmdir(path) != 0) {
 		ERR("Failed to remove directory %s: %m\n", path);
@@ -169,11 +167,6 @@ static int remove_directory(const char *path)
 	}
 
 	return 0;
-
-fail:
-	closedir(dir);
-
-	return -1;
 }
 
 /*
