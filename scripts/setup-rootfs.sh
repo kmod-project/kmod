@@ -115,6 +115,11 @@ map=(
     ["test-weakdep$MODULE_DIRECTORY/4.4.4/kernel/mod-loop-b.ko"]="mod-loop-b.ko"
     ["test-weakdep$MODULE_DIRECTORY/4.4.4/kernel/mod-simple.ko"]="mod-simple.ko"
     ["test-weakdep$MODULE_DIRECTORY/4.4.4/kernel/mod-weakdep.ko"]="mod-weakdep.ko"
+    ["test-multi-softdep$MODULE_DIRECTORY/4.4.4/kernel/mod-foo-a.ko"]="mod-foo-a.ko"
+    ["test-multi-softdep$MODULE_DIRECTORY/4.4.4/kernel/mod-foo-b.ko"]="mod-foo-b.ko"
+    ["test-multi-softdep$MODULE_DIRECTORY/4.4.4/kernel/mod-foo-c.ko"]="mod-foo-c.ko"
+    ["test-multi-softdep$MODULE_DIRECTORY/4.4.4/kernel/mod-softdep-a.ko"]="mod-softdep-a.ko"
+    ["test-multi-softdep$MODULE_DIRECTORY/4.4.4/kernel/mod-softdep-b.ko"]="mod-softdep-b.ko"
 )
 
 gzip_array=(
