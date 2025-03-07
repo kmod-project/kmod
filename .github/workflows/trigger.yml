@@ -1,0 +1,65 @@
+name: Trigger kmod-project.github.io
+
+on:
+  # Runs on pushes targeting master and tag with prefix `v`
+  push:
+    branches:
+      - 'master'
+    tags:
+      - 'v*'
+
+# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
+# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    container:
+      image: 'ubuntu:24.04'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Ubuntu
+        uses: ./.github/actions/setup-ubuntu
+
+      - name: Build document
+        run: |
+          meson setup -Ddocs=true build .
+          meson compile -C build
+
+      - name: Extract document version
+        shell: bash
+        run: |
+          if [[ "${GITHUB_REF}" == refs/heads/* ]]; then
+            echo DOC_VERSION=${GITHUB_REF#refs/heads/} >> $GITHUB_ENV
+          elif [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            echo DOC_VERSION=${GITHUB_REF#refs/tags/} >> $GITHUB_ENV
+          else
+            exit 1
+          fi
+
+      - name: Push document to kmod-project.github.io
+        uses: QXIP/github-action-push-to-another-repository@main
+        env:
+          API_TOKEN_GITHUB: ${{ secrets.KMOD }}
+        with:
+          source-directory: 'build/libkmod/docs/html'
+          destination-github-username: '${{ github.repository_owner }}'
+          destination-repository-name: 'kmod-project.github.io'
+          user-name: 'github-actions[bot]'
+          user-email: '41898282+github-actions[bot]@users.noreply.github.com'
+          target-branch: 'pages'
+          commit-message: 'Auto-adding ${{ env.DOC_VERSION }} document'
+          target-directory: '${{ env.DOC_VERSION }}'
+
+      - name: Dispatch kmod-project.github.io
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.KMOD }}
+          repository: ${{ github.repository_owner }}/kmod-project.github.io
+          event-type: publish-doc
+          client-payload: '{"source":"${{ github.repository }}","version":"${{ env.DOC_VERSION }}"}'
