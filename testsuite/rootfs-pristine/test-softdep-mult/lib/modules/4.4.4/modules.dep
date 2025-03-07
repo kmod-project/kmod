@@ -1,0 +1,5 @@
+kernel/mod-foo-b.ko:
+kernel/mod-foo-c.ko:
+kernel/mod-foo-a.ko:
+kernel/mod-softdep-b.ko:
+kernel/mod-softdep-a.ko:

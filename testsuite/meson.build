@@ -95,7 +95,8 @@ _testsuite = [
   'test-testsuite',
   'test-util',
   'test-weakdep',
-  'test-remove'
+  'test-remove',
+  'test-softdep-mult',
 ]
 
 if get_option('b_sanitize') != 'none'
