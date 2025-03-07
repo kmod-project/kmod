@@ -361,4 +361,49 @@ DEFINE_TEST(modprobe_module_from_relpath,
 	.modules_loaded = "mod-simple",
 	);
 
+static noreturn int modprobe_blacklisted_by_alias(const struct test *t)
+{
+	EXEC_MODPROBE("simple.abc");
+	exit(EXIT_FAILURE);
+}
+DEFINE_TEST(modprobe_blacklisted_by_alias,
+	.description = "check if modprobe alias does not load module with blacklist entry",
+	.config = {
+		[TC_UNAME_R] = "4.4.4",
+		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-modprobe/blacklist",
+	},
+	.modules_loaded = "",
+	.modules_not_loaded = "mod-simple",
+	);
+
+static noreturn int modprobe_blacklisted_by_name(const struct test *t)
+{
+	EXEC_MODPROBE("mod-simple");
+	exit(EXIT_FAILURE);
+}
+DEFINE_TEST(modprobe_blacklisted_by_name,
+	.description = "check if modprobe modulename loads module with blacklist entry",
+	.config = {
+		[TC_UNAME_R] = "4.4.4",
+		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-modprobe/blacklist-loaded",
+		[TC_INIT_MODULE_RETCODES] = "",
+	},
+	.modules_loaded = "mod-simple",
+	);
+
+static noreturn int modprobe_blacklisted_by_name_filtered(const struct test *t)
+{
+	EXEC_MODPROBE("-b", "mod-simple");
+	exit(EXIT_FAILURE);
+}
+DEFINE_TEST(modprobe_blacklisted_by_name_filtered,
+	.description = "check if modprobe -b modulename does not load module with blacklist entry",
+	.config = {
+		[TC_UNAME_R] = "4.4.4",
+		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-modprobe/blacklist",
+	},
+	.modules_loaded = "",
+	.modules_not_loaded = "mod-simple",
+	);
+
 TESTSUITE_MAIN();
