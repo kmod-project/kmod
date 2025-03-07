@@ -94,7 +94,7 @@ static inline unsigned int hash_superfast(const char *key, unsigned int len)
 	case 3:
 		hash += get_unaligned((uint16_t *)key);
 		hash ^= hash << 16;
-		hash ^= key[2] << 18;
+		hash ^= ((uint8_t)key[2]) << 18;
 		hash += hash >> 11;
 		break;
 
