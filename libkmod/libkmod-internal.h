@@ -165,7 +165,7 @@ _must_check_ _nonnull_all_ const void *kmod_elf_strip(const struct kmod_elf *elf
  * Debug mock lib need to find section ".gnu.linkonce.this_module" in order to
  * get modname
  */
-_must_check_ _nonnull_all_ int kmod_elf_get_section(const struct kmod_elf *elf, const char *section, uint64_t *sec_off, uint64_t *sec_size);
+_must_check_ _nonnull_all_ uint32_t kmod_elf_get_section(const struct kmod_elf *elf, const char *section, uint64_t *sec_off, uint64_t *sec_size);
 
 /* libkmod-signature.c */
 struct kmod_signature_info {
