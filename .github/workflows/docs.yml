@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - 'master'
+      - 'ci-test-docs'
     tags:
       - 'v*'
 
@@ -15,23 +16,23 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  trigger:
+  docs:
     runs-on: ubuntu-latest
     container:
       image: 'ubuntu:24.04'
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Setup Ubuntu
         uses: ./.github/actions/setup-ubuntu
 
-      - name: Build document
+      - name: Build docs
         run: |
           meson setup -Ddocs=true build .
           meson compile -C build
 
-      - name: Extract document version
+      - name: Extract docs version
         shell: bash
         run: |
           if [[ "${GITHUB_REF}" == refs/heads/* ]]; then
@@ -42,10 +43,12 @@ jobs:
             exit 1
           fi
 
-      - name: Push document to kmod-project.github.io
-        uses: QXIP/github-action-push-to-another-repository@main
+          echo DOC_VERSION_COMMIT="${GITHUB_SHA}" >> $GITHUB_ENV
+
+      - name: Push docs to kmod-project.github.io
+        uses: QXIP/github-action-push-to-another-repository@a910af640bd64288db58f0e71a361aabac022f8b
         env:
-          API_TOKEN_GITHUB: ${{ secrets.KMOD }}
+          API_TOKEN_GITHUB: ${{ secrets.KMOD_DOCS }}
         with:
           source-directory: 'build/libkmod/docs/html'
           destination-github-username: '${{ github.repository_owner }}'
@@ -53,13 +56,13 @@ jobs:
           user-name: 'github-actions[bot]'
           user-email: '41898282+github-actions[bot]@users.noreply.github.com'
           target-branch: 'pages'
-          commit-message: 'Auto-adding ${{ env.DOC_VERSION }} document'
+          commit-message: 'Auto-add ${{ env.DOC_VERSION }} docs for commit ${{ env.DOC_VERSION_COMMIT }}'
           target-directory: '${{ env.DOC_VERSION }}'
 
       - name: Dispatch kmod-project.github.io
         uses: peter-evans/repository-dispatch@v3
         with:
-          token: ${{ secrets.KMOD }}
+          token: ${{ secrets.KMOD_DOCS }}
           repository: ${{ github.repository_owner }}/kmod-project.github.io
           event-type: publish-doc
           client-payload: '{"source":"${{ github.repository }}","version":"${{ env.DOC_VERSION }}"}'
