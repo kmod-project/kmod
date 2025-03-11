@@ -85,20 +85,20 @@ static void help(void)
 	       "\t-e, --errsyms        Report not supplied symbols\n"
 	       "\t-n, --show           Write the dependency file on stdout only\n"
 	       "\t-P, --symbol-prefix  Architecture symbol prefix\n"
-	       "\t-C, --config=PATH    Read configuration from PATH\n"
+	       "\t-C, --config PATH    Read configuration from PATH\n"
 	       "\t-v, --verbose        Enable verbose mode\n"
 	       "\t-w, --warn           Warn on duplicates\n"
 	       "\t-V, --version        show version\n"
 	       "\t-h, --help           show this help\n"
 	       "\n"
 	       "The following options are useful for people managing distributions:\n"
-	       "\t-b, --basedir=DIR    Root path (default: /).\n"
-	       "\t-m, --moduledir=DIR  Module directory (default: " MODULE_DIRECTORY
+	       "\t-b, --basedir DIR    Root path (default: /).\n"
+	       "\t-m, --moduledir DIR  Module directory (default: " MODULE_DIRECTORY
 	       ").\n"
-	       "\t-o, --outdir=DIR     Output root path (default: same as <basedir>).\n"
-	       "\t-F, --filesyms=FILE  Use the file instead of the\n"
+	       "\t-o, --outdir DIR     Output root path (default: same as <basedir>).\n"
+	       "\t-F, --filesyms FILE  Use the file instead of the\n"
 	       "\t                     current kernel symbols.\n"
-	       "\t-E, --symvers=FILE   Use Module.symvers file to check\n"
+	       "\t-E, --symvers FILE   Use Module.symvers file to check\n"
 	       "\t                     symbol versions.\n",
 	       program_invocation_short_name);
 }
