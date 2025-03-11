@@ -22,6 +22,7 @@ runs:
           echo "deb http://deb.debian.org/debian bullseye-backports main" >> /etc/apt/sources.list
           backports_pkgs=("meson" "ninja-build")
         else
+          # The pahole dependency should really be resolved via linux-headers-generic.
           pkgs+=("pahole")
         fi
 
