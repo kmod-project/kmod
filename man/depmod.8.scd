@@ -46,7 +46,7 @@ rather than the current kernel version (as returned by *uname -r*).
 	*modules.dep* file before any work is done: if not, it silently exits
 	rather than regenerating the files.
 
-*-b* _basedir_, *--basedir*=_basedir_
+*-b* _basedir_, *--basedir* _basedir_
 	Override the base directory <BASEDIR> where modules are located.
 	If your modules are not currently in the (normal) directory
 	@MODULE_DIRECTORY@/_version_, but in a staging area, you can specify a
@@ -66,7 +66,7 @@ rather than the current kernel version (as returned by *uname -r*).
 	_/my/build/staging/dir@MODULE_DIRECTORY@/$(uname -r)_ and generates
 	index files under that same directory.
 
-*-m* _moduledir_, *--moduledir*=_moduledir_
+*-m* _moduledir_, *--moduledir* _moduledir_
 	Override the module directory <MODULEDIR>, which defaults to
 	@MODULE_DIRECTORY@ prefix set at build time. This is useful when
 	building *modules.dep* file in _basedir_ for a system that uses a
@@ -93,7 +93,7 @@ depmod -b /tmp/build -m kernel-modules
 	handle that arbitrary location, it won't work in runtime.
 
 
-*-o* _outdir_, *--outdir*=_outdir_
+*-o* _outdir_, *--outdir* _outdir_
 	Set the output directory where *depmod* will store any generated file.
 	_outdir_ serves as a root to that location, similar to how _basedir_ is
 	used. Also this setting takes precedence and if used together with
@@ -110,7 +110,7 @@ depmod -b /tmp/build -m kernel-modules
 	_@MODULE_DIRECTORY@/$(uname -r)_ and generates index files under
 	_/my/build/staging/dir@MODULE_DIRECTORY@/$(uname -r)_.
 
-*-C* _file_ _or_ _directory_, *--config*=_file_ _or_ _directory_
+*-C* _file_ _or_ _directory_, *--config* _file_ _or_ _directory_
 	This option overrides the default configuration files. See
 	*depmod.d*(5).
 
@@ -122,13 +122,13 @@ depmod -b /tmp/build -m kernel-modules
 	assumption can break especially when additionally updated third party
 	drivers are not correctly installed or were built incorrectly.
 
-*-E* _Module.symvers_, *--symvers*=_Module.symvers_
+*-E* _Module.symvers_, *--symvers* _Module.symvers_
 	When combined with the *-e* option, this reports any symbol versions
 	supplied by modules that do not match with the symbol versions provided
 	by the kernel in its _Module.symvers_. This option is mutually
 	incompatible with *-F*.
 
-*-F* _System.map_, *--filesyms*=_System.map_
+*-F* _System.map_, *--filesyms* _System.map_
 	Supplied with the _System.map_ produced when the kernel was built, this
 	allows the *-e* option to report unresolved symbols. This option is
 	mutually incompatible with *-E*.
