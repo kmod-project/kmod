@@ -102,7 +102,7 @@ static void help(void)
 	       "\t-r, --remove                Remove modules instead of inserting\n"
 	       "\t    --remove-dependencies   Deprecated: use --remove-holders\n"
 	       "\t    --remove-holders        Also remove module holders (use together with -r)\n"
-	       "\t-w, --wait=<MSEC>           When removing a module, wait up to MSEC for\n"
+	       "\t-w, --wait <MSEC>           When removing a module, wait up to MSEC for\n"
 	       "\t                            module's refcount to become 0 so it can be\n"
 	       "\t                            removed (use together with -r)\n"
 	       "\t    --first-time            Fail if module already inserted or removed\n"
@@ -128,10 +128,10 @@ static void help(void)
 	       "\t-n, --dry-run               Do not execute operations, just print out\n"
 	       "\t-n, --show                  Same as --dry-run\n"
 
-	       "\t-C, --config=FILE           Use FILE instead of default search paths\n"
-	       "\t-d, --dirname=DIR           Use DIR as filesystem root for " MODULE_DIRECTORY
+	       "\t-C, --config FILE           Use FILE instead of default search paths\n"
+	       "\t-d, --dirname DIR           Use DIR as filesystem root for " MODULE_DIRECTORY
 	       "\n"
-	       "\t-S, --set-version=VERSION   Use VERSION instead of `uname -r`\n"
+	       "\t-S, --set-version VERSION   Use VERSION instead of `uname -r`\n"
 
 	       "\t-s, --syslog                print to syslog, not stderr\n"
 	       "\t-q, --quiet                 disable messages\n"

@@ -31,14 +31,14 @@ architecture.
 *-V*, *--version*
 	Print the *modinfo* version.
 
-*-F* _field_, *--field*=_field_
+*-F* _field_, *--field* _field_
 	Only print this _field_ value, one per line. This is most useful for
 	scripts. Field names are case-insensitive. Common fields (which may not
 	be in every module) include author, description, license, parm, depends,
 	and alias. There are often multiple parm, alias and depends fields. The
 	special _field_ filename lists the filename of the module.
 
-*-b* _basedir_, *--basedir*=_basedir_
+*-b* _basedir_, *--basedir* _basedir_
 	Root directory for modules, / by default.
 
 *-k* _kernel_
