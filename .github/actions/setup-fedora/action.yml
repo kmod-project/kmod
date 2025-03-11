@@ -22,7 +22,6 @@ runs:
           libasan \
           libhwasan \
           liblsan \
-          libtool \
           libtsan \
           libubsan \
           libzstd-devel \
