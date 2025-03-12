@@ -20,15 +20,16 @@ jobs:
   analyze:
     name: Analyze
     runs-on: ubuntu-24.04
+
     strategy:
       fail-fast: false
       matrix:
-        container:
-          - name: 'ubuntu:24.04'
+        include:
+          - container: 'ubuntu:24.04'
             meson_setup: '-D b_sanitize=none -D b_coverage=true'
 
     container:
-      image: ${{ matrix.container.name }}
+      image: ${{ matrix.container }}
 
     steps:
       - name: Sparse checkout the local actions
@@ -53,7 +54,7 @@ jobs:
       - name: Build
         run: |
           mkdir build && cd build
-          meson setup --native-file ../build-dev.ini ${{ matrix.container.meson_setup }} . ..
+          meson setup --native-file ../build-dev.ini ${{ matrix.meson_setup }} . ..
           meson compile
           meson test
           ninja coverage-xml
