@@ -27,31 +27,22 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        container:
-          - name: 'ubuntu:24.04'
+        include:
+          - container: 'ubuntu:24.04'
             meson_setup: '-D b_sanitize=none -D build-tests=false'
 
     container:
-      image: ${{ matrix.container.name }}
+      image: ${{ matrix.container }}
 
     steps:
-      - name: Sparse checkout the local actions
+      - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-        with:
-          sparse-checkout: .github
 
-      - uses: ./.github/actions/setup-ubuntu
-        if: ${{ startsWith(matrix.container.name, 'ubuntu') }}
-
-      - name: Checkout the whole project
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Setup OS
+        uses: ./.github/actions/setup-os
 
       - name: Set the environment
         run: |
-          # The second checkout above claims to set safe.directory, yet it
-          # doesn't quite work. Perhaps our double/sparse checkout is to blame?
-          git config --global --add safe.directory '*'
-
           .github/print-kdir.sh >> "$GITHUB_ENV"
 
       - name: Initialize CodeQL
@@ -63,7 +54,7 @@ jobs:
       - name: Build
         run: |
           mkdir build && cd build
-          meson setup --native-file ../build-dev.ini ${{ matrix.container.meson_setup }} . ..
+          meson setup --native-file ../build-dev.ini ${{ matrix.meson_setup }} . ..
           meson compile
 
       - name: Perform CodeQL Analysis

@@ -1,0 +1,28 @@
+# SPDX-FileCopyrightText: 2025 Lucas De Marchi <lucas.de.marchi@gmail.com>
+# SPDX-License-Identifier: LGPL-2.1-or-later
+
+name: 'Setup OS'
+description: 'Setup an Alpine container for running CI'
+inputs:
+  distro:
+    description: 'What distro to setup - default is to autodetect'
+    type: string
+    required: false
+    default: ''
+runs:
+  using: 'composite'
+  steps:
+    - name: Detect distro
+      shell: sh
+      run: |
+        DISTRO="${{ inputs.distro }}"
+        if [ -z "$DISTRO" ]; then
+          . /etc/os-release
+          DISTRO=$ID
+        fi
+        echo "Distro: $DISTRO"
+        echo DISTRO="$DISTRO" >> $GITHUB_ENV
+
+    - name: Setup distro
+      shell: sh
+      run: ${GITHUB_ACTION_PATH}/setup-${DISTRO}.sh
