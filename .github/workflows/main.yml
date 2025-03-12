@@ -120,19 +120,23 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           sparse-checkout: .github
+          path: local-actions
 
       - name: Setup OS
-        uses: ./.github/actions/setup-os
+        uses: ./local-actions/.github/actions/setup-os
 
-      - name: Checkout the whole project
+      - name: Cleanup local actions
+        run: |
+          rm -rf local-actions
+          # The sparse checkout with REST API creates the current dir with the wrong
+          # user. Move ownership to the current user.
+          git config --global --add safe.directory '*'
+
+      - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Set the environment
         run: |
-          # The second checkout above claims to set safe.directory, yet it
-          # doesn't quite work. Perhaps our double/sparse checkout is to blame?
-          git config --global --add safe.directory '*'
-
           .github/print-kdir.sh >> "$GITHUB_ENV"
 
       - name: configure checks
