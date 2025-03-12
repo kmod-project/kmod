@@ -36,8 +36,8 @@ jobs:
         with:
           sparse-checkout: .github
 
-      - uses: ./.github/actions/setup-ubuntu
-        if: ${{ startsWith(matrix.container.name, 'ubuntu') }}
+      - name: Setup OS
+        uses: ./.github/actions/setup-os
 
       - name: Checkout the whole project
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2

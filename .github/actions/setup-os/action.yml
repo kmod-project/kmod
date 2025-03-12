@@ -1,0 +1,19 @@
+# SPDX-FileCopyrightText: 2025 Lucas De Marchi <lucas.de.marchi@gmail.com>
+# SPDX-License-Identifier: LGPL-2.1-or-later
+
+name: 'Setup OS'
+description: 'Setup an OS container for running CI'
+runs:
+  using: 'composite'
+  steps:
+    - name: Detect distro
+      shell: sh
+      run: |
+        . /etc/os-release
+        DISTRO=$ID
+        echo "Distro: $DISTRO"
+        echo DISTRO="$DISTRO" >> $GITHUB_ENV
+
+    - name: Setup distro
+      shell: sh
+      run: ${GITHUB_ACTION_PATH}/setup-${DISTRO}.sh
