@@ -91,11 +91,11 @@ _testsuite = [
   'test-modinfo',
   'test-modprobe',
   'test-new-module',
+  'test-remove',
   'test-strbuf',
   'test-testsuite',
   'test-util',
   'test-weakdep',
-  'test-remove'
 ]
 
 if get_option('b_sanitize') != 'none'
