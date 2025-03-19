@@ -54,6 +54,7 @@ static inline _must_check_ _nonnull_all_ bool path_is_absolute(const char *p)
 int mkdir_p(const char *path, int len, mode_t mode);
 int mkdir_parents(const char *path, mode_t mode);
 unsigned long long stat_mstamp(const struct stat *st);
+char *fd_lookup_path(int fd);
 
 /* time-related functions
  * ************************************************************************ */

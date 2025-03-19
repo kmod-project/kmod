@@ -24,6 +24,7 @@
 #include <shared/hash.h>
 #include <shared/macro.h>
 #include <shared/strbuf.h>
+#include <shared/tmpfile-util.h>
 #include <shared/util.h>
 
 #include <libkmod/libkmod-internal.h>
@@ -2606,34 +2607,15 @@ static int depmod_output(struct depmod *depmod, FILE *out)
 
 	for (itr = depfiles; itr->name != NULL; itr++) {
 		FILE *fp = out;
-		char tmp[NAME_MAX] = "";
+		struct tmpfile file;
 		int r, ferr;
 
 		if (fp == NULL) {
-			int flags = O_CREAT | O_EXCL | O_WRONLY;
-			int mode = 0644;
-			int fd;
-			int n;
+			mode_t mode = 0644;
 
-			n = snprintf(tmp, sizeof(tmp), "%s.%i.%lli.%lli", itr->name,
-				     getpid(), (long long)tv.tv_usec,
-				     (long long)tv.tv_sec);
-			if (n >= (int)sizeof(tmp)) {
-				ERR("bad filename: %s.%i.%lli.%lli: path too long\n",
-				    itr->name, getpid(), (long long)tv.tv_usec,
-				    (long long)tv.tv_sec);
-				continue;
-			}
-			fd = openat(dfd, tmp, flags, mode);
-			if (fd < 0) {
-				ERR("openat(%s, %s, %o, %o): %m\n", dname, tmp, flags,
-				    mode);
-				continue;
-			}
-			fp = fdopen(fd, "wb");
+			fp = tmpfile_openat(dfd, mode, &file);
 			if (fp == NULL) {
-				ERR("fdopen(%d=%s/%s): %m\n", fd, dname, tmp);
-				close(fd);
+				ERR("Could not create temporary file at '%s'\n", dname);
 				continue;
 			}
 		}
@@ -2645,18 +2627,16 @@ static int depmod_output(struct depmod *depmod, FILE *out)
 		ferr = ferror(fp) | fclose(fp);
 
 		if (r < 0) {
-			if (unlinkat(dfd, tmp, 0) != 0)
-				ERR("unlinkat(%s, %s): %m\n", dname, tmp);
+			tmpfile_release(&file);
 
 			ERR("Could not write index '%s': %s\n", itr->name, strerror(-r));
 			err = -errno;
 			break;
 		}
 
-		if (renameat(dfd, tmp, dfd, itr->name) != 0) {
-			err = -errno;
-			CRIT("renameat(%s, %s, %s, %s): %m\n", dname, tmp, dname,
-			     itr->name);
+		err = tmpfile_publish(&file, itr->name);
+		if (err != 0) {
+			CRIT("publish temporary from %s to %s\n", file.tmpname, itr->name);
 			break;
 		}
 
