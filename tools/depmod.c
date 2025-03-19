@@ -2653,9 +2653,8 @@ static int depmod_output(struct depmod *depmod, FILE *out)
 
 		err = tmpfile_publish(&file);
 		if (err != 0) {
-			err = -errno;
-			CRIT("renameat(%s, %s, %s, %s): %m\n", dname, tmp, dname,
-			     itr->name);
+			CRIT("publish temporary from %s to %s: %m\n", file.tmpname,
+			     file.targetname);
 			break;
 		}
 
