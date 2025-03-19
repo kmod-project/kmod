@@ -24,6 +24,7 @@
 #include <shared/hash.h>
 #include <shared/macro.h>
 #include <shared/strbuf.h>
+#include <shared/tmpfile-util.h>
 #include <shared/util.h>
 
 #include <libkmod/libkmod-internal.h>
@@ -2603,6 +2604,10 @@ static int depmod_output(struct depmod *depmod, FILE *out)
 			return err;
 		}
 	}
+
+	char tmp[PATH_MAX];
+	read_link(dfd, &tmp);
+	ERR("depmod dirname: %s, %s\n", dname, tmp);
 
 	for (itr = depfiles; itr->name != NULL; itr++) {
 		FILE *fp = out;
