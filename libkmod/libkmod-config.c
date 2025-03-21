@@ -581,7 +581,7 @@ static char *weakdep_to_char(struct kmod_weakdep *dep)
 	/* Rely on the fact that dep->weak[] is a strv that points to a contiguous buffer */
 	if (dep->n_weak > 0) {
 		start = dep->weak[0];
-		end = dep->weak[dep->n_weak - 1] + strlen(dep->weak[dep->n_weak - 1]);
+		end = dep->weak[dep->n_weak - 1] + strlen(dep->weak[dep->n_weak - 1]) + 1;
 		sz = end - start;
 	} else
 		sz = 0;
@@ -594,8 +594,8 @@ static char *weakdep_to_char(struct kmod_weakdep *dep)
 		char *p;
 
 		/* include last '\0' */
-		memcpy(itr, dep->weak[0], sz + 1);
-		for (p = itr; p < itr + sz; p++) {
+		memcpy(itr, dep->weak[0], sz);
+		for (p = itr; p < itr + sz - 1; p++) {
 			if (*p == '\0')
 				*p = ' ';
 		}
