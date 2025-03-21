@@ -96,7 +96,6 @@ static noreturn int modprobe_config(const struct test *t)
 	exit(EXIT_FAILURE);
 }
 DEFINE_TEST(modprobe_config,
-	.expected_fail = true,
 	.description = "check modprobe config parsing with weakdep",
 	.config = {
 		[TC_UNAME_R] = "4.4.4",
