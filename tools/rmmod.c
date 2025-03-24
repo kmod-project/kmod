@@ -15,6 +15,7 @@
 #include <sys/types.h>
 
 #include <shared/macro.h>
+#include <shared/strbuf.h>
 
 #include <libkmod/libkmod.h>
 
@@ -63,16 +64,18 @@ static int check_module_inuse(struct kmod_module *mod)
 
 	holders = kmod_module_get_holders(mod);
 	if (holders != NULL) {
+		DECLARE_STRBUF_WITH_STACK(buf, 128);
 		struct kmod_list *itr;
-
-		ERR("Module %s is in use by:", kmod_module_get_name(mod));
 
 		kmod_list_foreach(itr, holders) {
 			struct kmod_module *hm = kmod_module_get_module(itr);
-			ERR(" %s", kmod_module_get_name(hm));
+			strbuf_pushchar(&buf, ' ');
+			strbuf_pushchars(&buf, kmod_module_get_name(hm));
 			kmod_module_unref(hm);
 		}
-		ERR("\n");
+
+		ERR("Module %s is in use by:%s\n", kmod_module_get_name(mod),
+		    strbuf_str(&buf));
 
 		kmod_module_unref_list(holders);
 		return -EBUSY;
