@@ -52,11 +52,11 @@ struct kmod_elf {
 	struct {
 		struct {
 			uint64_t offset;
-			uint16_t count;
+			uint32_t count;
 			uint16_t entry_size;
 		} section;
 		struct {
-			uint16_t section; /* index of the strings section */
+			uint32_t section; /* index of the strings section */
 			uint64_t size;
 			uint64_t offset;
 		} strings;
@@ -203,20 +203,20 @@ static inline const void *elf_get_mem(const struct kmod_elf *elf, uint64_t offse
  * (offset 0 cannot be a valid section offset because ELF header is located there).
  */
 static inline uint64_t elf_get_section_header_offset(const struct kmod_elf *elf,
-						     uint16_t idx)
+						     uint32_t idx)
 {
 	assert(idx != SHN_UNDEF);
 	assert(idx < elf->header.section.count);
 	if (idx == SHN_UNDEF || idx >= elf->header.section.count) {
-		ELFDBG(elf, "invalid section number: %" PRIu16 ", last=%" PRIu16 "\n",
+		ELFDBG(elf, "invalid section number: %" PRIu32 ", last=%" PRIu32 "\n",
 		       idx, elf->header.section.count);
 		return 0;
 	}
 	return elf->header.section.offset +
-	       (uint64_t)(idx * elf->header.section.entry_size);
+	       (uint64_t)idx * elf->header.section.entry_size;
 }
 
-static inline int elf_get_section_info(const struct kmod_elf *elf, uint16_t idx,
+static inline int elf_get_section_info(const struct kmod_elf *elf, uint32_t idx,
 				       uint64_t *offset, uint64_t *size,
 				       const char **name)
 {
@@ -224,7 +224,7 @@ static inline int elf_get_section_info(const struct kmod_elf *elf, uint16_t idx,
 	uint64_t off = elf_get_section_header_offset(elf, idx);
 
 	if (off == 0) {
-		ELFDBG(elf, "no section at %" PRIu16 "\n", idx);
+		ELFDBG(elf, "no section at %" PRIu32 "\n", idx);
 		goto fail;
 	}
 
@@ -258,7 +258,7 @@ static inline int elf_get_section_info(const struct kmod_elf *elf, uint16_t idx,
 	*name = elf_get_mem(elf, elf->header.strings.offset + nameoff);
 
 	ELFDBG(elf,
-	       "section=%" PRIu16 " is: offset=%" PRIu64 " size=%" PRIu64 " name=%s\n",
+	       "section=%" PRIu32 " is: offset=%" PRIu64 " size=%" PRIu64 " name=%s\n",
 	       idx, *offset, *size, *name);
 
 	return 0;
@@ -275,7 +275,7 @@ static void kmod_elf_save_sections(struct kmod_elf *elf)
 	uint16_t found_sec = 0;
 	enum kmod_elf_section sec;
 
-	for (uint16_t i = 1; i < elf->header.section.count && found_sec != all_sec; i++) {
+	for (uint32_t i = 1; i < elf->header.section.count && found_sec != all_sec; i++) {
 		uint64_t off, size;
 		const char *n;
 		int err = elf_get_section_info(elf, i, &off, &size, &n);
@@ -338,15 +338,34 @@ struct kmod_elf *kmod_elf_new(const void *memory, off_t size)
 	elf->size = size;
 
 #define READV(field) elf_get_uint(elf, offsetof(typeof(*hdr), field), sizeof(hdr->field))
+#define READXV(field)                                                                  \
+	elf_get_uint(elf, elf->header.section.offset + offsetof(typeof(*shdr), field), \
+		     sizeof(shdr->field))
 
-#define LOAD_HEADER                                          \
-	elf->header.section.offset = READV(e_shoff);         \
-	elf->header.section.count = READV(e_shnum);          \
-	elf->header.section.entry_size = READV(e_shentsize); \
-	elf->header.strings.section = READV(e_shstrndx);     \
-	elf->header.machine = READV(e_machine)
+#define LOAD_HEADER                                                               \
+	elf->header.section.offset = READV(e_shoff);                              \
+	elf->header.section.count = READV(e_shnum);                               \
+	elf->header.section.entry_size = READV(e_shentsize);                      \
+	elf->header.strings.section = READV(e_shstrndx);                          \
+	elf->header.machine = READV(e_machine);                                   \
+	if (elf->header.section.count == 0 ||                                     \
+	    elf->header.strings.section == SHN_XINDEX) {                          \
+		if (!elf_range_valid(elf, elf->header.section.offset, shdr_size)) \
+			goto invalid;                                             \
+		if (elf->header.section.count == 0) {                             \
+			uint64_t val = READXV(sh_size);                           \
+			if (val > UINT32_MAX)                                     \
+				goto invalid;                                     \
+			elf->header.section.count = val;                          \
+		}                                                                 \
+		if (elf->header.strings.section == SHN_XINDEX) {                  \
+			elf->header.strings.section = READXV(sh_link);            \
+		}                                                                 \
+	}
+
 	if (elf->x32) {
 		Elf32_Ehdr *hdr;
+		Elf32_Shdr *shdr;
 
 		shdr_size = sizeof(Elf32_Shdr);
 		if (!elf_range_valid(elf, 0, sizeof(*hdr)))
@@ -354,6 +373,7 @@ struct kmod_elf *kmod_elf_new(const void *memory, off_t size)
 		LOAD_HEADER;
 	} else {
 		Elf64_Ehdr *hdr;
+		Elf64_Shdr *shdr;
 
 		shdr_size = sizeof(Elf64_Shdr);
 		if (!elf_range_valid(elf, 0, sizeof(*hdr)))
@@ -364,8 +384,8 @@ struct kmod_elf *kmod_elf_new(const void *memory, off_t size)
 #undef READV
 
 	ELFDBG(elf,
-	       "section: offset=%" PRIu64 " count=%" PRIu16 " entry_size=%" PRIu16
-	       " strings index=%" PRIu16 "\n",
+	       "section: offset=%" PRIu64 " count=%" PRIu32 " entry_size=%" PRIu16
+	       " strings index=%" PRIu32 "\n",
 	       elf->header.section.offset, elf->header.section.count,
 	       elf->header.section.entry_size, elf->header.strings.section);
 
@@ -374,7 +394,11 @@ struct kmod_elf *kmod_elf_new(const void *memory, off_t size)
 		       elf->header.section.entry_size, shdr_size);
 		goto invalid;
 	}
-	shdrs_size = shdr_size * elf->header.section.count;
+	if (umulsz_overflow(shdr_size, elf->header.section.count, &shdrs_size)) {
+		ELFDBG(elf, "sections too large: %zu * %" PRIu32 "\n", shdr_size,
+		       elf->header.section.count);
+		goto invalid;
+	}
 	if (!elf_range_valid(elf, elf->header.section.offset, shdrs_size))
 		goto invalid;
 
@@ -412,13 +436,13 @@ const void *kmod_elf_get_memory(const struct kmod_elf *elf)
 }
 
 /*
- * Returns section index on success, negative value otherwise.
+ * Returns section index on success, zero otherwise.
  * On success, sec_off and sec_size are range checked and valid.
  */
-int kmod_elf_get_section(const struct kmod_elf *elf, const char *section,
-			 uint64_t *sec_off, uint64_t *sec_size)
+uint32_t kmod_elf_get_section(const struct kmod_elf *elf, const char *section,
+			      uint64_t *sec_off, uint64_t *sec_size)
 {
-	uint16_t i;
+	uint32_t i;
 
 	*sec_off = 0;
 	*sec_size = 0;
@@ -437,7 +461,7 @@ int kmod_elf_get_section(const struct kmod_elf *elf, const char *section,
 		return i;
 	}
 
-	return -ENODATA;
+	return 0;
 }
 
 /* array will be allocated with strings in a single malloc, just free *array */
@@ -596,11 +620,11 @@ static int elf_strip_versions_section(const struct kmod_elf *elf, uint8_t *chang
 	uint64_t off, size;
 	const void *buf;
 	/* the off and size values are not used, supply them as dummies */
-	int idx = kmod_elf_get_section(elf, "__versions", &off, &size);
+	uint32_t idx = kmod_elf_get_section(elf, "__versions", &off, &size);
 	uint64_t val;
 
-	if (idx < 0)
-		return idx == -ENODATA ? 0 : idx;
+	if (idx == 0)
+		return 0;
 
 	off = elf_get_section_header_offset(elf, idx);
 
