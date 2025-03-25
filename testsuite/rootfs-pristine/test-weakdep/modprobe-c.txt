@@ -1,0 +1,7 @@
+weakdep mod_loop_b mod-loop-a mod-simple
+weakdep mod_weakdep mod-simple
+
+# End of configuration files. Dumping indexes now:
+
+alias symbol:printA mod_loop_a
+alias symbol:printB mod_loop_b

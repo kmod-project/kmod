@@ -15,6 +15,10 @@
 
 #include "testsuite.h"
 
+#define EXEC_MODPROBE(...)                     \
+	test_spawn_prog(TOOLS_DIR "/modprobe", \
+			(const char *[]){ TOOLS_DIR "/modprobe", ##__VA_ARGS__, NULL })
+
 static const char *const mod_name[] = {
 	"mod-loop-b",
 	"mod-weakdep",
@@ -76,7 +80,7 @@ static int test_weakdep(const struct test *t)
 	return EXIT_SUCCESS;
 }
 DEFINE_TEST(test_weakdep,
-	.description = "check if modprobe breaks weakdep",
+	.description = "check if libkmod breaks weakdep",
 	.config = {
 		[TC_UNAME_R] = "4.4.4",
 		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-weakdep",
@@ -84,6 +88,22 @@ DEFINE_TEST(test_weakdep,
 	},
 	.output = {
 		.out = TESTSUITE_ROOTFS "test-weakdep/correct-weakdep.txt",
+	});
+
+static noreturn int modprobe_config(const struct test *t)
+{
+	EXEC_MODPROBE("-c");
+	exit(EXIT_FAILURE);
+}
+DEFINE_TEST(modprobe_config,
+	.expected_fail = true,
+	.description = "check modprobe config parsing with weakdep",
+	.config = {
+		[TC_UNAME_R] = "4.4.4",
+		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-weakdep",
+	},
+	.output = {
+		.out = TESTSUITE_ROOTFS "test-weakdep/modprobe-c.txt",
 	});
 
 TESTSUITE_MAIN();
