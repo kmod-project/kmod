@@ -548,7 +548,7 @@ endif
 # dist && autotools compat
 # ------------------------------------------------------------------------------
 
-meson.add_dist_script('autogen.sh')
+meson.add_dist_script('scripts/autogen-for-tarball.sh')
 
 # ------------------------------------------------------------------
 # documentation

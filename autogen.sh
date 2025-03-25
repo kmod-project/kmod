@@ -6,13 +6,17 @@ oldpwd=$(pwd)
 
 if [ -n "$MESON_DIST_ROOT" ]; then
     topdir="$MESON_DIST_ROOT"
+    gtkdocize_args="--copy"
+    autoreconf_args=
 else
     topdir=$(dirname $0)
+    gtkdocize_args=
+    autoreconf_args="--symlink"
 fi
 
 cd $topdir
 
-gtkdocize --docdir libkmod/docs || NO_GTK_DOC="yes"
+gtkdocize ${gtkdocize_args} --docdir libkmod/docs || NO_GTK_DOC="yes"
 if [ "x$NO_GTK_DOC" = "xyes" ]
 then
 	for f in libkmod/docs/gtk-doc.make m4/gtk-doc.m4
@@ -22,7 +26,7 @@ then
 	done
 fi
 
-autoreconf --force --install --symlink
+autoreconf --force --install ${autoreconf_args}
 
 libdir() {
         echo $(cd "$1/$(gcc -print-multi-os-directory)"; pwd)
