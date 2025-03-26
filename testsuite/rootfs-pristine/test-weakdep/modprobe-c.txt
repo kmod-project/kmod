@@ -1,3 +1,4 @@
+weakdep mod_loop_a 
 weakdep mod_loop_b mod-loop-a mod-simple
 weakdep mod_weakdep mod-simple
 
