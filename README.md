@@ -56,13 +56,6 @@ For end-user and distributions builds, it's recommended to use:
 
     meson setup --buildtype release builddir/
 
-Alternatively you can try autotools build.
-NOTE: The autotools build is slated for removal with kmod v35
-
-    ./configure CFLAGS="-g -O2" --prefix=/usr \
-                --sysconfdir=/etc --libdir=/usr/lib
-    make && make install
-
 Hacking
 =======
 
