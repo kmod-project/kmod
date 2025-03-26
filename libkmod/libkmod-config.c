@@ -574,28 +574,30 @@ static char *softdep_to_char(struct kmod_softdep *dep)
 
 static char *weakdep_to_char(struct kmod_weakdep *dep)
 {
-	size_t sz;
+	size_t sz = 1; /* at least '\0' */
+	size_t sz_weak;
 	const char *start, *end;
 	char *s, *itr;
 
 	/* Rely on the fact that dep->weak[] is a strv that points to a contiguous buffer */
 	if (dep->n_weak > 0) {
 		start = dep->weak[0];
-		end = dep->weak[dep->n_weak - 1] + strlen(dep->weak[dep->n_weak - 1]) + 1;
-		sz = end - start;
+		end = dep->weak[dep->n_weak - 1] + strlen(dep->weak[dep->n_weak - 1]);
+		sz_weak = end - start;
+		sz += sz_weak;
 	} else
-		sz = 0;
+		sz_weak = 0;
 
 	itr = s = malloc(sz);
 	if (s == NULL)
 		return NULL;
 
-	if (sz) {
+	if (sz_weak) {
 		char *p;
 
 		/* include last '\0' */
-		memcpy(itr, dep->weak[0], sz);
-		for (p = itr; p < itr + sz - 1; p++) {
+		memcpy(itr, dep->weak[0], sz_weak);
+		for (p = itr; p < itr + sz_weak; p++) {
 			if (*p == '\0')
 				*p = ' ';
 		}
