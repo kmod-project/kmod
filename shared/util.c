@@ -476,6 +476,31 @@ int mkdir_parents(const char *path, mode_t mode)
 	return mkdir_p(path, end - path, mode);
 }
 
+int get_absolute_path(int fd, char **ret_path)
+{
+	char proc_path[PATH_MAX];
+	char fd_path[PATH_MAX];
+	ssize_t len;
+
+	len = snprintf(proc_path, sizeof(proc_path), "/proc/self/fd/%d", fd);
+	if (len < 0 || len >= (ssize_t)sizeof(proc_path)) {
+		return -errno;
+	}
+
+	len = readlink(proc_path, fd_path, sizeof(fd_path) - 1);
+	if (len < 0 || len >= (ssize_t)sizeof(fd_path)) {
+		return -errno;
+	}
+
+	fd_path[len] = '\0';
+
+	if (ret_path != NULL) {
+		*ret_path = strdup(fd_path);
+	}
+
+	return 0;
+}
+
 static unsigned long long ts_usec(const struct timespec *ts)
 {
 	return (unsigned long long)ts->tv_sec * USEC_PER_SEC +
