@@ -17,110 +17,86 @@
 
 #include "tmpfile-util.h"
 #include "macro.h"
+#include "util.h"
 
-int tmpfile_init(struct tmpfile *file, const char *targetname)
+FILE *tmpfile_openat(int dirfd, const char *tmpname_tmpl, mode_t mode,
+		     struct tmpfile *file)
 {
+	const char *tmpname;
+	char tmpfile_path[PATH_MAX];
 	int fd, n, err;
-	int mode = 0644;
-	char *targetdir;
-	_cleanup_free_ char *dup_target = strdup(targetname);
+	_cleanup_free_ char *targetdir;
+	FILE *fp;
 
-	if (file == NULL || targetname == NULL) {
-		return -EINVAL;
+	if (file == NULL || tmpname_tmpl == NULL) {
+		return NULL;
 	}
 
-	targetdir = dirname(dup_target);
-	memset(file->tmpname, 0, PATH_MAX);
-	n = snprintf(file->tmpname, PATH_MAX, "%s/tmpfileXXXXXXXX", targetdir);
-	if (n >= PATH_MAX) {
-		err = -EINVAL;
+	err = fd_lookup_path(dirfd, &targetdir);
+	if (err < 0) {
 		goto create_fail;
 	}
 
-	file->targetname = targetname;
+	n = snprintf(tmpfile_path, PATH_MAX, "%s/%s", targetdir, tmpname_tmpl);
+	if (n < 0 || n >= PATH_MAX) {
+		goto create_fail;
+	}
 
-	fd = mkstemp(file->tmpname);
+	fd = mkstemp(tmpfile_path);
 	if (fd < 0) {
-		err = -errno;
 		goto create_fail;
 	}
 
 	if (fchmod(fd, mode) < 0) {
-		close(fd);
-		err = -errno;
-		goto create_fail;
+		goto checkout_fail;
 	}
 
-	file->f = fdopen(fd, "wb");
-	if (file->f == NULL) {
-		close(fd);
-		err = -errno;
-		goto create_fail;
+	fp = fdopen(fd, "wb");
+	if (fp == NULL) {
+		goto checkout_fail;
 	}
 
-	return 0;
-create_fail:
-	file->f = NULL;
-	file->targetname = NULL;
+	tmpname = basename(tmpfile_path);
 	memset(file->tmpname, 0, PATH_MAX);
-	return err;
+	memcpy(file->tmpname, tmpname, strlen(tmpname));
+
+	file->dirfd = dirfd;
+	file->fd = fd;
+
+	return fp;
+
+checkout_fail:
+	close(fd);
+	remove(tmpfile_path);
+create_fail:
+	return NULL;
 }
 
-int tmpfile_publish(struct tmpfile *file)
+int tmpfile_publish(struct tmpfile *file, const char *targetname)
 {
-	if (file == NULL || file->f == NULL) {
+	if (file == NULL || targetname == NULL) {
 		return -EINVAL;
 	}
-	fclose(file->f);
 
-	if (file->targetname == NULL)
-		return -EINVAL;
-
-	printf("from: %s, to: %s\n", file->tmpname, file->targetname);
-	if (rename(file->tmpname, file->targetname) != 0)
+	if (renameat(file->dirfd, file->tmpname, file->dirfd, targetname) != 0) {
 		return -errno;
+	}
 
-	file->f = NULL;
-	file->targetname = NULL;
+	file->fd = 0;
+	file->dirfd = 0;
 	memset(file->tmpname, 0, PATH_MAX);
 	return 0;
 }
 
 void tmpfile_release(struct tmpfile *file)
 {
-	if (file == NULL || file->f == NULL) {
+	if (file == NULL) {
 		return;
 	}
-	fclose(file->f);
 
-	if (access(file->tmpname, F_OK) == 0) {
-		remove(file->tmpname);
-	}
+	unlinkat(file->dirfd, file->tmpname, 0);
 
-	file->f = NULL;
-	file->targetname = NULL;
+	file->fd = 0;
+	file->dirfd = 0;
 	memset(file->tmpname, 0, PATH_MAX);
-}
-
-int tmpfile_write(struct tmpfile *file, const char *bytes, size_t count)
-{
-	if (file == NULL || file->f == NULL) {
-		return -EINVAL;
-	}
-	return fwrite(bytes, 1, count, file->f);
-}
-
-int tmpfile_printf(struct tmpfile *file, const char *fmt, ...)
-{
-	va_list args;
-	int result;
-	if (file == NULL || file->f == NULL) {
-		return -EINVAL;
-	}
-
-	va_start(args, fmt);
-	result = vfprintf(file->f, fmt, args);
-	va_end(args);
-
-	return result;
 }

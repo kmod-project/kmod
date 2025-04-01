@@ -476,7 +476,7 @@ int mkdir_parents(const char *path, mode_t mode)
 	return mkdir_p(path, end - path, mode);
 }
 
-int get_absolute_path(int fd, char **ret_path)
+int fd_lookup_path(int fd, char **ret_path)
 {
 	char proc_path[PATH_MAX];
 	char fd_path[PATH_MAX];

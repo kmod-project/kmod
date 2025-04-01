@@ -5,28 +5,22 @@
 
 struct tmpfile {
 	char tmpname[PATH_MAX];
-	const char *targetname;
-	FILE *f;
+	int dirfd;
+	int fd;
 };
 
 /*
- * Create a temporary file at the same directory of `targename`, the temp file name
- * follows pattern tmpfileXXXXXXXX. After creation, open the temporary file to `FILE *f`
- * and change the file permissions to 0644.
+ * Create a temporary file at the directory of `dirfd`
 */
-int tmpfile_init(struct tmpfile *file, const char *targetname);
+FILE *tmpfile_openat(int dirfd, const char *tmpname_tmpl, mode_t mode,
+		     struct tmpfile *file);
 
 /*
- * Move the temporary file to `file->targetname`
+ * Move the temporary file to `targetname`
 */
-int tmpfile_publish(struct tmpfile *file);
+int tmpfile_publish(struct tmpfile *file, const char *targetname);
 
 /*
  * Delete the temporary file
 */
 void tmpfile_release(struct tmpfile *file);
-
-int tmpfile_write(struct tmpfile *file, const char *bytes, size_t count);
-
-int tmpfile_printf(struct tmpfile *file, const char *fmt, ...)
-	__attribute__((format(printf, 2, 3)));
