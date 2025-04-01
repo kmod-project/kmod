@@ -17,12 +17,18 @@ static const struct {
 	const char *modname;
 	const char *pre[MAX_SOFTDEP_N];
 	const char *post[MAX_SOFTDEP_N];
-} test_modules[] = { { .modname = "mod-softdep-a",
-		       .pre = { "mod_foo_a", "mod_foo_b" },
-		       .post = { "mod_foo_c" } },
-		     { .modname = "mod-softdep-b",
-		       .pre = { "mod_foo_a" },
-		       .post = { "mod_foo_b", "mod_foo_c" } } };
+} test_modules[] = {
+	{
+		.modname = "mod-softdep-a",
+		.pre = { "mod_foo_a", "mod_foo_b" },
+		.post = { "mod_foo_c" },
+	},
+	{
+		.modname = "mod-softdep-b",
+		.pre = { "mod_foo_a" },
+		.post = { "mod_foo_b", "mod_foo_c" },
+	},
+};
 
 static int check_dependencies(const char *const *modnames,
 			      const struct kmod_list *mod_list)
@@ -119,9 +125,10 @@ fail:
  * See https://github.com/kmod-project/kmod/issues/33 for more details.
  */
 DEFINE_TEST(multi_softdep, .description = "check if multiple softdep is supported",
+	    .expected_fail = true,
 	    .config = {
-		[TC_UNAME_R] = "4.4.4",
-		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-multi-softdep/",
-	    }, .expected_fail=true);
+		    [TC_UNAME_R] = "4.4.4",
+		    [TC_ROOTFS] = TESTSUITE_ROOTFS "test-multi-softdep/",
+	    });
 
 TESTSUITE_MAIN();
