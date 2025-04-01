@@ -2625,7 +2625,7 @@ static int depmod_output(struct depmod *depmod, FILE *out)
 		if (fp == out)
 			continue;
 
-		ferr = ferror(fp);
+		ferr = ferror(fp) | fclose(fp);
 
 		if (r < 0) {
 			tmpfile_release(&file);
