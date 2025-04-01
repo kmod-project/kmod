@@ -2,8 +2,6 @@
 /*
  * Copyright © 2025 Intel Corporation
  */
-#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-
 #include <linux/init.h>
 #include <linux/module.h>
 
