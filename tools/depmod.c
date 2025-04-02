@@ -2611,10 +2611,9 @@ static int depmod_output(struct depmod *depmod, FILE *out)
 		int r, ferr;
 
 		if (fp == NULL) {
-			const char *tmpname_tmpl = "tmpfileXXXXXX";
 			mode_t mode = 0644;
 
-			fp = tmpfile_openat(dfd, tmpname_tmpl, mode, &file);
+			fp = tmpfile_openat(dfd, mode, &file);
 			if (fp == NULL) {
 				ERR("Could not create temporary file at '%s'\n", dname);
 				continue;
