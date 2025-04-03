@@ -2630,7 +2630,7 @@ static int depmod_output(struct depmod *depmod, FILE *out)
 			tmpfile_release(&file);
 
 			ERR("Could not write index '%s': %s\n", itr->name, strerror(-r));
-			err = -errno;
+			err = r;
 			break;
 		}
 
