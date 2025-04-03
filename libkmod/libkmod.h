@@ -366,6 +366,22 @@ struct kmod_list *kmod_list_prev(const struct kmod_list *list,
 struct kmod_config_iter;
 
 /**
+ * kmod_config_get_masks:
+ * @ctx: kmod library context
+ *
+ * Retrieve an iterator to deal with the mask list maintained inside the
+ * library. See kmod_config_iter_get_key(), kmod_config_iter_get_value() and
+ * kmod_config_iter_next(). At least one call to kmod_config_iter_next() must
+ * be made to initialize the iterator and check if it's valid.
+ *
+ * Returns: a new iterator over the masks or NULL on failure. Free it
+ * with kmod_config_iter_free_iter().
+ *
+ * Since: 35
+ */
+struct kmod_config_iter *kmod_config_get_masks(const struct kmod_ctx *ctx);
+
+/**
  * kmod_config_get_blacklists:
  * @ctx: kmod library context
  *
