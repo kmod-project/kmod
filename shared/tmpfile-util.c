@@ -69,7 +69,7 @@ int tmpfile_publish(struct tmpfile *file, const char *targetname)
 
 	file->fd = -1;
 	file->dirfd = -1;
-	memset(file->tmpname, 0, PATH_MAX);
+	memset(file->tmpname, 0, sizeof(file->tmpname));
 
 	return 0;
 }

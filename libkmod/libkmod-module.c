@@ -127,7 +127,7 @@ void kmod_module_parse_depline(struct kmod_module *mod, char *line)
 	*p = '\0';
 	dirname = kmod_get_dirname(mod->ctx);
 	dirnamelen = strlen(dirname);
-	if (dirnamelen + 2 >= PATH_MAX)
+	if (dirnamelen + 2 >= sizeof(buf))
 		return;
 
 	memcpy(buf, dirname, dirnamelen);
@@ -301,7 +301,7 @@ int kmod_module_new_from_alias(struct kmod_ctx *ctx, const char *alias, const ch
 	size_t namelen = strlen(name);
 	size_t aliaslen = strlen(alias);
 
-	if (namelen + aliaslen + 2 > PATH_MAX)
+	if (namelen + aliaslen + 2 > sizeof(key))
 		return -ENAMETOOLONG;
 
 	memcpy(key, name, namelen);
