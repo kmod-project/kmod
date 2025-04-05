@@ -31,8 +31,8 @@ FILE *tmpfile_openat(int dirfd, mode_t mode, struct tmpfile *file)
 	if (targetdir == NULL)
 		goto create_fail;
 
-	n = snprintf(tmpfile_path, PATH_MAX, "%s/%s", targetdir, tmpname_tmpl);
-	if (n < 0 || n >= PATH_MAX)
+	n = snprintf(tmpfile_path, sizeof(tmpfile_path), "%s/%s", targetdir, tmpname_tmpl);
+	if (n < 0 || n >= (int)sizeof(tmpfile_path))
 		goto create_fail;
 
 	fd = mkstemp(tmpfile_path);

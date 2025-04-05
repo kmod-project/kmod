@@ -44,7 +44,7 @@ static bool kmod_builtin_info_init(struct kmod_builtin_info *info, struct kmod_c
 		errno = ENAMETOOLONG;
 		return false;
 	}
-	snprintf(path, PATH_MAX, "%s/" MODULES_BUILTIN_MODINFO, dirname);
+	snprintf(path, sizeof(path), "%s/" MODULES_BUILTIN_MODINFO, dirname);
 
 	fp = fopen(path, "r");
 	if (fp == NULL)
