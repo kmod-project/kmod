@@ -40,7 +40,7 @@ static bool kmod_builtin_info_init(struct kmod_builtin_info *info, struct kmod_c
 	const char *dirname = kmod_get_dirname(ctx);
 	size_t len = strlen(dirname);
 
-	if ((len + 1 + strlen(MODULES_BUILTIN_MODINFO) + 1) >= PATH_MAX) {
+	if ((len + 1 + strlen(MODULES_BUILTIN_MODINFO) + 1) >= sizeof(path)) {
 		errno = ENAMETOOLONG;
 		return false;
 	}
