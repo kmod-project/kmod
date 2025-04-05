@@ -661,7 +661,7 @@ static int kmod_config_parse_kcmdline(struct kmod_config *config)
 	close(fd);
 	if (err < 0) {
 		ERR(config->ctx, "could not read from '/proc/cmdline': %s\n",
-		    strerror(-err));
+		    KMOD_STRERROR(-err));
 		return err;
 	}
 
