@@ -160,7 +160,7 @@ void kmod_module_parse_depline(struct kmod_module *mod, char *line)
 
 		err = kmod_module_new_from_path(ctx, path, &depmod);
 		if (err < 0) {
-			ERR(ctx, "ctx=%p path=%s error=%s\n", ctx, path, strerror(-err));
+			ERR(ctx, "ctx=%p path=%s error=%s\n", ctx, path, KMOD_STRERROR(-err));
 			goto fail;
 		}
 
@@ -333,7 +333,7 @@ KMOD_EXPORT int kmod_module_new_from_path(struct kmod_ctx *ctx, const char *path
 	err = stat(abspath, &st);
 	if (err < 0) {
 		err = -errno;
-		DBG(ctx, "stat %s: %s\n", path, strerror(errno));
+		DBG(ctx, "stat %s: %m\n", path);
 		free(abspath);
 		return err;
 	}
@@ -663,8 +663,7 @@ static int do_init_module(struct kmod_module *mod, unsigned int flags, const cha
 
 		stripped = kmod_elf_strip(elf, flags);
 		if (stripped == NULL) {
-			ERR(mod->ctx, "Failed to strip version information: %s\n",
-			    strerror(errno));
+			ERR(mod->ctx, "Failed to strip version information: %m\n");
 			return -errno;
 		}
 		mem = stripped;
@@ -713,7 +712,7 @@ KMOD_EXPORT int kmod_module_insert_module(struct kmod_module *mod, unsigned int 
 		err = do_init_module(mod, flags, args);
 
 	if (err < 0)
-		INFO(mod->ctx, "Failed to insert module '%s': %s\n", path, strerror(-err));
+		INFO(mod->ctx, "Failed to insert module '%s': %s\n", path, KMOD_STRERROR(-err));
 
 	return err;
 }
@@ -892,7 +891,7 @@ static int __kmod_module_fill_softdep(struct kmod_module *mod, struct kmod_list 
 
 	err = kmod_module_get_softdeps(mod, &pre, &post);
 	if (err < 0) {
-		ERR(mod->ctx, "could not get softdep: %s\n", strerror(-err));
+		ERR(mod->ctx, "could not get softdep: %s\n", KMOD_STRERROR(-err));
 		goto fail;
 	}
 
@@ -1361,7 +1360,7 @@ KMOD_EXPORT int kmod_module_new_from_loaded(struct kmod_ctx *ctx, struct kmod_li
 	fp = fopen("/proc/modules", "re");
 	if (fp == NULL) {
 		int err = -errno;
-		ERR(ctx, "could not open /proc/modules: %s\n", strerror(errno));
+		ERR(ctx, "could not open /proc/modules: %m\n");
 		return err;
 	}
 
@@ -1375,7 +1374,7 @@ KMOD_EXPORT int kmod_module_new_from_loaded(struct kmod_ctx *ctx, struct kmod_li
 		err = kmod_module_new_from_name(ctx, name, &m);
 		if (err < 0) {
 			ERR(ctx, "could not get module from name '%s': %s\n", name,
-			    strerror(-err));
+			    KMOD_STRERROR(-err));
 			goto eat_line;
 		}
 
@@ -1434,7 +1433,7 @@ KMOD_EXPORT int kmod_module_get_initstate(const struct kmod_module *mod)
 	if (fd < 0) {
 		err = -errno;
 
-		DBG(mod->ctx, "could not open '%s': %s\n", path, strerror(-err));
+		DBG(mod->ctx, "could not open '%s': %s\n", path, KMOD_STRERROR(-err));
 
 		if (pathlen > (int)sizeof("/initstate") - 1) {
 			struct stat st;
@@ -1443,14 +1442,14 @@ KMOD_EXPORT int kmod_module_get_initstate(const struct kmod_module *mod)
 				return KMOD_MODULE_COMING;
 		}
 
-		DBG(mod->ctx, "could not open '%s': %s\n", path, strerror(-err));
+		DBG(mod->ctx, "could not open '%s': %s\n", path, KMOD_STRERROR(-err));
 		return err;
 	}
 
 	err = read_str_safe(fd, buf, sizeof(buf));
 	close(fd);
 	if (err < 0) {
-		ERR(mod->ctx, "could not read from '%s': %s\n", path, strerror(-err));
+		ERR(mod->ctx, "could not read from '%s': %s\n", path, KMOD_STRERROR(-err));
 		return err;
 	}
 
@@ -1498,7 +1497,7 @@ KMOD_EXPORT long kmod_module_get_size(const struct kmod_module *mod)
 	fp = fopen("/proc/modules", "re");
 	if (fp == NULL) {
 		int err = -errno;
-		ERR(mod->ctx, "could not open /proc/modules: %s\n", strerror(errno));
+		ERR(mod->ctx, "could not open /proc/modules: %m\n");
 		close(dfd);
 		return err;
 	}
@@ -1550,7 +1549,7 @@ KMOD_EXPORT int kmod_module_get_refcnt(const struct kmod_module *mod)
 	fd = open(path, O_RDONLY | O_CLOEXEC);
 	if (fd < 0) {
 		err = -errno;
-		DBG(mod->ctx, "could not open '%s': %s\n", path, strerror(errno));
+		DBG(mod->ctx, "could not open '%s': %m\n", path);
 		return err;
 	}
 
@@ -1558,7 +1557,7 @@ KMOD_EXPORT int kmod_module_get_refcnt(const struct kmod_module *mod)
 	close(fd);
 	if (err < 0) {
 		ERR(mod->ctx, "could not read integer from '%s': '%s'\n", path,
-		    strerror(-err));
+		    KMOD_STRERROR(-err));
 		return err;
 	}
 
@@ -1579,7 +1578,7 @@ KMOD_EXPORT struct kmod_list *kmod_module_get_holders(const struct kmod_module *
 
 	d = opendir(dname);
 	if (d == NULL) {
-		ERR(mod->ctx, "could not open '%s': %s\n", dname, strerror(errno));
+		ERR(mod->ctx, "could not open '%s': %m\n", dname);
 		return NULL;
 	}
 
@@ -1597,7 +1596,7 @@ KMOD_EXPORT struct kmod_list *kmod_module_get_holders(const struct kmod_module *
 		err = kmod_module_new_from_name(mod->ctx, dent->d_name, &holder);
 		if (err < 0) {
 			ERR(mod->ctx, "could not create module for '%s': %s\n",
-			    dent->d_name, strerror(-err));
+			    dent->d_name, KMOD_STRERROR(-err));
 			goto fail;
 		}
 
@@ -1645,7 +1644,7 @@ KMOD_EXPORT struct kmod_list *kmod_module_get_sections(const struct kmod_module 
 
 	d = opendir(dname);
 	if (d == NULL) {
-		ERR(mod->ctx, "could not open '%s': %s\n", dname, strerror(errno));
+		ERR(mod->ctx, "could not open '%s': %m\n", dname);
 		return NULL;
 	}
 

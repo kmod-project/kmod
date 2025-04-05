@@ -56,7 +56,7 @@ int kmod_file_load_zlib(struct kmod_file *file)
 	ret = dlopen_zlib();
 	if (ret < 0) {
 		ERR(file->ctx, "zlib: can't load and resolve symbols (%s)",
-		    strerror(-ret));
+		    KMOD_STRERROR(-ret));
 		return -EINVAL;
 	}
 

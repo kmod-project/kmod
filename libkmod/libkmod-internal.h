@@ -25,7 +25,14 @@
 
 #define KMOD_EXPORT __attribute__((visibility("default")))
 
+
 #define KCMD_LINE_SIZE 4096
+#ifdef HAVE_STRERRORDESC_NP
+#define KMOD_STRERROR(errnum) strerrordesc_np(errnum)
+#else
+#define KMOD_ERRNO_BUF_LEN 1024
+#define KMOD_STRERROR(errnum) strerror_r(errnum, (char[KMOD_ERRNO_BUF_LEN]){}, KMOD_ERRNO_BUF_LEN)
+#endif
 
 #ifndef HAVE_SECURE_GETENV
 #warning secure_getenv is not available
