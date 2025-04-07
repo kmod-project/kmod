@@ -35,7 +35,7 @@ cdata.set10('_GNU_SOURCE', true)
 
 _funcs = [
   'open64', 'stat64', 'fopen64', '__stat64_time64',
-  'secure_getenv',
+  'secure_getenv', 'strerrordesc_np',
 ]
 foreach func : _funcs
   if cc.has_function(func, args : '-D_GNU_SOURCE')
