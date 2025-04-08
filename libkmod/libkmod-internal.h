@@ -97,6 +97,7 @@ struct kmod_config_path {
 struct kmod_config {
 	struct kmod_ctx *ctx;
 	struct kmod_list *aliases;
+	struct kmod_list *masks;
 	struct kmod_list *blacklists;
 	struct kmod_list *options;
 	struct kmod_list *remove_commands;
@@ -109,6 +110,7 @@ struct kmod_config {
 
 _nonnull_all_ int kmod_config_new(struct kmod_ctx *ctx, struct kmod_config **config, const char * const *config_paths);
 _nonnull_all_ void kmod_config_free(struct kmod_config *config);
+_nonnull_all_ const char *kmod_mask_get_modname(const struct kmod_list *l);
 _nonnull_all_ const char *kmod_blacklist_get_modname(const struct kmod_list *l);
 _nonnull_all_ const char *kmod_alias_get_name(const struct kmod_list *l);
 _nonnull_all_ const char *kmod_alias_get_modname(const struct kmod_list *l);
