@@ -7,6 +7,8 @@
 
 _arguments \
     {-f,--force}'[DANGEROUS: forces a module load, may cause data corruption and crash your machine]' \
+    --force-modversion'[ignore module version, may cause data corruption and crash your machine]' \
+    --force-vermagic'[ignore module version magic, may cause data corruption and crash your machine]' \
     {-s,--syslog}'[print to syslog, not stderr]' \
     {-v,--verbose}'[enables more messages]' \
     {-V,--version}'[show version]' \
