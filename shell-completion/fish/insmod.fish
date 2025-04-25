@@ -7,6 +7,8 @@
 complete -c insmod -f
 
 complete -c insmod -s f -l force   -d "DANGEROUS: forces a module load, may cause data corruption and crash your machine"
+complete -c insmod -l force-modversion -d "DANGEROUS: Ignore module's version, may cause data corruption and crash your machine"
+complete -c insmod -l force-vermagic -d "DANGEROUS: Ignore module's version magic, may cause data corruption and crash your machine"
 complete -c insmod -s s -l syslog  -d 'print to syslog, not stderr'
 complete -c insmod -s v -l verbose -d 'enables more messages'
 complete -c insmod -s V -l version -d 'show version'

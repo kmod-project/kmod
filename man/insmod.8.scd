@@ -24,7 +24,23 @@ information about errors.
 	This option can be extremely dangerous: it tells the kernel to ignore
 	the module version and vermagic fields when loading. With this option,
 	you can load modules build locally or by third parties, although this
-	can lead to memory corruption, system crashes and data loss.
+	can lead to memory corruption, system crashes and data loss. This is
+	the same as using both *--force-vermagic* and *--force-modversion*.
+
+*--force-modversion*
+	When modules are compiled with CONFIG_MODVERSIONS set, a section
+	detailing the versions of every interfaced used by (or supplied by) the
+	module is created. If a module fails to load and the kernel complains
+	that the module disagrees about a version of some interface, you can use
+	*--force-modversion* to remove the version information altogether.
+
+*--force-vermagic*
+	Every module contains a small string containing important information,
+	such as the kernel and compiler versions. If a module fails to load and
+	the kernel complains that the "version magic" doesn't match, you can use
+	this option to remove it. Naturally, this check is there for your
+	protection, so using this option is dangerous unless you know what
+	you're doing.
 
 *-s*, *--syslog*
 	Send errors to syslog instead of standard error.

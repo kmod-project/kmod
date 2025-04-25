@@ -11,6 +11,8 @@ _insmod()
     # long/short opt pairs
     local -A opts=(
         ['force']='f'
+        ['force-modversion']=''
+        ['force-vermagic']=''
         ['syslog']='s'
         ['verbose']='v'
         ['version']='V'
