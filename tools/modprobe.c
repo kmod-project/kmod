@@ -110,7 +110,7 @@ static void help(void)
 	       "\t-i, --ignore-remove         Ignore remove commands\n"
 	       "\t-b, --use-blacklist         Apply blacklist to resolved alias.\n"
 	       "\t-f, --force                 Force module insertion or removal.\n"
-	       "\t                            implies --force-modversions and\n"
+	       "\t                            implies --force-modversion and\n"
 	       "\t                            --force-vermagic\n"
 	       "\t    --force-modversion      Ignore module's version\n"
 	       "\t    --force-vermagic        Ignore module's version magic\n"
