@@ -261,7 +261,7 @@ static inline int test_run_child(const struct test *t, int fdout[2], int fderr[2
 		}
 
 		if (stat_mstamp(&rootfsst) > stat_mstamp(&stampst)) {
-			ERR("rootfs %s is dirty, please run 'meson compile testsuite/stamp-rootfs' before running this test\n",
+			ERR("rootfs %s is dirty, please run 'meson compile testsuite/create-rootfs' before running this test\n",
 			    rootfs);
 			exit(EXIT_FAILURE);
 		}
