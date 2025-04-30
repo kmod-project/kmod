@@ -52,8 +52,10 @@ static struct param *add_param(const char *name, size_t namelen, const char *par
 
 	if (it == NULL) {
 		it = malloc(sizeof(struct param));
-		if (it == NULL)
+		if (it == NULL) {
+			errno = ENOMEM;
 			return NULL;
+		}
 		it->next = *list;
 		*list = it;
 		it->name = name;
@@ -105,7 +107,7 @@ static int process_parm(const char *key, const char *value, struct param **param
 	it = add_param(name, namelen, param, paramlen, type, typelen, params);
 	if (it == NULL) {
 		ERR("Unable to add parameter: %m\n");
-		return -ENOMEM;
+		return -errno;
 	}
 
 	return 0;

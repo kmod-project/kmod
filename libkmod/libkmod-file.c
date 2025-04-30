@@ -80,6 +80,7 @@ struct kmod_file *kmod_file_open(const struct kmod_ctx *ctx, const char *filenam
 	struct kmod_file *file;
 	char buf[7];
 	ssize_t sz;
+	int err = 0;
 
 	assert_cc(sizeof(magic_zstd) < sizeof(buf));
 	assert_cc(sizeof(magic_xz) < sizeof(buf));
@@ -98,12 +99,13 @@ struct kmod_file *kmod_file_open(const struct kmod_ctx *ctx, const char *filenam
 	sz = pread_str_safe(file->fd, buf, sizeof(buf), 0);
 	if (sz != (sizeof(buf) - 1)) {
 		if (sz < 0)
-			errno = -sz;
+			err = -sz;
 		else
-			errno = EINVAL;
+			err = EINVAL;
 
 		close(file->fd);
 		free(file);
+		errno = err;
 		return NULL;
 	}
 
