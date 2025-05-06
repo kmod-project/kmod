@@ -281,6 +281,36 @@ DEFINE_TEST(modprobe_force,
 	.modules_loaded = "mod-simple",
 	);
 
+static noreturn int modprobe_force_modversion(const struct test *t)
+{
+	EXEC_MODPROBE("--force-modversion", "mod-simple");
+	exit(EXIT_FAILURE);
+}
+DEFINE_TEST(modprobe_force_modversion,
+	.description = "check modprobe --force-modversion",
+	.config = {
+		[TC_UNAME_R] = "4.4.4",
+		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-modprobe/force-modversion",
+		[TC_INIT_MODULE_RETCODES] = "",
+	},
+	.modules_loaded = "mod-simple",
+	);
+
+static noreturn int modprobe_force_vermagic(const struct test *t)
+{
+	EXEC_MODPROBE("--force-vermagic", "mod-simple");
+	exit(EXIT_FAILURE);
+}
+DEFINE_TEST(modprobe_force_vermagic,
+	.description = "check modprobe --force-vermagic",
+	.config = {
+		[TC_UNAME_R] = "4.4.4",
+		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-modprobe/force-vermagic",
+		[TC_INIT_MODULE_RETCODES] = "",
+	},
+	.modules_loaded = "mod-simple",
+	);
+
 static noreturn int modprobe_oldkernel(const struct test *t)
 {
 	EXEC_MODPROBE("mod-simple");
@@ -306,6 +336,36 @@ DEFINE_TEST(modprobe_oldkernel_force,
 	.config = {
 		[TC_UNAME_R] = "3.3.3",
 		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-modprobe/oldkernel-force",
+		[TC_INIT_MODULE_RETCODES] = "",
+	},
+	.modules_loaded = "mod-simple",
+	);
+
+static noreturn int modprobe_oldkernel_force_modversion(const struct test *t)
+{
+	EXEC_MODPROBE("--force-modversion", "mod-simple");
+	exit(EXIT_FAILURE);
+}
+DEFINE_TEST(modprobe_oldkernel_force_modversion,
+	.description = "check modprobe --force-modversion with kernel without finit_module()",
+	.config = {
+		[TC_UNAME_R] = "3.3.3",
+		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-modprobe/oldkernel-force-modversion",
+		[TC_INIT_MODULE_RETCODES] = "",
+	},
+	.modules_loaded = "mod-simple",
+	);
+
+static noreturn int modprobe_oldkernel_force_vermagic(const struct test *t)
+{
+	EXEC_MODPROBE("--force-vermagic", "mod-simple");
+	exit(EXIT_FAILURE);
+}
+DEFINE_TEST(modprobe_oldkernel_force_vermagic,
+	.description = "check modprobe --force-vermagic with kernel without finit_module()",
+	.config = {
+		[TC_UNAME_R] = "3.3.3",
+		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-modprobe/oldkernel-force-vermagic",
 		[TC_INIT_MODULE_RETCODES] = "",
 	},
 	.modules_loaded = "mod-simple",
