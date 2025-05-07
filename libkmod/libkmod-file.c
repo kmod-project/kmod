@@ -135,7 +135,7 @@ int kmod_file_load_contents(struct kmod_file *file)
 	return file->load(file);
 }
 
-void *kmod_file_get_contents(const struct kmod_file *file)
+const void *kmod_file_get_contents(const struct kmod_file *file)
 {
 	return file->memory;
 }
