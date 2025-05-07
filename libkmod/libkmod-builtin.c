@@ -140,10 +140,8 @@ static char **strbuf_to_vector(struct strbuf *buf, size_t count)
 	/* (string vector + NULL) * sizeof(char *) + strbuf_used() */
 	if (uaddsz_overflow(count, 1, &n) ||
 	    umulsz_overflow(sizeof(char *), n, &vec_size) ||
-	    uaddsz_overflow(strbuf_used(buf), vec_size, &total_size)) {
-		errno = ENOMEM;
+	    uaddsz_overflow(strbuf_used(buf), vec_size, &total_size))
 		return NULL;
-	}
 
 	vector = realloc(buf->bytes, total_size);
 	if (vector == NULL)
@@ -181,7 +179,7 @@ ssize_t kmod_builtin_get_modinfo(struct kmod_ctx *ctx, const char *modname,
 	else if (count > 0) {
 		*modinfo = strbuf_to_vector(&buf, (size_t)count);
 		if (*modinfo == NULL) {
-			count = -errno;
+			count = -ENOMEM;
 			ERR(ctx, "strbuf_to_vector: %m\n");
 		}
 	}
