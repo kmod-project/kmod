@@ -317,11 +317,6 @@ struct kmod_elf *kmod_elf_new(const void *memory, off_t size)
 	assert_cc(sizeof(uint32_t) == sizeof(Elf32_Word));
 	assert_cc(sizeof(uint32_t) == sizeof(Elf64_Word));
 
-	if (!memory) {
-		errno = -EINVAL;
-		return NULL;
-	}
-
 	elf = malloc(sizeof(struct kmod_elf));
 	if (elf == NULL) {
 		return NULL;

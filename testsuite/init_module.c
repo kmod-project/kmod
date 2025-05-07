@@ -234,6 +234,11 @@ long init_module(void *mem, unsigned long len, const char *args)
 
 	init_retcodes();
 
+	if (mem == NULL) {
+		errno = EFAULT;
+		return -1;
+	}
+
 	elf = kmod_elf_new(mem, len);
 	if (elf == NULL)
 		return -1;
