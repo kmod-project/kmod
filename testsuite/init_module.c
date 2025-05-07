@@ -236,15 +236,14 @@ long init_module(void *mem, unsigned long len, const char *args)
 
 	elf = kmod_elf_new(mem, len);
 	if (elf == NULL)
-		return 0;
+		return -1;
 
 	err = kmod_elf_get_section(elf, ".gnu.linkonce.this_module", &off, &bufsize);
 	buf = (const char *)kmod_elf_get_memory(elf) + off;
 	kmod_elf_unref(elf);
 
-	/* We couldn't parse the ELF file. Just exit as if it was successful */
 	if (err < 0)
-		return 0;
+		return -1;
 
 	/* We need to open both 32 and 64 bits module - hack! */
 	class = elf_identify(mem);
