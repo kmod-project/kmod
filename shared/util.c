@@ -482,9 +482,7 @@ char *fd_lookup_path(int fd)
 	char fd_path[PATH_MAX];
 	ssize_t len;
 
-	len = snprintf(proc_path, sizeof(proc_path), "/proc/self/fd/%d", fd);
-	if (len < 0 || len >= (ssize_t)sizeof(proc_path))
-		return NULL;
+	snprintf(proc_path, sizeof(proc_path), "/proc/self/fd/%d", fd);
 
 	/*
 	 * We are using mkstemp to create a temporary file. We need to read the link since
