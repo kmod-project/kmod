@@ -1434,7 +1434,6 @@ KMOD_EXPORT int kmod_module_get_initstate(const struct kmod_module *mod)
 	fd = open(path, O_RDONLY | O_CLOEXEC);
 	if (fd < 0) {
 		err = -errno;
-
 		DBG(mod->ctx, "could not open '%s': %s\n", path, strerror(-err));
 
 		if (pathlen > (int)sizeof("/initstate") - 1) {
@@ -1442,9 +1441,10 @@ KMOD_EXPORT int kmod_module_get_initstate(const struct kmod_module *mod)
 			path[pathlen - (sizeof("/initstate") - 1)] = '\0';
 			if (stat(path, &st) == 0 && S_ISDIR(st.st_mode))
 				return KMOD_MODULE_COMING;
-		}
 
-		DBG(mod->ctx, "could not open '%s': %s\n", path, strerror(-err));
+			err = -errno;
+			DBG(mod->ctx, "could not open '%s': %s\n", path, strerror(-err));
+		}
 		return err;
 	}
 
