@@ -34,15 +34,13 @@ struct param {
 	int typelen;
 };
 
-static struct param *add_param(const char *name, size_t namelen, const char *param,
-			       size_t paramlen, const char *type, size_t typelen,
-			       struct param **list)
+static int add_param(const char *name, size_t namelen, const char *param, size_t paramlen,
+		     const char *type, size_t typelen, struct param **list)
 {
 	struct param *it;
 
 	if (namelen > INT_MAX || paramlen > INT_MAX || typelen > INT_MAX) {
-		errno = EINVAL;
-		return NULL;
+		return -EINVAL;
 	}
 
 	for (it = *list; it != NULL; it = it->next) {
@@ -53,7 +51,7 @@ static struct param *add_param(const char *name, size_t namelen, const char *par
 	if (it == NULL) {
 		it = malloc(sizeof(struct param));
 		if (it == NULL)
-			return NULL;
+			return -ENOMEM;
 		it->next = *list;
 		*list = it;
 		it->name = name;
@@ -74,15 +72,16 @@ static struct param *add_param(const char *name, size_t namelen, const char *par
 		it->typelen = typelen;
 	}
 
-	return it;
+	return 0;
 }
 
 static int process_parm(const char *key, const char *value, struct param **params)
 {
 	const char *name, *param, *type;
 	size_t namelen, paramlen, typelen;
-	struct param *it;
 	const char *colon = strchr(value, ':');
+	int ret;
+
 	if (colon == NULL) {
 		ERR("Found invalid \"%s=%s\": missing ':'\n", key, value);
 		return 0;
@@ -102,9 +101,9 @@ static int process_parm(const char *key, const char *value, struct param **param
 		typelen = strlen(type);
 	}
 
-	it = add_param(name, namelen, param, paramlen, type, typelen, params);
-	if (it == NULL) {
-		ERR("Unable to add parameter: %m\n");
+	ret = add_param(name, namelen, param, paramlen, type, typelen, params);
+	if (ret < 0) {
+		ERR("Unable to add parameter: %s\n", strerror(-ret));
 		return -ENOMEM;
 	}
 
