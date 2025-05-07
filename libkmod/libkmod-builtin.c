@@ -33,29 +33,27 @@ struct kmod_builtin_info {
 	char *buf;
 };
 
-static bool kmod_builtin_info_init(struct kmod_builtin_info *info, struct kmod_ctx *ctx)
+static int kmod_builtin_info_init(struct kmod_builtin_info *info, struct kmod_ctx *ctx)
 {
 	char path[PATH_MAX];
 	FILE *fp = NULL;
 	const char *dirname = kmod_get_dirname(ctx);
 	size_t len = strlen(dirname);
 
-	if ((len + 1 + strlen(MODULES_BUILTIN_MODINFO) + 1) >= sizeof(path)) {
-		errno = ENAMETOOLONG;
-		return false;
-	}
+	if ((len + 1 + strlen(MODULES_BUILTIN_MODINFO) + 1) >= sizeof(path))
+		return -ENAMETOOLONG;
 	snprintf(path, sizeof(path), "%s/" MODULES_BUILTIN_MODINFO, dirname);
 
 	fp = fopen(path, "r");
 	if (fp == NULL)
-		return false;
+		return -errno;
 
 	info->ctx = ctx;
 	info->fp = fp;
 	info->bufsz = 0;
 	info->buf = NULL;
 
-	return true;
+	return 0;
 }
 
 static void kmod_builtin_info_release(struct kmod_builtin_info *info)
@@ -171,9 +169,11 @@ ssize_t kmod_builtin_get_modinfo(struct kmod_ctx *ctx, const char *modname,
 	DECLARE_STRBUF(buf);
 	struct kmod_builtin_info info;
 	ssize_t count;
+	int ret;
 
-	if (!kmod_builtin_info_init(&info, ctx))
-		return -errno;
+	ret = kmod_builtin_info_init(&info, ctx);
+	if (ret < 0)
+		return ret;
 
 	count = get_strings(&info, modname, &buf);
 	if (count == 0)
