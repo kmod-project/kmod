@@ -60,7 +60,6 @@ int kmod_file_load_zlib(struct kmod_file *file)
 		return -EINVAL;
 	}
 
-	errno = 0;
 	gzfd = fcntl(file->fd, F_DUPFD_CLOEXEC, 3);
 	if (gzfd < 0)
 		return -errno;
