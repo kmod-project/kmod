@@ -62,19 +62,6 @@ static void kmod_builtin_info_release(struct kmod_builtin_info *info)
 	fclose(info->fp);
 }
 
-static ssize_t get_string(struct kmod_builtin_info *info)
-{
-	ssize_t len;
-
-	len = getdelim(&info->buf, &info->bufsz, '\0', info->fp);
-	if (len > 0 && info->buf[len] != '\0') {
-		errno = EINVAL;
-		len = -1;
-	}
-
-	return len;
-}
-
 static ssize_t get_strings(struct kmod_builtin_info *info, const char *modname,
 			   struct strbuf *buf)
 {
@@ -84,11 +71,11 @@ static ssize_t get_strings(struct kmod_builtin_info *info, const char *modname,
 	for (count = 0; count < INTPTR_MAX;) {
 		char *dot, *line;
 
-		n = get_string(info);
+		n = getdelim(&info->buf, &info->bufsz, '\0', info->fp);
 		if (n == -1) {
 			if (!feof(info->fp)) {
 				count = -errno;
-				ERR(info->ctx, "get_string: %m\n");
+				ERR(info->ctx, "get_strings: %m\n");
 			}
 			break;
 		}
