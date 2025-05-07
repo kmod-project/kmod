@@ -662,10 +662,11 @@ static int do_init_module(struct kmod_module *mod, unsigned int flags, const cha
 			return err;
 		}
 
-		stripped = kmod_elf_strip(elf, flags);
-		if (stripped == NULL) {
-			ERR(mod->ctx, "Failed to strip version information: %m\n");
-			return -errno;
+		err = kmod_elf_strip(elf, flags, &stripped);
+		if (err) {
+			ERR(mod->ctx, "Failed to strip version information: %s\n",
+			    strerror(-err));
+			return err;
 		}
 		mem = stripped;
 	} else {

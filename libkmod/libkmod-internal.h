@@ -159,7 +159,7 @@ _must_check_ _nonnull_all_ int kmod_elf_get_modinfo_strings(const struct kmod_el
 _must_check_ _nonnull_all_ int kmod_elf_get_modversions(const struct kmod_elf *elf, struct kmod_modversion **array);
 _must_check_ _nonnull_all_ int kmod_elf_get_symbols(const struct kmod_elf *elf, struct kmod_modversion **array);
 _must_check_ _nonnull_all_ int kmod_elf_get_dependency_symbols(const struct kmod_elf *elf, struct kmod_modversion **array);
-_must_check_ _nonnull_all_ const void *kmod_elf_strip(const struct kmod_elf *elf, unsigned int flags);
+_must_check_ _nonnull_all_ int kmod_elf_strip(const struct kmod_elf *elf, unsigned int flags, const void **stripped);
 
 /*
  * Debug mock lib need to find section ".gnu.linkonce.this_module" in order to
