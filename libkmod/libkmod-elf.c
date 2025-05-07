@@ -666,7 +666,7 @@ static int elf_strip_vermagic(const struct kmod_elf *elf, uint8_t *changed)
 	return -ENODATA;
 }
 
-const void *kmod_elf_strip(const struct kmod_elf *elf, unsigned int flags)
+int kmod_elf_strip(const struct kmod_elf *elf, unsigned int flags, const void **stripped)
 {
 	uint8_t *changed;
 	int err = 0;
@@ -675,30 +675,27 @@ const void *kmod_elf_strip(const struct kmod_elf *elf, unsigned int flags)
 
 	changed = memdup(elf->memory, elf->size);
 	if (changed == NULL)
-		return NULL;
+		return -errno;
 
 	ELFDBG(elf, "copied memory to allow writing.\n");
 
 	if (flags & KMOD_INSERT_FORCE_MODVERSION) {
 		err = elf_strip_versions_section(elf, changed);
-		if (err < 0) {
-			errno = -err;
+		if (err < 0)
 			goto fail;
-		}
 	}
 
 	if (flags & KMOD_INSERT_FORCE_VERMAGIC) {
 		err = elf_strip_vermagic(elf, changed);
-		if (err < 0) {
-			errno = -err;
+		if (err < 0)
 			goto fail;
-		}
 	}
 
-	return changed;
+	*stripped = changed;
+	return 0;
 fail:
 	free(changed);
-	return NULL;
+	return err;
 }
 
 static int kmod_elf_get_symbols_symtab(const struct kmod_elf *elf,
