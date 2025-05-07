@@ -58,57 +58,53 @@ static const struct comp_type {
 	// clang-format on
 };
 
-struct kmod_elf *kmod_file_get_elf(struct kmod_file *file)
+int kmod_file_get_elf(struct kmod_file *file, struct kmod_elf **elf)
 {
-	int err;
+	if (!file->elf) {
+		int err = kmod_file_load_contents(file);
+		if (err)
+			return err;
 
-	if (file->elf)
-		return file->elf;
-
-	err = kmod_file_load_contents(file);
-	if (err) {
-		errno = -err;
-		return NULL;
+		err = kmod_elf_new(file->memory, file->size, &file->elf);
+		if (err)
+			return err;
 	}
 
-	err = kmod_elf_new(file->memory, file->size, &file->elf);
-	if (err) {
-		errno = -err;
-		return NULL;
-	}
-	return file->elf;
+	*elf = file->elf;
+	return 0;
 }
 
-struct kmod_file *kmod_file_open(const struct kmod_ctx *ctx, const char *filename)
+int kmod_file_open(const struct kmod_ctx *ctx, const char *filename,
+		   struct kmod_file **out_file)
 {
-	struct kmod_file *file;
+	_cleanup_free_ struct kmod_file *file;
 	char buf[7];
 	ssize_t sz;
+	int ret;
 
 	assert_cc(sizeof(magic_zstd) < sizeof(buf));
 	assert_cc(sizeof(magic_xz) < sizeof(buf));
 	assert_cc(sizeof(magic_zlib) < sizeof(buf));
 
 	file = calloc(1, sizeof(struct kmod_file));
-	if (file == NULL)
-		return NULL;
+	if (file == NULL) {
+		file = NULL;
+		return -ENOMEM;
+	}
 
 	file->fd = open(filename, O_RDONLY | O_CLOEXEC);
-	if (file->fd < 0) {
-		free(file);
-		return NULL;
-	}
+	if (file->fd < 0)
+		return -errno;
 
 	sz = pread_str_safe(file->fd, buf, sizeof(buf), 0);
 	if (sz != (sizeof(buf) - 1)) {
 		if (sz < 0)
-			errno = -sz;
+			ret = (int)sz;
 		else
-			errno = EINVAL;
+			ret = -EINVAL;
 
 		close(file->fd);
-		free(file);
-		return NULL;
+		return ret;
 	}
 
 	for (unsigned int i = 0; i < ARRAY_SIZE(comp_types); i++) {
@@ -124,7 +120,9 @@ struct kmod_file *kmod_file_open(const struct kmod_ctx *ctx, const char *filenam
 
 	file->ctx = ctx;
 
-	return file;
+	*out_file = file;
+	file = NULL;
+	return 0;
 }
 
 /*
