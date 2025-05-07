@@ -20,20 +20,20 @@
 
 FILE *tmpfile_openat(int dirfd, mode_t mode, struct tmpfile *file)
 {
-	const char *tmpname_tmpl = "tmpfileXXXXXX";
+	const char *tmpname_tmpl = "/tmpfileXXXXXX";
 	const char *tmpname;
 	char tmpfile_path[PATH_MAX];
 	int fd, n;
-	_cleanup_free_ char *targetdir;
 	FILE *fp;
 
-	targetdir = fd_lookup_path(dirfd);
-	if (targetdir == NULL)
+	n = fd_lookup_path(dirfd, tmpfile_path, sizeof(tmpfile_path));
+	if (n < 0)
 		goto create_fail;
 
-	n = snprintf(tmpfile_path, sizeof(tmpfile_path), "%s/%s", targetdir, tmpname_tmpl);
-	if (n < 0 || n >= (int)sizeof(tmpfile_path))
+	if (n + strlen(tmpname_tmpl) + 1 > sizeof(tmpfile_path))
 		goto create_fail;
+
+	memcpy(tmpfile_path + n, tmpname_tmpl, strlen(tmpname_tmpl) + 1);
 
 	fd = mkstemp(tmpfile_path);
 	if (fd < 0)

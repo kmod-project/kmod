@@ -476,10 +476,9 @@ int mkdir_parents(const char *path, mode_t mode)
 	return mkdir_p(path, end - path, mode);
 }
 
-char *fd_lookup_path(int fd)
+int fd_lookup_path(int fd, char *path, size_t pathlen)
 {
 	char proc_path[PATH_MAX];
-	char fd_path[PATH_MAX];
 	ssize_t len;
 
 	snprintf(proc_path, sizeof(proc_path), "/proc/self/fd/%d", fd);
@@ -488,13 +487,14 @@ char *fd_lookup_path(int fd)
 	 * We are using mkstemp to create a temporary file. We need to read the link since
 	 * the mkstemp creates file with an absolute path
 	 */
-	len = readlink(proc_path, fd_path, sizeof(fd_path) - 1);
-	if (len < 0 || len >= (ssize_t)sizeof(fd_path))
-		return NULL;
+	len = readlink(proc_path, path, pathlen - 1);
+	if (len < 0)
+		return (int)len;
 
-	fd_path[len] = '\0';
+	/* readlink(3), may null-terminate but should not be relied upon */
+	path[len] = '\0';
 
-	return strdup(fd_path);
+	return len;
 }
 
 static unsigned long long ts_usec(const struct timespec *ts)
