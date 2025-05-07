@@ -71,7 +71,11 @@ struct kmod_elf *kmod_file_get_elf(struct kmod_file *file)
 		return NULL;
 	}
 
-	file->elf = kmod_elf_new(file->memory, file->size);
+	err = kmod_elf_new(file->memory, file->size, &file->elf);
+	if (err) {
+		errno = -err;
+		return NULL;
+	}
 	return file->elf;
 }
 

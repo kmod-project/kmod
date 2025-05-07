@@ -239,9 +239,11 @@ long init_module(void *mem, unsigned long len, const char *args)
 		return -1;
 	}
 
-	elf = kmod_elf_new(mem, len);
-	if (elf == NULL)
+	err = kmod_elf_new(mem, len, &elf);
+	if (err < 0) {
+		errno = -err;
 		return -1;
+	}
 
 	err = kmod_elf_get_section(elf, ".gnu.linkonce.this_module", &off, &bufsize);
 	buf = (const char *)kmod_elf_get_memory(elf) + off;
