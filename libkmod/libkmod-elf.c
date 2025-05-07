@@ -305,7 +305,7 @@ static void kmod_elf_save_sections(struct kmod_elf *elf)
 	}
 }
 
-struct kmod_elf *kmod_elf_new(const void *memory, off_t size)
+int kmod_elf_new(const void *memory, off_t size, struct kmod_elf **out_elf)
 {
 	struct kmod_elf *elf;
 	size_t shdrs_size, shdr_size;
@@ -318,15 +318,13 @@ struct kmod_elf *kmod_elf_new(const void *memory, off_t size)
 	assert_cc(sizeof(uint32_t) == sizeof(Elf64_Word));
 
 	elf = malloc(sizeof(struct kmod_elf));
-	if (elf == NULL) {
-		return NULL;
-	}
+	if (elf == NULL)
+		return -ENOMEM;
 
 	err = elf_identify(elf, memory, size);
 	if (err < 0) {
 		free(elf);
-		errno = -err;
-		return NULL;
+		return err;
 	}
 
 	elf->memory = memory;
@@ -388,12 +386,12 @@ struct kmod_elf *kmod_elf_new(const void *memory, off_t size)
 	}
 
 	kmod_elf_save_sections(elf);
-	return elf;
+	*out_elf = elf;
+	return 0;
 
 invalid:
 	free(elf);
-	errno = EINVAL;
-	return NULL;
+	return -EINVAL;
 }
 
 void kmod_elf_unref(struct kmod_elf *elf)
