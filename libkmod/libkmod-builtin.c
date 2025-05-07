@@ -90,7 +90,7 @@ static ssize_t get_strings(struct kmod_builtin_info *info, const char *modname,
 		if (n == -1) {
 			if (!feof(info->fp)) {
 				count = -errno;
-				ERR(info->ctx, "get_string: %s\n", strerror(errno));
+				ERR(info->ctx, "get_string: %m\n");
 			}
 			break;
 		}
@@ -182,7 +182,7 @@ ssize_t kmod_builtin_get_modinfo(struct kmod_ctx *ctx, const char *modname,
 		*modinfo = strbuf_to_vector(&buf, (size_t)count);
 		if (*modinfo == NULL) {
 			count = -errno;
-			ERR(ctx, "strbuf_to_vector: %s\n", strerror(errno));
+			ERR(ctx, "strbuf_to_vector: %m\n");
 		}
 	}
 

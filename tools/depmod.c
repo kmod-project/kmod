@@ -3001,7 +3001,7 @@ static int do_depmod(int argc, char *argv[])
 		optind++;
 	} else {
 		if (uname(&un) < 0) {
-			CRIT("uname() failed: %s\n", strerror(errno));
+			CRIT("uname() failed: %m\n");
 			goto cmdline_failed;
 		}
 		cfg.kversion = un.release;
