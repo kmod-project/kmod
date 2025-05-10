@@ -46,7 +46,7 @@ static void xz_uncompress_belch(struct kmod_file *file, lzma_ret ret)
 {
 	switch (ret) {
 	case LZMA_MEM_ERROR:
-		ERR(file->ctx, "xz: %s\n", strerror(ENOMEM));
+		ERR(file->ctx, "xz: %s\n", KMOD_STRERROR(ENOMEM));
 		break;
 	case LZMA_FORMAT_ERROR:
 		ERR(file->ctx, "xz: File format not recognized\n");
@@ -128,13 +128,13 @@ int kmod_file_load_xz(struct kmod_file *file)
 
 	ret = dlopen_lzma();
 	if (ret < 0) {
-		ERR(file->ctx, "xz: can't load and resolve symbols (%s)", strerror(-ret));
+		ERR(file->ctx, "xz: can't load and resolve symbols (%s)", KMOD_STRERROR(-ret));
 		return -EINVAL;
 	}
 
 	lzret = sym_lzma_stream_decoder(&strm, UINT64_MAX, LZMA_CONCATENATED);
 	if (lzret == LZMA_MEM_ERROR) {
-		ERR(file->ctx, "xz: %s\n", strerror(ENOMEM));
+		ERR(file->ctx, "xz: %s\n", KMOD_STRERROR(ENOMEM));
 		return -ENOMEM;
 	} else if (lzret != LZMA_OK) {
 		ERR(file->ctx, "xz: Internal error (bug)\n");
