@@ -226,6 +226,7 @@ long init_module(void *mem, unsigned long len, const char *args)
 	struct kmod_elf *elf;
 	struct mod *mod;
 	const void *buf;
+	uint32_t idx;
 	uint64_t off;
 	uint64_t bufsize;
 	int err;
@@ -238,12 +239,12 @@ long init_module(void *mem, unsigned long len, const char *args)
 	if (elf == NULL)
 		return 0;
 
-	err = kmod_elf_get_section(elf, ".gnu.linkonce.this_module", &off, &bufsize);
+	idx = kmod_elf_get_section(elf, ".gnu.linkonce.this_module", &off, &bufsize);
 	buf = (const char *)kmod_elf_get_memory(elf) + off;
 	kmod_elf_unref(elf);
 
 	/* We couldn't parse the ELF file. Just exit as if it was successful */
-	if (err < 0)
+	if (idx == 0)
 		return 0;
 
 	/* We need to open both 32 and 64 bits module - hack! */
