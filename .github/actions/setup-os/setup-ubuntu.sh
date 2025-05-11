@@ -9,6 +9,7 @@ export TZ=Etc/UTC
 apt-get update
 apt-get install --yes \
     build-essential \
+    curl \
     clang \
     gcc-multilib \
     gcovr \
