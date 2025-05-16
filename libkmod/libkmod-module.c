@@ -172,6 +172,7 @@ void kmod_module_parse_depline(struct kmod_module *mod, char *line)
 			goto fail;
 		}
 		list = l_new;
+		n++;
 	}
 
 	DBG(ctx, "%zu dependencies for %s\n", n, mod->name);
