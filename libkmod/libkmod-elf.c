@@ -305,7 +305,7 @@ static void kmod_elf_save_sections(struct kmod_elf *elf)
 	}
 }
 
-struct kmod_elf *kmod_elf_new(const void *memory, off_t size)
+int kmod_elf_new(const void *memory, off_t size, struct kmod_elf **out_elf)
 {
 	struct kmod_elf *elf;
 	size_t shdrs_size, shdr_size;
@@ -317,21 +317,14 @@ struct kmod_elf *kmod_elf_new(const void *memory, off_t size)
 	assert_cc(sizeof(uint32_t) == sizeof(Elf32_Word));
 	assert_cc(sizeof(uint32_t) == sizeof(Elf64_Word));
 
-	if (!memory) {
-		errno = -EINVAL;
-		return NULL;
-	}
-
 	elf = malloc(sizeof(struct kmod_elf));
-	if (elf == NULL) {
-		return NULL;
-	}
+	if (elf == NULL)
+		return -ENOMEM;
 
 	err = elf_identify(elf, memory, size);
 	if (err < 0) {
 		free(elf);
-		errno = -err;
-		return NULL;
+		return err;
 	}
 
 	elf->memory = memory;
@@ -393,12 +386,12 @@ struct kmod_elf *kmod_elf_new(const void *memory, off_t size)
 	}
 
 	kmod_elf_save_sections(elf);
-	return elf;
+	*out_elf = elf;
+	return 0;
 
 invalid:
 	free(elf);
-	errno = EINVAL;
-	return NULL;
+	return -EINVAL;
 }
 
 void kmod_elf_unref(struct kmod_elf *elf)
@@ -666,7 +659,7 @@ static int elf_strip_vermagic(const struct kmod_elf *elf, uint8_t *changed)
 	return -ENODATA;
 }
 
-const void *kmod_elf_strip(const struct kmod_elf *elf, unsigned int flags)
+int kmod_elf_strip(const struct kmod_elf *elf, unsigned int flags, const void **stripped)
 {
 	uint8_t *changed;
 	int err = 0;
@@ -675,30 +668,27 @@ const void *kmod_elf_strip(const struct kmod_elf *elf, unsigned int flags)
 
 	changed = memdup(elf->memory, elf->size);
 	if (changed == NULL)
-		return NULL;
+		return -errno;
 
 	ELFDBG(elf, "copied memory to allow writing.\n");
 
 	if (flags & KMOD_INSERT_FORCE_MODVERSION) {
 		err = elf_strip_versions_section(elf, changed);
-		if (err < 0) {
-			errno = -err;
+		if (err < 0)
 			goto fail;
-		}
 	}
 
 	if (flags & KMOD_INSERT_FORCE_VERMAGIC) {
 		err = elf_strip_vermagic(elf, changed);
-		if (err < 0) {
-			errno = -err;
+		if (err < 0)
 			goto fail;
-		}
 	}
 
-	return changed;
+	*stripped = changed;
+	return 0;
 fail:
 	free(changed);
-	return NULL;
+	return err;
 }
 
 static int kmod_elf_get_symbols_symtab(const struct kmod_elf *elf,

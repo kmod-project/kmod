@@ -135,31 +135,32 @@ _nonnull_(1) void kmod_module_set_required(struct kmod_module *mod, bool require
 _nonnull_all_ bool kmod_module_is_builtin(struct kmod_module *mod);
 
 /* libkmod-file.c */
-_must_check_ _nonnull_all_ struct kmod_file *kmod_file_open(const struct kmod_ctx *ctx, const char *filename);
-_nonnull_all_ struct kmod_elf *kmod_file_get_elf(struct kmod_file *file);
+struct kmod_file;
+struct kmod_elf;
+_must_check_ _nonnull_all_ int kmod_file_open(const struct kmod_ctx *ctx, const char *filename, struct kmod_file **file);
+_must_check_ _nonnull_all_ int kmod_file_get_elf(struct kmod_file *file, struct kmod_elf **elf);
 _nonnull_all_ int kmod_file_load_contents(struct kmod_file *file);
-_must_check_ _nonnull_all_ void *kmod_file_get_contents(const struct kmod_file *file);
+_must_check_ _nonnull_all_ const void *kmod_file_get_contents(const struct kmod_file *file);
 _must_check_ _nonnull_all_ off_t kmod_file_get_size(const struct kmod_file *file);
 _must_check_ _nonnull_all_ enum kmod_file_compression_type kmod_file_get_compression(const struct kmod_file *file);
 _must_check_ _nonnull_all_ int kmod_file_get_fd(const struct kmod_file *file);
 _nonnull_all_ void kmod_file_unref(struct kmod_file *file);
 
 /* libkmod-elf.c */
-struct kmod_elf;
 struct kmod_modversion {
 	uint64_t crc;
 	enum kmod_symbol_bind bind;
 	const char *symbol;
 };
 
-struct kmod_elf *kmod_elf_new(const void *memory, off_t size);
+_must_check_ _nonnull_all_ int kmod_elf_new(const void *memory, off_t size, struct kmod_elf **elf);
 _nonnull_all_ void kmod_elf_unref(struct kmod_elf *elf);
 _must_check_ _nonnull_all_ const void *kmod_elf_get_memory(const struct kmod_elf *elf);
 _must_check_ _nonnull_all_ int kmod_elf_get_modinfo_strings(const struct kmod_elf *elf, char ***array);
 _must_check_ _nonnull_all_ int kmod_elf_get_modversions(const struct kmod_elf *elf, struct kmod_modversion **array);
 _must_check_ _nonnull_all_ int kmod_elf_get_symbols(const struct kmod_elf *elf, struct kmod_modversion **array);
 _must_check_ _nonnull_all_ int kmod_elf_get_dependency_symbols(const struct kmod_elf *elf, struct kmod_modversion **array);
-_must_check_ _nonnull_all_ const void *kmod_elf_strip(const struct kmod_elf *elf, unsigned int flags);
+_must_check_ _nonnull_all_ int kmod_elf_strip(const struct kmod_elf *elf, unsigned int flags, const void **stripped);
 
 /*
  * Debug mock lib need to find section ".gnu.linkonce.this_module" in order to

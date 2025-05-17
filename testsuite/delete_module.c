@@ -137,8 +137,7 @@ static int remove_directory(const char *path)
 
 	dir = opendir(path);
 	if (!dir) {
-		ERR("Failed to open directory %s: %s (errno: %d)\n", path,
-		    strerror(errno), errno);
+		ERR("Failed to open directory %s: %m (errno: %d)\n", path, errno);
 		return -1;
 	}
 
