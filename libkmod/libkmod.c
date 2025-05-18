@@ -198,7 +198,7 @@ static enum kmod_file_compression_type get_kernel_compression(struct kmod_ctx *c
 	err = read_str_safe(fd, buf, sizeof(buf));
 	close(fd);
 	if (err < 0) {
-		ERR(ctx, "could not read from '%s': %s\n", path, strerror(-err));
+		ERR(ctx, "could not read from '%s': %s\n", path, KMOD_STRERROR(-err));
 		return KMOD_FILE_COMPRESSION_NONE;
 	}
 
@@ -385,7 +385,7 @@ static int kmod_lookup_alias_from_alias_bin(struct kmod_ctx *ctx,
 		err = kmod_module_new_from_alias(ctx, name, realname->value, &mod);
 		if (err < 0) {
 			ERR(ctx, "Could not create module for alias=%s realname=%s: %s\n",
-			    name, realname->value, strerror(-err));
+			    name, realname->value, KMOD_STRERROR(-err));
 			goto fail;
 		}
 
@@ -492,7 +492,7 @@ int kmod_lookup_alias_from_builtin_file(struct kmod_ctx *ctx, const char *name,
 		err = kmod_module_new_from_name(ctx, name, &mod);
 		if (err < 0) {
 			ERR(ctx, "Could not create module from name %s: %s\n", name,
-			    strerror(-err));
+			    KMOD_STRERROR(-err));
 			return err;
 		}
 
@@ -544,7 +544,7 @@ int kmod_lookup_alias_from_moddep_file(struct kmod_ctx *ctx, const char *name,
 		n = kmod_module_new_from_name(ctx, name, &mod);
 		if (n < 0) {
 			ERR(ctx, "Could not create module from name %s: %s\n", name,
-			    strerror(-n));
+			    KMOD_STRERROR(-n));
 			goto finish;
 		}
 
@@ -586,7 +586,7 @@ int kmod_lookup_alias_from_config(struct kmod_ctx *ctx, const char *name,
 			if (err < 0) {
 				ERR(ctx,
 				    "Could not create module for alias=%s modname=%s: %s\n",
-				    name, modname, strerror(-err));
+				    name, modname, KMOD_STRERROR(-err));
 				goto fail;
 			}
 
@@ -628,7 +628,7 @@ int kmod_lookup_alias_from_commands(struct kmod_ctx *ctx, const char *name,
 			err = kmod_module_new_from_name(ctx, modname, &mod);
 			if (err < 0) {
 				ERR(ctx, "Could not create module from name %s: %s\n",
-				    modname, strerror(-err));
+				    modname, KMOD_STRERROR(-err));
 				return err;
 			}
 
@@ -665,7 +665,7 @@ int kmod_lookup_alias_from_commands(struct kmod_ctx *ctx, const char *name,
 			err = kmod_module_new_from_name(ctx, modname, &mod);
 			if (err < 0) {
 				ERR(ctx, "Could not create module from name %s: %s\n",
-				    modname, strerror(-err));
+				    modname, KMOD_STRERROR(-err));
 				return err;
 			}
 
