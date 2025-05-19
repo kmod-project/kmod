@@ -221,20 +221,15 @@ static int module_new_from_any(struct kmod_ctx *ctx, const char *module,
 	return 0;
 }
 
-static int show_modversions(struct kmod_ctx *ctx, const char *filename)
+static int print_modversions(const struct kmod_module *mod)
 {
 	struct kmod_list *l, *list = NULL;
-	struct kmod_module *mod;
-	int err = kmod_module_new_from_path(ctx, filename, &mod);
-	if (err < 0) {
-		LOG("Module %s not found.\n", filename);
-		return err;
-	}
+	int err;
 
 	err = kmod_module_get_versions(mod, &list);
 	if (err < 0) {
-		LOG("could not get modversions of %s: %s\n", filename, strerror(-err));
-		kmod_module_unref(mod);
+		LOG("could not get modversions of %s: %s\n", kmod_module_get_name(mod),
+		    strerror(-err));
 		return err;
 	}
 
@@ -244,8 +239,30 @@ static int show_modversions(struct kmod_ctx *ctx, const char *filename)
 		printf("0x%08" PRIx64 "\t%s\n", crc, symbol);
 	}
 	kmod_module_versions_free_list(list);
-	kmod_module_unref(mod);
 	return 0;
+}
+
+static int show_modversions(struct kmod_ctx *ctx, const char *filename)
+{
+	struct kmod_list *l, *list = NULL;
+	struct kmod_module *mod = NULL;
+	int err = module_new_from_any(ctx, filename, &mod, &list);
+	if (err < 0)
+		return err;
+
+	/* If module is loaded from path */
+	if (mod != NULL) {
+		err = print_modversions(mod);
+		kmod_module_unref(mod);
+	} else {
+		kmod_list_foreach(l, list) {
+			mod = kmod_module_get_module(l);
+			err = print_modversions(mod);
+			kmod_module_unref(mod);
+		}
+		kmod_module_unref_list(list);
+	}
+	return err;
 }
 
 static int print_exports(const struct kmod_module *mod)
