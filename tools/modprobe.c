@@ -200,6 +200,27 @@ static int show_config(struct kmod_ctx *ctx)
 	return 0;
 }
 
+static int module_new_from_any(struct kmod_ctx *ctx, const char *module,
+			       struct kmod_module **mod, struct kmod_list **list)
+{
+	if (strstartswith(module, "/") || strstartswith(module, "./")) {
+		int err = kmod_module_new_from_path(ctx, module, mod);
+		if (err < 0) {
+			LOG("Failed to get module from path %s: %s\n", module,
+			    strerror(-err));
+			return -ENOENT;
+		}
+	} else {
+		int err = kmod_module_new_from_lookup(ctx, module, list);
+		if (*list == NULL || err < 0) {
+			LOG("Module %s not found in directory %s\n", module,
+			    ctx ? kmod_get_dirname(ctx) : "(missing)");
+			return -ENOENT;
+		}
+	}
+	return 0;
+}
+
 static int show_modversions(struct kmod_ctx *ctx, const char *filename)
 {
 	struct kmod_list *l, *list = NULL;
@@ -592,21 +613,9 @@ static int insmod(struct kmod_ctx *ctx, const char *alias, const char *extra_opt
 	struct kmod_module *mod = NULL;
 	int err, flags = 0;
 
-	if (strstartswith(alias, "/") || strstartswith(alias, "./")) {
-		err = kmod_module_new_from_path(ctx, alias, &mod);
-		if (err < 0) {
-			LOG("Failed to get module from path %s: %s\n", alias,
-			    strerror(-err));
-			return -ENOENT;
-		}
-	} else {
-		err = kmod_module_new_from_lookup(ctx, alias, &list);
-		if (list == NULL || err < 0) {
-			LOG("Module %s not found in directory %s\n", alias,
-			    ctx ? kmod_get_dirname(ctx) : "(missing)");
-			return -ENOENT;
-		}
-	}
+	err = module_new_from_any(ctx, alias, &mod, &list);
+	if (err < 0)
+		return err;
 
 	if (strip_modversion || force)
 		flags |= KMOD_PROBE_FORCE_MODVERSION;
