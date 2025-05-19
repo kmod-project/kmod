@@ -248,20 +248,13 @@ static int show_modversions(struct kmod_ctx *ctx, const char *filename)
 	return 0;
 }
 
-static int show_exports(struct kmod_ctx *ctx, const char *filename)
+static int print_exports(const struct kmod_module *mod)
 {
 	struct kmod_list *l, *list = NULL;
-	struct kmod_module *mod;
-	int err = kmod_module_new_from_path(ctx, filename, &mod);
+	int err = kmod_module_get_symbols(mod, &list);
 	if (err < 0) {
-		LOG("Module %s not found.\n", filename);
-		return err;
-	}
-
-	err = kmod_module_get_symbols(mod, &list);
-	if (err < 0) {
-		LOG("could not get symbols of %s: %s\n", filename, strerror(-err));
-		kmod_module_unref(mod);
+		LOG("could not get symbols of %s: %s\n", kmod_module_get_name(mod),
+		    strerror(-err));
 		return err;
 	}
 
@@ -271,8 +264,30 @@ static int show_exports(struct kmod_ctx *ctx, const char *filename)
 		printf("0x%08" PRIx64 "\t%s\n", crc, symbol);
 	}
 	kmod_module_symbols_free_list(list);
-	kmod_module_unref(mod);
 	return 0;
+}
+
+static int show_exports(struct kmod_ctx *ctx, const char *filename)
+{
+	struct kmod_list *l, *list = NULL;
+	struct kmod_module *mod = NULL;
+	int err = module_new_from_any(ctx, filename, &mod, &list);
+	if (err < 0)
+		return err;
+
+	/* If module is loaded from path */
+	if (mod != NULL) {
+		err = print_exports(mod);
+		kmod_module_unref(mod);
+	} else {
+		kmod_list_foreach(l, list) {
+			mod = kmod_module_get_module(l);
+			err = print_exports(mod);
+			kmod_module_unref(mod);
+		}
+		kmod_module_unref_list(list);
+	}
+	return err;
 }
 
 static int command_do(struct kmod_module *module, const char *type, const char *command,
