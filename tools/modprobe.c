@@ -596,7 +596,7 @@ static int insmod(struct kmod_ctx *ctx, const char *alias, const char *extra_opt
 	struct kmod_module *mod = NULL;
 	int err, flags = 0;
 
-	if (strncmp(alias, "/", 1) == 0 || strncmp(alias, "./", 2) == 0) {
+	if (strstartswith(alias, "/") || strstartswith(alias, "./")) {
 		err = kmod_module_new_from_path(ctx, alias, &mod);
 		if (err < 0) {
 			LOG("Failed to get module from path %s: %s\n", alias,
