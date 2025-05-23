@@ -257,4 +257,312 @@ DEFINE_TEST(depmod_check_weakdep,
 		},
 	});
 
+#define TEST_DEPENDENCIES_ROOTFS TESTSUITE_ROOTFS "test-depmod/test-dependencies"
+static noreturn int depmod_test_dependencies(const struct test *t)
+{
+	const char *progname = TOOLS_DIR "/depmod";
+	const char *const args[] = {
+		progname,
+		NULL,
+	};
+
+	test_spawn_prog(progname, args);
+	exit(EXIT_FAILURE);
+}
+DEFINE_TEST(depmod_test_dependencies,
+#if defined(KMOD_SYSCONFDIR_NOT_ETC)
+        .skip = true,
+#endif
+	.description = "check if depmod generates correct dependencies",
+	.config = {
+		[TC_UNAME_R] = "4.4.4",
+		[TC_ROOTFS] = TEST_DEPENDENCIES_ROOTFS,
+	},
+	.output = {
+		.files = (const struct keyval[]) {
+			{ TEST_DEPENDENCIES_ROOTFS MODULE_DIRECTORY "/4.4.4/correct-modules.dep",
+			  TEST_DEPENDENCIES_ROOTFS MODULE_DIRECTORY "/4.4.4/modules.dep" },
+			{ TEST_DEPENDENCIES_ROOTFS MODULE_DIRECTORY "/4.4.4/correct-modules.dep.bin",
+			  TEST_DEPENDENCIES_ROOTFS MODULE_DIRECTORY "/4.4.4/modules.dep.bin" },
+			{ TEST_DEPENDENCIES_ROOTFS MODULE_DIRECTORY "/4.4.4/correct-modules.symbols",
+			  TEST_DEPENDENCIES_ROOTFS MODULE_DIRECTORY "/4.4.4/modules.symbols" },
+			{ TEST_DEPENDENCIES_ROOTFS MODULE_DIRECTORY "/4.4.4/correct-modules.symbols.bin",
+			  TEST_DEPENDENCIES_ROOTFS MODULE_DIRECTORY "/4.4.4/modules.symbols.bin" },
+			{ }
+		},
+	});
+
+#define TEST_DEPENDENCIES_1_ROOTFS TESTSUITE_ROOTFS "test-depmod/test-dependencies-1"
+static noreturn int depmod_test_dependencies_1(const struct test *t)
+{
+	const char *progname = TOOLS_DIR "/depmod";
+	const char *const args[] = {
+		progname,
+		NULL,
+	};
+
+	test_spawn_prog(progname, args);
+	exit(EXIT_FAILURE);
+}
+DEFINE_TEST(depmod_test_dependencies_1,
+#if defined(KMOD_SYSCONFDIR_NOT_ETC)
+        .skip = true,
+#endif
+	.description = "check dependency generation, case 1: mod_bar",
+	.config = {
+		[TC_UNAME_R] = "4.4.4",
+		[TC_ROOTFS] = TEST_DEPENDENCIES_1_ROOTFS,
+	},
+	.output = {
+		.regex = true,
+		.files = (const struct keyval[]) {
+			{ TEST_DEPENDENCIES_1_ROOTFS MODULE_DIRECTORY "/4.4.4/correct-modules.dep",
+			  TEST_DEPENDENCIES_1_ROOTFS MODULE_DIRECTORY "/4.4.4/modules.dep" },
+			{ TEST_DEPENDENCIES_1_ROOTFS MODULE_DIRECTORY "/4.4.4/correct-modules.dep.bin",
+			  TEST_DEPENDENCIES_1_ROOTFS MODULE_DIRECTORY "/4.4.4/modules.dep.bin" },
+			{ TEST_DEPENDENCIES_1_ROOTFS MODULE_DIRECTORY "/4.4.4/correct-modules.symbols",
+			  TEST_DEPENDENCIES_1_ROOTFS MODULE_DIRECTORY "/4.4.4/modules.symbols" },
+			{ TEST_DEPENDENCIES_1_ROOTFS MODULE_DIRECTORY "/4.4.4/correct-modules.symbols.bin",
+			  TEST_DEPENDENCIES_1_ROOTFS MODULE_DIRECTORY "/4.4.4/modules.symbols.bin" },
+			{ }
+		},
+	});
+
+#define TEST_DEPENDENCIES_2_ROOTFS TESTSUITE_ROOTFS "test-depmod/test-dependencies-2"
+static noreturn int depmod_test_dependencies_2(const struct test *t)
+{
+	const char *progname = TOOLS_DIR "/depmod";
+	const char *const args[] = {
+		progname,
+		NULL,
+	};
+
+	test_spawn_prog(progname, args);
+	exit(EXIT_FAILURE);
+}
+DEFINE_TEST(depmod_test_dependencies_2,
+#if defined(KMOD_SYSCONFDIR_NOT_ETC)
+        .skip = true,
+#endif
+	.description = "check dependency generation, case 2: mod_bah",
+	.config = {
+		[TC_UNAME_R] = "4.4.4",
+		[TC_ROOTFS] = TEST_DEPENDENCIES_2_ROOTFS,
+	},
+	.output = {
+		.regex = true,
+		.files = (const struct keyval[]) {
+			{ TEST_DEPENDENCIES_2_ROOTFS MODULE_DIRECTORY "/4.4.4/correct-modules.dep",
+			  TEST_DEPENDENCIES_2_ROOTFS MODULE_DIRECTORY "/4.4.4/modules.dep" },
+			{ TEST_DEPENDENCIES_2_ROOTFS MODULE_DIRECTORY "/4.4.4/correct-modules.dep.bin",
+			  TEST_DEPENDENCIES_2_ROOTFS MODULE_DIRECTORY "/4.4.4/modules.dep.bin" },
+			{ TEST_DEPENDENCIES_2_ROOTFS MODULE_DIRECTORY "/4.4.4/correct-modules.symbols",
+			  TEST_DEPENDENCIES_2_ROOTFS MODULE_DIRECTORY "/4.4.4/modules.symbols" },
+			{ TEST_DEPENDENCIES_2_ROOTFS MODULE_DIRECTORY "/4.4.4/correct-modules.symbols.bin",
+			  TEST_DEPENDENCIES_2_ROOTFS MODULE_DIRECTORY "/4.4.4/modules.symbols.bin" },
+			{ }
+		},
+	});
+
+#define TEST_BIG_01_ROOTFS TESTSUITE_ROOTFS "test-depmod/big-01"
+static noreturn int depmod_test_big_01(const struct test *t)
+{
+	const char *progname = TOOLS_DIR "/depmod";
+	const char *const args[] = {
+		progname, "-e",
+		"-E",	  TEST_BIG_01_ROOTFS MODULE_DIRECTORY "/5.3.18/symvers",
+		NULL,
+	};
+
+	test_spawn_prog(progname, args);
+	exit(EXIT_FAILURE);
+}
+DEFINE_TEST(depmod_test_big_01,
+#if defined(KMOD_SYSCONFDIR_NOT_ETC)
+        .skip = true,
+#endif
+	.description = "check generating dependencies for a larger set of modules",
+	.config = {
+		[TC_UNAME_R] = "5.3.18",
+		[TC_ROOTFS] = TEST_BIG_01_ROOTFS,
+	},
+	.output = {
+		.regex = true,
+		.files = (const struct keyval[]) {
+			{ TEST_BIG_01_ROOTFS MODULE_DIRECTORY "/5.3.18/correct-modules.dep",
+			  TEST_BIG_01_ROOTFS MODULE_DIRECTORY "/5.3.18/modules.dep" },
+			{ TEST_BIG_01_ROOTFS MODULE_DIRECTORY "/5.3.18/correct-modules.dep.bin",
+			  TEST_BIG_01_ROOTFS MODULE_DIRECTORY "/5.3.18/modules.dep.bin" },
+			{ TEST_BIG_01_ROOTFS MODULE_DIRECTORY "/5.3.18/correct-modules.symbols",
+			  TEST_BIG_01_ROOTFS MODULE_DIRECTORY "/5.3.18/modules.symbols" },
+			{ TEST_BIG_01_ROOTFS MODULE_DIRECTORY "/5.3.18/correct-modules.symbols.bin",
+			  TEST_BIG_01_ROOTFS MODULE_DIRECTORY "/5.3.18/modules.symbols.bin" },
+			{ }
+		},
+	});
+
+#define TEST_BIG_01_INCREMENTAL_ROOTFS TESTSUITE_ROOTFS "test-depmod/big-01-incremental"
+static noreturn int depmod_test_big_01_incremental(const struct test *t)
+{
+	const char *progname = TOOLS_DIR "/depmod";
+	const char *const args[] = {
+		progname,
+		"-e",
+		"-E",
+		TEST_BIG_01_INCREMENTAL_ROOTFS MODULE_DIRECTORY "/5.3.18/symvers",
+		"-I",
+		"-a",
+		NULL,
+	};
+
+	test_spawn_prog(progname, args);
+	exit(EXIT_FAILURE);
+}
+DEFINE_TEST(depmod_test_big_01_incremental,
+#if defined(KMOD_SYSCONFDIR_NOT_ETC)
+        .skip = true,
+#endif
+	.description = "check generating incremental dependencies the big-01 module set",
+	.config = {
+		[TC_UNAME_R] = "5.3.18",
+		[TC_ROOTFS] = TEST_BIG_01_INCREMENTAL_ROOTFS,
+	},
+	.output = {
+		.regex = true,
+		.files = (const struct keyval[]) {
+			{ TEST_BIG_01_INCREMENTAL_ROOTFS MODULE_DIRECTORY "/5.3.18/correct-modules.dep",
+			  TEST_BIG_01_INCREMENTAL_ROOTFS MODULE_DIRECTORY "/5.3.18/modules.dep" },
+			{ TEST_BIG_01_INCREMENTAL_ROOTFS MODULE_DIRECTORY "/5.3.18/correct-modules.dep.bin",
+			  TEST_BIG_01_INCREMENTAL_ROOTFS MODULE_DIRECTORY "/5.3.18/modules.dep.bin" },
+			{ TEST_BIG_01_INCREMENTAL_ROOTFS MODULE_DIRECTORY "/5.3.18/correct-modules.symbols",
+			  TEST_BIG_01_INCREMENTAL_ROOTFS MODULE_DIRECTORY "/5.3.18/modules.symbols" },
+			{ TEST_BIG_01_INCREMENTAL_ROOTFS MODULE_DIRECTORY "/5.3.18/correct-modules.symbols.bin",
+			  TEST_BIG_01_INCREMENTAL_ROOTFS MODULE_DIRECTORY "/5.3.18/modules.symbols.bin" },
+			{ }
+		},
+	});
+
+#define TEST_BIG_01_DELETE_ROOTFS TESTSUITE_ROOTFS "test-depmod/big-01-delete"
+static noreturn int depmod_test_big_01_delete(const struct test *t)
+{
+	const char *progname = TOOLS_DIR "/depmod";
+	const char *const args[] = {
+		progname, "-e",
+		"-E",	  TEST_BIG_01_DELETE_ROOTFS MODULE_DIRECTORY "/5.3.18/symvers",
+		"-I",	  "-a",
+		NULL,
+	};
+
+	test_spawn_prog(progname, args);
+	exit(EXIT_FAILURE);
+}
+DEFINE_TEST(depmod_test_big_01_delete,
+#if defined(KMOD_SYSCONFDIR_NOT_ETC)
+        .skip = true,
+#endif
+	.description = "check depmod -I with module deletion from the big-01 module set",
+	.config = {
+		[TC_UNAME_R] = "5.3.18",
+		[TC_ROOTFS] = TEST_BIG_01_DELETE_ROOTFS,
+	},
+	.output = {
+		.regex = true,
+		.files = (const struct keyval[]) {
+			{ TEST_BIG_01_DELETE_ROOTFS MODULE_DIRECTORY "/5.3.18/correct-modules.dep",
+			  TEST_BIG_01_DELETE_ROOTFS MODULE_DIRECTORY "/5.3.18/modules.dep" },
+			{ TEST_BIG_01_DELETE_ROOTFS MODULE_DIRECTORY "/5.3.18/correct-modules.dep.bin",
+			  TEST_BIG_01_DELETE_ROOTFS MODULE_DIRECTORY "/5.3.18/modules.dep.bin" },
+			{ TEST_BIG_01_DELETE_ROOTFS MODULE_DIRECTORY "/5.3.18/correct-modules.symbols",
+			  TEST_BIG_01_DELETE_ROOTFS MODULE_DIRECTORY "/5.3.18/modules.symbols" },
+			{ TEST_BIG_01_DELETE_ROOTFS MODULE_DIRECTORY "/5.3.18/correct-modules.symbols.bin",
+			  TEST_BIG_01_DELETE_ROOTFS MODULE_DIRECTORY "/5.3.18/modules.symbols.bin" },
+			{ }
+		},
+	});
+
+#define TEST_BIG_01_REPLACE_ROOTFS TESTSUITE_ROOTFS "test-depmod/big-01-replace"
+static noreturn int depmod_test_big_01_replace(const struct test *t)
+{
+	const char *progname = TOOLS_DIR "/depmod";
+	const char *const args[] = {
+		progname,
+		"-e",
+		"-E",
+		TEST_BIG_01_REPLACE_ROOTFS MODULE_DIRECTORY "/5.3.18/symvers",
+		"-I",
+		"5.3.18",
+		"kernel/drivers/scsi/qla2xxx/qla2xxx.ko",
+		"kernel/drivers/scsi/qla2xxx/tcm_qla2xxx.ko",
+		NULL,
+	};
+
+	test_spawn_prog(progname, args);
+	exit(EXIT_FAILURE);
+}
+DEFINE_TEST(depmod_test_big_01_replace,
+#if defined(KMOD_SYSCONFDIR_NOT_ETC)
+        .skip = true,
+#endif
+	.description = "check depmod -I with module replacement from the big-01 module set",
+	.config = {
+		[TC_UNAME_R] = "5.3.18",
+		[TC_ROOTFS] = TEST_BIG_01_REPLACE_ROOTFS,
+	},
+	.output = {
+		.regex = true,
+		.files = (const struct keyval[]) {
+			{ TEST_BIG_01_REPLACE_ROOTFS MODULE_DIRECTORY "/5.3.18/correct-modules.dep",
+			  TEST_BIG_01_REPLACE_ROOTFS MODULE_DIRECTORY "/5.3.18/modules.dep" },
+			{ TEST_BIG_01_REPLACE_ROOTFS MODULE_DIRECTORY "/5.3.18/correct-modules.dep.bin",
+			  TEST_BIG_01_REPLACE_ROOTFS MODULE_DIRECTORY "/5.3.18/modules.dep.bin" },
+			{ TEST_BIG_01_REPLACE_ROOTFS MODULE_DIRECTORY "/5.3.18/correct-modules.symbols",
+			  TEST_BIG_01_REPLACE_ROOTFS MODULE_DIRECTORY "/5.3.18/modules.symbols" },
+			{ TEST_BIG_01_REPLACE_ROOTFS MODULE_DIRECTORY "/5.3.18/correct-modules.symbols.bin",
+			  TEST_BIG_01_REPLACE_ROOTFS MODULE_DIRECTORY "/5.3.18/modules.symbols.bin" },
+			{ }
+		},
+	});
+
+#define TEST_BIG_01_OVERRIDE_ROOTFS TESTSUITE_ROOTFS "test-depmod/big-01-override"
+static noreturn int depmod_test_big_01_override(const struct test *t)
+{
+	const char *progname = TOOLS_DIR "/depmod";
+	const char *const args[] = {
+		progname,
+		"-v",
+		"-e",
+		"-E",
+		TEST_BIG_01_OVERRIDE_ROOTFS MODULE_DIRECTORY "/5.3.18/symvers",
+		"-I",
+		"-a",
+		NULL,
+	};
+
+	test_spawn_prog(progname, args);
+	exit(EXIT_FAILURE);
+}
+DEFINE_TEST(depmod_test_big_01_override,
+#if defined(KMOD_SYSCONFDIR_NOT_ETC)
+        .skip = true,
+#endif
+	.description = "check depmod -I with module override from the big-01 module set",
+	.config = {
+		[TC_UNAME_R] = "5.3.18",
+		[TC_ROOTFS] = TEST_BIG_01_OVERRIDE_ROOTFS,
+	},
+	.output = {
+		.regex = true,
+		.files = (const struct keyval[]) {
+			{ TEST_BIG_01_OVERRIDE_ROOTFS MODULE_DIRECTORY "/5.3.18/correct-modules.dep",
+			  TEST_BIG_01_OVERRIDE_ROOTFS MODULE_DIRECTORY "/5.3.18/modules.dep" },
+			{ TEST_BIG_01_OVERRIDE_ROOTFS MODULE_DIRECTORY "/5.3.18/correct-modules.dep.bin",
+			  TEST_BIG_01_OVERRIDE_ROOTFS MODULE_DIRECTORY "/5.3.18/modules.dep.bin" },
+			{ TEST_BIG_01_OVERRIDE_ROOTFS MODULE_DIRECTORY "/5.3.18/correct-modules.symbols",
+			  TEST_BIG_01_OVERRIDE_ROOTFS MODULE_DIRECTORY "/5.3.18/modules.symbols" },
+			{ TEST_BIG_01_OVERRIDE_ROOTFS MODULE_DIRECTORY "/5.3.18/correct-modules.symbols.bin",
+			  TEST_BIG_01_OVERRIDE_ROOTFS MODULE_DIRECTORY "/5.3.18/modules.symbols.bin" },
+			{ }
+		},
+	});
+
 TESTSUITE_MAIN();

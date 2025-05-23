@@ -133,6 +133,7 @@ _nonnull_(1)void kmod_module_set_visited(struct kmod_module *mod, bool visited);
 _nonnull_(1) void kmod_module_set_builtin(struct kmod_module *mod, bool builtin);
 _nonnull_(1) void kmod_module_set_required(struct kmod_module *mod, bool required);
 _nonnull_all_ bool kmod_module_is_builtin(struct kmod_module *mod);
+_nonnull_(1, 2) struct kmod_list *kmod_module_info_append(struct kmod_list **list, const char *key, size_t keylen, const char *value, size_t valuelen);
 
 /* libkmod-file.c */
 struct kmod_file;

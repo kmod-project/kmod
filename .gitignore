@@ -34,3 +34,8 @@
 .*.swp
 cscope.out
 tags
+__pycache__
+testsuite/module-playground/ex-*.c
+testsuite/module-playground/gen_mod.mak
+testsuite/module-playground/symvers
+
