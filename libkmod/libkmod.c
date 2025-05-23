@@ -153,11 +153,11 @@ static int log_priority(const char *priority)
 	prio = strtol(priority, &endptr, 10);
 	if (endptr[0] == '\0' || isspace(endptr[0]))
 		return prio;
-	if (strncmp(priority, "err", 3) == 0)
+	if (strstartswith(priority, "err"))
 		return LOG_ERR;
-	if (strncmp(priority, "info", 4) == 0)
+	if (strstartswith(priority, "info"))
 		return LOG_INFO;
-	if (strncmp(priority, "debug", 5) == 0)
+	if (strstartswith(priority, "debug"))
 		return LOG_DEBUG;
 	return 0;
 }

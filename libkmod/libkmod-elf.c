@@ -643,7 +643,7 @@ static int elf_strip_vermagic(const struct kmod_elf *elf, uint8_t *changed)
 		len = sizeof("vermagic=") - 1;
 		if (i + len >= size)
 			continue;
-		if (strncmp(s, "vermagic=", len) != 0) {
+		if (!strstartswith(s, "vermagic=")) {
 			i += strlen(s);
 			continue;
 		}
@@ -873,7 +873,7 @@ int kmod_elf_get_symbols(const struct kmod_elf *elf, struct kmod_modversion **ar
 
 		name = elf_get_mem(elf, str_off + name_off);
 
-		if (strncmp(name, crc_str, crc_strlen) != 0)
+		if (!strstartswith(name, crc_str))
 			continue;
 		count++;
 	}
@@ -914,7 +914,7 @@ int kmod_elf_get_symbols(const struct kmod_elf *elf, struct kmod_modversion **ar
 		}
 #undef READV
 		name = elf_get_mem(elf, str_off + name_off);
-		if (strncmp(name, crc_str, crc_strlen) != 0)
+		if (!strstartswith(name, crc_str))
 			continue;
 		name += crc_strlen;
 

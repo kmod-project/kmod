@@ -617,7 +617,7 @@ static void kcmdline_parse_result(struct kmod_config *config, char *modname, cha
 
 	DBG(config->ctx, "%s %s\n", modname, param);
 
-	if (streq(modname, "modprobe") && !strncmp(param, "blacklist=", 10)) {
+	if (streq(modname, "modprobe") && strstartswith(param, "blacklist=")) {
 		for (;;) {
 			char *t = strsep(&value, ",");
 			if (t == NULL)
