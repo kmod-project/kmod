@@ -2749,7 +2749,7 @@ static int depmod_load_system_map(struct depmod *depmod, const char *filename)
 			p++;
 
 		/* Covers gpl-only and normal symbols. */
-		if (strncmp(p, ksymstr, ksymstr_len) != 0)
+		if (!strstartswith(p, ksymstr))
 			continue;
 
 		end = strchr(p, '\n');
