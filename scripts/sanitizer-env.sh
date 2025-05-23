@@ -3,12 +3,12 @@
 # set -euo pipefail # don't set these, since this script is sourced
 
 if [[ ${CC-} == *gcc* ]]; then
-    OUR_PRELOAD=$("$CC" -print-file-name=libasan.so)
+    OUR_PRELOAD=$($CC -print-file-name=libasan.so)
 elif [[ ${CC-} == *clang* ]]; then
     # With v19, the library lacks the CPU arch in its name
-    OUR_PRELOAD=$("$CC" -print-file-name=libclang_rt.asan.so)
+    OUR_PRELOAD=$($CC -print-file-name=libclang_rt.asan.so)
     if ! test -f "$OUR_PRELOAD"; then
-       OUR_PRELOAD=$("$CC" -print-file-name=libclang_rt.asan-x86_64.so)
+       OUR_PRELOAD=$($CC -print-file-name=libclang_rt.asan-x86_64.so)
     fi
 else
     cat <<- EOF >&2
