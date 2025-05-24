@@ -273,7 +273,7 @@ static int command_do(struct kmod_module *module, const char *type, const char *
 	if (cmd == NULL)
 		return -ENOMEM;
 	cmdlen = strlen(cmd);
-	varlen = sizeof("$CMDLINE_OPTS") - 1;
+	varlen = strlen("$CMDLINE_OPTS");
 	while ((p = strstr(cmd, "$CMDLINE_OPTS")) != NULL) {
 		size_t prefixlen = p - cmd;
 		size_t suffixlen = cmdlen - prefixlen - varlen;
