@@ -497,7 +497,7 @@ int fd_lookup_path(int fd, char *path, size_t pathlen)
 	return len;
 }
 
-static unsigned long long ts_usec(const struct timespec *ts)
+unsigned long long ts_usec(const struct timespec *ts)
 {
 	return (unsigned long long)ts->tv_sec * USEC_PER_SEC +
 	       (unsigned long long)ts->tv_nsec / NSEC_PER_USEC;
