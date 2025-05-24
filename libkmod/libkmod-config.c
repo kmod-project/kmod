@@ -267,10 +267,9 @@ static int kmod_config_add_softdep(struct kmod_config *config, const char *modna
 		}
 		plen = s - p;
 
-		if (plen == strlen("pre:") && memcmp(p, "pre:", strlen("pre:")) == 0)
+		if (plen == strlen("pre:") && strstartswith(p, "pre:"))
 			mode = S_PRE;
-		else if (plen == strlen("post:") &&
-			 memcmp(p, "post:", strlen("post:")) == 0)
+		else if (plen == strlen("post:") && strstartswith(p, "post:"))
 			mode = S_POST;
 		else if (*s != '\0' || (*s == '\0' && !was_space)) {
 			if (mode == S_PRE) {
@@ -351,10 +350,9 @@ static int kmod_config_add_softdep(struct kmod_config *config, const char *modna
 		}
 		plen = s - p;
 
-		if (plen == strlen("pre:") && memcmp(p, "pre:", strlen("pre:")) == 0)
+		if (plen == strlen("pre:") && strstartswith(p, "pre:"))
 			mode = S_PRE;
-		else if (plen == strlen("post:") &&
-			 memcmp(p, "post:", strlen("post:")) == 0)
+		else if (plen == strlen("post:") && strstartswith(p, "post:"))
 			mode = S_POST;
 		else if (*s != '\0' || (*s == '\0' && !was_space)) {
 			if (mode == S_PRE) {

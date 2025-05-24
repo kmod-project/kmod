@@ -314,7 +314,7 @@ bool kmod_module_signature_info(const struct kmod_file *file,
 	if (size < (off_t)strlen(SIG_MAGIC))
 		return false;
 	size -= strlen(SIG_MAGIC);
-	if (memcmp(SIG_MAGIC, mem + size, strlen(SIG_MAGIC)) != 0)
+	if (!strstartswith(mem + size, SIG_MAGIC))
 		return false;
 
 	if (size < (off_t)sizeof(struct module_signature))
