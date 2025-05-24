@@ -103,11 +103,12 @@ static void *get_libc_func(const char *f)
                                                      \
 		if (!get_rootpath(__func__))         \
 			return failret;              \
-		if (_fn == NULL)                     \
-			_fn = get_libc_func(#name);  \
 		p = trap_path(path, buf);            \
 		if (p == NULL)                       \
 			return failret;              \
+                                                     \
+		if (_fn == NULL)                     \
+			_fn = get_libc_func(#name);  \
 		return (*_fn)(p);                    \
 	}
 
@@ -121,11 +122,12 @@ static void *get_libc_func(const char *f)
                                                                  \
 		if (!get_rootpath(__func__))                     \
 			return failret;                          \
-		if (_fn == NULL)                                 \
-			_fn = get_libc_func(#name);              \
 		p = trap_path(path, buf);                        \
 		if (p == NULL)                                   \
 			return failret;                          \
+                                                                 \
+		if (_fn == NULL)                                 \
+			_fn = get_libc_func(#name);              \
 		return (*_fn)(p, arg2);                          \
 	}
 
@@ -139,12 +141,12 @@ static void *get_libc_func(const char *f)
                                                                      \
 		if (!get_rootpath(__func__))                         \
 			return -1;                                   \
-		if (_fn == NULL)                                     \
-			_fn = get_libc_func("open" #suffix);         \
 		p = trap_path(path, buf);                            \
 		if (p == NULL)                                       \
 			return -1;                                   \
                                                                      \
+		if (_fn == NULL)                                     \
+			_fn = get_libc_func("open" #suffix);         \
 		if (flags & O_CREAT) {                               \
 			mode_t mode;                                 \
 			va_list ap;                                  \
@@ -165,8 +167,6 @@ static void *get_libc_func(const char *f)
 		const char *p;                                                       \
 		char buf[PATH_MAX * 2];                                              \
 		static int (*_fn)(int ver, const char *path, struct stat##suffix *); \
-		if (_fn == NULL)                                                     \
-			_fn = get_libc_func(#prefix "stat" #suffix);                 \
                                                                                      \
 		if (!get_rootpath(__func__))                                         \
 			return -1;                                                   \
@@ -174,6 +174,8 @@ static void *get_libc_func(const char *f)
 		if (p == NULL)                                                       \
 			return -1;                                                   \
                                                                                      \
+		if (_fn == NULL)                                                     \
+			_fn = get_libc_func(#prefix "stat" #suffix);                 \
 		return _fn(ver, p, st);                                              \
 	}
 
