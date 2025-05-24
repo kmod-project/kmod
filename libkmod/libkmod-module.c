@@ -819,7 +819,7 @@ static int module_do_install_commands(struct kmod_module *mod, const char *optio
 
 	options_len = strlen(options);
 	cmdlen = strlen(command);
-	varlen = sizeof("$CMDLINE_OPTS") - 1;
+	varlen = strlen("$CMDLINE_OPTS");
 
 	cmd = memdup(command, cmdlen + 1);
 	if (cmd == NULL)
@@ -1432,9 +1432,9 @@ KMOD_EXPORT int kmod_module_get_initstate(const struct kmod_module *mod)
 		err = -errno;
 		DBG(mod->ctx, "could not open '%s': %m\n", path);
 
-		if (pathlen > (int)sizeof("/initstate") - 1) {
+		if (pathlen > (int)strlen("/initstate")) {
 			struct stat st;
-			path[pathlen - (sizeof("/initstate") - 1)] = '\0';
+			path[pathlen - strlen("/initstate")] = '\0';
 			if (stat(path, &st) == 0 && S_ISDIR(st.st_mode))
 				return KMOD_MODULE_COMING;
 

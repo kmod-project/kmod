@@ -142,7 +142,7 @@ static int remove_directory(const char *path)
 	}
 
 	while ((entry = readdir(dir)) != NULL) {
-		if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
+		if (streq(entry->d_name, ".") || streq(entry->d_name, ".."))
 			continue;
 
 		snprintf(full_path, sizeof(full_path), "%s/%s", path, entry->d_name);

@@ -2529,7 +2529,7 @@ static int output_devname(struct depmod *depmod, FILE *out)
 			unsigned int maj, min;
 
 			if (strstartswith(value, "devname:"))
-				devname = value + sizeof("devname:") - 1;
+				devname = value + strlen("devname:");
 			else if (sscanf(value, "char-major-%u-%u", &maj, &min) == 2) {
 				type = 'c';
 				major = maj;
@@ -2749,7 +2749,7 @@ static int depmod_load_system_map(struct depmod *depmod, const char *filename)
 			p++;
 
 		/* Covers gpl-only and normal symbols. */
-		if (strncmp(p, ksymstr, ksymstr_len) != 0)
+		if (!strstartswith(p, ksymstr))
 			continue;
 
 		end = strchr(p, '\n');

@@ -267,11 +267,9 @@ static int kmod_config_add_softdep(struct kmod_config *config, const char *modna
 		}
 		plen = s - p;
 
-		if (plen == sizeof("pre:") - 1 &&
-		    memcmp(p, "pre:", sizeof("pre:") - 1) == 0)
+		if (plen == strlen("pre:") && strstartswith(p, "pre:"))
 			mode = S_PRE;
-		else if (plen == sizeof("post:") - 1 &&
-			 memcmp(p, "post:", sizeof("post:") - 1) == 0)
+		else if (plen == strlen("post:") && strstartswith(p, "post:"))
 			mode = S_POST;
 		else if (*s != '\0' || (*s == '\0' && !was_space)) {
 			if (mode == S_PRE) {
@@ -352,11 +350,9 @@ static int kmod_config_add_softdep(struct kmod_config *config, const char *modna
 		}
 		plen = s - p;
 
-		if (plen == sizeof("pre:") - 1 &&
-		    memcmp(p, "pre:", sizeof("pre:") - 1) == 0)
+		if (plen == strlen("pre:") && strstartswith(p, "pre:"))
 			mode = S_PRE;
-		else if (plen == sizeof("post:") - 1 &&
-			 memcmp(p, "post:", sizeof("post:") - 1) == 0)
+		else if (plen == strlen("post:") && strstartswith(p, "post:"))
 			mode = S_POST;
 		else if (*s != '\0' || (*s == '\0' && !was_space)) {
 			if (mode == S_PRE) {
@@ -506,8 +502,6 @@ static int kmod_config_add_weakdep(struct kmod_config *config, const char *modna
 
 static char *softdep_to_char(struct kmod_softdep *dep)
 {
-	const size_t sz_preprefix = sizeof("pre: ") - 1;
-	const size_t sz_postprefix = sizeof("post: ") - 1;
 	size_t sz = 1; /* at least '\0' */
 	size_t sz_pre, sz_post;
 	const char *start, *end;
@@ -521,7 +515,7 @@ static char *softdep_to_char(struct kmod_softdep *dep)
 		start = dep->pre[0];
 		end = dep->pre[dep->n_pre - 1] + strlen(dep->pre[dep->n_pre - 1]);
 		sz_pre = end - start;
-		sz += sz_pre + sz_preprefix;
+		sz += sz_pre + strlen("pre: ");
 	} else
 		sz_pre = 0;
 
@@ -529,7 +523,7 @@ static char *softdep_to_char(struct kmod_softdep *dep)
 		start = dep->post[0];
 		end = dep->post[dep->n_post - 1] + strlen(dep->post[dep->n_post - 1]);
 		sz_post = end - start;
-		sz += sz_post + sz_postprefix;
+		sz += sz_post + strlen("post: ");
 	} else
 		sz_post = 0;
 
@@ -540,8 +534,8 @@ static char *softdep_to_char(struct kmod_softdep *dep)
 	if (sz_pre) {
 		char *p;
 
-		memcpy(itr, "pre: ", sz_preprefix);
-		itr += sz_preprefix;
+		memcpy(itr, "pre: ", strlen("pre: "));
+		itr += strlen("pre: ");
 
 		/* include last '\0' */
 		memcpy(itr, dep->pre[0], sz_pre + 1);
@@ -555,8 +549,8 @@ static char *softdep_to_char(struct kmod_softdep *dep)
 	if (sz_post) {
 		char *p;
 
-		memcpy(itr, "post: ", sz_postprefix);
-		itr += sz_postprefix;
+		memcpy(itr, "post: ", strlen("post: "));
+		itr += strlen("post: ");
 
 		/* include last '\0' */
 		memcpy(itr, dep->post[0], sz_post + 1);
@@ -617,7 +611,7 @@ static void kcmdline_parse_result(struct kmod_config *config, char *modname, cha
 
 	DBG(config->ctx, "%s %s\n", modname, param);
 
-	if (streq(modname, "modprobe") && !strncmp(param, "blacklist=", 10)) {
+	if (streq(modname, "modprobe") && strstartswith(param, "blacklist=")) {
 		for (;;) {
 			char *t = strsep(&value, ",");
 			if (t == NULL)
