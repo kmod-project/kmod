@@ -107,7 +107,7 @@ struct kmod_config {
 	struct kmod_list *paths;
 };
 
-_nonnull_all_ int kmod_config_new(struct kmod_ctx *ctx, struct kmod_config **config, const char * const *config_paths);
+_nonnull_all_ int kmod_config_new(struct kmod_ctx *ctx, struct kmod_config **config, const char *const *config_paths);
 _nonnull_all_ void kmod_config_free(struct kmod_config *config);
 _nonnull_all_ const char *kmod_blacklist_get_modname(const struct kmod_list *l);
 _nonnull_all_ const char *kmod_alias_get_name(const struct kmod_list *l);
@@ -118,11 +118,11 @@ _nonnull_all_ const char *kmod_command_get_command(const struct kmod_list *l);
 _nonnull_all_ const char *kmod_command_get_modname(const struct kmod_list *l);
 
 _nonnull_all_ const char *kmod_softdep_get_name(const struct kmod_list *l);
-_nonnull_all_ const char * const *kmod_softdep_get_pre(const struct kmod_list *l, unsigned int *count);
-const char * const *kmod_softdep_get_post(const struct kmod_list *l, unsigned int *count);
+_nonnull_all_ const char *const *kmod_softdep_get_pre(const struct kmod_list *l, unsigned int *count);
+const char *const *kmod_softdep_get_post(const struct kmod_list *l, unsigned int *count);
 
 _nonnull_all_ const char * kmod_weakdep_get_name(const struct kmod_list *l);
-_nonnull_all_ const char * const *kmod_weakdep_get_weak(const struct kmod_list *l, unsigned int *count);
+_nonnull_all_ const char *const *kmod_weakdep_get_weak(const struct kmod_list *l, unsigned int *count);
 
 /* libkmod-module.c */
 int kmod_module_new_from_alias(struct kmod_ctx *ctx, const char *alias, const char *name, struct kmod_module **mod);
