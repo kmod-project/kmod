@@ -84,7 +84,11 @@ static void *get_libc_func(const char *f)
 	void *fp;
 
 	fp = dlsym(RTLD_NEXT, f);
-	assert(fp);
+	if (fp == NULL) {
+		fprintf(stderr, "FIXME FIXME FIXME: could not load %s symbol: %s\n", f,
+			dlerror());
+		abort();
+	}
 
 	return fp;
 }

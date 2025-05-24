@@ -20,8 +20,15 @@ TS_EXPORT int uname(struct utsname *u)
 	int err;
 	size_t sz;
 
-	if (nextlib_uname == NULL)
+	if (nextlib_uname == NULL) {
 		nextlib_uname = dlsym(RTLD_NEXT, "uname");
+		if (nextlib_uname == NULL) {
+			fprintf(stderr,
+				"FIXME FIXME FIXME: could not load uname symbol: %s\n",
+				dlerror());
+			abort();
+		}
+	}
 
 	err = nextlib_uname(u);
 	if (err < 0)
