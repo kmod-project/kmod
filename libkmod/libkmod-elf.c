@@ -640,8 +640,7 @@ static int elf_strip_vermagic(const struct kmod_elf *elf, uint8_t *changed)
 			continue;
 
 		s = strings + i;
-		len = sizeof("vermagic=") - 1;
-		if (i + len >= size)
+		if (i + strlen("vermagic=") >= size)
 			continue;
 		if (!strstartswith(s, "vermagic=")) {
 			i += strlen(s);
