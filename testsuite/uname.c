@@ -15,20 +15,13 @@
 
 TS_EXPORT int uname(struct utsname *u)
 {
-	static void *nextlib = NULL;
 	static int (*nextlib_uname)(struct utsname *u);
 	const char *release;
 	int err;
 	size_t sz;
 
-	if (nextlib == NULL) {
-#ifdef RTLD_NEXT
-		nextlib = RTLD_NEXT;
-#else
-		nextlib = dlopen("libc.so.6", RTLD_LAZY);
-#endif
-		nextlib_uname = dlsym(nextlib, "uname");
-	}
+	if (nextlib_uname == NULL)
+		nextlib_uname = dlsym(RTLD_NEXT, "uname");
 
 	err = nextlib_uname(u);
 	if (err < 0)

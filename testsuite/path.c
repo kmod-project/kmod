@@ -26,7 +26,6 @@
 
 #include "testsuite.h"
 
-static void *nextlib;
 static const char *rootpath;
 static size_t rootpathlen;
 
@@ -84,15 +83,7 @@ static void *get_libc_func(const char *f)
 {
 	void *fp;
 
-	if (nextlib == NULL) {
-#ifdef RTLD_NEXT
-		nextlib = RTLD_NEXT;
-#else
-		nextlib = dlopen("libc.so.6", RTLD_LAZY);
-#endif
-	}
-
-	fp = dlsym(nextlib, f);
+	fp = dlsym(RTLD_NEXT, f);
 	assert(fp);
 
 	return fp;
