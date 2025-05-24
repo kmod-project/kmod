@@ -6,7 +6,7 @@
 
 #include <stddef.h>
 
-#if defined(HAVE_STATIC_ASSERT)
+#if HAVE_STATIC_ASSERT
 #define assert_cc(expr) _Static_assert((expr), #expr)
 #else
 #define assert_cc(expr)                              \
@@ -73,7 +73,7 @@ static inline void freep(void *p)
 /* Define C11 noreturn without <stdnoreturn.h> and even on older gcc
  * compiler versions */
 #ifndef noreturn
-#if defined(HAVE_NORETURN)
+#if HAVE_NORETURN
 #define noreturn _Noreturn
 #else
 #define noreturn __attribute__((noreturn))

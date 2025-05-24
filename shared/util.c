@@ -495,7 +495,7 @@ int fd_lookup_path(int fd, char *path, size_t pathlen)
 	return len;
 }
 
-static unsigned long long ts_usec(const struct timespec *ts)
+unsigned long long ts_usec(const struct timespec *ts)
 {
 	return (unsigned long long)ts->tv_sec * USEC_PER_SEC +
 	       (unsigned long long)ts->tv_nsec / NSEC_PER_USEC;
@@ -574,11 +574,7 @@ unsigned long long now_msec(void)
 
 unsigned long long stat_mstamp(const struct stat *st)
 {
-#ifdef HAVE_STRUCT_STAT_ST_MTIM
 	return ts_usec(&st->st_mtim);
-#else
-	return (unsigned long long)st->st_mtime;
-#endif
 }
 
 static int dlsym_manyv(void *dl, va_list ap)

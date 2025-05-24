@@ -63,6 +63,7 @@ _nonnull_all_ int fd_lookup_path(int fd, char *path, size_t pathlen);
 #define MSEC_PER_SEC 1000ULL
 #define NSEC_PER_MSEC 1000000ULL
 
+unsigned long long ts_usec(const struct timespec *ts);
 unsigned long long now_usec(void);
 unsigned long long now_msec(void);
 int sleep_until_msec(unsigned long long msec);
@@ -187,10 +188,10 @@ _sentinel_ int dlsym_many(void **dlp, const char *filename, ...);
 #define DLSYM_ARG(symbol__) &sym_##symbol__, STRINGIFY(symbol__),
 
 /* For symbols being dynamically loaded */
-#define DECLARE_DLSYM(symbol) typeof(symbol) *sym_##symbol = NULL
+#define DECLARE_DLSYM(symbol) static typeof(symbol) *sym_##symbol = NULL
 
 /* Pointer indirection to support linking directly */
-#define DECLARE_PTRSYM(symbol) typeof(symbol) *sym_##symbol = symbol
+#define DECLARE_PTRSYM(symbol) static typeof(symbol) *sym_##symbol = symbol
 
 /*
  * Helper defines, to be done locally before including this header to switch between

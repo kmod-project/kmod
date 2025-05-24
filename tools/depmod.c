@@ -2585,9 +2585,6 @@ static int depmod_output(struct depmod *depmod, FILE *out)
 	};
 	const char *dname = depmod->cfg->outdirname;
 	int dfd, err = 0;
-	struct timeval tv;
-
-	gettimeofday(&tv, NULL);
 
 	if (out != NULL)
 		dfd = -1;
@@ -2770,7 +2767,8 @@ invalid_syntax:
 	return 0;
 }
 
-static int depfile_up_to_date_dir(DIR *d, time_t mtime, size_t baselen, char *path)
+static int depfile_up_to_date_dir(DIR *d, const struct timespec *mtim, size_t baselen,
+				  char *path)
 {
 	struct dirent *de;
 	int err = 1, dfd = dirfd(d);
@@ -2818,7 +2816,7 @@ static int depfile_up_to_date_dir(DIR *d, time_t mtime, size_t baselen, char *pa
 			}
 			path[baselen + namelen] = '/';
 			path[baselen + namelen + 1] = '\0';
-			err = depfile_up_to_date_dir(subdir, mtime, baselen + namelen + 1,
+			err = depfile_up_to_date_dir(subdir, mtim, baselen + namelen + 1,
 						     path);
 			closedir(subdir);
 		} else if (S_ISREG(st.st_mode)) {
@@ -2826,10 +2824,11 @@ static int depfile_up_to_date_dir(DIR *d, time_t mtime, size_t baselen, char *pa
 				continue;
 
 			memcpy(path + baselen, name, namelen + 1);
-			err = st.st_mtime <= mtime;
+			err = ts_usec(&st.st_mtim) <= ts_usec(mtim);
 			if (err == 0) {
 				DBG("%s %" PRIu64 " is newer than %" PRIu64 "\n", path,
-				    (uint64_t)st.st_mtime, (uint64_t)mtime);
+				    (uint64_t)ts_usec(&st.st_mtim),
+				    (uint64_t)ts_usec(mtim));
 			}
 		} else {
 			ERR("unsupported file type %s: %o\n", path, st.st_mode & S_IFMT);
@@ -2875,7 +2874,7 @@ static int depfile_up_to_date(const char *dirname)
 	baselen++;
 	path[baselen] = '\0';
 
-	err = depfile_up_to_date_dir(d, st.st_mtime, baselen, path);
+	err = depfile_up_to_date_dir(d, &st.st_mtim, baselen, path);
 	closedir(d);
 	return err;
 }
