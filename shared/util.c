@@ -576,11 +576,7 @@ unsigned long long now_msec(void)
 
 unsigned long long stat_mstamp(const struct stat *st)
 {
-#ifdef HAVE_STRUCT_STAT_ST_MTIM
 	return ts_usec(&st->st_mtim);
-#else
-	return (unsigned long long)st->st_mtime;
-#endif
 }
 
 static int dlsym_manyv(void *dl, va_list ap)
