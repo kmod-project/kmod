@@ -69,18 +69,6 @@ foreach tuple : _builtins
   cdata.set10('HAVE_@0@'.format(builtin.to_upper()), have)
 endforeach
 
-# dietlibc doesn't have st.st_mtim struct member
-# XXX: we use both st_mtim and st_mtime ... unify and test
-foreach tuple : [['struct stat', 'st_mtim', '#include <sys/stat.h>']]
-  struct = tuple[0]
-  member = tuple[1]
-  prefix = tuple[2]
-  if cc.has_member(struct, member, prefix : prefix, args : '-D_GNU_SOURCE')
-    cdata.set('HAVE_@0@_@1@'.format(struct.underscorify().to_upper(),
-                                    member.to_upper()), true)
-  endif
-endforeach
-
 # basename may be only available in libgen.h with the POSIX behavior,
 # not desired here
 _decls = [
