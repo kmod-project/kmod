@@ -20,7 +20,7 @@
 #define __NR_finit_module -1
 #endif
 
-#ifndef HAVE_FINIT_MODULE
+#if !HAVE_FINIT_MODULE
 #include <errno.h>
 
 static inline int finit_module(int fd, const char *uargs, int flags)

@@ -4,10 +4,6 @@
  * Copyright (C) 2012-2013  Lucas De Marchi <lucas.de.marchi@gmail.com>
  */
 
-#ifndef HAVE_FINIT_MODULE
-#define HAVE_FINIT_MODULE 1
-#endif
-
 #include <assert.h>
 #include <dirent.h>
 #include <dlfcn.h>

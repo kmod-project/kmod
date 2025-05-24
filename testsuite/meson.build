@@ -51,7 +51,7 @@ foreach mod : _test_override_mods
     mod,
     files('@0@.c'.format(mod)),
     include_directories : top_include,
-    c_args : '-DABS_TOP_BUILDDIR="@0@"'.format(meson.project_build_root()),
+    c_args : ['-DHAVE_FINIT_MODULE=1', '-DABS_TOP_BUILDDIR="@0@"'.format(meson.project_build_root())],
     dependencies : libdl,
     link_with : [libshared, libkmod_internal],
     gnu_symbol_visibility : 'hidden',
@@ -63,6 +63,7 @@ endforeach
 
 testsuite_c_args = [
   '-UNDEBUG',
+  '-DHAVE_FINIT_MODULE=0',
   '-DTESTSUITE_ROOTFS="@0@/testsuite/rootfs/"'.format(meson.project_build_root()),
   '-DTOOLS_DIR="@0@/"'.format(meson.project_build_root()),
   '-DOVERRIDE_LIBDIR="@0@/testsuite/"'.format(meson.project_build_root()),

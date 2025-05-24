@@ -350,6 +350,7 @@ libshared = static_library(
     'shared/tmpfile-util.c',
     'shared/tmpfile-util.h',
   ),
+  c_args : '-DHAVE_FINIT_MODULE=0',
   gnu_symbol_visibility : 'hidden',
   install : false,
 )
@@ -401,6 +402,7 @@ install_headers('libkmod/libkmod.h')
 libkmod = shared_library(
   'kmod',
   libkmod_files,
+  c_args : '-DHAVE_FINIT_MODULE=0',
   dependencies : libkmod_deps + cdeps,
   link_with : libshared,
   link_args : ['-Wl,--version-script', meson.current_source_dir() /
@@ -445,6 +447,7 @@ kmod_sources = files(
 kmod = executable(
   'kmod',
   kmod_sources,
+  c_args : '-DHAVE_FINIT_MODULE=0',
   link_with : [libshared, libkmod_internal],
   gnu_symbol_visibility : 'hidden',
   build_by_default : get_option('tools'),
