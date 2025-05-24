@@ -27,7 +27,7 @@
 
 #define KCMD_LINE_SIZE 4096
 
-#ifndef HAVE_SECURE_GETENV
+#if !HAVE_SECURE_GETENV
 #warning secure_getenv is not available
 #define secure_getenv getenv
 #endif
