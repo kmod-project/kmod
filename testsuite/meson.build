@@ -7,7 +7,6 @@ build_module_playground = custom_target(
   command : [
     setup_modules,
     meson.project_source_root(),
-    meson.project_build_root(),
     'testsuite/module-playground', # do not prepend source/build root
   ],
   # The command ensures we don't do extra work, so the missing output token file
