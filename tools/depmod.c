@@ -2529,7 +2529,7 @@ static int output_devname(struct depmod *depmod, FILE *out)
 			unsigned int maj, min;
 
 			if (strstartswith(value, "devname:"))
-				devname = value + sizeof("devname:") - 1;
+				devname = value + strlen("devname:");
 			else if (sscanf(value, "char-major-%u-%u", &maj, &min) == 2) {
 				type = 'c';
 				major = maj;
