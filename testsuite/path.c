@@ -103,7 +103,8 @@ static void *get_libc_func(const char *f)
                                                      \
 		if (!get_rootpath(__func__))         \
 			return failret;              \
-		_fn = get_libc_func(#name);          \
+		if (_fn == NULL)                     \
+			_fn = get_libc_func(#name);  \
 		p = trap_path(path, buf);            \
 		if (p == NULL)                       \
 			return failret;              \
@@ -120,7 +121,8 @@ static void *get_libc_func(const char *f)
                                                                  \
 		if (!get_rootpath(__func__))                     \
 			return failret;                          \
-		_fn = get_libc_func(#name);                      \
+		if (_fn == NULL)                                 \
+			_fn = get_libc_func(#name);              \
 		p = trap_path(path, buf);                        \
 		if (p == NULL)                                   \
 			return failret;                          \
@@ -137,7 +139,8 @@ static void *get_libc_func(const char *f)
                                                                      \
 		if (!get_rootpath(__func__))                         \
 			return -1;                                   \
-		_fn = get_libc_func("open" #suffix);                 \
+		if (_fn == NULL)                                     \
+			_fn = get_libc_func("open" #suffix);         \
 		p = trap_path(path, buf);                            \
 		if (p == NULL)                                       \
 			return -1;                                   \
@@ -162,7 +165,8 @@ static void *get_libc_func(const char *f)
 		const char *p;                                                       \
 		char buf[PATH_MAX * 2];                                              \
 		static int (*_fn)(int ver, const char *path, struct stat##suffix *); \
-		_fn = get_libc_func(#prefix "stat" #suffix);                         \
+		if (_fn == NULL)                                                     \
+			_fn = get_libc_func(#prefix "stat" #suffix);                 \
                                                                                      \
 		if (!get_rootpath(__func__))                                         \
 			return -1;                                                   \
