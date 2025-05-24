@@ -63,6 +63,7 @@ _nonnull_all_ int fd_lookup_path(int fd, char *path, size_t pathlen);
 #define MSEC_PER_SEC 1000ULL
 #define NSEC_PER_MSEC 1000000ULL
 
+unsigned long long ts_usec(const struct timespec *ts);
 unsigned long long now_usec(void);
 unsigned long long now_msec(void);
 int sleep_until_msec(unsigned long long msec);
