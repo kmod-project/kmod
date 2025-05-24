@@ -187,10 +187,10 @@ _sentinel_ int dlsym_many(void **dlp, const char *filename, ...);
 #define DLSYM_ARG(symbol__) &sym_##symbol__, STRINGIFY(symbol__),
 
 /* For symbols being dynamically loaded */
-#define DECLARE_DLSYM(symbol) typeof(symbol) *sym_##symbol = NULL
+#define DECLARE_DLSYM(symbol) static typeof(symbol) *sym_##symbol = NULL
 
 /* Pointer indirection to support linking directly */
-#define DECLARE_PTRSYM(symbol) typeof(symbol) *sym_##symbol = symbol
+#define DECLARE_PTRSYM(symbol) static typeof(symbol) *sym_##symbol = symbol
 
 /*
  * Helper defines, to be done locally before including this header to switch between
