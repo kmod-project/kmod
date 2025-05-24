@@ -2585,9 +2585,6 @@ static int depmod_output(struct depmod *depmod, FILE *out)
 	};
 	const char *dname = depmod->cfg->outdirname;
 	int dfd, err = 0;
-	struct timeval tv;
-
-	gettimeofday(&tv, NULL);
 
 	if (out != NULL)
 		dfd = -1;
