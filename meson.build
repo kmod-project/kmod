@@ -92,7 +92,6 @@ add_project_arguments(
     '-ffunction-sections',
     '-fno-common',
     '-Wchar-subscripts',
-    '-Wdeclaration-after-statement',
     '-Wendif-labels',
     '-Wfloat-equal',
     '-Wformat=2',
