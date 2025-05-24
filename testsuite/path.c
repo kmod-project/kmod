@@ -26,9 +26,6 @@
 
 #include "testsuite.h"
 
-static const char *rootpath;
-static size_t rootpathlen;
-
 static inline bool need_trap(const char *path)
 {
 	/*
@@ -45,12 +42,25 @@ static inline bool need_trap(const char *path)
 
 static const char *trap_path(const char *path, char buf[PATH_MAX * 2])
 {
+	static const char *rootpath;
+	static size_t rootpathlen;
 	size_t len;
 
 	if (!need_trap(path))
 		return path;
 
 	len = strlen(path);
+
+	if (rootpath == NULL) {
+		rootpath = getenv(S_TC_ROOTFS);
+		if (rootpath == NULL) {
+			ERR("TRAP: missing export %s?\n", S_TC_ROOTFS);
+			errno = ENOENT;
+			return NULL;
+		}
+
+		rootpathlen = strlen(rootpath);
+	}
 
 	if (len + rootpathlen > PATH_MAX * 2) {
 		errno = ENAMETOOLONG;
@@ -60,23 +70,6 @@ static const char *trap_path(const char *path, char buf[PATH_MAX * 2])
 	memcpy(buf, rootpath, rootpathlen);
 	strcpy(buf + rootpathlen, path);
 	return buf;
-}
-
-static bool get_rootpath(const char *f)
-{
-	if (rootpath != NULL)
-		return true;
-
-	rootpath = getenv(S_TC_ROOTFS);
-	if (rootpath == NULL) {
-		ERR("TRAP %s(): missing export %s?\n", f, S_TC_ROOTFS);
-		errno = ENOENT;
-		return false;
-	}
-
-	rootpathlen = strlen(rootpath);
-
-	return true;
 }
 
 static void *get_libc_func(const char *f)
@@ -101,8 +94,6 @@ static void *get_libc_func(const char *f)
 		char buf[PATH_MAX * 2];              \
 		static rettype (*_fn)(const char *); \
                                                      \
-		if (!get_rootpath(__func__))         \
-			return failret;              \
 		p = trap_path(path, buf);            \
 		if (p == NULL)                       \
 			return failret;              \
@@ -120,8 +111,6 @@ static void *get_libc_func(const char *f)
 		char buf[PATH_MAX * 2];                          \
 		static rettype (*_fn)(const char *, arg2t arg2); \
                                                                  \
-		if (!get_rootpath(__func__))                     \
-			return failret;                          \
 		p = trap_path(path, buf);                        \
 		if (p == NULL)                                   \
 			return failret;                          \
@@ -139,8 +128,6 @@ static void *get_libc_func(const char *f)
 		char buf[PATH_MAX * 2];                              \
 		static int (*_fn)(const char *path, int flags, ...); \
                                                                      \
-		if (!get_rootpath(__func__))                         \
-			return -1;                                   \
 		p = trap_path(path, buf);                            \
 		if (p == NULL)                                       \
 			return -1;                                   \
@@ -168,8 +155,6 @@ static void *get_libc_func(const char *f)
 		char buf[PATH_MAX * 2];                                              \
 		static int (*_fn)(int ver, const char *path, struct stat##suffix *); \
                                                                                      \
-		if (!get_rootpath(__func__))                                         \
-			return -1;                                                   \
 		p = trap_path(path, buf);                                            \
 		if (p == NULL)                                                       \
 			return -1;                                                   \
