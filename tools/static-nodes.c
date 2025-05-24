@@ -33,7 +33,7 @@ static const struct static_nodes_format static_nodes_format_human;
 static const struct static_nodes_format static_nodes_format_tmpfiles;
 static const struct static_nodes_format static_nodes_format_devname;
 
-static const struct static_nodes_format *static_nodes_formats[] = {
+static const struct static_nodes_format *const static_nodes_formats[] = {
 	&static_nodes_format_human,
 	&static_nodes_format_tmpfiles,
 	&static_nodes_format_devname,
