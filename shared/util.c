@@ -26,15 +26,15 @@ static const struct kmod_ext {
 	const char *ext;
 	size_t len;
 } kmod_exts[] = {
-	{ KMOD_EXTENSION_UNCOMPRESSED, sizeof(KMOD_EXTENSION_UNCOMPRESSED) - 1 },
+	{ KMOD_EXTENSION_UNCOMPRESSED, strlen(KMOD_EXTENSION_UNCOMPRESSED) },
 #if ENABLE_ZLIB
-	{ ".ko.gz", sizeof(".ko.gz") - 1 },
+	{ ".ko.gz", strlen(".ko.gz") },
 #endif
 #if ENABLE_XZ
-	{ ".ko.xz", sizeof(".ko.xz") - 1 },
+	{ ".ko.xz", strlen(".ko.xz") },
 #endif
 #if ENABLE_ZSTD
-	{ ".ko.zst", sizeof(".ko.zst") - 1 },
+	{ ".ko.zst", strlen(".ko.zst") },
 #endif
 	{},
 };
