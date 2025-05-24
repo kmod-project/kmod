@@ -27,8 +27,6 @@ cc = meson.get_compiler('c')
 # We rely on the glibc variant of basename, et al.
 cdata.set10('_GNU_SOURCE', true)
 
-# TODO: Once meson-only, adjust all #ifdef X to if X and convert .set to .set10
-
 ################################################################################
 # Function and structure checks
 ################################################################################
@@ -38,9 +36,7 @@ _funcs = [
   'secure_getenv',
 ]
 foreach func : _funcs
-  if cc.has_function(func, args : '-D_GNU_SOURCE')
-    cdata.set('HAVE_@0@'.format(func.to_upper()), true)
-  endif
+  cdata.set10('HAVE_@0@'.format(func.to_upper()), cc.has_function(func, args : '-D_GNU_SOURCE'))
 endforeach
 
 # Meson has some amount of support for finding builtins by passing the symbol
@@ -94,17 +90,8 @@ foreach tuple : _decls
   cdata.set10('HAVE_DECL_@0@'.format(decl.to_upper()), have)
 endforeach
 
-if cc.compiles('_Static_assert(1, "Test");', name : '_Static_assert')
-  cdata.set('HAVE_STATIC_ASSERT', true)
-endif
-
-if cc.compiles('''
-    #include <stdlib.h>
-    _Noreturn int foo(void) { exit(0); }
-    ''',
-    name : '_Noreturn')
-  cdata.set('HAVE_NORETURN', true)
-endif
+cdata.set10('HAVE_STATIC_ASSERT', cc.compiles('_Static_assert(1, "Test");', name : '_Static_assert'))
+cdata.set10('HAVE_NORETURN', cc.compiles('#include <stdlib.h>; _Noreturn int foo(void) { exit(0); }', name : '_Noreturn'))
 
 ################################################################################
 # Default CFLAGS and LDFLAGS

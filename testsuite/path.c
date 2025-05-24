@@ -175,19 +175,19 @@ WRAP_2ARGS(int, -1, stat, struct stat *);
 
 WRAP_OPEN();
 
-#ifdef HAVE_FOPEN64
+#if HAVE_FOPEN64
 WRAP_2ARGS(FILE *, NULL, fopen64, const char *);
 #endif
-#ifdef HAVE_STAT64
+#if HAVE_STAT64
 WRAP_2ARGS(int, -1, stat64, struct stat64 *);
 #endif
 
-#ifdef HAVE___STAT64_TIME64
+#if HAVE___STAT64_TIME64
 extern int __stat64_time64(const char *file, void *buf);
 WRAP_2ARGS(int, -1, __stat64_time64, void *);
 #endif
 
-#ifdef HAVE_OPEN64
+#if HAVE_OPEN64
 WRAP_OPEN(64);
 #endif
 
