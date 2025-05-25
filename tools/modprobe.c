@@ -790,8 +790,9 @@ static int do_modprobe(int argc, char **orig_argv)
 			break;
 		case 'w': {
 			char *endptr = NULL;
+			errno = 0;
 			wait_msec = strtoul(optarg, &endptr, 0);
-			if (!*optarg || *endptr) {
+			if (!*optarg || *endptr || errno == ERANGE) {
 				ERR("unexpected wait value '%s'.\n", optarg);
 				err = -1;
 				goto done;

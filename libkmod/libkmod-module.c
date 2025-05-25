@@ -1515,8 +1515,9 @@ KMOD_EXPORT long kmod_module_get_size(const struct kmod_module *mod)
 			break;
 		}
 
+		errno = 0;
 		value = strtol(tok, &endptr, 10);
-		if (endptr == tok || *endptr != '\0') {
+		if (endptr == tok || *endptr != '\0' || errno == ERANGE || value < 0) {
 			ERR(mod->ctx, "invalid line format at /proc/modules:%d\n", lineno);
 			break;
 		}

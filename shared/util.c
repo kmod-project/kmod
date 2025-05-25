@@ -274,8 +274,9 @@ int read_str_long(int fd, long *value, int base)
 	err = read_str_safe(fd, buf, sizeof(buf));
 	if (err < 0)
 		return err;
+	errno = 0;
 	v = strtol(buf, &end, base);
-	if (end == buf || !isspace(*end))
+	if (end == buf || !isspace(*end) || errno == ERANGE)
 		return -EINVAL;
 
 	*value = v;
@@ -292,8 +293,9 @@ int read_str_ulong(int fd, unsigned long *value, int base)
 	err = read_str_safe(fd, buf, sizeof(buf));
 	if (err < 0)
 		return err;
+	errno = 0;
 	v = strtoul(buf, &end, base);
-	if (end == buf || !isspace(*end))
+	if (end == buf || !isspace(*end) || errno == ERANGE)
 		return -EINVAL;
 	*value = v;
 	return 0;
