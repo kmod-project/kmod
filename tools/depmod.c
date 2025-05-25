@@ -2696,8 +2696,9 @@ static int depmod_load_symvers(struct depmod *depmod, const char *filename)
 		if (!streq(where, "vmlinux"))
 			continue;
 
+		errno = 0;
 		crc = strtoull(ver, &verend, 16);
-		if (verend[0] != '\0') {
+		if (verend[0] != '\0' || errno == ERANGE) {
 			ERR("%s:%u Invalid symbol version %s: %m\n", filename, linenum,
 			    ver);
 			continue;

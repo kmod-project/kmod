@@ -148,9 +148,12 @@ KMOD_EXPORT void kmod_set_userdata(struct kmod_ctx *ctx, const void *userdata)
 static int log_priority(const char *priority)
 {
 	char *endptr;
-	int prio;
+	long prio;
 
+	errno = 0;
 	prio = strtol(priority, &endptr, 10);
+	if (errno == ERANGE || prio < INT_MIN || prio > INT_MAX)
+		return 0;
 	if (endptr[0] == '\0' || isspace(endptr[0]))
 		return prio;
 	if (strncmp(priority, "err", 3) == 0)

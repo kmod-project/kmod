@@ -60,14 +60,19 @@ static void parse_retcodes(struct mod **_modules, const char *s)
 		if (p == NULL)
 			break;
 
+		errno = 0;
 		l = strtol(p, &end, 0);
-		if (end == p || *end != ':')
+		if (end == p || *end != ':' || errno == ERANGE || l < INT_MIN ||
+		    l > INT_MAX)
 			break;
 
 		ret = (int)l;
 		p = end + 1;
 
+		errno = 0;
 		l = strtol(p, &end, 0);
+		if (errno == ERANGE || l < INT_MIN || l > INT_MAX)
+			break;
 		if (*end == ':')
 			p = end + 1;
 		else if (*end != '\0')
