@@ -33,7 +33,7 @@ static int dlopen_lzma(void)
 #if !DLSYM_LOCALLY_ENABLED
 	return 0;
 #else
-	static void *dl = NULL;
+	static void *dl;
 
 	ELF_NOTE_DLOPEN("xz", "Support for uncompressing xz-compressed modules",
 			ELF_NOTE_DLOPEN_PRIORITY_RECOMMENDED, "liblzma.so.5");

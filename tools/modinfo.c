@@ -22,7 +22,7 @@
 #include "kmod.h"
 
 static char separator = '\n';
-static const char *field = NULL;
+static const char *field;
 
 struct param {
 	struct param *next;

@@ -31,7 +31,7 @@ static const char *ANSI_HIGHLIGHT_RED_ON = "\x1B[1;31m";
 static const char *ANSI_HIGHLIGHT_OFF = "\x1B[0m";
 
 static const char *progname;
-static int oneshot = 0;
+static int oneshot;
 static const char options_short[] = "lhn";
 static const struct option options[] = {
 	{ "list", no_argument, 0, 'l' },
