@@ -42,7 +42,7 @@ static const struct kmod_cmd *const kmod_compat_cmds[] = {
 	// clang-format on
 };
 
-static int kmod_help(int argc, char *argv[])
+static int kmod_help(_maybe_unused_ int argc, _maybe_unused_ char *argv[])
 {
 	size_t i;
 
