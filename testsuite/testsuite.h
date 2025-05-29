@@ -99,7 +99,6 @@ struct test {
 	bool expected_fail;
 	/* allow to skip tests that don't meet compile-time dependencies */
 	bool skip;
-	bool print_outputs;
 } __attribute__((aligned(8)));
 
 int test_init(const struct test *start, const struct test *stop, int argc,
