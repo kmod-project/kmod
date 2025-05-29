@@ -106,7 +106,7 @@ static void parse_retcodes(struct mod **_modules, const char *s)
 	}
 }
 
-static int write_one_line_file(const char *fn, const char *line, int len)
+static int write_one_line_file(const char *fn, const char *line)
 {
 	FILE *f;
 	int r;
@@ -152,7 +152,7 @@ static int create_sysfs_files(const char *modname)
 	assert(mkdir_p(buf, len, 0755) >= 0);
 
 	strcpy(buf + len, "/initstate");
-	return write_one_line_file(buf, "live\n", strlen("live\n"));
+	return write_one_line_file(buf, "live\n");
 }
 
 static struct mod *find_module(struct mod *_modules, const char *modname)
