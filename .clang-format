@@ -85,6 +85,7 @@ AttributeMacros:
   - _clang_suppress_alloc_
   - _cleanup_
   - _cleanup_free_
+  - _maybe_unused_
   - _must_check_
   - _nonnull_
   - _nonnull_all_

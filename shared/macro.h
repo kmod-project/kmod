@@ -41,6 +41,7 @@
 
 /* Attributes */
 
+#define _maybe_unused_ __attribute__((unused))
 #define _must_check_ __attribute__((warn_unused_result))
 #define _printf_format_(a, b) __attribute__((format(printf, a, b)))
 #define _always_inline_ __inline__ __attribute__((always_inline))
