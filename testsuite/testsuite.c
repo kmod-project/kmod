@@ -434,7 +434,7 @@ static bool fd_cmp_regex_one(const char *pattern, const char *s)
  * read fd and fd_match, checking the first matches the regex of the second,
  * line by line
  */
-static bool fd_cmp_regex(struct fd_cmp *fd_cmp, const struct test *t)
+static bool fd_cmp_regex(struct fd_cmp *fd_cmp)
 {
 	char *p, *p_match;
 	int done = 0, done_match = 0, r;
@@ -525,7 +525,7 @@ static bool fd_cmp_regex(struct fd_cmp *fd_cmp, const struct test *t)
 }
 
 /* read fd and fd_match, checking they match exactly */
-static bool fd_cmp_exact(struct fd_cmp *fd_cmp, const struct test *t)
+static bool fd_cmp_exact(struct fd_cmp *fd_cmp)
 {
 	int r, rmatch, done = 0;
 
@@ -629,9 +629,9 @@ static bool test_run_parent_check_outputs(const struct test *t, int fdout, int f
 					goto out;
 
 				if (t->output.regex)
-					ret = fd_cmp_regex(fd_cmp, t);
+					ret = fd_cmp_regex(fd_cmp);
 				else
-					ret = fd_cmp_exact(fd_cmp, t);
+					ret = fd_cmp_exact(fd_cmp);
 
 				if (!ret) {
 					err = -1;
