@@ -1202,8 +1202,7 @@ static bool depmod_is_path_starts_with(const char *path, size_t pathlen,
  */
 static int depmod_module_is_higher_priority(const struct depmod *depmod,
 					    const struct mod *mod, size_t baselen,
-					    size_t namelen, size_t modnamelen,
-					    const char *newpath)
+					    size_t modnamelen, const char *newpath)
 {
 	const struct cfg *cfg = depmod->cfg;
 	const struct cfg_override *ov;
@@ -1297,8 +1296,7 @@ static int depmod_modules_search_file(struct depmod *depmod, size_t baselen,
 	if (mod == NULL)
 		goto add;
 
-	if (depmod_module_is_higher_priority(depmod, mod, baselen, namelen, modnamelen,
-					     path)) {
+	if (depmod_module_is_higher_priority(depmod, mod, baselen, modnamelen, path)) {
 		DBG("Ignored lower priority: %s, higher: %s\n", path, mod->path);
 		return 0;
 	}
@@ -1777,8 +1775,8 @@ static void depmod_list_remove_data(struct kmod_list **list, void *data)
 	*list = l;
 }
 
-static int depmod_report_one_cycle(struct depmod *depmod, struct vertex *vertex,
-				   struct kmod_list **roots, struct hash *loop_set)
+static int depmod_report_one_cycle(struct vertex *vertex, struct kmod_list **roots,
+				   struct hash *loop_set)
 {
 	const char sep[] = " -> ";
 	size_t sz;
@@ -1834,9 +1832,9 @@ out:
 	return rc;
 }
 
-static int depmod_report_cycles_from_root(struct depmod *depmod, struct mod *root_mod,
-					  struct kmod_list **roots, void **stack,
-					  size_t stack_size, struct hash *loop_set)
+static int depmod_report_cycles_from_root(struct mod *root_mod, struct kmod_list **roots,
+					  void **stack, size_t stack_size,
+					  struct hash *loop_set)
 {
 	struct kmod_list *free_list = NULL; /* struct vertex */
 	struct kmod_list *l;
@@ -1874,7 +1872,7 @@ static int depmod_report_cycles_from_root(struct depmod *depmod, struct mod *roo
 		 */
 		if (m->visited && m == root->mod) {
 			int rc;
-			rc = depmod_report_one_cycle(depmod, vertex, roots, loop_set);
+			rc = depmod_report_one_cycle(vertex, roots, loop_set);
 			if (rc != 0) {
 				ret = rc;
 				goto out;
@@ -1969,8 +1967,7 @@ static void depmod_report_cycles(struct depmod *depmod, uint16_t n_mods, uint16_
 		root = roots->data;
 		l = kmod_list_remove(roots);
 		roots = l;
-		err = depmod_report_cycles_from_root(depmod, root, &roots, stack, n_r,
-						     loop_set);
+		err = depmod_report_cycles_from_root(root, &roots, stack, n_r, loop_set);
 		if (err < 0)
 			goto out_hash;
 	}
