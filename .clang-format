@@ -82,6 +82,7 @@ AttributeMacros:
   - TS_EXPORT
   - _aligned_
   - _always_inline_
+  - _always_unused_
   - _clang_suppress_
   - _clang_suppress_alloc_
   - _cleanup_
