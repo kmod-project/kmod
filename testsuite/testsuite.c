@@ -553,9 +553,6 @@ static bool fd_cmp_exact(struct fd_cmp *fd_cmp, const struct test *t)
 	fd_cmp->buf[r] = '\0';
 	fd_cmp->buf_match[r] = '\0';
 
-	if (t->print_outputs)
-		printf("%s: %s\n", fd_cmp->name, fd_cmp->buf);
-
 	if (!streq(fd_cmp->buf, fd_cmp->buf_match)) {
 		ERR("Outputs do not match on %s:\n", fd_cmp->name);
 		ERR("correct:\n%s\n", fd_cmp->buf_match);
