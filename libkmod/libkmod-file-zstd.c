@@ -35,7 +35,7 @@ static int dlopen_zstd(void)
 #if !DLSYM_LOCALLY_ENABLED
 	return 0;
 #else
-	static void *dl = NULL;
+	static void *dl;
 
 	ELF_NOTE_DLOPEN("zstd", "Support for uncompressing zstd-compressed modules",
 			ELF_NOTE_DLOPEN_PRIORITY_RECOMMENDED, "libzstd.so.1");

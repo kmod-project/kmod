@@ -32,19 +32,19 @@ static int log_priority = LOG_CRIT;
 
 #define DEFAULT_VERBOSE LOG_WARNING
 static int verbose = DEFAULT_VERBOSE;
-static int do_show = 0;
-static int dry_run = 0;
-static int ignore_loaded = 0;
-static int lookup_only = 0;
-static int first_time = 0;
-static int ignore_commands = 0;
-static int use_blacklist = 0;
-static int force = 0;
-static int strip_modversion = 0;
-static int strip_vermagic = 0;
-static int remove_holders = 0;
-static unsigned long long wait_msec = 0;
-static int quiet_inuse = 0;
+static int do_show;
+static int dry_run;
+static int ignore_loaded;
+static int lookup_only;
+static int first_time;
+static int ignore_commands;
+static int use_blacklist;
+static int force;
+static int strip_modversion;
+static int strip_vermagic;
+static int remove_holders;
+static unsigned long long wait_msec;
+static int quiet_inuse;
 
 static const char cmdopts_s[] = "arw:RibfDcnC:d:S:sqvVh";
 static const struct option cmdopts[] = {

@@ -36,7 +36,7 @@ static int dlopen_zlib(void)
 #if !DLSYM_LOCALLY_ENABLED
 	return 0;
 #else
-	static void *dl = NULL;
+	static void *dl;
 
 	ELF_NOTE_DLOPEN("zlib", "Support for uncompressing zlib-compressed modules",
 			ELF_NOTE_DLOPEN_PRIORITY_RECOMMENDED, "libz.so.1");
