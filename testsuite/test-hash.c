@@ -17,7 +17,7 @@
 
 static int freecount;
 
-static void countfreecalls(void *v)
+static void countfreecalls(_maybe_unused_ void *v)
 {
 	freecount++;
 }
