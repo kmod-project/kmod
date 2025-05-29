@@ -53,9 +53,8 @@ jobs:
 
       - name: Build
         run: |
-          mkdir build && cd build
-          meson setup --native-file ../build-dev.ini ${{ matrix.meson_setup }} . ..
-          meson compile
+          meson setup --native-file build-dev.ini ${{ matrix.meson_setup }} builddir/
+          meson compile -C builddir/
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@28deaeda66b76a05916b6923827895f2b14ab387 # v3.28.16
@@ -68,7 +67,7 @@ jobs:
         uses: advanced-security/filter-sarif@f3b8118a9349d88f7b1c0c488476411145b6270d # v1.0.1
         with:
           patterns: |
-            -build/meson-private/**/testfile.c
+            -builddir/meson-private/**/testfile.c
           input: sarif-results/cpp.sarif
           output: sarif-results/cpp.sarif
 
