@@ -18,7 +18,7 @@
 	test_spawn_prog(TOOLS_DIR "/modprobe", \
 			(const char *[]){ TOOLS_DIR "/modprobe", ##__VA_ARGS__, NULL })
 
-static noreturn int modprobe_show_depends(const struct test *t)
+static noreturn int modprobe_show_depends(void)
 {
 	EXEC_MODPROBE("--show-depends", "mod-loop-a");
 	exit(EXIT_FAILURE);
@@ -33,7 +33,7 @@ DEFINE_TEST(modprobe_show_depends,
 		.out = TESTSUITE_ROOTFS "test-modprobe/show-depends/correct.txt",
 	});
 
-static noreturn int modprobe_show_depends2(const struct test *t)
+static noreturn int modprobe_show_depends2(void)
 {
 	EXEC_MODPROBE("--show-depends", "mod-simple");
 	exit(EXIT_FAILURE);
@@ -56,7 +56,7 @@ DEFINE_TEST_WITH_FUNC(modprobe_show_depends_no_load, modprobe_show_depends2,
 	.modules_loaded = "",
 	);
 
-static noreturn int modprobe_show_alias_to_none(const struct test *t)
+static noreturn int modprobe_show_alias_to_none(void)
 {
 	EXEC_MODPROBE("--show-depends", "--ignore-install", "--quiet", "mod-simple");
 	exit(EXIT_FAILURE);
@@ -73,7 +73,7 @@ DEFINE_TEST(modprobe_show_alias_to_none,
 	.modules_loaded = "",
 	);
 
-static noreturn int modprobe_show_exports(const struct test *t)
+static noreturn int modprobe_show_exports(void)
 {
 	EXEC_MODPROBE("--show-exports", "--quiet", "/mod-loop-a.ko");
 	exit(EXIT_FAILURE);
@@ -88,7 +88,7 @@ DEFINE_TEST(modprobe_show_exports,
 		.regex = true,
 	});
 
-static noreturn int modprobe_builtin(const struct test *t)
+static noreturn int modprobe_builtin(void)
 {
 	EXEC_MODPROBE("unix");
 	exit(EXIT_FAILURE);
@@ -99,7 +99,7 @@ DEFINE_TEST(modprobe_builtin, .description = "check if modprobe return 0 for bui
 		    [TC_ROOTFS] = TESTSUITE_ROOTFS "test-modprobe/builtin",
 	    });
 
-static noreturn int modprobe_builtin_lookup_only(const struct test *t)
+static noreturn int modprobe_builtin_lookup_only(void)
 {
 	EXEC_MODPROBE("-R", "unix");
 	exit(EXIT_FAILURE);
@@ -114,7 +114,7 @@ DEFINE_TEST(modprobe_builtin_lookup_only,
 		.out = TESTSUITE_ROOTFS "test-modprobe/builtin/correct.txt",
 	});
 
-static noreturn int modprobe_softdep_loop(const struct test *t)
+static noreturn int modprobe_softdep_loop(void)
 {
 	EXEC_MODPROBE("mod-loop-b");
 	exit(EXIT_FAILURE);
@@ -129,7 +129,7 @@ DEFINE_TEST(modprobe_softdep_loop,
 	.modules_loaded = "mod-loop-a,mod-loop-b",
 	);
 
-static noreturn int modprobe_weakdep_loop(const struct test *t)
+static noreturn int modprobe_weakdep_loop(void)
 {
 	EXEC_MODPROBE("mod-loop-b");
 	exit(EXIT_FAILURE);
@@ -145,7 +145,7 @@ DEFINE_TEST(modprobe_weakdep_loop,
 	.modules_not_loaded = "mod-loop-a,mod-simple-c",
 	);
 
-static noreturn int modprobe_install_cmd_loop(const struct test *t)
+static noreturn int modprobe_install_cmd_loop(void)
 {
 	EXEC_MODPROBE("mod-loop-a");
 	exit(EXIT_FAILURE);
@@ -164,7 +164,7 @@ DEFINE_TEST(modprobe_install_cmd_loop,
 	.modules_loaded = "mod-loop-b,mod-loop-a",
 	);
 
-static noreturn int modprobe_param_kcmdline_show_deps(const struct test *t)
+static noreturn int modprobe_param_kcmdline_show_deps(void)
 {
 	EXEC_MODPROBE("--show-depends", "mod-simple");
 	exit(EXIT_FAILURE);
@@ -179,7 +179,7 @@ DEFINE_TEST(modprobe_param_kcmdline_show_deps,
 		.out = TESTSUITE_ROOTFS "test-modprobe/module-param-kcmdline/correct.txt",
 	});
 
-static noreturn int modprobe_param_kcmdline(const struct test *t)
+static noreturn int modprobe_param_kcmdline(void)
 {
 	EXEC_MODPROBE("-c");
 	exit(EXIT_FAILURE);
@@ -266,7 +266,7 @@ DEFINE_TEST_WITH_FUNC(modprobe_param_kcmdline9, modprobe_param_kcmdline,
 		.out = TESTSUITE_ROOTFS "test-modprobe/module-param-kcmdline9/correct.txt",
 	});
 
-static noreturn int modprobe_force(const struct test *t)
+static noreturn int modprobe_force(void)
 {
 	EXEC_MODPROBE("--force", "mod-simple");
 	exit(EXIT_FAILURE);
@@ -281,7 +281,7 @@ DEFINE_TEST(modprobe_force,
 	.modules_loaded = "mod-simple",
 	);
 
-static noreturn int modprobe_force_modversion(const struct test *t)
+static noreturn int modprobe_force_modversion(void)
 {
 	EXEC_MODPROBE("--force-modversion", "mod-simple");
 	exit(EXIT_FAILURE);
@@ -296,7 +296,7 @@ DEFINE_TEST(modprobe_force_modversion,
 	.modules_loaded = "mod-simple",
 	);
 
-static noreturn int modprobe_force_vermagic(const struct test *t)
+static noreturn int modprobe_force_vermagic(void)
 {
 	EXEC_MODPROBE("--force-vermagic", "mod-simple");
 	exit(EXIT_FAILURE);
@@ -311,7 +311,7 @@ DEFINE_TEST(modprobe_force_vermagic,
 	.modules_loaded = "mod-simple",
 	);
 
-static noreturn int modprobe_oldkernel(const struct test *t)
+static noreturn int modprobe_oldkernel(void)
 {
 	EXEC_MODPROBE("mod-simple");
 	exit(EXIT_FAILURE);
@@ -326,7 +326,7 @@ DEFINE_TEST(modprobe_oldkernel,
 	.modules_loaded = "mod-simple",
 	);
 
-static noreturn int modprobe_oldkernel_force(const struct test *t)
+static noreturn int modprobe_oldkernel_force(void)
 {
 	EXEC_MODPROBE("--force", "mod-simple");
 	exit(EXIT_FAILURE);
@@ -341,7 +341,7 @@ DEFINE_TEST(modprobe_oldkernel_force,
 	.modules_loaded = "mod-simple",
 	);
 
-static noreturn int modprobe_oldkernel_force_modversion(const struct test *t)
+static noreturn int modprobe_oldkernel_force_modversion(void)
 {
 	EXEC_MODPROBE("--force-modversion", "mod-simple");
 	exit(EXIT_FAILURE);
@@ -356,7 +356,7 @@ DEFINE_TEST(modprobe_oldkernel_force_modversion,
 	.modules_loaded = "mod-simple",
 	);
 
-static noreturn int modprobe_oldkernel_force_vermagic(const struct test *t)
+static noreturn int modprobe_oldkernel_force_vermagic(void)
 {
 	EXEC_MODPROBE("--force-vermagic", "mod-simple");
 	exit(EXIT_FAILURE);
@@ -371,7 +371,7 @@ DEFINE_TEST(modprobe_oldkernel_force_vermagic,
 	.modules_loaded = "mod-simple",
 	);
 
-static noreturn int modprobe_external(const struct test *t)
+static noreturn int modprobe_external(void)
 {
 	EXEC_MODPROBE("mod-simple");
 	exit(EXIT_FAILURE);
@@ -386,7 +386,7 @@ DEFINE_TEST(modprobe_external,
 	.modules_loaded = "mod-simple",
 	);
 
-static noreturn int modprobe_module_from_abspath(const struct test *t)
+static noreturn int modprobe_module_from_abspath(void)
 {
 	EXEC_MODPROBE("/home/foo/mod-simple.ko");
 	exit(EXIT_FAILURE);
@@ -401,7 +401,7 @@ DEFINE_TEST(modprobe_module_from_abspath,
 	.modules_loaded = "mod-simple",
 	);
 
-static noreturn int modprobe_module_from_relpath(const struct test *t)
+static noreturn int modprobe_module_from_relpath(void)
 {
 	if (chdir("/home/foo") != 0) {
 		perror("failed to change into /home/foo");

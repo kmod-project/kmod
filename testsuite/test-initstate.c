@@ -19,7 +19,7 @@
 
 #include "testsuite.h"
 
-static noreturn int test_initstate_from_lookup(const struct test *t)
+static noreturn int test_initstate_from_lookup(void)
 {
 	struct kmod_ctx *ctx;
 	struct kmod_list *list = NULL;
@@ -66,7 +66,7 @@ DEFINE_TEST(
 		[TC_UNAME_R] = "4.4.4",
 	});
 
-static noreturn int test_initstate_from_name(const struct test *t)
+static noreturn int test_initstate_from_name(void)
 {
 	struct kmod_ctx *ctx;
 	struct kmod_module *mod = NULL;

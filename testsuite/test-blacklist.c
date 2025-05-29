@@ -23,7 +23,7 @@
 #undef ERR
 #include "testsuite.h"
 
-static int blacklist_1(const struct test *t)
+static int blacklist_1(void)
 {
 	struct kmod_ctx *ctx;
 	struct kmod_list *list = NULL, *l, *filtered;

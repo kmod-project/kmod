@@ -12,7 +12,7 @@
 #include <shared/macro.h>
 
 struct test;
-typedef int (*testfunc)(const struct test *t);
+typedef int (*testfunc)(void);
 
 enum test_config {
 	/*
