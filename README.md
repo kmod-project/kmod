@@ -38,7 +38,7 @@ Compilation and installation
 
 In order to compile the source code you need:
 - C11 compiler, supporting a range of GNU extensions - GCC 8+, Clang 6+
-- GNU C library / musl / uClibc
+- POSIX.1-2008 C runtime library - Bionic, GNU C library, musl
 
 Optional dependencies, required with the default build configuration:
 - ZLIB library
