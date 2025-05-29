@@ -18,85 +18,46 @@ permissions:
 
 jobs:
   build:
-    env:
-      CC: ${{ matrix.compiler }}
     runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
         include:
-          - compiler: 'gcc'
-            container: 'alpine:latest'
+          - container: 'alpine:latest'
             meson_setup: '-Ddocs=false -Db_sanitize=none'
-          - compiler: 'gcc'
-            container: 'archlinux:multilib-devel'
+          - container: 'archlinux:multilib-devel'
             # fails on LD_PRELOAD
             skip_test_32: 'true'
-          - compiler: 'gcc'
-            container: 'debian:bullseye-slim'
+          - container: 'debian:bullseye-slim'
             meson_setup: '-Dzstd=disabled -Dxz=disabled -Dzlib=disabled -Dopenssl=enabled -Dtools=true'
-          - compiler: 'gcc'
-            container: 'debian:unstable'
-          - compiler: 'gcc'
-            container: 'fedora:latest'
-          - compiler: 'gcc'
-            container: 'fedora:latest'
+          - container: 'debian:unstable'
+          - container: 'fedora:latest'
+          - container: 'fedora:latest'
             meson_setup: '-Dxz=disabled -Ddlopen=all'
-          - compiler: 'gcc'
-            container: 'ubuntu:22.04'
-          - compiler: 'gcc'
-            container: 'ubuntu:22.04'
+          - container: 'ubuntu:22.04'
+          - container: 'ubuntu:22.04'
             meson_setup: '-Ddlopen=zstd,zlib'
-          - compiler: 'gcc'
-            container: 'ubuntu:24.04'
-
-          # clang variations of the same builds
-
-          - compiler: 'clang'
-            container: 'alpine:latest'
-            meson_setup: '-Ddocs=false -Db_sanitize=none'
-          - compiler: 'clang'
-            container: 'archlinux:multilib-devel'
-            # fails on LD_PRELOAD
-            skip_test_32: 'true'
-          - compiler: 'clang'
-            container: 'debian:unstable'
-          # Disabled because it doesn't work
-          # - compiler: 'clang'
-          #   container: 'debian:bullseye-slim'
-          #   meson_setup: '-Dzstd=disabled -Dxz=disabled -Dzlib=disabled -Dopenssl=enabled -Dtools=true'
-          - compiler: 'clang'
-            container: 'fedora:latest'
-          - compiler: 'clang'
-            container: 'fedora:latest'
-            meson_setup: '-Dxz=disabled -Ddlopen=all'
-          - compiler: 'clang'
-            container: 'ubuntu:22.04'
-          - compiler: 'clang'
-            container: 'ubuntu:22.04'
-            meson_setup: '-Ddlopen=zstd,zlib'
-          - compiler: 'clang'
-            container: 'ubuntu:24.04'
+          - container: 'ubuntu:24.04'
 
           # Special configurations
 
           # Variant with lld as linker
-          - compiler: 'clang'
-            container: 'archlinux:multilib-devel'
+          - container: 'archlinux:multilib-devel'
             custom: 'ldd as linker'
+            compiler: 'clang'
             linker: 'lld'
             skip: '32'
 
           # Variants with moduledir
-          - compiler: 'gcc'
-            container: 'archlinux:multilib-devel'
+          - container: 'archlinux:multilib-devel'
             meson_setup: '-Dmoduledir=/usr/lib/modules'
             custom: 'usr moduledir'
+            compiler: 'gcc'
             skip: '32'
-          - compiler: 'gcc'
-            container: 'archlinux:multilib-devel'
+          - container: 'archlinux:multilib-devel'
             meson_setup: '-Dmoduledir=/kernel-modules'
             custom: 'custom moduledir'
+            compiler: 'gcc'
             skip: '32'
 
     container:
@@ -156,22 +117,26 @@ jobs:
             export CC_LD="${{ matrix.linker }}"
           fi
 
+          for compiler in gcc clang; do
           for bits in 32 64; do
-            echo "::group::$bits bit"
+            echo "::group::$compiler, $bits bit"
 
             if [[ -n "${{ matrix.custom }}" ]]; then
-              builddir="builddir-$bits-${{ matrix.custom }}/"
+              builddir="builddir-$compiler-$bits-${{ matrix.custom }}/"
             else
-              builddir="builddir-$bits/"
+              builddir="builddir-$compiler-$bits/"
             fi
 
+            export CC="$compiler"
             if [[ "$bits" == "32" ]]; then
               export CC="$CC -m32"
               echo "::notice::TODO fix and reuse the original options."
               setup_options="$setup_options -Dzstd=disabled -Dxz=disabled -Dzlib=disabled -Dopenssl=disabled"
             fi
 
-            if [[ "${{ matrix.skip }}" == "$bits" ]]; then
+            if [[ -n "${{ matrix.compiler }}" && "${{ matrix.compiler }}" != "$compiler" ]]; then
+              echo "::notice::Skipping combination with compiler $compiler"
+            elif [[ "${{ matrix.skip }}" == "$bits" ]]; then
               echo "::notice::Combination annotated as SKIP."
             else
               meson setup --native-file build-dev.ini $setup_options "$builddir"
@@ -179,20 +144,24 @@ jobs:
 
             echo "::endgroup::"
           done
+          done
 
 
       - name: build
         run: |
+          for compiler in gcc clang; do
           for bits in 32 64; do
-            echo "::group::$bits bit"
+            echo "::group::$compiler, $bits bit"
 
             if [[ -n "${{ matrix.custom }}" ]]; then
-              builddir="builddir-$bits-${{ matrix.custom }}/"
+              builddir="builddir-$compiler-$bits-${{ matrix.custom }}/"
             else
-              builddir="builddir-$bits/"
+              builddir="builddir-$compiler-$bits/"
             fi
 
-            if [[ "${{ matrix.skip }}" == "$bits" ]]; then
+            if [[ -n "${{ matrix.compiler }}" && "${{ matrix.compiler }}" != "$compiler" ]]; then
+              echo "::notice::Skipping combination with compiler $compiler"
+            elif [[ "${{ matrix.skip }}" == "$bits" ]]; then
               echo "::notice::Combination annotated as SKIP."
             else
               meson compile -C "$builddir"
@@ -200,19 +169,23 @@ jobs:
 
             echo "::endgroup::"
           done
+          done
 
       - name: test
         run: |
+          for compiler in gcc clang; do
           for bits in 32 64; do
-            echo "::group::$bits bit"
+            echo "::group::$compiler, $bits bit"
 
             if [[ -n "${{ matrix.custom }}" ]]; then
-              builddir="builddir-$bits-${{ matrix.custom }}/"
+              builddir="builddir-$compiler-$bits-${{ matrix.custom }}/"
             else
-              builddir="builddir-$bits/"
+              builddir="builddir-$compiler-$bits/"
             fi
 
-            if [[ "${{ matrix.skip }}" == "$bits" ]]; then
+            if [[ -n "${{ matrix.compiler }}" && "${{ matrix.compiler }}" != "$compiler" ]]; then
+              echo "::notice::Skipping combination with compiler $compiler"
+            elif [[ "${{ matrix.skip }}" == "$bits" ]]; then
               echo "::notice::Combination annotated as SKIP."
             elif [[ "$bits" == "32" && "${{ matrix.skip_test_32 }}" == "true" ]]; then
                 echo "::notice::TODO skipping failing tests."
@@ -222,19 +195,23 @@ jobs:
 
             echo "::endgroup::"
           done
+          done
 
       - name: install
         run: |
+          for compiler in gcc clang; do
           for bits in 32 64; do
-            echo "::group::$bits bit"
+            echo "::group::$compiler, $bits bit"
 
             if [[ -n "${{ matrix.custom }}" ]]; then
-              builddir="builddir-$bits-${{ matrix.custom }}/"
+              builddir="builddir-$compiler-$bits-${{ matrix.custom }}/"
             else
-              builddir="builddir-$bits/"
+              builddir="builddir-$compiler-$bits/"
             fi
 
-            if [[ "${{ matrix.skip }}" == "$bits" ]]; then
+            if [[ -n "${{ matrix.compiler }}" && "${{ matrix.compiler }}" != "$compiler" ]]; then
+              echo "::notice::Skipping combination with compiler $compiler"
+            elif [[ "${{ matrix.skip }}" == "$bits" ]]; then
               echo "::notice::Combination annotated as SKIP."
             else
               DESTDIR=$PWD/inst meson install -C "$builddir"
@@ -242,23 +219,28 @@ jobs:
 
             echo "::endgroup::"
           done
+          done
 
       - name: distcheck
         run: |
+          for compiler in gcc clang;
           for bits in 32 64; do
-            echo "::group::$bits bit"
+            echo "::group::$compiler, $bits bit"
 
             if [[ -n "${{ matrix.custom }}" ]]; then
-              builddir="builddir-$bits-${{ matrix.custom }}/"
+              builddir="builddir-$compiler-$bits-${{ matrix.custom }}/"
             else
-              builddir="builddir-$bits/"
+              builddir="builddir-$compiler-$bits/"
             fi
 
-            if [[ "${{ matrix.skip }}" == "$bits" ]]; then
+            if [[ -n "${{ matrix.compiler }}" && "${{ matrix.compiler }}" != "$compiler" ]]; then
+              echo "::notice::Skipping combination with compiler $compiler"
+            elif [[ "${{ matrix.skip }}" == "$bits" ]]; then
               echo "::notice::Combination annotated as SKIP."
             else
               meson dist -C "$builddir"
             fi
 
             echo "::endgroup::"
+          done
           done
