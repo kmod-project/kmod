@@ -71,8 +71,8 @@ static const struct static_nodes_format static_nodes_format_human = {
 	.description = "(default) a human readable format. Do not parse.",
 };
 
-static int write_tmpfiles(FILE *out, char modname[], char devname[], char type,
-			  unsigned int maj, unsigned int min)
+static int write_tmpfiles(FILE *out, _maybe_unused_ char modname[], char devname[],
+			  char type, unsigned int maj, unsigned int min)
 {
 	const char *dir;
 	int ret;
