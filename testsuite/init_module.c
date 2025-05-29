@@ -224,7 +224,8 @@ TS_EXPORT long init_module(void *mem, unsigned long len, const char *args);
  * This is because we want to be able to pass dummy modules (and not real
  * ones) and it still work.
  */
-long init_module(void *mem, unsigned long len, const char *args)
+/* TODO: add simple validation of the args passed and remove the _maybe_unused_ workaround */
+long init_module(void *mem, unsigned long len, _maybe_unused_ const char *args)
 {
 	const char *modname;
 	struct kmod_elf *elf;
@@ -300,7 +301,8 @@ static int check_kernel_version(int major, int minor)
 
 TS_EXPORT int finit_module(const int fd, const char *args, const int flags);
 
-int finit_module(const int fd, const char *args, const int flags)
+/* TODO: add simple validation of the flags passed and remove the _maybe_unused_ workaround */
+int finit_module(const int fd, const char *args, _maybe_unused_ const int flags)
 {
 	int err;
 	void *mem;
