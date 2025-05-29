@@ -17,7 +17,7 @@
 
 #include "testsuite.h"
 
-static noreturn int test_load_resources(const struct test *t)
+static noreturn int test_load_resources(void)
 {
 	struct kmod_ctx *ctx;
 	const char *null_config = NULL;
@@ -58,7 +58,7 @@ DEFINE_TEST_WITH_FUNC(
 		[TC_UNAME_R] = "5.6.0",
 	});
 
-static noreturn int test_initlib(const struct test *t)
+static noreturn int test_initlib(void)
 {
 	struct kmod_ctx *ctx;
 	const char *null_config = NULL;
@@ -73,7 +73,7 @@ static noreturn int test_initlib(const struct test *t)
 }
 DEFINE_TEST(test_initlib, .description = "test if libkmod's init function work");
 
-static noreturn int test_insert(const struct test *t)
+static noreturn int test_insert(void)
 {
 	struct kmod_ctx *ctx;
 	struct kmod_module *mod;
@@ -107,7 +107,7 @@ DEFINE_TEST(test_insert,
 	},
 	.modules_loaded = "mod_simple");
 
-static noreturn int test_remove(const struct test *t)
+static noreturn int test_remove(void)
 {
 	struct kmod_ctx *ctx;
 	struct kmod_module *mod_simple, *mod_bla;

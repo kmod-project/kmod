@@ -17,7 +17,7 @@
 
 #include "testsuite.h"
 
-static int alias_1(const struct test *t)
+static int alias_1(void)
 {
 	static const char *const input[] = {
 		// clang-format off
@@ -60,7 +60,7 @@ DEFINE_TEST(alias_1,
 		.out = TESTSUITE_ROOTFS "test-util/alias-correct.txt",
 	});
 
-static int test_freadline_wrapped(const struct test *t)
+static int test_freadline_wrapped(void)
 {
 	FILE *fp = fopen("/freadline_wrapped-input.txt", "re");
 
@@ -89,7 +89,7 @@ DEFINE_TEST(test_freadline_wrapped,
 		.out = TESTSUITE_ROOTFS "test-util/freadline_wrapped-correct.txt",
 	});
 
-static int test_strchr_replace(const struct test *t)
+static int test_strchr_replace(void)
 {
 	_cleanup_free_ char *s = strdup("this is a test string");
 	const char *res = "thiC iC a teCt Ctring";
@@ -102,7 +102,7 @@ static int test_strchr_replace(const struct test *t)
 DEFINE_TEST(test_strchr_replace,
 	    .description = "check implementation of strchr_replace()");
 
-static int test_underscores(const struct test *t)
+static int test_underscores(void)
 {
 	struct teststr {
 		char *val;
@@ -127,7 +127,7 @@ static int test_underscores(const struct test *t)
 }
 DEFINE_TEST(test_underscores, .description = "check implementation of underscores()");
 
-static int test_path_ends_with_kmod_ext(const struct test *t)
+static int test_path_ends_with_kmod_ext(void)
 {
 	struct teststr {
 		const char *val;
@@ -163,7 +163,7 @@ DEFINE_TEST(test_path_ends_with_kmod_ext,
 
 #define TEST_WRITE_STR_SAFE_FILE "/write-str-safe"
 #define TEST_WRITE_STR_SAFE_PATH TESTSUITE_ROOTFS "test-util2/" TEST_WRITE_STR_SAFE_FILE
-static int test_write_str_safe(const struct test *t)
+static int test_write_str_safe(void)
 {
 	const char *s = "test";
 	int fd;
@@ -189,7 +189,7 @@ DEFINE_TEST(test_write_str_safe,
 		},
 	});
 
-static int test_uadd32_overflow(const struct test *t)
+static int test_uadd32_overflow(void)
 {
 	uint32_t res;
 	bool overflow;
@@ -206,7 +206,7 @@ static int test_uadd32_overflow(const struct test *t)
 DEFINE_TEST(test_uadd32_overflow,
 	    .description = "check implementation of uadd32_overflow()");
 
-static int test_uadd64_overflow(const struct test *t)
+static int test_uadd64_overflow(void)
 {
 	uint64_t res;
 	bool overflow;
@@ -223,7 +223,7 @@ static int test_uadd64_overflow(const struct test *t)
 DEFINE_TEST(test_uadd64_overflow,
 	    .description = "check implementation of uadd64_overflow()");
 
-static int test_umul32_overflow(const struct test *t)
+static int test_umul32_overflow(void)
 {
 	uint32_t res;
 	bool overflow;
@@ -240,7 +240,7 @@ static int test_umul32_overflow(const struct test *t)
 DEFINE_TEST(test_umul32_overflow,
 	    .description = "check implementation of umul32_overflow()");
 
-static int test_umul64_overflow(const struct test *t)
+static int test_umul64_overflow(void)
 {
 	uint64_t res;
 	bool overflow;
@@ -257,7 +257,7 @@ static int test_umul64_overflow(const struct test *t)
 DEFINE_TEST(test_umul64_overflow,
 	    .description = "check implementation of umul64_overflow()");
 
-static int test_backoff_time(const struct test *t)
+static int test_backoff_time(void)
 {
 	unsigned long long delta = 0;
 

@@ -19,7 +19,7 @@
 
 #define TEST_UNAME "4.0.20-kmod"
 
-static noreturn int test_dependencies(const struct test *t)
+static noreturn int test_dependencies(void)
 {
 	struct kmod_ctx *ctx;
 	struct kmod_module *mod = NULL;

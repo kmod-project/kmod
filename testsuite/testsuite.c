@@ -142,7 +142,7 @@ static int test_spawn_test(const struct test *t)
 
 static int test_run_spawned(const struct test *t)
 {
-	int err = t->func(t);
+	int err = t->func();
 	exit(err);
 
 	return EXIT_FAILURE;
