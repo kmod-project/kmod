@@ -18,7 +18,7 @@
 static const char *TEXT =
 	"this is a very long test that is longer than the size we initially se in the strbuf";
 
-static int test_strbuf_pushchar(const struct test *t)
+static int test_strbuf_pushchar(void)
 {
 	_cleanup_strbuf_ struct strbuf buf;
 	const char *result;
@@ -37,7 +37,7 @@ static int test_strbuf_pushchar(const struct test *t)
 }
 DEFINE_TEST(test_strbuf_pushchar, .description = "test strbuf_{pushchar, str, steal}");
 
-static int test_strbuf_pushchars(const struct test *t)
+static int test_strbuf_pushchars(void)
 {
 	_cleanup_strbuf_ struct strbuf buf;
 	const char *result;
@@ -78,7 +78,7 @@ static int test_strbuf_pushchars(const struct test *t)
 DEFINE_TEST(test_strbuf_pushchars,
 	    .description = "test strbuf_{pushchars, popchar, popchars}");
 
-static int test_strbuf_with_stack(const struct test *t)
+static int test_strbuf_with_stack(void)
 {
 	const char test[] = "test-something-small";
 	const char *stack_buf;
@@ -117,7 +117,7 @@ static int test_strbuf_with_stack(const struct test *t)
 }
 DEFINE_TEST(test_strbuf_with_stack, .description = "test strbuf with stack");
 
-static int test_strbuf_with_heap(const struct test *t)
+static int test_strbuf_with_heap(void)
 {
 	DECLARE_STRBUF(heapbuf);
 
@@ -133,7 +133,7 @@ static int test_strbuf_with_heap(const struct test *t)
 }
 DEFINE_TEST(test_strbuf_with_heap, .description = "test strbuf with heap only");
 
-static int test_strbuf_pushmem(const struct test *t)
+static int test_strbuf_pushmem(void)
 {
 	_cleanup_strbuf_ struct strbuf buf;
 
@@ -147,7 +147,7 @@ static int test_strbuf_pushmem(const struct test *t)
 }
 DEFINE_TEST(test_strbuf_pushmem, .description = "test strbuf_reserve");
 
-static int test_strbuf_used(const struct test *t)
+static int test_strbuf_used(void)
 {
 	_cleanup_strbuf_ struct strbuf buf;
 
@@ -172,7 +172,7 @@ static int test_strbuf_used(const struct test *t)
 }
 DEFINE_TEST(test_strbuf_used, .description = "test strbuf_used");
 
-static int test_strbuf_shrink_to(const struct test *t)
+static int test_strbuf_shrink_to(void)
 {
 	_cleanup_strbuf_ struct strbuf buf;
 
@@ -188,7 +188,7 @@ static int test_strbuf_shrink_to(const struct test *t)
 }
 DEFINE_TEST(test_strbuf_shrink_to, .description = "test strbuf_shrink_to");
 
-static int xfail_strbuf_shrink_to(const struct test *t)
+static int xfail_strbuf_shrink_to(void)
 {
 	_cleanup_strbuf_ struct strbuf buf;
 

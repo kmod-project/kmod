@@ -15,7 +15,7 @@
 
 #include "testsuite.h"
 
-static int loaded_1(const struct test *t)
+static int loaded_1(void)
 {
 	struct kmod_ctx *ctx;
 	const char *null_config = NULL;

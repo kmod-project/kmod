@@ -14,7 +14,7 @@
 
 #include "testsuite.h"
 
-static int test_array_append1(const struct test *t)
+static int test_array_append1(void)
 {
 	struct array array;
 	const char *c1 = "test1";
@@ -29,7 +29,7 @@ static int test_array_append1(const struct test *t)
 }
 DEFINE_TEST(test_array_append1, .description = "test simple array append");
 
-static int test_array_append2(const struct test *t)
+static int test_array_append2(void)
 {
 	struct array array;
 	const char *c1 = "test1";
@@ -50,7 +50,7 @@ static int test_array_append2(const struct test *t)
 }
 DEFINE_TEST(test_array_append2, .description = "test array append over step");
 
-static int test_array_append_unique(const struct test *t)
+static int test_array_append_unique(void)
 {
 	struct array array;
 	const char *c1 = "test1";
@@ -82,7 +82,7 @@ static int strptrcmp(const void *pa, const void *pb)
 	return strcmp(a, b);
 }
 
-static int test_array_sort(const struct test *t)
+static int test_array_sort(void)
 {
 	struct array array;
 	const char *c1 = "test1";
@@ -110,7 +110,7 @@ static int test_array_sort(const struct test *t)
 }
 DEFINE_TEST(test_array_sort, .description = "test array sort");
 
-static int test_array_remove_at(const struct test *t)
+static int test_array_remove_at(void)
 {
 	struct array array;
 	const char *c1 = "test1";
@@ -153,7 +153,7 @@ static int test_array_remove_at(const struct test *t)
 }
 DEFINE_TEST(test_array_remove_at, .description = "test array remove at");
 
-static int test_array_pop(const struct test *t)
+static int test_array_pop(void)
 {
 	struct array array;
 	const char *c1 = "test1";

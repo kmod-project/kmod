@@ -15,7 +15,7 @@
 
 #include "testsuite.h"
 
-static int from_name(const struct test *t)
+static int from_name(void)
 {
 	static const char *const modnames[] = {
 		// clang-format off
@@ -59,7 +59,7 @@ DEFINE_TEST(from_name,
 		.out = TESTSUITE_ROOTFS "test-new-module/from_name/correct.txt",
 	});
 
-static int from_alias(const struct test *t)
+static int from_alias(void)
 {
 	static const char *const modnames[] = {
 		"ext4.*",

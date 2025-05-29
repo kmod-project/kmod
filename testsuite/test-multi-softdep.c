@@ -67,7 +67,7 @@ static int check_dependencies(const char *const *modnames,
 		return -1;
 }
 
-static int multi_softdep(const struct test *t)
+static int multi_softdep(void)
 {
 	struct kmod_ctx *ctx = NULL;
 	struct kmod_module *mod = NULL;

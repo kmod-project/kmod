@@ -21,7 +21,7 @@
 #include "testsuite.h"
 
 #define TEST_UNAME "4.0.20-kmod"
-static noreturn int testsuite_uname(const struct test *t)
+static noreturn int testsuite_uname(void)
 {
 	struct utsname u;
 	int err = uname(&u);
@@ -43,7 +43,7 @@ DEFINE_TEST(testsuite_uname, .description = "test if trap to uname() works",
 		    [TC_UNAME_R] = TEST_UNAME,
 	    });
 
-static int testsuite_rootfs_fopen(const struct test *t)
+static int testsuite_rootfs_fopen(void)
 {
 	FILE *fp;
 	char s[100];
@@ -67,7 +67,7 @@ DEFINE_TEST(testsuite_rootfs_fopen, .description = "test if rootfs works - fopen
 		    [TC_ROOTFS] = TESTSUITE_ROOTFS "test-rootfs/",
 	    });
 
-static int testsuite_rootfs_open(const struct test *t)
+static int testsuite_rootfs_open(void)
 {
 	char buf[100];
 	int fd, done;
@@ -98,7 +98,7 @@ DEFINE_TEST(testsuite_rootfs_open, .description = "test if rootfs works - open()
 		    [TC_ROOTFS] = TESTSUITE_ROOTFS "test-rootfs/",
 	    });
 
-static int testsuite_rootfs_stat(const struct test *t)
+static int testsuite_rootfs_stat(void)
 {
 	struct stat st;
 
@@ -114,7 +114,7 @@ DEFINE_TEST(testsuite_rootfs_stat, .description = "test if rootfs works - stat()
 		    [TC_ROOTFS] = TESTSUITE_ROOTFS "test-rootfs/",
 	    });
 
-static int testsuite_rootfs_opendir(const struct test *t)
+static int testsuite_rootfs_opendir(void)
 {
 	DIR *d;
 
