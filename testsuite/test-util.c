@@ -262,31 +262,23 @@ static int test_backoff_time(void)
 	unsigned long long delta = 0;
 
 	/* Check exponential increments */
-	get_backoff_delta_msec(now_msec(), now_msec() + 10, &delta);
+	get_backoff_delta_msec(now_msec() + 10, &delta);
 	assert_return(delta == 1, EXIT_FAILURE);
-	get_backoff_delta_msec(now_msec(), now_msec() + 10, &delta);
+	get_backoff_delta_msec(now_msec() + 10, &delta);
 	assert_return(delta == 2, EXIT_FAILURE);
-	get_backoff_delta_msec(now_msec(), now_msec() + 10, &delta);
+	get_backoff_delta_msec(now_msec() + 10, &delta);
 	assert_return(delta == 4, EXIT_FAILURE);
-	get_backoff_delta_msec(now_msec(), now_msec() + 10, &delta);
+	get_backoff_delta_msec(now_msec() + 10, &delta);
 	assert_return(delta == 8, EXIT_FAILURE);
 
 	{
-		unsigned long long t0, tend;
-
 		/* Check tail */
 		delta = 4;
-		tend = now_msec() + 3;
-		t0 = tend - 10;
-		get_backoff_delta_msec(t0, tend, &delta);
+		get_backoff_delta_msec(now_msec() + 3, &delta);
 		assert_return(delta == 2, EXIT_FAILURE);
-		tend = now_msec() + 1;
-		t0 = tend - 9;
-		get_backoff_delta_msec(t0, tend, &delta);
+		get_backoff_delta_msec(now_msec() + 1, &delta);
 		assert_return(delta == 1, EXIT_FAILURE);
-		tend = now_msec();
-		t0 = tend - 10;
-		get_backoff_delta_msec(t0, tend, &delta);
+		get_backoff_delta_msec(now_msec(), &delta);
 		assert_return(delta == 0, EXIT_FAILURE);
 	}
 

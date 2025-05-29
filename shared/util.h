@@ -66,7 +66,7 @@ _nonnull_all_ int fd_lookup_path(int fd, char *path, size_t pathlen);
 unsigned long long now_usec(void);
 unsigned long long now_msec(void);
 int sleep_until_msec(unsigned long long msec);
-unsigned long long get_backoff_delta_msec(unsigned long long t0, unsigned long long tend,
+unsigned long long get_backoff_delta_msec(unsigned long long tend,
 					  unsigned long long *delta);
 
 /* endianness and alignments                                                */
