@@ -315,7 +315,7 @@ end:
 static int rmmod_do_remove_module(struct kmod_module *mod)
 {
 	const char *modname = kmod_module_get_name(mod);
-	unsigned long long interval_msec = 0, t0_msec = 0, tend_msec = 0;
+	unsigned long long interval_msec, t0_msec = 0, tend_msec;
 	int flags = 0, err;
 
 	SHOW("rmmod %s\n", modname);
