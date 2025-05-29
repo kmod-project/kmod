@@ -36,8 +36,8 @@ Links
 Compilation and installation
 ============================
 
-In order to compile the source code you need the following software packages:
-- GCC/CLANG compiler
+In order to compile the source code you need:
+- C11 compiler, supporting a range of GNU extensions - GCC 8+, Clang 6+
 - GNU C library / musl / uClibc
 
 Optional dependencies, required with the default build configuration:
