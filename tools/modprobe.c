@@ -315,7 +315,7 @@ end:
 static int rmmod_do_remove_module(struct kmod_module *mod)
 {
 	const char *modname = kmod_module_get_name(mod);
-	unsigned long long interval_msec, t0_msec = 0, tend_msec;
+	unsigned long long interval_msec, tend_msec = 0;
 	int flags = 0, err;
 
 	SHOW("rmmod %s\n", modname);
@@ -340,17 +340,16 @@ static int rmmod_do_remove_module(struct kmod_module *mod)
 		} else if (err == -EAGAIN && wait_msec) {
 			unsigned long long until_msec;
 
-			if (!t0_msec) {
-				t0_msec = now_msec();
-				tend_msec = t0_msec + wait_msec;
+			if (!tend_msec) {
+				tend_msec = now_msec() + wait_msec;
 				interval_msec = 1;
 			}
 
-			until_msec = get_backoff_delta_msec(t0_msec, tend_msec,
-							    &interval_msec);
+			until_msec = get_backoff_delta_msec(tend_msec, &interval_msec);
 			err = sleep_until_msec(until_msec);
 
-			if (!t0_msec)
+			/* Error out if now_msec() fails */
+			if (tend_msec == wait_msec)
 				err = -ENOTSUP;
 
 			if (err < 0) {
