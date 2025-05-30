@@ -25,7 +25,7 @@ static const char *const mod_name[] = {
 	NULL,
 };
 
-static int test_weakdep(const struct test *t)
+static int test_weakdep(void)
 {
 	struct kmod_ctx *ctx;
 	int mod_name_index = 0;
@@ -90,7 +90,7 @@ DEFINE_TEST(test_weakdep,
 		.out = TESTSUITE_ROOTFS "test-weakdep/correct-weakdep.txt",
 	});
 
-static noreturn int modprobe_config(const struct test *t)
+static noreturn int modprobe_config(void)
 {
 	EXEC_MODPROBE("-c");
 	exit(EXIT_FAILURE);
