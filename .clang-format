@@ -80,6 +80,7 @@ ForEachMacros:
 AttributeMacros:
   - KMOD_EXPORT
   - TS_EXPORT
+  - _alignedptr_
   - _always_inline_
   - _clang_suppress_alloc_
   - _cleanup_
@@ -88,7 +89,10 @@ AttributeMacros:
   - _nonnull_
   - _nonnull_all_
   - _printf_format_
+  - _retain_
+  - _section_
   - _sentinel_
+  - _used_
   - noreturn
 
 IncludeBlocks: Preserve
