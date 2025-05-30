@@ -75,6 +75,11 @@ database.
 	For compatibility reasons *--dump-modversions* is also accepted for this
 	option but will be removed after kmod 36.
 
+*--show-exports*
+	Print out a list of symbols exported by the module. This option is
+	commonly used to inspect the function list, while investigating loading
+	of modules with partial or missing dependencies.
+
 *-d*, *--dirname*
 	Root directory for modules, / by default.
 
