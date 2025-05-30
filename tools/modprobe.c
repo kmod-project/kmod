@@ -56,6 +56,7 @@ static const struct option cmdopts[] = {
 	{ "wait", required_argument, 0, 'w' },
 
 	{ "resolve-alias", no_argument, 0, 'R' },
+	{ "show-alias", no_argument, 0, 'R' },
 	{ "first-time", no_argument, 0, 3 },
 	{ "ignore-install", no_argument, 0, 'i' },
 	{ "ignore-remove", no_argument, 0, 'i' },
@@ -116,17 +117,14 @@ static void help(void)
 	       "\t    --force-vermagic        Ignore module's version magic\n"
 	       "\n"
 	       "Query Options:\n"
-	       "\t-R, --resolve-alias         Only lookup and print alias and exit\n"
-	       "\t-D, --show-depends          Only print module dependencies and exit\n"
-	       "\t-c, --showconfig            Print out known configuration and exit\n"
-	       "\t-c, --show-config           Same as --showconfig\n"
-	       "\t    --show-modversions      Dump module symbol version and exit\n"
-	       "\t    --dump-modversions      Same as --show-modversions\n"
-	       "\t    --show-exports          Only print module exported symbol versions and exit\n"
+	       "\t-R, --show-alias            Print module(s) matching given alias and exit\n"
+	       "\t-D, --show-depends          Print module dependencies and exit\n"
+	       "\t-c, --show-config           Print known configuration and exit\n"
+	       "\t    --show-modversions      Print module symbol version and exit\n"
+	       "\t    --show-exports          Print module exported symbol versions and exit\n"
 	       "\n"
 	       "General Options:\n"
 	       "\t-n, --dry-run               Do not execute operations, just print out\n"
-	       "\t-n, --show                  Same as --dry-run\n"
 
 	       "\t-C, --config FILE           Use FILE instead of default search paths\n"
 	       "\t-d, --dirname DIR           Use DIR as filesystem root for " MODULE_DIRECTORY
