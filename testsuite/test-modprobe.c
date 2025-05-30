@@ -58,7 +58,7 @@ DEFINE_TEST_WITH_FUNC(modprobe_show_depends_no_load, modprobe_show_depends2,
 
 static noreturn int modprobe_show_alias_to_none(const struct test *t)
 {
-	EXEC_MODPROBE("--show-depends", "--ignore-install", "--quiet", "mod-simple");
+	EXEC_MODPROBE("--show-depends", "--ignore-install", "mod-simple");
 	exit(EXIT_FAILURE);
 }
 DEFINE_TEST(modprobe_show_alias_to_none,
@@ -75,7 +75,7 @@ DEFINE_TEST(modprobe_show_alias_to_none,
 
 static noreturn int modprobe_show_exports(const struct test *t)
 {
-	EXEC_MODPROBE("--show-exports", "--quiet", "/mod-loop-a.ko");
+	EXEC_MODPROBE("--show-exports", "/mod-loop-a.ko");
 	exit(EXIT_FAILURE);
 }
 DEFINE_TEST(modprobe_show_exports,
