@@ -69,6 +69,11 @@ database.
 	This option is commonly used by distributions in order to package up a
 	Linux kernel module using module versioning deps.
 
+*--show-exports*
+	Print out a list of symbols exported by the module. This option is
+	commonly used to inspect the function list, while investigating loading
+	of modules with partial or missing dependencies.
+
 *-d*, *--dirname*
 	Root directory for modules, / by default.
 
