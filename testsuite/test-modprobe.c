@@ -87,6 +87,22 @@ DEFINE_TEST(modprobe_show_exports,
 		.regex = true,
 	});
 
+static noreturn int modprobe_show_exports_module(void)
+{
+	EXEC_MODPROBE("--show-exports", "mod-loop-b");
+	exit(EXIT_FAILURE);
+}
+DEFINE_TEST(modprobe_show_exports_module,
+	.description = "check if modprobe --show-depends also works with module names",
+	.config = {
+		[TC_UNAME_R] = "4.4.4",
+		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-modprobe/show-exports-module",
+	},
+	.output = {
+		.out = TESTSUITE_ROOTFS "test-modprobe/show-exports-module/correct.txt",
+		.regex = true,
+	});
+
 static noreturn int modprobe_builtin(void)
 {
 	EXEC_MODPROBE("unix");
