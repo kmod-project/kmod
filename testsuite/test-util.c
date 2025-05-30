@@ -270,6 +270,8 @@ static int test_backoff_time(void)
 	assert_return(delta == 4, EXIT_FAILURE);
 	get_backoff_delta_msec(now_msec() + 10, &delta);
 	assert_return(delta == 8, EXIT_FAILURE);
+	get_backoff_delta_msec(now_msec() + 10, &delta);
+	assert_return(delta == 8, EXIT_FAILURE);
 
 	{
 		/* Check tail */
