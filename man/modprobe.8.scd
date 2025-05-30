@@ -61,13 +61,18 @@ database.
 	This option is passed through *install* or *remove* commands to other
 	*modprobe* commands in the MODPROBE_OPTIONS environment variable.
 
-*-c*, *--showconfig*
+*-c*, *--show-config*
 	Dump out the effective configuration from the config directory and exit.
 
-*--dump-modversions*
+*--show-modversions*
 	Print out a list of module versioning information required by a module.
 	This option is commonly used by distributions in order to package up a
 	Linux kernel module using module versioning deps.
+
+*--show-exports*
+	Print out a list of symbols exported by the module. This option is
+	commonly used to inspect the function list, while investigating loading
+	of modules with partial or missing dependencies.
 
 *-d*, *--dirname*
 	Root directory for modules, / by default.
@@ -122,11 +127,10 @@ database.
 	the request was more specifically made with only one or other (and not
 	both) of *--ignore-install* or *--ignore-remove*. See *modprobe.d*(5).
 
-*-n*, *--dry-run*, *--show*
+*-n*, *--dry-run*
 	This option does everything but actually insert or delete the modules
 	(or run the install or remove commands). Combined with *-v*, it is
-	useful for debugging problems. For historical reasons both *--dry-run*
-	and *--show* actually mean the same thing and are interchangeable.
+	useful for debugging problems.
 
 *-q*, *--quiet*
 	With this flag, *modprobe* won't print an error message if you try to
@@ -135,7 +139,7 @@ database.
 	exit status. The kernel uses this to opportunistically probe for modules
 	which might exist using request_module.
 
-*-R*, *--resolve-alias*
+*-R*, *--show-alias*
 	Print all module names matching an alias. This can be useful for
 	debugging module alias problems.
 

@@ -1,0 +1,3 @@
+kernel/mod-simple.ko:
+kernel/mod-loop-b.ko:
+kernel/mod-loop-a.ko: kernel/mod-loop-b.ko
