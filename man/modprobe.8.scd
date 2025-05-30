@@ -150,6 +150,10 @@ database.
 	require it. Your distribution kernel may not have been built to support
 	removal of modules at all.
 
+*--remove-holders*
+	This option causes *modprobe* to remove the mentioned module(s), alongside
+	other modules that depend it/them - aka the reverse dependency list.
+
 *-w* _TIMEOUT_MSEC_, *--wait* _TIMEOUT_MSEC_
 	This option causes *modprobe -r *to continue trying to remove a module
 	if it fails due to the module being busy, i.e. its refcount is not 0 at
