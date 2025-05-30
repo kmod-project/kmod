@@ -23,7 +23,7 @@ struct kmod_file {
 #if ENABLE_XZ
 int kmod_file_load_xz(struct kmod_file *file);
 #else
-static inline int kmod_file_load_xz(struct kmod_file *file)
+static inline int kmod_file_load_xz(_maybe_unused_ struct kmod_file *file)
 {
 	return -ENOSYS;
 }
@@ -32,7 +32,7 @@ static inline int kmod_file_load_xz(struct kmod_file *file)
 #if ENABLE_ZLIB
 int kmod_file_load_zlib(struct kmod_file *file);
 #else
-static inline int kmod_file_load_zlib(struct kmod_file *file)
+static inline int kmod_file_load_zlib(_maybe_unused_ struct kmod_file *file)
 {
 	return -ENOSYS;
 }
@@ -41,7 +41,7 @@ static inline int kmod_file_load_zlib(struct kmod_file *file)
 #if ENABLE_ZSTD
 int kmod_file_load_zstd(struct kmod_file *file);
 #else
-static inline int kmod_file_load_zstd(struct kmod_file *file)
+static inline int kmod_file_load_zstd(_maybe_unused_ struct kmod_file *file)
 {
 	return -ENOSYS;
 }
