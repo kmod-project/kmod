@@ -48,14 +48,11 @@
 #define _used_ __attribute((used))
 #define _retain_ __attribute((retain))
 #define _section_(a) __attribute((section(a)))
-#define _aligned_(a) __attribute((aligned(a)))
-#define _alignedptr_ _aligned_(sizeof(void *))
+#define _alignedptr_ __attribute((aligned(sizeof(void *))))
 
 #if defined(__clang_analyzer__)
-#define _clang_suppress_ __attribute__((suppress))
 #define _clang_suppress_alloc_ __attribute__((suppress))
 #else
-#define _clang_suppress_
 #define _clang_suppress_alloc_
 #endif
 
@@ -68,7 +65,7 @@ static inline void freep(void *p)
 {
 	free(*(void **)p);
 }
-#define _cleanup_free_ _cleanup_(freep)
+#define _cleanup_free_ _clang_suppress_alloc_ __attribute__((cleanup(freep)))
 
 /* Define C11 noreturn without <stdnoreturn.h> and even on older gcc
  * compiler versions */
