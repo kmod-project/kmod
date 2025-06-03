@@ -17,6 +17,7 @@ fi
 
 apt-get update
 apt-get install --yes \
+    bash \
     build-essential \
     clang \
     gcc-multilib \

@@ -8,6 +8,7 @@ export DEBIAN_FRONTEND=noninteractive
 export TZ=Etc/UTC
 apt-get update
 apt-get install --yes \
+    bash \
     build-essential \
     curl \
     clang \
