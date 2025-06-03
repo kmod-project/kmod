@@ -32,89 +32,91 @@ jobs:
           - compiler: 'gcc'
             container: 'alpine:latest'
             meson_setup: '-Ddocs=false -Db_sanitize=none'
+            only_bits: '64'
           - compiler: 'gcc'
             container: 'archlinux:multilib-devel'
+            skip_test: '32'
           - compiler: 'gcc'
             container: 'debian:bullseye-slim'
             meson_setup: '-Dzstd=disabled -Dxz=disabled -Dzlib=disabled -Dopenssl=enabled -Dtools=true'
+            skip_test: '32'
           - compiler: 'gcc'
             container: 'debian:unstable'
+            skip_test: '32'
           - compiler: 'gcc'
             container: 'fedora:latest'
+            only_bits: '64'
           - compiler: 'gcc'
             container: 'fedora:latest'
             meson_setup: '-Dxz=disabled -Ddlopen=all'
+            only_bits: '64'
+            custom: 'no-xz-dlopen-all'
           - compiler: 'gcc'
             container: 'ubuntu:22.04'
+            skip_test: '32'
           - compiler: 'gcc'
             container: 'ubuntu:22.04'
             meson_setup: '-Ddlopen=zstd,zlib'
+            only_bits: '64'
+            custom: 'dlopen-zstd-zlib'
           - compiler: 'gcc'
             container: 'ubuntu:24.04'
+            skip_test: '32'
 
           # clang variations of the same builds
 
           - compiler: 'clang'
             container: 'alpine:latest'
             meson_setup: '-Ddocs=false -Db_sanitize=none'
+            only_bits: '64'
           - compiler: 'clang'
             container: 'archlinux:multilib-devel'
+            skip_test: '32'
           - compiler: 'clang'
             container: 'debian:unstable'
+            skip_test: '32'
           # Disabled because it doesn't work
           # - compiler: 'clang'
           #   container: 'debian:bullseye-slim'
           #   meson_setup: '-Dzstd=disabled -Dxz=disabled -Dzlib=disabled -Dopenssl=enabled -Dtools=true'
+          #   skip_test: '32'
           - compiler: 'clang'
             container: 'fedora:latest'
+            only_bits: '64'
           - compiler: 'clang'
             container: 'fedora:latest'
             meson_setup: '-Dxz=disabled -Ddlopen=all'
+            only_bits: '64'
+            custom: 'no-xz-dlopen-all'
           - compiler: 'clang'
             container: 'ubuntu:22.04'
+            skip_test: '32'
           - compiler: 'clang'
             container: 'ubuntu:22.04'
             meson_setup: '-Ddlopen=zstd,zlib'
+            only_bits: '64'
+            custom: 'dlopen-zstd-zlib'
           - compiler: 'clang'
             container: 'ubuntu:24.04'
-
-          # Test some configurations with 32bits
-
-          - compiler: 'gcc'
-            container: 'archlinux:multilib-devel'
-            x32: 'true'
-            meson_setup: '-Dzstd=disabled -Dxz=disabled -Dzlib=disabled -Dopenssl=disabled'
-            # fails on LD_PRELOAD
-            skip_test: 'true'
-          - compiler: 'gcc'
-            container: 'ubuntu:24.04'
-            x32: 'true'
-            meson_setup: '-Dzstd=disabled -Dxz=disabled -Dzlib=disabled -Dopenssl=disabled'
-          - compiler: 'clang'
-            container: 'archlinux:multilib-devel'
-            x32: 'true'
-            meson_setup: '-Dzstd=disabled -Dxz=disabled -Dzlib=disabled -Dopenssl=disabled'
-            # fails on LD_PRELOAD
-            skip_test: 'true'
-          - compiler: 'clang'
-            container: 'ubuntu:24.04'
-            x32: 'true'
-            meson_setup: '-Dzstd=disabled -Dxz=disabled -Dzlib=disabled -Dopenssl=disabled'
+            skip_test: '32'
 
           # Special configurations
 
           # Variant with lld as linker
           - compiler: 'clang'
             container: 'archlinux:multilib-devel'
+            only_bits: '64'
             linker: 'lld'
 
           # Variants with moduledir
           - compiler: 'gcc'
             container: 'archlinux:multilib-devel'
             meson_setup: '-Dmoduledir=/usr/lib/modules'
+            only_bits: '64'
           - compiler: 'gcc'
             container: 'archlinux:multilib-devel'
             meson_setup: '-Dmoduledir=/kernel-modules'
+            only_bits: '64'
 
     container:
       image: ${{ matrix.container }}
@@ -167,27 +169,57 @@ jobs:
 
       - name: configure
         run: |
-          setup_options="${{ matrix.meson_setup }}"
+          do_setup() {
+            setup_options="${{ matrix.meson_setup }}"
 
-          if [[ "${{ matrix.x32 }}" == "true" ]]; then
-            export CC="$CC -m32"
-          fi
+            if [[ "$2" == "32" ]]; then
+              echo "::notice::TODO fix and reuse the original options."
+              setup_options="$setup_options -Dzstd=disabled -Dxz=disabled -Dzlib=disabled -Dopenssl=disabled"
+            fi
 
-          if [[ -n "${{ matrix.linker }}" ]]; then
-            export CC_LD="${{ matrix.linker }}"
-          fi
+            [[ -n "${{ matrix.linker }}" ]] && export CC_LD="${{ matrix.linker }}"
+            meson setup --native-file build-dev.ini $setup_options "$1"
+          }
 
-          meson setup --native-file build-dev.ini $setup_options builddir/
+          source .github/functions.sh
+          for_each_config "${{ matrix.only_bits }}" "${{ matrix.custom }}" do_setup
 
       - name: build
-        run: meson compile -C builddir/
+        run: |
+          do_build() {
+            meson compile -C "$1"
+          }
+          source .github/functions.sh
+          for_each_config "${{ matrix.only_bits }}" "${{ matrix.custom }}" do_build
 
       - name: test
-        if: ${{ matrix.skip_test != 'true' }}
-        run: meson test -C builddir/ || meson test -C builddir/ --verbose
+        run: |
+          do_test() {
+            if [[ -n "${{ matrix.skip_test }}" && "${{ matrix.skip_test }}" == "$2" ]]; then
+              echo "::notice::Skipping tests"
+              return 0
+            fi
+            meson test -C "$1" || meson test -C "$1" --verbose
+          }
+          source .github/functions.sh
+          for_each_config "${{ matrix.only_bits }}" "${{ matrix.custom }}" do_test
 
       - name: install
-        run: DESTDIR=$PWD/inst meson install -C builddir/
+        run: |
+          do_install() {
+            DESTDIR=$PWD/inst meson install -C "$1"
+          }
+          source .github/functions.sh
+          for_each_config "${{ matrix.only_bits }}" "${{ matrix.custom }}" do_install
 
       - name: distcheck
-        run: meson dist -C builddir/
+        run: |
+          do_distcheck() {
+            if [[ "$2" == "32" ]]; then
+              echo "::notice::Skipping 32bit distcheck"
+              return 0
+            fi
+            meson dist -C "$1"
+          }
+          source .github/functions.sh
+          for_each_config "${{ matrix.only_bits }}" "${{ matrix.custom }}" do_distcheck
