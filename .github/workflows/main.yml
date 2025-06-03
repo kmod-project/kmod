@@ -173,17 +173,17 @@ jobs:
             export CC_LD="${{ matrix.linker }}"
           fi
 
-          meson setup --native-file build-dev.ini $setup_options build
+          meson setup --native-file build-dev.ini $setup_options builddir/
 
       - name: build
-        run: cd build && meson compile
+        run: meson compile -C builddir/
 
       - name: test
         if: ${{ matrix.skip_test != 'true' }}
-        run: cd build && meson test || meson test --verbose
+        run: meson test -C builddir/ || meson test -C builddir/ --verbose
 
       - name: install
-        run: cd build && DESTDIR=$PWD/inst meson install
+        run: DESTDIR=$PWD/inst meson install -C builddir/
 
       - name: distcheck
-        run: cd build && meson dist
+        run: meson dist -C builddir/
