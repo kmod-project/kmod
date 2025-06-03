@@ -44,14 +44,13 @@ jobs:
 
       - name: Build
         run: |
-          mkdir build && cd build
-          meson setup --native-file ../build-dev.ini ${{ matrix.meson_setup }} . ..
-          meson compile
-          meson test
-          ninja coverage-xml
+          meson setup --native-file build-dev.ini ${{ matrix.meson_setup }} builddir/
+          meson compile -C builddir/
+          meson test -C builddir/
+          ninja -C builddir/ coverage-xml
 
       - name: Upload Coverage
         uses: codecov/codecov-action@18283e04ce6e62d37312384ff67231eb8fd56d24 # v5.4.3
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          file: build/meson-logs/coverage.xml
+          file: builddir/meson-logs/coverage.xml
