@@ -22,101 +22,57 @@ defaults:
 
 jobs:
   build:
-    env:
-      CC: ${{ matrix.compiler }}
     runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
         include:
-          - compiler: 'gcc'
-            container: 'alpine:latest'
+          - container: 'alpine:latest'
             meson_setup: '-Ddocs=false -Db_sanitize=none'
             only_bits: '64'
-          - compiler: 'gcc'
-            container: 'archlinux:multilib-devel'
+          - container: 'archlinux:multilib-devel'
             skip_test: '32'
-          - compiler: 'gcc'
-            container: 'debian:bullseye-slim'
+          - container: 'debian:bullseye-slim'
             meson_setup: '-Dzstd=disabled -Dxz=disabled -Dzlib=disabled -Dopenssl=enabled -Dtools=true'
+            only_compiler: 'gcc'
             skip_test: '32'
-          - compiler: 'gcc'
-            container: 'debian:unstable'
+          - container: 'debian:unstable'
             skip_test: '32'
-          - compiler: 'gcc'
-            container: 'fedora:latest'
+          - container: 'fedora:latest'
             only_bits: '64'
-          - compiler: 'gcc'
-            container: 'fedora:latest'
+          - container: 'fedora:latest'
             meson_setup: '-Dxz=disabled -Ddlopen=all'
             only_bits: '64'
             custom: 'no-xz-dlopen-all'
-          - compiler: 'gcc'
-            container: 'ubuntu:22.04'
+          - container: 'ubuntu:22.04'
             skip_test: '32'
-          - compiler: 'gcc'
-            container: 'ubuntu:22.04'
+          - container: 'ubuntu:22.04'
             meson_setup: '-Ddlopen=zstd,zlib'
             only_bits: '64'
             custom: 'dlopen-zstd-zlib'
-          - compiler: 'gcc'
-            container: 'ubuntu:24.04'
-            skip_test: '32'
-
-          # clang variations of the same builds
-
-          - compiler: 'clang'
-            container: 'alpine:latest'
-            meson_setup: '-Ddocs=false -Db_sanitize=none'
-            only_bits: '64'
-          - compiler: 'clang'
-            container: 'archlinux:multilib-devel'
-            skip_test: '32'
-          - compiler: 'clang'
-            container: 'debian:unstable'
-            skip_test: '32'
-          # Disabled because it doesn't work
-          # - compiler: 'clang'
-          #   container: 'debian:bullseye-slim'
-          #   meson_setup: '-Dzstd=disabled -Dxz=disabled -Dzlib=disabled -Dopenssl=enabled -Dtools=true'
-          #   skip_test: '32'
-          - compiler: 'clang'
-            container: 'fedora:latest'
-            only_bits: '64'
-          - compiler: 'clang'
-            container: 'fedora:latest'
-            meson_setup: '-Dxz=disabled -Ddlopen=all'
-            only_bits: '64'
-            custom: 'no-xz-dlopen-all'
-          - compiler: 'clang'
-            container: 'ubuntu:22.04'
-            skip_test: '32'
-          - compiler: 'clang'
-            container: 'ubuntu:22.04'
-            meson_setup: '-Ddlopen=zstd,zlib'
-            only_bits: '64'
-            custom: 'dlopen-zstd-zlib'
-          - compiler: 'clang'
-            container: 'ubuntu:24.04'
+          - container: 'ubuntu:24.04'
             skip_test: '32'
 
           # Special configurations
 
           # Variant with lld as linker
-          - compiler: 'clang'
-            container: 'archlinux:multilib-devel'
+          - container: 'archlinux:multilib-devel'
             only_bits: '64'
+            only_compiler: 'clang'
+            custom: 'ldd-as-linker'
             linker: 'lld'
 
           # Variants with moduledir
-          - compiler: 'gcc'
-            container: 'archlinux:multilib-devel'
+          - container: 'archlinux:multilib-devel'
             meson_setup: '-Dmoduledir=/usr/lib/modules'
             only_bits: '64'
-          - compiler: 'gcc'
-            container: 'archlinux:multilib-devel'
+            only_compiler: 'gcc'
+            custom: 'usr-moduledir'
+          - container: 'archlinux:multilib-devel'
             meson_setup: '-Dmoduledir=/kernel-modules'
             only_bits: '64'
+            only_compiler: 'gcc'
+            custom: 'custom-moduledir'
 
     container:
       image: ${{ matrix.container }}
@@ -182,7 +138,7 @@ jobs:
           }
 
           source .github/functions.sh
-          for_each_config "${{ matrix.only_bits }}" "${{ matrix.custom }}" do_setup
+          for_each_config "${{ matrix.only_compiler }}" "${{ matrix.only_bits }}" "${{ matrix.custom }}" do_setup
 
       - name: build
         run: |
@@ -190,7 +146,7 @@ jobs:
             meson compile -C "$1"
           }
           source .github/functions.sh
-          for_each_config "${{ matrix.only_bits }}" "${{ matrix.custom }}" do_build
+          for_each_config "${{ matrix.only_compiler }}" "${{ matrix.only_bits }}" "${{ matrix.custom }}" do_build
 
       - name: test
         run: |
@@ -202,7 +158,7 @@ jobs:
             meson test -C "$1" || meson test -C "$1" --verbose
           }
           source .github/functions.sh
-          for_each_config "${{ matrix.only_bits }}" "${{ matrix.custom }}" do_test
+          for_each_config "${{ matrix.only_compiler }}" "${{ matrix.only_bits }}" "${{ matrix.custom }}" do_test
 
       - name: install
         run: |
@@ -210,7 +166,7 @@ jobs:
             DESTDIR=$PWD/inst meson install -C "$1"
           }
           source .github/functions.sh
-          for_each_config "${{ matrix.only_bits }}" "${{ matrix.custom }}" do_install
+          for_each_config "${{ matrix.only_compiler }}" "${{ matrix.only_bits }}" "${{ matrix.custom }}" do_install
 
       - name: distcheck
         run: |
@@ -222,4 +178,4 @@ jobs:
             meson dist -C "$1"
           }
           source .github/functions.sh
-          for_each_config "${{ matrix.only_bits }}" "${{ matrix.custom }}" do_distcheck
+          for_each_config "${{ matrix.only_compiler }}" "${{ matrix.only_bits }}" "${{ matrix.custom }}" do_distcheck
