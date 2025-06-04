@@ -6,7 +6,6 @@
 #include <assert.h>
 #include <elf.h>
 #include <endian.h>
-#include <errno.h>
 #include <limits.h>
 #include <stdlib.h>
 #include <string.h>
@@ -485,7 +484,7 @@ int kmod_elf_get_modinfo_strings(const struct kmod_elf *elf, char ***array)
 
 	*array = a = malloc(total_size);
 	if (*array == NULL)
-		return -errno;
+		return -ENOMEM;
 
 	s = (char *)(a + count + 1);
 	memcpy(s, strings, size);
@@ -561,7 +560,7 @@ int kmod_elf_get_modversions(const struct kmod_elf *elf, struct kmod_modversion 
 
 	*array = a = malloc(sizeof(struct kmod_modversion) * count);
 	if (*array == NULL)
-		return -errno;
+		return -ENOMEM;
 
 	for (i = 0, off = sec_off; i < count; i++, off += verlen) {
 		uint64_t crc = elf_get_uint(elf, off, crclen);
@@ -667,7 +666,7 @@ int kmod_elf_strip(const struct kmod_elf *elf, unsigned int flags, const void **
 
 	changed = memdup(elf->memory, elf->size);
 	if (changed == NULL)
-		return -errno;
+		return -ENOMEM;
 
 	ELFDBG(elf, "copied memory to allow writing.\n");
 
@@ -743,7 +742,7 @@ static int kmod_elf_get_symbols_symtab(const struct kmod_elf *elf,
 
 	*array = a = malloc(total_size);
 	if (*array == NULL)
-		return -errno;
+		return -ENOMEM;
 
 	last = 0;
 	for (i = 0, count = 0; i < size; i++) {
@@ -882,7 +881,7 @@ int kmod_elf_get_symbols(const struct kmod_elf *elf, struct kmod_modversion **ar
 
 	*array = a = malloc(sizeof(struct kmod_modversion) * count);
 	if (*array == NULL)
-		return -errno;
+		return -ENOMEM;
 
 	count = 0;
 	str_off = str_sec_off;
@@ -1154,7 +1153,7 @@ int kmod_elf_get_dependency_symbols(const struct kmod_elf *elf,
 	if (*array == NULL) {
 		free(visited_versions);
 		free(symcrcs);
-		return -errno;
+		return -ENOMEM;
 	}
 
 	count = 0;

@@ -93,7 +93,7 @@ int kmod_file_load_zstd(struct kmod_file *file)
 	dst_size = frame_size;
 	dst_buf = malloc(dst_size);
 	if (dst_buf == NULL) {
-		ret = -errno;
+		ret = -ENOMEM;
 		goto out;
 	}
 

@@ -76,7 +76,7 @@ int kmod_file_load_zlib(struct kmod_file *file)
 		if (did == total) {
 			void *tmp = realloc(p, total + READ_STEP);
 			if (tmp == NULL) {
-				ret = -errno;
+				ret = -ENOMEM;
 				goto error;
 			}
 			total += READ_STEP;
