@@ -86,13 +86,13 @@ static noreturn int test_insert(void)
 
 	err = kmod_module_new_from_path(ctx, "/mod-simple.ko", &mod);
 	if (err != 0) {
-		ERR("could not create module from path: %m\n");
+		ERR("could not create module from path: %s\n", strerror(-err));
 		exit(EXIT_FAILURE);
 	}
 
 	err = kmod_module_insert_module(mod, 0, NULL);
 	if (err != 0) {
-		ERR("could not insert module: %m\n");
+		ERR("could not insert module: %s\n", strerror(-err));
 		exit(EXIT_FAILURE);
 	}
 	kmod_unref(ctx);
