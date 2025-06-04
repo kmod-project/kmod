@@ -3033,7 +3033,7 @@ static int do_depmod(int argc, char *argv[])
 
 	ctx = kmod_new(cfg.dirname, &null_kmod_config);
 	if (ctx == NULL) {
-		CRIT("kmod_new(\"%s\", {NULL}) failed: %m\n", cfg.dirname);
+		CRIT("kmod_new(\"%s\", {NULL}) failed\n", cfg.dirname);
 		goto cmdline_failed;
 	}
 
