@@ -2032,9 +2032,9 @@ KMOD_EXPORT int kmod_module_get_versions(const struct kmod_module *mod,
 
 		mv = kmod_module_versions_new(versions[i].crc, versions[i].symbol);
 		if (mv == NULL) {
-			ret = -errno;
 			kmod_module_versions_free_list(*list);
 			*list = NULL;
+			ret = -ENOMEM;
 			goto list_error;
 		}
 
@@ -2133,9 +2133,9 @@ KMOD_EXPORT int kmod_module_get_symbols(const struct kmod_module *mod,
 
 		mv = kmod_module_symbols_new(symbols[i].crc, symbols[i].symbol);
 		if (mv == NULL) {
-			ret = -errno;
 			kmod_module_symbols_free_list(*list);
 			*list = NULL;
+			ret = -ENOMEM;
 			goto list_error;
 		}
 
@@ -2240,9 +2240,9 @@ KMOD_EXPORT int kmod_module_get_dependency_symbols(const struct kmod_module *mod
 		mv = kmod_module_dependency_symbols_new(symbols[i].crc, symbols[i].bind,
 							symbols[i].symbol);
 		if (mv == NULL) {
-			ret = -errno;
 			kmod_module_dependency_symbols_free_list(*list);
 			*list = NULL;
+			ret = -ENOMEM;
 			goto list_error;
 		}
 
