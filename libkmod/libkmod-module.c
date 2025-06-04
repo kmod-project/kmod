@@ -1671,8 +1671,8 @@ KMOD_EXPORT struct kmod_list *kmod_module_get_sections(const struct kmod_module 
 		err = read_str_ulong(fd, &address, 16);
 		close(fd);
 		if (err < 0) {
-			ERR(mod->ctx, "could not read long from '%s/%s': %m\n", dname,
-			    dent->d_name);
+			ERR(mod->ctx, "could not read long from '%s/%s': %s\n", dname,
+			    dent->d_name, strerror(-err));
 			goto fail;
 		}
 
