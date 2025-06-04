@@ -233,8 +233,8 @@ static int do_static_nodes(int argc, char *argv[])
 		r = mkdir_parents(output, 0755);
 		if (r < 0) {
 			fprintf(stderr,
-				"Error: could not create parent directory for %s - %m.\n",
-				output);
+				"Error: could not create parent directory for %s - %s.\n",
+				output, strerror(-r));
 			ret = EXIT_FAILURE;
 			goto finish;
 		}
