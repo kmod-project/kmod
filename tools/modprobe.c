@@ -56,6 +56,7 @@ static const struct option cmdopts[] = {
 	{ "wait", required_argument, 0, 'w' },
 
 	{ "resolve-alias", no_argument, 0, 'R' },
+	{ "show-alias", no_argument, 0, 'R' },
 	{ "first-time", no_argument, 0, 3 },
 	{ "ignore-install", no_argument, 0, 'i' },
 	{ "ignore-remove", no_argument, 0, 'i' },
@@ -116,17 +117,14 @@ static void help(void)
 	       "\t    --force-vermagic        Ignore module's version magic\n"
 	       "\n"
 	       "Query Options:\n"
-	       "\t-R, --resolve-alias         Only lookup and print alias and exit\n"
-	       "\t-D, --show-depends          Only print module dependencies and exit\n"
-	       "\t-c, --showconfig            Print out known configuration and exit\n"
-	       "\t-c, --show-config           Same as --showconfig\n"
-	       "\t    --show-modversions      Dump module symbol version and exit\n"
-	       "\t    --dump-modversions      Same as --show-modversions\n"
-	       "\t    --show-exports          Only print module exported symbol versions and exit\n"
+	       "\t-R, --show-alias            Print module(s) matching given alias and exit\n"
+	       "\t-D, --show-depends          Print module dependencies and exit\n"
+	       "\t-c, --show-config           Print known configuration and exit\n"
+	       "\t    --show-modversions      Print module symbol version and exit\n"
+	       "\t    --show-exports          Print module exported symbol versions and exit\n"
 	       "\n"
 	       "General Options:\n"
 	       "\t-n, --dry-run               Do not execute operations, just print out\n"
-	       "\t-n, --show                  Same as --dry-run\n"
 
 	       "\t-C, --config FILE           Use FILE instead of default search paths\n"
 	       "\t-d, --dirname DIR           Use DIR as filesystem root for " MODULE_DIRECTORY
@@ -203,20 +201,34 @@ static int show_config(struct kmod_ctx *ctx)
 	return 0;
 }
 
-static int show_modversions(struct kmod_ctx *ctx, const char *filename)
+static int module_new_from_any(struct kmod_ctx *ctx, const char *module,
+			       struct kmod_module **mod, struct kmod_list **list)
+{
+	if (strstartswith(module, "/") || strstartswith(module, "./")) {
+		int err = kmod_module_new_from_path(ctx, module, mod);
+		if (err < 0) {
+			LOG("Failed to get module from path %s: %s\n", module,
+			    strerror(-err));
+			return -ENOENT;
+		}
+	} else {
+		int err = kmod_module_new_from_lookup(ctx, module, list);
+		if (*list == NULL || err < 0) {
+			LOG("Module %s not found in directory %s\n", module,
+			    ctx ? kmod_get_dirname(ctx) : "(missing)");
+			return -ENOENT;
+		}
+	}
+	return 0;
+}
+
+static int print_modversions(const struct kmod_module *mod)
 {
 	struct kmod_list *l, *list = NULL;
-	struct kmod_module *mod;
-	int err = kmod_module_new_from_path(ctx, filename, &mod);
+	int err = kmod_module_get_versions(mod, &list);
 	if (err < 0) {
-		LOG("Module %s not found.\n", filename);
-		return err;
-	}
-
-	err = kmod_module_get_versions(mod, &list);
-	if (err < 0) {
-		LOG("could not get modversions of %s: %s\n", filename, strerror(-err));
-		kmod_module_unref(mod);
+		LOG("could not get modversions of %s: %s\n", kmod_module_get_name(mod),
+		    strerror(-err));
 		return err;
 	}
 
@@ -226,24 +238,39 @@ static int show_modversions(struct kmod_ctx *ctx, const char *filename)
 		printf("0x%08" PRIx64 "\t%s\n", crc, symbol);
 	}
 	kmod_module_versions_free_list(list);
-	kmod_module_unref(mod);
 	return 0;
 }
 
-static int show_exports(struct kmod_ctx *ctx, const char *filename)
+static int show_modversions(struct kmod_ctx *ctx, const char *filename)
 {
 	struct kmod_list *l, *list = NULL;
-	struct kmod_module *mod;
-	int err = kmod_module_new_from_path(ctx, filename, &mod);
-	if (err < 0) {
-		LOG("Module %s not found.\n", filename);
+	struct kmod_module *mod = NULL;
+	int err = module_new_from_any(ctx, filename, &mod, &list);
+	if (err < 0)
 		return err;
-	}
 
-	err = kmod_module_get_symbols(mod, &list);
-	if (err < 0) {
-		LOG("could not get symbols of %s: %s\n", filename, strerror(-err));
+	/* If module is loaded from path */
+	if (mod != NULL) {
+		err = print_modversions(mod);
 		kmod_module_unref(mod);
+	} else {
+		kmod_list_foreach(l, list) {
+			mod = kmod_module_get_module(l);
+			err = print_modversions(mod);
+			kmod_module_unref(mod);
+		}
+		kmod_module_unref_list(list);
+	}
+	return err;
+}
+
+static int print_exports(const struct kmod_module *mod)
+{
+	struct kmod_list *l, *list = NULL;
+	int err = kmod_module_get_symbols(mod, &list);
+	if (err < 0) {
+		LOG("could not get symbols of %s: %s\n", kmod_module_get_name(mod),
+		    strerror(-err));
 		return err;
 	}
 
@@ -253,8 +280,30 @@ static int show_exports(struct kmod_ctx *ctx, const char *filename)
 		printf("0x%08" PRIx64 "\t%s\n", crc, symbol);
 	}
 	kmod_module_symbols_free_list(list);
-	kmod_module_unref(mod);
 	return 0;
+}
+
+static int show_exports(struct kmod_ctx *ctx, const char *filename)
+{
+	struct kmod_list *l, *list = NULL;
+	struct kmod_module *mod = NULL;
+	int err = module_new_from_any(ctx, filename, &mod, &list);
+	if (err < 0)
+		return err;
+
+	/* If module is loaded from path */
+	if (mod != NULL) {
+		err = print_exports(mod);
+		kmod_module_unref(mod);
+	} else {
+		kmod_list_foreach(l, list) {
+			mod = kmod_module_get_module(l);
+			err = print_exports(mod);
+			kmod_module_unref(mod);
+		}
+		kmod_module_unref_list(list);
+	}
+	return err;
 }
 
 static int command_do(struct kmod_module *module, const char *type, const char *command,
@@ -596,21 +645,9 @@ static int insmod(struct kmod_ctx *ctx, const char *alias, const char *extra_opt
 	struct kmod_module *mod = NULL;
 	int err, flags = 0;
 
-	if (strstartswith(alias, "/") || strstartswith(alias, "./")) {
-		err = kmod_module_new_from_path(ctx, alias, &mod);
-		if (err < 0) {
-			LOG("Failed to get module from path %s: %s\n", alias,
-			    strerror(-err));
-			return -ENOENT;
-		}
-	} else {
-		err = kmod_module_new_from_lookup(ctx, alias, &list);
-		if (list == NULL || err < 0) {
-			LOG("Module %s not found in directory %s\n", alias,
-			    ctx ? kmod_get_dirname(ctx) : "(missing)");
-			return -ENOENT;
-		}
-	}
+	err = module_new_from_any(ctx, alias, &mod, &list);
+	if (err < 0)
+		return err;
 
 	if (strip_modversion || force)
 		flags |= KMOD_PROBE_FORCE_MODVERSION;
