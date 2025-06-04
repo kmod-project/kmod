@@ -32,7 +32,7 @@ int options_from_array(char **args, int nargs, char **output)
 
 		tmp = realloc(opts, optslen + len + qlen + 2);
 		if (!tmp) {
-			err = -errno;
+			err = -ENOMEM;
 			free(opts);
 			opts = NULL;
 			ERR("could not gather module options: out-of-memory\n");

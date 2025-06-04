@@ -140,7 +140,7 @@ int hash_add(struct hash *hash, const char *key, const void *value)
 		size_t size = new_total * sizeof(struct hash_entry);
 		struct hash_entry *tmp = realloc(bucket->entries, size);
 		if (tmp == NULL)
-			return -errno;
+			return -ENOMEM;
 		bucket->entries = tmp;
 		bucket->total = new_total;
 	}
@@ -183,7 +183,7 @@ int hash_add_unique(struct hash *hash, const char *key, const void *value)
 		size_t size = new_total * sizeof(struct hash_entry);
 		struct hash_entry *tmp = realloc(bucket->entries, size);
 		if (tmp == NULL)
-			return -errno;
+			return -ENOMEM;
 		bucket->entries = tmp;
 		bucket->total = new_total;
 	}

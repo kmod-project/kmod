@@ -95,7 +95,7 @@ static int xz_uncompress(lzma_stream *strm, struct kmod_file *file)
 			size_t write_size = BUFSIZ - strm->avail_out;
 			char *tmp = realloc(p, total + write_size);
 			if (tmp == NULL) {
-				ret = -errno;
+				ret = -ENOMEM;
 				goto out;
 			}
 			memcpy(tmp + total, out_buf, write_size);
