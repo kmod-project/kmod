@@ -1034,30 +1034,22 @@ static void symbol_free(void *data)
 
 static int depmod_init(struct depmod *depmod, struct cfg *cfg, struct kmod_ctx *ctx)
 {
-	int err = 0;
-
 	depmod->cfg = cfg;
 	depmod->ctx = ctx;
 
 	array_init(&depmod->modules, 128);
 
 	depmod->modules_by_uncrelpath = hash_new(512, NULL);
-	if (depmod->modules_by_uncrelpath == NULL) {
-		err = -errno;
+	if (depmod->modules_by_uncrelpath == NULL)
 		goto modules_by_uncrelpath_failed;
-	}
 
 	depmod->modules_by_name = hash_new(512, NULL);
-	if (depmod->modules_by_name == NULL) {
-		err = -errno;
+	if (depmod->modules_by_name == NULL)
 		goto modules_by_name_failed;
-	}
 
 	depmod->symbols = hash_new(2048, symbol_free);
-	if (depmod->symbols == NULL) {
-		err = -errno;
+	if (depmod->symbols == NULL)
 		goto symbols_failed;
-	}
 
 	return 0;
 
@@ -1066,7 +1058,7 @@ symbols_failed:
 modules_by_name_failed:
 	hash_free(depmod->modules_by_uncrelpath);
 modules_by_uncrelpath_failed:
-	return err;
+	return -ENOMEM;
 }
 
 static void depmod_shutdown(struct depmod *depmod)
