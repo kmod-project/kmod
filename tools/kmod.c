@@ -3,7 +3,6 @@
  * Copyright (C) 2011-2013  ProFUSION embedded systems
  */
 
-#include <errno.h>
 #include <getopt.h>
 #include <stdio.h>
 #include <stdlib.h>

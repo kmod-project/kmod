@@ -3,8 +3,6 @@
  * Copyright © 2024 Intel Corporation
  */
 
-#include <errno.h>
-
 #include <libkmod/libkmod-internal.h>
 
 struct kmod_ctx;
