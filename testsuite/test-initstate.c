@@ -3,7 +3,6 @@
  * Copyright (C) 2015  Intel Corporation. All rights reserved.
  */
 
-#include <errno.h>
 #include <inttypes.h>
 #include <stdarg.h>
 #include <stddef.h>

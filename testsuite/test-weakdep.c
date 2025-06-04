@@ -3,7 +3,6 @@
  * Copyright Red Hat
  */
 
-#include <errno.h>
 #include <inttypes.h>
 #include <stddef.h>
 #include <stdio.h>
