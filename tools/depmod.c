@@ -2580,7 +2580,7 @@ static int depmod_output(struct depmod *depmod, FILE *out)
 	else {
 		err = mkdir_p(dname, strlen(dname), 0755);
 		if (err < 0) {
-			CRIT("could not create directory %s: %m\n", dname);
+			CRIT("could not create directory %s: %s\n", dname, strerror(-err));
 			return err;
 		}
 		dfd = open(dname, O_RDONLY);
