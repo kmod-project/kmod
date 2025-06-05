@@ -186,7 +186,8 @@ fail:
  */
 TS_EXPORT long delete_module(const char *name, unsigned int flags);
 
-long delete_module(const char *modname, unsigned int flags)
+/* TODO: add simple validation of the flags passed and remove the _maybe_unused_ workaround */
+long delete_module(const char *modname, _maybe_unused_ unsigned int flags)
 {
 	DECLARE_STRBUF_WITH_STACK(buf, PATH_MAX);
 	struct mod *mod;

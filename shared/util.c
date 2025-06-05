@@ -533,7 +533,7 @@ int sleep_until_msec(unsigned long long msec)
 /*
  * Exponential retry backoff with tail
  */
-unsigned long long get_backoff_delta_msec(unsigned long long t0, unsigned long long tend,
+unsigned long long get_backoff_delta_msec(unsigned long long tend,
 					  unsigned long long *delta)
 {
 	unsigned long long t;

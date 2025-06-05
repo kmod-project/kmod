@@ -17,7 +17,7 @@
 
 #include "testsuite.h"
 
-static noreturn int test_remove(const struct test *t)
+static noreturn int test_remove(void)
 {
 	struct kmod_ctx *ctx;
 	struct kmod_module *mod;

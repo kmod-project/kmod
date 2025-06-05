@@ -142,7 +142,7 @@ static int test_spawn_test(const struct test *t)
 
 static int test_run_spawned(const struct test *t)
 {
-	int err = t->func(t);
+	int err = t->func();
 	exit(err);
 
 	return EXIT_FAILURE;
@@ -434,7 +434,7 @@ static bool fd_cmp_regex_one(const char *pattern, const char *s)
  * read fd and fd_match, checking the first matches the regex of the second,
  * line by line
  */
-static bool fd_cmp_regex(struct fd_cmp *fd_cmp, const struct test *t)
+static bool fd_cmp_regex(struct fd_cmp *fd_cmp)
 {
 	char *p, *p_match;
 	int done = 0, done_match = 0, r;
@@ -525,7 +525,7 @@ static bool fd_cmp_regex(struct fd_cmp *fd_cmp, const struct test *t)
 }
 
 /* read fd and fd_match, checking they match exactly */
-static bool fd_cmp_exact(struct fd_cmp *fd_cmp, const struct test *t)
+static bool fd_cmp_exact(struct fd_cmp *fd_cmp)
 {
 	int r, rmatch, done = 0;
 
@@ -552,9 +552,6 @@ static bool fd_cmp_exact(struct fd_cmp *fd_cmp, const struct test *t)
 
 	fd_cmp->buf[r] = '\0';
 	fd_cmp->buf_match[r] = '\0';
-
-	if (t->print_outputs)
-		printf("%s: %s\n", fd_cmp->name, fd_cmp->buf);
 
 	if (!streq(fd_cmp->buf, fd_cmp->buf_match)) {
 		ERR("Outputs do not match on %s:\n", fd_cmp->name);
@@ -632,9 +629,9 @@ static bool test_run_parent_check_outputs(const struct test *t, int fdout, int f
 					goto out;
 
 				if (t->output.regex)
-					ret = fd_cmp_regex(fd_cmp, t);
+					ret = fd_cmp_regex(fd_cmp);
 				else
-					ret = fd_cmp_exact(fd_cmp, t);
+					ret = fd_cmp_exact(fd_cmp);
 
 				if (!ret) {
 					err = -1;

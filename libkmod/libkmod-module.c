@@ -232,9 +232,11 @@ bool kmod_module_is_builtin(struct kmod_module *mod)
  *
  * @key is "name\alias" or "name" (in which case alias == NULL)
  */
-static int kmod_module_new(struct kmod_ctx *ctx, const char *key, const char *name,
-			   size_t namelen, const char *alias, size_t aliaslen,
-			   struct kmod_module **mod)
+/* TODO: rework to create the hash within this function and remove the _maybe_unused_
+ * workaround */
+static int kmod_module_new(struct kmod_ctx *ctx, const char *key,
+			   _maybe_unused_ const char *name, size_t namelen,
+			   const char *alias, size_t aliaslen, struct kmod_module **mod)
 {
 	struct kmod_module *m;
 	size_t keylen;
