@@ -763,8 +763,8 @@ int index_mm_open(const struct kmod_ctx *ctx, const char *filename,
 	}
 
 	if ((fd = open(filename, O_RDONLY | O_CLOEXEC)) < 0) {
-		DBG(ctx, "open(%s, O_RDONLY|O_CLOEXEC): %m\n", filename);
 		err = -errno;
+		DBG(ctx, "open(%s, O_RDONLY|O_CLOEXEC): %m\n", filename);
 		goto fail_open;
 	}
 
@@ -780,9 +780,9 @@ int index_mm_open(const struct kmod_ctx *ctx, const char *filename,
 
 	idx->mm = mmap(NULL, st.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
 	if (idx->mm == MAP_FAILED) {
+		err = -errno;
 		ERR(ctx, "mmap(NULL, %" PRIu64 ", PROT_READ, MAP_PRIVATE, %d, 0): %m\n",
 		    (uint64_t)st.st_size, fd);
-		err = -errno;
 		goto fail_nommap;
 	}
 

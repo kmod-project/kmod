@@ -99,7 +99,7 @@ static ssize_t get_strings(struct kmod_builtin_info *info, const char *modname,
 			break;
 		}
 		if (!strbuf_pushchars(buf, dot + 1) || !strbuf_pushchar(buf, '\0')) {
-			count = -errno;
+			count = -ENOMEM;
 			ERR(info->ctx, "get_strings: "
 				       "failed to append modinfo string\n");
 			return count;
@@ -167,7 +167,7 @@ ssize_t kmod_builtin_get_modinfo(struct kmod_ctx *ctx, const char *modname,
 		*modinfo = strbuf_to_vector(&buf, (size_t)count);
 		if (*modinfo == NULL) {
 			count = -ENOMEM;
-			ERR(ctx, "strbuf_to_vector: %m\n");
+			ERR(ctx, "strbuf_to_vector: %s\n", strerror(ENOMEM));
 		}
 	}
 

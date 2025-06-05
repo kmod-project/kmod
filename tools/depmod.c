@@ -1034,30 +1034,22 @@ static void symbol_free(void *data)
 
 static int depmod_init(struct depmod *depmod, struct cfg *cfg, struct kmod_ctx *ctx)
 {
-	int err = 0;
-
 	depmod->cfg = cfg;
 	depmod->ctx = ctx;
 
 	array_init(&depmod->modules, 128);
 
 	depmod->modules_by_uncrelpath = hash_new(512, NULL);
-	if (depmod->modules_by_uncrelpath == NULL) {
-		err = -errno;
+	if (depmod->modules_by_uncrelpath == NULL)
 		goto modules_by_uncrelpath_failed;
-	}
 
 	depmod->modules_by_name = hash_new(512, NULL);
-	if (depmod->modules_by_name == NULL) {
-		err = -errno;
+	if (depmod->modules_by_name == NULL)
 		goto modules_by_name_failed;
-	}
 
 	depmod->symbols = hash_new(2048, symbol_free);
-	if (depmod->symbols == NULL) {
-		err = -errno;
+	if (depmod->symbols == NULL)
 		goto symbols_failed;
-	}
 
 	return 0;
 
@@ -1066,7 +1058,7 @@ symbols_failed:
 modules_by_name_failed:
 	hash_free(depmod->modules_by_uncrelpath);
 modules_by_uncrelpath_failed:
-	return err;
+	return -ENOMEM;
 }
 
 static void depmod_shutdown(struct depmod *depmod)
@@ -2591,7 +2583,7 @@ static int depmod_output(struct depmod *depmod, FILE *out)
 	else {
 		err = mkdir_p(dname, strlen(dname), 0755);
 		if (err < 0) {
-			CRIT("could not create directory %s: %m\n", dname);
+			CRIT("could not create directory %s: %s\n", dname, strerror(-err));
 			return err;
 		}
 		dfd = open(dname, O_RDONLY);
@@ -3041,7 +3033,7 @@ static int do_depmod(int argc, char *argv[])
 
 	ctx = kmod_new(cfg.dirname, &null_kmod_config);
 	if (ctx == NULL) {
-		CRIT("kmod_new(\"%s\", {NULL}) failed: %m\n", cfg.dirname);
+		CRIT("kmod_new(\"%s\", {NULL}) failed\n", cfg.dirname);
 		goto cmdline_failed;
 	}
 
