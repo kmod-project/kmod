@@ -1,0 +1,8 @@
+ifneq ($(KMOD_TESTSUITE_ARCH_BUILD),1)
+
+include $(src)/gen_mod.mak
+$(src)/gen_mod.mak:
+	cd $(src) && python3 ../gen_mod.py other
+
+clean-files := $(src)/gen_mod.mak
+endif

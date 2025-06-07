@@ -1,0 +1,17 @@
+kernel/drivers/md/dm-multipath.ko: kernel/drivers/md/dm-mod.ko kernel/drivers/scsi/scsi_mod.ko
+kernel/drivers/nvme/host/nvme-fc.ko: kernel/drivers/nvme/host/nvme-fabrics.ko kernel/drivers/nvme/host/nvme-core.ko kernel/block/t10-pi.ko
+kernel/drivers/nvme/host/nvme-fabrics.ko: kernel/drivers/nvme/host/nvme-core.ko kernel/block/t10-pi.ko
+kernel/drivers/scsi/scsi_mod.ko:
+kernel/drivers/md/dm-mod.ko:
+kernel/drivers/nvme/host/nvme-core.ko: kernel/block/t10-pi.ko
+kernel/drivers/misc/enclosure.ko:
+kernel/drivers/scsi/raid_class.ko: kernel/drivers/scsi/scsi_mod.ko
+kernel/drivers/md/dm-service-time.ko: kernel/drivers/md/dm-mod.ko kernel/drivers/scsi/scsi_mod.ko
+kernel/drivers/target/target_core_mod.ko: kernel/fs/configfs/configfs.ko
+kernel/drivers/scsi/sr_mod.ko: kernel/drivers/cdrom/cdrom.ko kernel/drivers/scsi/scsi_mod.ko
+kernel/drivers/scsi/sd_mod.ko: kernel/drivers/scsi/scsi_mod.ko kernel/block/t10-pi.ko
+kernel/drivers/scsi/device_handler/scsi_dh_alua.ko: kernel/drivers/scsi/scsi_mod.ko
+kernel/drivers/cdrom/cdrom.ko:
+kernel/block/t10-pi.ko:
+kernel/drivers/scsi/scsi_transport_fc.ko: kernel/drivers/scsi/scsi_mod.ko
+kernel/fs/configfs/configfs.ko:

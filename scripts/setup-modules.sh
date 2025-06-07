@@ -9,4 +9,4 @@ mkdir -p "$MODULE_PLAYGROUND"
 cp --archive "$SRCDIR/$MODULE_PLAYGROUND/"* "$MODULE_PLAYGROUND/"
 
 export MAKEFLAGS=${MAKEFLAGS-"-j$(nproc)"}
-"${MAKE-make}" -C "$PWD/$MODULE_PLAYGROUND" modules
+"${MAKE-make}" -C "$PWD/$MODULE_PLAYGROUND"

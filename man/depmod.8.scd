@@ -7,10 +7,10 @@ depmod - Generate modules.dep and map files.
 # SYNOPSIS
 
 *depmod* [*-b* _basedir_] [*-m* _moduledir_] [*-o* _outdir_] [*-e*] [*-E* _Module.symvers_]
-\ \ \ \ \ \ \ \[*-F* _System.map_] [*-n*] [*-v*] [*-A*] [*-P* _prefix_] [*-w*] [_version_]
+\ \ \ \ \ \ \ \[*-F* _System.map_] [*-n*] [*-v*] [*-A*] [*-P* _prefix_] [*-w*] [*-x*] [*-I*] [_version_]
 
 *depmod* [*-e*] [*-E* _Module.symvers_] [*-F* _System.map_] [*-n*] [*-v*] [*-P* _prefix_]
-\ \ \ \ \ \ \ \[*-w*] [_version_] [_filename_...]
+\ \ \ \ \ \ \ \[*-w*] [*-x*] [*-I*] [_version_] [_filename_...]
 
 # DESCRIPTION
 
@@ -25,7 +25,7 @@ and <BASEDIR> is empty. See options below to override when needed. It determines
 what symbols each module exports and needs.  This list is written to
 *modules.dep*, and a binary hashed version named modules.dep.bin, in the same
 directory. If filenames are given on the command line, only those modules are
-examined (which is rarely useful unless all modules are listed). *depmod* also
+examined (which is rarely useful unless incremental mode is used). *depmod* also
 creates a list of symbols provided by modules in the file named modules.symbols
 and its binary hashed version, modules.symbols.bin. Finally, *depmod* will
 output a file named modules.devname if modules supply special device names
@@ -136,6 +136,13 @@ depmod -b /tmp/build -m kernel-modules
 *-h*, *--help*
 	Print the help message and exit.
 
+*-I*, *--incremental*
+	Run in incremental mode. This mode preserves previous module dependencies
+	and adds the dependencies of the modules given on the command line. If no
+	modules are given or *--all* is set, the module directory is scanned for
+	added or deleted modules, and the *modules.dep* file and other outputs
+	are updated accordingly.
+
 *-n*, *--show*, *--dry-run*
 	This sends the resulting *modules.dep* and the various map files to
 	standard output rather than writing them into the module directory.
@@ -154,6 +161,12 @@ depmod -b /tmp/build -m kernel-modules
 
 *-w*
 	Warn on duplicate dependencies, aliases, symbol versions, etc.
+
+*-x*, *--errexit*
+	Exit with an error status if any condition occurs that would create
+	a warning with *-e*, i.e. if some module requires an unknown symbol,
+	or if a symbol with a symbol version that doesn't match the version
+	provided by the kernel or other modules.
 
 # COPYRIGHT
 
