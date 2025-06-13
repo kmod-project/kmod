@@ -169,6 +169,7 @@ database.
 *--remove-holders*
 	This option causes *modprobe* to remove the mentioned module(s), alongside
 	other modules that depend on it/them - aka the reverse dependency list.
+	This options implies --remove.
 
 	For compatibility reasons *--remove-dependencies* is also accepted for
 	this option but will be removed after kmod 36.
