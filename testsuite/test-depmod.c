@@ -13,16 +13,12 @@
 
 #include "testsuite.h"
 
-#define EXEC_DEPMOD(...)                     \
-	test_spawn_prog(TOOLS_DIR "/depmod", \
-			(const char *[]){ TOOLS_DIR "/depmod", ##__VA_ARGS__, NULL })
-
 #define MODULES_UNAME "4.4.4"
 #define MODULES_ORDER_ROOTFS TESTSUITE_ROOTFS "test-depmod/modules-order-compressed"
 #define MODULES_ORDER_LIB_MODULES MODULES_ORDER_ROOTFS MODULE_DIRECTORY "/" MODULES_UNAME
 static noreturn int depmod_modules_order_for_compressed(void)
 {
-	EXEC_DEPMOD();
+	EXEC_TOOL(depmod);
 	exit(EXIT_FAILURE);
 }
 DEFINE_TEST(depmod_modules_order_for_compressed,
@@ -46,7 +42,7 @@ DEFINE_TEST(depmod_modules_order_for_compressed,
 	MODULES_OUTDIR_ROOTFS MODULE_DIRECTORY "/" MODULES_UNAME
 static noreturn int depmod_modules_outdir(void)
 {
-	EXEC_DEPMOD("--outdir", "/outdir/");
+	EXEC_TOOL(depmod, "--outdir", "/outdir/");
 	exit(EXIT_FAILURE);
 }
 DEFINE_TEST(depmod_modules_outdir,
@@ -70,7 +66,7 @@ DEFINE_TEST(depmod_modules_outdir,
 	SEARCH_ORDER_SIMPLE_ROOTFS MODULE_DIRECTORY "/" MODULES_UNAME
 static noreturn int depmod_search_order_simple(void)
 {
-	EXEC_DEPMOD();
+	EXEC_TOOL(depmod);
 	exit(EXIT_FAILURE);
 }
 DEFINE_TEST(depmod_search_order_simple,
@@ -92,12 +88,12 @@ DEFINE_TEST(depmod_search_order_simple,
 #define MODULES_ANOTHER_MODDIR_ROOTFS TESTSUITE_ROOTFS "test-depmod/another-moddir"
 static noreturn int depmod_another_moddir(void)
 {
-	EXEC_DEPMOD("-m", ANOTHER_MODDIR);
+	EXEC_TOOL(depmod, "-m", ANOTHER_MODDIR);
 	exit(EXIT_FAILURE);
 }
 static noreturn int depmod_another_moddir_relative(void)
 {
-	EXEC_DEPMOD("-m", RELATIVE_MODDIR);
+	EXEC_TOOL(depmod, "-m", RELATIVE_MODDIR);
 	exit(EXIT_FAILURE);
 }
 DEFINE_TEST(depmod_another_moddir,
@@ -133,7 +129,7 @@ DEFINE_TEST(depmod_another_moddir_relative,
 	SEARCH_ORDER_SAME_PREFIX_ROOTFS MODULE_DIRECTORY "/" MODULES_UNAME
 static noreturn int depmod_search_order_same_prefix(void)
 {
-	EXEC_DEPMOD();
+	EXEC_TOOL(depmod);
 	exit(EXIT_FAILURE);
 }
 DEFINE_TEST(depmod_search_order_same_prefix,
@@ -153,7 +149,7 @@ DEFINE_TEST(depmod_search_order_same_prefix,
 #define DETECT_LOOP_ROOTFS TESTSUITE_ROOTFS "test-depmod/detect-loop"
 static noreturn int depmod_detect_loop(void)
 {
-	EXEC_DEPMOD();
+	EXEC_TOOL(depmod);
 	exit(EXIT_FAILURE);
 }
 DEFINE_TEST(depmod_detect_loop,
@@ -173,7 +169,7 @@ DEFINE_TEST(depmod_detect_loop,
 	SEARCH_ORDER_EXTERNAL_FIRST_ROOTFS MODULE_DIRECTORY "/" MODULES_UNAME
 static noreturn int depmod_search_order_external_first(void)
 {
-	EXEC_DEPMOD();
+	EXEC_TOOL(depmod);
 	exit(EXIT_FAILURE);
 }
 DEFINE_TEST(depmod_search_order_external_first,
@@ -196,7 +192,7 @@ DEFINE_TEST(depmod_search_order_external_first,
 	SEARCH_ORDER_EXTERNAL_LAST_ROOTFS MODULE_DIRECTORY "/" MODULES_UNAME
 static noreturn int depmod_search_order_external_last(void)
 {
-	EXEC_DEPMOD();
+	EXEC_TOOL(depmod);
 	exit(EXIT_FAILURE);
 }
 DEFINE_TEST(depmod_search_order_external_last,
@@ -218,7 +214,7 @@ DEFINE_TEST(depmod_search_order_external_last,
 	SEARCH_ORDER_OVERRIDE_ROOTFS MODULE_DIRECTORY "/" MODULES_UNAME
 static noreturn int depmod_search_order_override(void)
 {
-	EXEC_DEPMOD();
+	EXEC_TOOL(depmod);
 	exit(EXIT_FAILURE);
 }
 DEFINE_TEST(depmod_search_order_override,
@@ -239,7 +235,7 @@ DEFINE_TEST(depmod_search_order_override,
 #define CHECK_WEAKDEP_LIB_MODULES CHECK_WEAKDEP_ROOTFS MODULE_DIRECTORY "/" MODULES_UNAME
 static noreturn int depmod_check_weakdep(void)
 {
-	EXEC_DEPMOD();
+	EXEC_TOOL(depmod);
 	exit(EXIT_FAILURE);
 }
 DEFINE_TEST(depmod_check_weakdep,
