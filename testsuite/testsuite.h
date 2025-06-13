@@ -108,6 +108,10 @@ const struct test *test_find(const struct test *start, const struct test *stop,
 int test_spawn_prog(const char *prog, const char *const args[]);
 int test_run(const struct test *t);
 
+#define EXEC_TOOL(tool, ...)                 \
+	test_spawn_prog(TOOLS_DIR "/" #tool, \
+			(const char *[]){ TOOLS_DIR "/" #tool, ##__VA_ARGS__, NULL })
+
 #define TS_EXPORT __attribute__((visibility("default")))
 
 #define _LOG(prefix, fmt, ...) printf("TESTSUITE: " prefix fmt, ##__VA_ARGS__)
@@ -157,7 +161,7 @@ int test_run(const struct test *t);
 			t = test_find(__start_kmod_tests, __stop_kmod_tests, argv[arg]); \
 			if (t == NULL) {                                                 \
 				fprintf(stderr, "could not find test %s\n", argv[arg]);  \
-				exit(EXIT_FAILURE);                                      \
+				return EXIT_FAILURE;                                     \
 			}                                                                \
                                                                                          \
 			return test_run(t);                                              \
@@ -168,5 +172,5 @@ int test_run(const struct test *t);
 				ret = EXIT_FAILURE;                                      \
 		}                                                                        \
                                                                                          \
-		exit(ret);                                                               \
+		return ret;                                                              \
 	}

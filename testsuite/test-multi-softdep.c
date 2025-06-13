@@ -79,7 +79,7 @@ static int multi_softdep(void)
 
 	ctx = kmod_new(NULL, NULL);
 	if (ctx == NULL)
-		exit(EXIT_FAILURE);
+		return EXIT_FAILURE;
 
 	for (mod_index = 0; mod_index < ARRAY_SIZE(test_modules); mod_index++) {
 		modname = test_modules[mod_index].modname;

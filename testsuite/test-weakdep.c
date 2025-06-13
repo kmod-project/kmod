@@ -14,39 +14,31 @@
 
 #include "testsuite.h"
 
-#define EXEC_MODPROBE(...)                     \
-	test_spawn_prog(TOOLS_DIR "/modprobe", \
-			(const char *[]){ TOOLS_DIR "/modprobe", ##__VA_ARGS__, NULL })
-
-static const char *const mod_name[] = {
-	"mod-loop-b",
-	"mod-weakdep",
-	NULL,
-};
-
 static int test_weakdep(void)
 {
+	static const char *const mod_name[] = {
+		"mod-loop-b",
+		"mod-weakdep",
+	};
 	struct kmod_ctx *ctx;
-	int mod_name_index = 0;
 	int err;
 
 	ctx = kmod_new(NULL, NULL);
 	if (ctx == NULL)
-		exit(EXIT_FAILURE);
+		return EXIT_FAILURE;
 
-	while (mod_name[mod_name_index]) {
+	for (size_t i = 0; i < ARRAY_SIZE(mod_name); i++) {
 		struct kmod_list *list = NULL;
 		struct kmod_module *mod = NULL;
 		struct kmod_list *mod_list = NULL;
 		struct kmod_list *itr = NULL;
 
-		printf("%s:", mod_name[mod_name_index]);
-		err = kmod_module_new_from_lookup(ctx, mod_name[mod_name_index], &list);
+		printf("%s:", mod_name[i]);
+		err = kmod_module_new_from_lookup(ctx, mod_name[i], &list);
 		if (list == NULL || err < 0) {
 			fprintf(stderr, "module %s not found in directory %s\n",
-				mod_name[mod_name_index],
-				ctx ? kmod_get_dirname(ctx) : "(missing)");
-			exit(EXIT_FAILURE);
+				mod_name[i], ctx ? kmod_get_dirname(ctx) : "(missing)");
+			return EXIT_FAILURE;
 		}
 
 		mod = kmod_module_get_module(list);
@@ -54,8 +46,8 @@ static int test_weakdep(void)
 		err = kmod_module_get_weakdeps(mod, &mod_list);
 		if (err) {
 			fprintf(stderr, "weak dependencies can not be read for %s (%d)\n",
-				mod_name[mod_name_index], err);
-			exit(EXIT_FAILURE);
+				mod_name[i], err);
+			return EXIT_FAILURE;
 		}
 
 		kmod_list_foreach(itr, mod_list) {
@@ -70,8 +62,6 @@ static int test_weakdep(void)
 		kmod_module_unref_list(mod_list);
 		kmod_module_unref(mod);
 		kmod_module_unref_list(list);
-
-		mod_name_index++;
 	}
 
 	kmod_unref(ctx);
@@ -89,10 +79,9 @@ DEFINE_TEST(test_weakdep,
 		.out = TESTSUITE_ROOTFS "test-weakdep/correct-weakdep.txt",
 	});
 
-static noreturn int modprobe_config(void)
+static int modprobe_config(void)
 {
-	EXEC_MODPROBE("-c");
-	exit(EXIT_FAILURE);
+	return EXEC_TOOL(modprobe, "-c");
 }
 DEFINE_TEST(modprobe_config,
 	.description = "check modprobe config parsing with weakdep",

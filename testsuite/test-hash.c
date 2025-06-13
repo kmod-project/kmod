@@ -229,8 +229,8 @@ DEFINE_TEST(test_hash_free,
 
 static int test_hash_add_unique(void)
 {
-	const char *k[] = { "k1", "k2", "k3", "k4", "k5" };
-	const char *v[] = { "v1", "v2", "v3", "v4", "v5" };
+	static const char *const k[] = { "k1", "k2", "k3", "k4", "k5" };
+	static const char *const v[] = { "v1", "v2", "v3", "v4", "v5" };
 	unsigned int i, j, N;
 
 	N = ARRAY_SIZE(k);

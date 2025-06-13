@@ -19,26 +19,24 @@
 
 static int alias_1(void)
 {
-	static const char *const input[] = {
+	static const char *const aliases[] = {
 		// clang-format off
 		"test1234",
 		"test[abcfoobar]2211",
 		"bar[aaa][bbbb]sss",
 		"kmod[p.b]lib",
 		"[az]1234[AZ]",
-		NULL,
 		// clang-format on
 	};
 
 	char buf[PATH_MAX];
 	size_t len;
-	const char *const *alias;
 
-	for (alias = input; *alias != NULL; alias++) {
+	for (size_t i = 0; i < ARRAY_SIZE(aliases); i++) {
 		int ret;
 
-		ret = alias_normalize(*alias, buf, &len);
-		printf("input   %s\n", *alias);
+		ret = alias_normalize(aliases[i], buf, &len);
+		printf("input   %s\n", aliases[i]);
 		printf("return  %d\n", ret);
 
 		if (ret == 0) {
@@ -104,23 +102,25 @@ DEFINE_TEST(test_strchr_replace,
 
 static int test_underscores(void)
 {
-	struct teststr {
-		char *val;
+	static const struct teststr {
+		const char *val;
 		const char *res;
 	} teststr[] = {
-		{ strdup("aa-bb-cc_"), "aa_bb_cc_" },
-		{ strdup("-aa-bb-cc-"), "_aa_bb_cc_" },
-		{ strdup("-aa[-bb-]cc-"), "_aa[-bb-]cc_" },
-		{ strdup("-aa-[bb]-cc-"), "_aa_[bb]_cc_" },
-		{ strdup("-aa-[b-b]-cc-"), "_aa_[b-b]_cc_" },
-		{ strdup("-aa-b[-]b-cc"), "_aa_b[-]b_cc" },
-		{ },
-	}, *iter;
+		// clang-format off
+		{ "aa-bb-cc_", "aa_bb_cc_" },
+		{ "-aa-bb-cc-", "_aa_bb_cc_" },
+		{ "-aa[-bb-]cc-", "_aa[-bb-]cc_" },
+		{ "-aa-[bb]-cc-", "_aa_[bb]_cc_" },
+		{ "-aa-[b-b]-cc-", "_aa_[b-b]_cc_" },
+		{ "-aa-b[-]b-cc", "_aa_b[-]b_cc" },
+		// clang-format on
+	};
 
-	for (iter = &teststr[0]; iter->val != NULL; iter++) {
-		_cleanup_free_ char *val = iter->val;
+	for (size_t i = 0; i < ARRAY_SIZE(teststr); i++) {
+		_cleanup_free_ char *val = strdup(teststr[i].val);
+		assert_return(val != NULL, EXIT_FAILURE);
 		assert_return(!underscores(val), EXIT_FAILURE);
-		assert_return(streq(val, iter->res), EXIT_FAILURE);
+		assert_return(streq(val, teststr[i].res), EXIT_FAILURE);
 	}
 
 	return EXIT_SUCCESS;
@@ -129,10 +129,11 @@ DEFINE_TEST(test_underscores, .description = "check implementation of underscore
 
 static int test_path_ends_with_kmod_ext(void)
 {
-	struct teststr {
+	static const struct teststr {
 		const char *val;
 		bool res;
 	} teststr[] = {
+		// clang-format off
 		{ "/bla.ko", true },
 #if ENABLE_ZLIB
 		{ "/bla.ko.gz", true },
@@ -147,12 +148,13 @@ static int test_path_ends_with_kmod_ext(void)
 		{ "/bla.ko.", false },
 		{ "/bla.koz", false },
 		{ "/b", false },
-		{ },
-	}, *iter;
+		// clang-format on
+	};
 
-	for (iter = &teststr[0]; iter->val != NULL; iter++) {
-		assert_return(path_ends_with_kmod_ext(iter->val, strlen(iter->val)) ==
-				      iter->res,
+	for (size_t i = 0; i < ARRAY_SIZE(teststr); i++) {
+		assert_return(path_ends_with_kmod_ext(teststr[i].val,
+						      strlen(teststr[i].val)) ==
+				      teststr[i].res,
 			      EXIT_FAILURE);
 	}
 

@@ -18,7 +18,7 @@
 
 #include "testsuite.h"
 
-static noreturn int test_initstate_from_lookup(void)
+static int test_initstate_from_lookup(void)
 {
 	struct kmod_ctx *ctx;
 	struct kmod_list *list = NULL;
@@ -28,17 +28,17 @@ static noreturn int test_initstate_from_lookup(void)
 
 	ctx = kmod_new(NULL, &null_config);
 	if (ctx == NULL)
-		exit(EXIT_FAILURE);
+		return EXIT_FAILURE;
 
 	err = kmod_module_new_from_lookup(ctx, "fake-builtin", &list);
 	if (err < 0) {
 		ERR("could not create module from lookup: %s\n", strerror(-err));
-		exit(EXIT_FAILURE);
+		return EXIT_FAILURE;
 	}
 
 	if (!list) {
 		ERR("could not create module from lookup: module not found: fake-builtin\n");
-		exit(EXIT_FAILURE);
+		return EXIT_FAILURE;
 	}
 
 	mod = kmod_module_get_module(list);
@@ -47,14 +47,14 @@ static noreturn int test_initstate_from_lookup(void)
 	if (r != KMOD_MODULE_BUILTIN) {
 		ERR("module should have builtin state but is: %s\n",
 		    kmod_module_initstate_str(r));
-		exit(EXIT_FAILURE);
+		return EXIT_FAILURE;
 	}
 
 	kmod_module_unref(mod);
 	kmod_module_unref_list(list);
 	kmod_unref(ctx);
 
-	exit(EXIT_SUCCESS);
+	return EXIT_SUCCESS;
 }
 DEFINE_TEST(
 	test_initstate_from_lookup,
@@ -65,7 +65,7 @@ DEFINE_TEST(
 		[TC_UNAME_R] = "4.4.4",
 	});
 
-static noreturn int test_initstate_from_name(void)
+static int test_initstate_from_name(void)
 {
 	struct kmod_ctx *ctx;
 	struct kmod_module *mod = NULL;
@@ -74,30 +74,30 @@ static noreturn int test_initstate_from_name(void)
 
 	ctx = kmod_new(NULL, &null_config);
 	if (ctx == NULL)
-		exit(EXIT_FAILURE);
+		return EXIT_FAILURE;
 
 	err = kmod_module_new_from_name(ctx, "fake-builtin", &mod);
 	if (err != 0) {
 		ERR("could not create module from lookup: %s\n", strerror(-err));
-		exit(EXIT_FAILURE);
+		return EXIT_FAILURE;
 	}
 
 	if (!mod) {
 		ERR("could not create module from lookup: module not found: fake-builtin\n");
-		exit(EXIT_FAILURE);
+		return EXIT_FAILURE;
 	}
 
 	r = kmod_module_get_initstate(mod);
 	if (r != KMOD_MODULE_BUILTIN) {
 		ERR("module should have builtin state but is: %s\n",
 		    kmod_module_initstate_str(r));
-		exit(EXIT_FAILURE);
+		return EXIT_FAILURE;
 	}
 
 	kmod_module_unref(mod);
 	kmod_unref(ctx);
 
-	exit(EXIT_SUCCESS);
+	return EXIT_SUCCESS;
 }
 DEFINE_TEST(test_initstate_from_name,
 	    .description =
