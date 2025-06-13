@@ -30,7 +30,7 @@ static int blacklist_1(void)
 	int err;
 	size_t len = 0;
 
-	const char *names[] = { "pcspkr", "pcspkr2", "floppy", "ext4", NULL };
+	static const char *const names[] = { "pcspkr", "pcspkr2", "floppy", "ext4", NULL};
 	const char **name;
 
 	ctx = kmod_new(NULL, NULL);

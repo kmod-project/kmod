@@ -31,7 +31,7 @@ static int test_list_last(void)
 {
 	struct kmod_list *list = NULL, *last;
 	int i;
-	const char *v[] = { "v1", "v2", "v3", "v4", "v5" };
+	static const char *const v[] = { "v1", "v2", "v3", "v4", "v5" };
 	const int N = ARRAY_SIZE(v);
 
 	for (i = 0; i < N; i++)
@@ -51,7 +51,7 @@ static int test_list_prev(void)
 {
 	struct kmod_list *list = NULL, *l, *p;
 	int i;
-	const char *v[] = { "v1", "v2", "v3", "v4", "v5" };
+	static const char *const v[] = { "v1", "v2", "v3", "v4", "v5" };
 	const int N = ARRAY_SIZE(v);
 
 	l = kmod_list_prev(list, list);
@@ -80,7 +80,8 @@ static int test_list_remove_data(void)
 {
 	struct kmod_list *list = NULL, *l;
 	int i;
-	const char *v[] = { "v1", "v2", "v3", "v4", "v5" }, *removed;
+	static const char *const v[] = { "v1", "v2", "v3", "v4", "v5" };
+	const char *removed;
 	const int N = ARRAY_SIZE(v);
 
 	for (i = 0; i < N; i++)
@@ -104,7 +105,7 @@ static int test_list_append_list(void)
 {
 	struct kmod_list *a = NULL, *b = NULL, *c, *l;
 	int i;
-	const char *v[] = { "v1", "v2", "v3", "v4", "v5" };
+	static const char *const v[] = { "v1", "v2", "v3", "v4", "v5" };
 	const int N = ARRAY_SIZE(v), M = N / 2;
 
 	for (i = 0; i < M; i++)
