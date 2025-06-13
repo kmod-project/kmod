@@ -161,7 +161,7 @@ int test_run(const struct test *t);
 			t = test_find(__start_kmod_tests, __stop_kmod_tests, argv[arg]); \
 			if (t == NULL) {                                                 \
 				fprintf(stderr, "could not find test %s\n", argv[arg]);  \
-				exit(EXIT_FAILURE);                                      \
+				return EXIT_FAILURE;                                     \
 			}                                                                \
                                                                                          \
 			return test_run(t);                                              \
@@ -172,5 +172,5 @@ int test_run(const struct test *t);
 				ret = EXIT_FAILURE;                                      \
 		}                                                                        \
                                                                                          \
-		exit(ret);                                                               \
+		return ret;                                                              \
 	}
