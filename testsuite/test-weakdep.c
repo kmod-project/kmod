@@ -79,10 +79,9 @@ DEFINE_TEST(test_weakdep,
 		.out = TESTSUITE_ROOTFS "test-weakdep/correct-weakdep.txt",
 	});
 
-static noreturn int modprobe_config(void)
+static int modprobe_config(void)
 {
-	EXEC_TOOL(modprobe, "-c");
-	exit(EXIT_FAILURE);
+	return EXEC_TOOL(modprobe, "-c");
 }
 DEFINE_TEST(modprobe_config,
 	.description = "check modprobe config parsing with weakdep",
