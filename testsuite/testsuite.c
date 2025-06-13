@@ -140,12 +140,9 @@ static int test_spawn_test(const struct test *t)
 	return EXIT_FAILURE;
 }
 
-static int test_run_spawned(const struct test *t)
+static noreturn int test_run_spawned(const struct test *t)
 {
-	int err = t->func();
-	exit(err);
-
-	return EXIT_FAILURE;
+	exit(t->func());
 }
 
 int test_spawn_prog(const char *prog, const char *const args[])
@@ -218,8 +215,8 @@ static void test_export_environ(const struct test *t)
 		setenv(env->key, env->val, 1);
 }
 
-static inline int test_run_child(const struct test *t, int fdout[2], int fderr[2],
-				 int fdmonitor[2])
+static noreturn inline int test_run_child(const struct test *t, int fdout[2],
+					  int fderr[2], int fdmonitor[2])
 {
 	/* kill child if parent dies */
 	prctl(PR_SET_PDEATHSIG, SIGTERM);
@@ -267,7 +264,7 @@ static inline int test_run_child(const struct test *t, int fdout[2], int fderr[2
 		}
 	}
 
-	return test_spawn_test(t);
+	exit(test_spawn_test(t));
 }
 
 #define BUFSZ 4096
@@ -1185,5 +1182,5 @@ int test_run(const struct test *t)
 	if (pid > 0)
 		return test_run_parent(t, fdout, fderr, fdmonitor, pid);
 
-	return test_run_child(t, fdout, fderr, fdmonitor);
+	test_run_child(t, fdout, fderr, fdmonitor);
 }
