@@ -17,7 +17,7 @@
 
 #include "testsuite.h"
 
-static noreturn int test_load_resources(void)
+static int test_load_resources(void)
 {
 	struct kmod_ctx *ctx;
 	const char *null_config = NULL;
@@ -25,19 +25,19 @@ static noreturn int test_load_resources(void)
 
 	ctx = kmod_new(NULL, &null_config);
 	if (ctx == NULL)
-		exit(EXIT_FAILURE);
+		return EXIT_FAILURE;
 
 	kmod_set_log_priority(ctx, 7);
 
 	err = kmod_load_resources(ctx);
 	if (err != 0) {
 		ERR("could not load libkmod resources: %s\n", strerror(-err));
-		exit(EXIT_FAILURE);
+		return EXIT_FAILURE;
 	}
 
 	kmod_unref(ctx);
 
-	exit(EXIT_SUCCESS);
+	return EXIT_SUCCESS;
 }
 DEFINE_TEST_WITH_FUNC(
 	test_load_resource1, test_load_resources,
@@ -58,22 +58,22 @@ DEFINE_TEST_WITH_FUNC(
 		[TC_UNAME_R] = "5.6.0",
 	});
 
-static noreturn int test_initlib(void)
+static int test_initlib(void)
 {
 	struct kmod_ctx *ctx;
 	const char *null_config = NULL;
 
 	ctx = kmod_new(NULL, &null_config);
 	if (ctx == NULL)
-		exit(EXIT_FAILURE);
+		return EXIT_FAILURE;
 
 	kmod_unref(ctx);
 
-	exit(EXIT_SUCCESS);
+	return EXIT_SUCCESS;
 }
 DEFINE_TEST(test_initlib, .description = "test if libkmod's init function work");
 
-static noreturn int test_insert(void)
+static int test_insert(void)
 {
 	struct kmod_ctx *ctx;
 	struct kmod_module *mod;
@@ -82,23 +82,23 @@ static noreturn int test_insert(void)
 
 	ctx = kmod_new(NULL, &null_config);
 	if (ctx == NULL)
-		exit(EXIT_FAILURE);
+		return EXIT_FAILURE;
 
 	err = kmod_module_new_from_path(ctx, "/mod-simple.ko", &mod);
 	if (err != 0) {
 		ERR("could not create module from path: %s\n", strerror(-err));
-		exit(EXIT_FAILURE);
+		return EXIT_FAILURE;
 	}
 
 	err = kmod_module_insert_module(mod, 0, NULL);
 	if (err != 0) {
 		ERR("could not insert module: %s\n", strerror(-err));
-		exit(EXIT_FAILURE);
+		return EXIT_FAILURE;
 	}
 	kmod_module_unref(mod);
 	kmod_unref(ctx);
 
-	exit(EXIT_SUCCESS);
+	return EXIT_SUCCESS;
 }
 DEFINE_TEST(test_insert,
 	.description = "test if libkmod's insert_module returns ok",
@@ -108,7 +108,7 @@ DEFINE_TEST(test_insert,
 	},
 	.modules_loaded = "mod_simple");
 
-static noreturn int test_remove(void)
+static int test_remove(void)
 {
 	struct kmod_ctx *ctx;
 	struct kmod_module *mod_simple, *mod_bla;
@@ -117,37 +117,37 @@ static noreturn int test_remove(void)
 
 	ctx = kmod_new(NULL, &null_config);
 	if (ctx == NULL)
-		exit(EXIT_FAILURE);
+		return EXIT_FAILURE;
 
 	err = kmod_module_new_from_name(ctx, "mod-simple", &mod_simple);
 	if (err != 0) {
 		ERR("could not create module from name: %s\n", strerror(-err));
-		exit(EXIT_FAILURE);
+		return EXIT_FAILURE;
 	}
 
 	err = kmod_module_new_from_name(ctx, "bla", &mod_bla);
 	if (err != 0) {
 		ERR("could not create module from name: %s\n", strerror(-err));
-		exit(EXIT_FAILURE);
+		return EXIT_FAILURE;
 	}
 
 	err = kmod_module_remove_module(mod_simple, 0);
 	if (err != 0) {
 		ERR("could not remove module: %s\n", strerror(-err));
-		exit(EXIT_FAILURE);
+		return EXIT_FAILURE;
 	}
 
 	err = kmod_module_remove_module(mod_bla, 0);
 	if (err != -ENOENT) {
 		ERR("wrong return code for failure test: %d\n", err);
-		exit(EXIT_FAILURE);
+		return EXIT_FAILURE;
 	}
 
 	kmod_module_unref(mod_bla);
 	kmod_module_unref(mod_simple);
 	kmod_unref(ctx);
 
-	exit(EXIT_SUCCESS);
+	return EXIT_SUCCESS;
 }
 DEFINE_TEST(
 	test_remove, .description = "test if libkmod's remove_module returns ok",

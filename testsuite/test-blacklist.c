@@ -34,7 +34,7 @@ static int blacklist_1(void)
 
 	ctx = kmod_new(NULL, NULL);
 	if (ctx == NULL)
-		exit(EXIT_FAILURE);
+		return EXIT_FAILURE;
 
 	for (size_t i = 0; i < ARRAY_SIZE(names); i++) {
 		err = kmod_module_new_from_name(ctx, names[i], &mod);
