@@ -889,6 +889,7 @@ static int do_modprobe(int argc, char **orig_argv)
 			/* fall through */
 		case 'n':
 			dry_run = 1;
+			do_show = 1;
 			break;
 		case 'C': {
 			size_t bytes = sizeof(char *) * (n_config_paths + 2);
