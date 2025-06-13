@@ -51,6 +51,7 @@ static noreturn int test_remove(void)
 		ERR("could not remove module directory.\n");
 		exit(EXIT_FAILURE);
 	}
+	kmod_module_unref(mod);
 	kmod_unref(ctx);
 
 	exit(EXIT_SUCCESS);
