@@ -95,6 +95,7 @@ static noreturn int test_insert(void)
 		ERR("could not insert module: %s\n", strerror(-err));
 		exit(EXIT_FAILURE);
 	}
+	kmod_module_unref(mod);
 	kmod_unref(ctx);
 
 	exit(EXIT_SUCCESS);
@@ -142,6 +143,8 @@ static noreturn int test_remove(void)
 		exit(EXIT_FAILURE);
 	}
 
+	kmod_module_unref(mod_bla);
+	kmod_module_unref(mod_simple);
 	kmod_unref(ctx);
 
 	exit(EXIT_SUCCESS);
