@@ -13,10 +13,9 @@
 
 #include "testsuite.h"
 
-static noreturn int modprobe_show_depends(void)
+static int modprobe_show_depends(void)
 {
-	EXEC_TOOL(modprobe, "--show-depends", "mod-loop-a");
-	exit(EXIT_FAILURE);
+	return EXEC_TOOL(modprobe, "--show-depends", "mod-loop-a");
 }
 DEFINE_TEST(modprobe_show_depends,
 	.description = "check if output for modprobe --show-depends is correct for loaded modules",
@@ -28,10 +27,9 @@ DEFINE_TEST(modprobe_show_depends,
 		.out = TESTSUITE_ROOTFS "test-modprobe/show-depends/correct.txt",
 	});
 
-static noreturn int modprobe_show_depends2(void)
+static int modprobe_show_depends2(void)
 {
-	EXEC_TOOL(modprobe, "--show-depends", "mod-simple");
-	exit(EXIT_FAILURE);
+	return EXEC_TOOL(modprobe, "--show-depends", "mod-simple");
 }
 DEFINE_TEST(modprobe_show_depends2,
 	.description = "check if output for modprobe --show-depends is correct",
@@ -51,10 +49,9 @@ DEFINE_TEST_WITH_FUNC(modprobe_show_depends_no_load, modprobe_show_depends2,
 	.modules_loaded = "",
 	);
 
-static noreturn int modprobe_show_alias_to_none(void)
+static int modprobe_show_alias_to_none(void)
 {
-	EXEC_TOOL(modprobe, "--show-depends", "--ignore-install", "mod-simple");
-	exit(EXIT_FAILURE);
+	return EXEC_TOOL(modprobe, "--show-depends", "--ignore-install", "mod-simple");
 }
 DEFINE_TEST(modprobe_show_alias_to_none,
 	.description = "check if modprobe --show-depends doesn't explode with an alias to nothing",
@@ -68,10 +65,9 @@ DEFINE_TEST(modprobe_show_alias_to_none,
 	.modules_loaded = "",
 	);
 
-static noreturn int modprobe_show_exports(void)
+static int modprobe_show_exports(void)
 {
-	EXEC_TOOL(modprobe, "--show-exports", "/mod-loop-a.ko");
-	exit(EXIT_FAILURE);
+	return EXEC_TOOL(modprobe, "--show-exports", "/mod-loop-a.ko");
 }
 DEFINE_TEST(modprobe_show_exports,
 	.description = "check if modprobe --show-depends doesn't explode with an alias to nothing",
@@ -83,10 +79,9 @@ DEFINE_TEST(modprobe_show_exports,
 		.regex = true,
 	});
 
-static noreturn int modprobe_show_exports_module(void)
+static int modprobe_show_exports_module(void)
 {
-	EXEC_TOOL(modprobe, "--show-exports", "mod-loop-b");
-	exit(EXIT_FAILURE);
+	return EXEC_TOOL(modprobe, "--show-exports", "mod-loop-b");
 }
 DEFINE_TEST(modprobe_show_exports_module,
 	.description = "check if modprobe --show-depends also works with module names",
@@ -99,10 +94,9 @@ DEFINE_TEST(modprobe_show_exports_module,
 		.regex = true,
 	});
 
-static noreturn int modprobe_builtin(void)
+static int modprobe_builtin(void)
 {
-	EXEC_TOOL(modprobe, "unix");
-	exit(EXIT_FAILURE);
+	return EXEC_TOOL(modprobe, "unix");
 }
 DEFINE_TEST(modprobe_builtin, .description = "check if modprobe return 0 for builtin",
 	    .config = {
@@ -110,10 +104,9 @@ DEFINE_TEST(modprobe_builtin, .description = "check if modprobe return 0 for bui
 		    [TC_ROOTFS] = TESTSUITE_ROOTFS "test-modprobe/builtin",
 	    });
 
-static noreturn int modprobe_builtin_lookup_only(void)
+static int modprobe_builtin_lookup_only(void)
 {
-	EXEC_TOOL(modprobe, "-R", "unix");
-	exit(EXIT_FAILURE);
+	return EXEC_TOOL(modprobe, "-R", "unix");
 }
 DEFINE_TEST(modprobe_builtin_lookup_only,
 	.description = "check if modprobe -R correctly returns the builtin module",
@@ -125,10 +118,9 @@ DEFINE_TEST(modprobe_builtin_lookup_only,
 		.out = TESTSUITE_ROOTFS "test-modprobe/builtin/correct.txt",
 	});
 
-static noreturn int modprobe_softdep_loop(void)
+static int modprobe_softdep_loop(void)
 {
-	EXEC_TOOL(modprobe, "mod-loop-b");
-	exit(EXIT_FAILURE);
+	return EXEC_TOOL(modprobe, "mod-loop-b");
 }
 DEFINE_TEST(modprobe_softdep_loop,
 	.description = "check if modprobe breaks softdep loop",
@@ -140,10 +132,9 @@ DEFINE_TEST(modprobe_softdep_loop,
 	.modules_loaded = "mod-loop-a,mod-loop-b",
 	);
 
-static noreturn int modprobe_weakdep_loop(void)
+static int modprobe_weakdep_loop(void)
 {
-	EXEC_TOOL(modprobe, "mod-loop-b");
-	exit(EXIT_FAILURE);
+	return EXEC_TOOL(modprobe, "mod-loop-b");
 }
 DEFINE_TEST(modprobe_weakdep_loop,
 	.description = "check if modprobe breaks weakdep loop",
@@ -156,10 +147,9 @@ DEFINE_TEST(modprobe_weakdep_loop,
 	.modules_not_loaded = "mod-loop-a,mod-simple-c",
 	);
 
-static noreturn int modprobe_install_cmd_loop(void)
+static int modprobe_install_cmd_loop(void)
 {
-	EXEC_TOOL(modprobe, "mod-loop-a");
-	exit(EXIT_FAILURE);
+	return EXEC_TOOL(modprobe, "mod-loop-a");
 }
 DEFINE_TEST(modprobe_install_cmd_loop,
 	.description = "check if modprobe breaks install-commands loop",
@@ -175,10 +165,9 @@ DEFINE_TEST(modprobe_install_cmd_loop,
 	.modules_loaded = "mod-loop-b,mod-loop-a",
 	);
 
-static noreturn int modprobe_param_kcmdline_show_deps(void)
+static int modprobe_param_kcmdline_show_deps(void)
 {
-	EXEC_TOOL(modprobe, "--show-depends", "mod-simple");
-	exit(EXIT_FAILURE);
+	return EXEC_TOOL(modprobe, "--show-depends", "mod-simple");
 }
 DEFINE_TEST(modprobe_param_kcmdline_show_deps,
 	.description = "check if params from kcmdline are passed to (f)init_module call",
@@ -190,10 +179,9 @@ DEFINE_TEST(modprobe_param_kcmdline_show_deps,
 		.out = TESTSUITE_ROOTFS "test-modprobe/module-param-kcmdline/correct.txt",
 	});
 
-static noreturn int modprobe_param_kcmdline(void)
+static int modprobe_param_kcmdline(void)
 {
-	EXEC_TOOL(modprobe, "-c");
-	exit(EXIT_FAILURE);
+	return EXEC_TOOL(modprobe, "-c");
 }
 DEFINE_TEST_WITH_FUNC(modprobe_param_kcmdline2, modprobe_param_kcmdline,
 	.description = "check if params with no value are parsed correctly from kcmdline",
@@ -277,10 +265,9 @@ DEFINE_TEST_WITH_FUNC(modprobe_param_kcmdline9, modprobe_param_kcmdline,
 		.out = TESTSUITE_ROOTFS "test-modprobe/module-param-kcmdline9/correct.txt",
 	});
 
-static noreturn int modprobe_force(void)
+static int modprobe_force(void)
 {
-	EXEC_TOOL(modprobe, "--force", "mod-simple");
-	exit(EXIT_FAILURE);
+	return EXEC_TOOL(modprobe, "--force", "mod-simple");
 }
 DEFINE_TEST(modprobe_force,
 	.description = "check modprobe --force",
@@ -292,10 +279,9 @@ DEFINE_TEST(modprobe_force,
 	.modules_loaded = "mod-simple",
 	);
 
-static noreturn int modprobe_force_modversion(void)
+static int modprobe_force_modversion(void)
 {
-	EXEC_TOOL(modprobe, "--force-modversion", "mod-simple");
-	exit(EXIT_FAILURE);
+	return EXEC_TOOL(modprobe, "--force-modversion", "mod-simple");
 }
 DEFINE_TEST(modprobe_force_modversion,
 	.description = "check modprobe --force-modversion",
@@ -307,10 +293,9 @@ DEFINE_TEST(modprobe_force_modversion,
 	.modules_loaded = "mod-simple",
 	);
 
-static noreturn int modprobe_force_vermagic(void)
+static int modprobe_force_vermagic(void)
 {
-	EXEC_TOOL(modprobe, "--force-vermagic", "mod-simple");
-	exit(EXIT_FAILURE);
+	return EXEC_TOOL(modprobe, "--force-vermagic", "mod-simple");
 }
 DEFINE_TEST(modprobe_force_vermagic,
 	.description = "check modprobe --force-vermagic",
@@ -322,10 +307,9 @@ DEFINE_TEST(modprobe_force_vermagic,
 	.modules_loaded = "mod-simple",
 	);
 
-static noreturn int modprobe_oldkernel(void)
+static int modprobe_oldkernel(void)
 {
-	EXEC_TOOL(modprobe, "mod-simple");
-	exit(EXIT_FAILURE);
+	return EXEC_TOOL(modprobe, "mod-simple");
 }
 DEFINE_TEST(modprobe_oldkernel,
 	.description = "check modprobe with kernel without finit_module()",
@@ -337,10 +321,9 @@ DEFINE_TEST(modprobe_oldkernel,
 	.modules_loaded = "mod-simple",
 	);
 
-static noreturn int modprobe_oldkernel_force(void)
+static int modprobe_oldkernel_force(void)
 {
-	EXEC_TOOL(modprobe, "--force", "mod-simple");
-	exit(EXIT_FAILURE);
+	return EXEC_TOOL(modprobe, "--force", "mod-simple");
 }
 DEFINE_TEST(modprobe_oldkernel_force,
 	.description = "check modprobe --force with kernel without finit_module()",
@@ -352,10 +335,9 @@ DEFINE_TEST(modprobe_oldkernel_force,
 	.modules_loaded = "mod-simple",
 	);
 
-static noreturn int modprobe_oldkernel_force_modversion(void)
+static int modprobe_oldkernel_force_modversion(void)
 {
-	EXEC_TOOL(modprobe, "--force-modversion", "mod-simple");
-	exit(EXIT_FAILURE);
+	return EXEC_TOOL(modprobe, "--force-modversion", "mod-simple");
 }
 DEFINE_TEST(modprobe_oldkernel_force_modversion,
 	.description = "check modprobe --force-modversion with kernel without finit_module()",
@@ -367,10 +349,9 @@ DEFINE_TEST(modprobe_oldkernel_force_modversion,
 	.modules_loaded = "mod-simple",
 	);
 
-static noreturn int modprobe_oldkernel_force_vermagic(void)
+static int modprobe_oldkernel_force_vermagic(void)
 {
-	EXEC_TOOL(modprobe, "--force-vermagic", "mod-simple");
-	exit(EXIT_FAILURE);
+	return EXEC_TOOL(modprobe, "--force-vermagic", "mod-simple");
 }
 DEFINE_TEST(modprobe_oldkernel_force_vermagic,
 	.description = "check modprobe --force-vermagic with kernel without finit_module()",
@@ -382,10 +363,9 @@ DEFINE_TEST(modprobe_oldkernel_force_vermagic,
 	.modules_loaded = "mod-simple",
 	);
 
-static noreturn int modprobe_external(void)
+static int modprobe_external(void)
 {
-	EXEC_TOOL(modprobe, "mod-simple");
-	exit(EXIT_FAILURE);
+	return EXEC_TOOL(modprobe, "mod-simple");
 }
 DEFINE_TEST(modprobe_external,
 	.description = "check modprobe able to load external module",
@@ -397,10 +377,9 @@ DEFINE_TEST(modprobe_external,
 	.modules_loaded = "mod-simple",
 	);
 
-static noreturn int modprobe_module_from_abspath(void)
+static int modprobe_module_from_abspath(void)
 {
-	EXEC_TOOL(modprobe, "/home/foo/mod-simple.ko");
-	exit(EXIT_FAILURE);
+	return EXEC_TOOL(modprobe, "/home/foo/mod-simple.ko");
 }
 DEFINE_TEST(modprobe_module_from_abspath,
 	.description = "check modprobe able to load module given as an absolute path",
@@ -412,15 +391,13 @@ DEFINE_TEST(modprobe_module_from_abspath,
 	.modules_loaded = "mod-simple",
 	);
 
-static noreturn int modprobe_module_from_relpath(void)
+static int modprobe_module_from_relpath(void)
 {
 	if (chdir("/home/foo") != 0) {
 		perror("failed to change into /home/foo");
-		exit(EXIT_FAILURE);
 	}
 
-	EXEC_TOOL(modprobe, "./mod-simple.ko");
-	exit(EXIT_FAILURE);
+	return EXEC_TOOL(modprobe, "./mod-simple.ko");
 }
 DEFINE_TEST(modprobe_module_from_relpath,
 	.description = "check modprobe able to load module given as a relative path",

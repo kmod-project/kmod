@@ -12,12 +12,11 @@
 
 #include "testsuite.h"
 
-#define DEFINE_MODINFO_TEST(_field, _flavor, ...)               \
-	static noreturn int test_modinfo_##_field(void)         \
-	{                                                       \
-		EXEC_TOOL(modinfo, "-F", #_field, __VA_ARGS__); \
-		exit(EXIT_FAILURE);                             \
-	}                                                       \
+#define DEFINE_MODINFO_TEST(_field, _flavor, ...)                      \
+	static int test_modinfo_##_field(void)                         \
+	{                                                              \
+		return EXEC_TOOL(modinfo, "-F", #_field, __VA_ARGS__); \
+	}                                                              \
 	DEFINE_TEST(test_modinfo_##_field, \
 	.description = "check " #_field " output of modinfo for different architectures", \
 	.config = { \
@@ -53,10 +52,9 @@ DEFINE_MODINFO_SIGN_TEST(sig_key);
 DEFINE_MODINFO_SIGN_TEST(sig_hashalgo);
 
 #if 0
-static noreturn int test_modinfo_signature(void)
+static int test_modinfo_signature(void)
 {
-	EXEC_TOOL(modinfo);
-	exit(EXIT_FAILURE);
+	return EXEC_TOOL(modinfo);
 }
 DEFINE_TEST(test_modinfo_signature,
 	.description = "check signatures are correct for modinfo is correct for i686, ppc64, s390x and x86_64",
@@ -68,10 +66,9 @@ DEFINE_TEST(test_modinfo_signature,
 	});
 #endif
 
-static noreturn int test_modinfo_external(void)
+static int test_modinfo_external(void)
 {
-	EXEC_TOOL(modinfo, "-F", "filename", "mod-simple");
-	exit(EXIT_FAILURE);
+	return EXEC_TOOL(modinfo, "-F", "filename", "mod-simple");
 }
 DEFINE_TEST(test_modinfo_external,
 	.description = "check if modinfo finds external module",
@@ -83,10 +80,9 @@ DEFINE_TEST(test_modinfo_external,
 		.out = TESTSUITE_ROOTFS "test-modinfo/correct-external.txt",
 	});
 
-static noreturn int test_modinfo_builtin(void)
+static int test_modinfo_builtin(void)
 {
-	EXEC_TOOL(modinfo, "intel_uncore");
-	exit(EXIT_FAILURE);
+	return EXEC_TOOL(modinfo, "intel_uncore");
 }
 DEFINE_TEST(test_modinfo_builtin,
 	.description = "check if modinfo finds builtin module",
