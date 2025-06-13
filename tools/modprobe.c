@@ -787,6 +787,7 @@ static int do_modprobe(int argc, char **orig_argv)
 			break;
 		case 5:
 			remove_holders = 1;
+			do_remove = 1;
 			break;
 		case 'w': {
 			char *endptr = NULL;
