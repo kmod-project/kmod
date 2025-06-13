@@ -154,6 +154,9 @@ database.
 	This option causes *modprobe* to remove the mentioned module(s), alongside
 	other modules that depend it/them - aka the reverse dependency list.
 
+	For compatibility reasons *--remove-dependencies* is also accepted for
+	this option but will be removed after kmod 36.
+
 *-w* _TIMEOUT_MSEC_, *--wait* _TIMEOUT_MSEC_
 	This option causes *modprobe -r *to continue trying to remove a module
 	if it fails due to the module being busy, i.e. its refcount is not 0 at

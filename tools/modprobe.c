@@ -51,7 +51,7 @@ static const struct option cmdopts[] = {
 	{ "all", no_argument, 0, 'a' },
 
 	{ "remove", no_argument, 0, 'r' },
-	{ "remove-dependencies", no_argument, 0, 5 },
+	{ "remove-dependencies", no_argument, 0, 7 },
 	{ "remove-holders", no_argument, 0, 5 },
 	{ "wait", required_argument, 0, 'w' },
 
@@ -100,7 +100,6 @@ static void help(void)
 	       "\t                            be a module name to be inserted\n"
 	       "\t                            or removed (-r)\n"
 	       "\t-r, --remove                Remove modules instead of inserting\n"
-	       "\t    --remove-dependencies   Deprecated: use --remove-holders\n"
 	       "\t    --remove-holders        Also remove module holders (use together with -r)\n"
 	       "\t-w, --wait MSEC             When removing a module, wait up to MSEC for\n"
 	       "\t                            module's refcount to become 0 so it can be\n"
@@ -784,6 +783,9 @@ static int do_modprobe(int argc, char **orig_argv)
 		case 'r':
 			do_remove = 1;
 			break;
+		case 7:
+			WRN("--remove-dependencies is deprecated and scheduled for removal; use --remove-holders\n");
+			/* fall through */
 		case 5:
 			remove_holders = 1;
 			break;
