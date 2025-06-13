@@ -155,7 +155,7 @@ database.
 	For compatibility reasons *--resolve-alias* is also accepted for this
 	option but will be removed after kmod 36.
 
-***-r*, *--remove*
+*-r*, *--remove*
 	This option causes *modprobe* to remove rather than insert a module. If
 	the modules it depends on are also unused, *modprobe* will try to remove
 	them too. Unlike insertion, more than one module can be specified on the
