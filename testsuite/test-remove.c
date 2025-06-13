@@ -17,7 +17,7 @@
 
 #include "testsuite.h"
 
-static noreturn int test_remove(void)
+static int test_remove(void)
 {
 	struct kmod_ctx *ctx;
 	struct kmod_module *mod;
@@ -27,34 +27,34 @@ static noreturn int test_remove(void)
 
 	ctx = kmod_new(NULL, &null_config);
 	if (ctx == NULL)
-		exit(EXIT_FAILURE);
+		return EXIT_FAILURE;
 
 	err = kmod_module_new_from_path(ctx, "/mod-simple.ko", &mod);
 	if (err != 0) {
 		ERR("could not create module from path: %s\n", strerror(-err));
-		exit(EXIT_FAILURE);
+		return EXIT_FAILURE;
 	}
 
 	err = kmod_module_insert_module(mod, 0, NULL);
 	if (err != 0) {
 		ERR("could not insert module: %s\n", strerror(-err));
-		exit(EXIT_FAILURE);
+		return EXIT_FAILURE;
 	}
 
 	err = kmod_module_remove_module(mod, 0);
 	if (err != 0) {
 		ERR("could not remove module: %s\n", strerror(-err));
-		exit(EXIT_FAILURE);
+		return EXIT_FAILURE;
 	}
 
 	if (stat("/sys/module/mod_simple", &st) == 0 && S_ISDIR(st.st_mode)) {
 		ERR("could not remove module directory.\n");
-		exit(EXIT_FAILURE);
+		return EXIT_FAILURE;
 	}
 	kmod_module_unref(mod);
 	kmod_unref(ctx);
 
-	exit(EXIT_SUCCESS);
+	return EXIT_SUCCESS;
 }
 DEFINE_TEST(test_remove,
 	    .description = "test if libkmod's delete_module removes module directory",

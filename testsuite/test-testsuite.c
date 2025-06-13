@@ -21,22 +21,22 @@
 #include "testsuite.h"
 
 #define TEST_UNAME "4.0.20-kmod"
-static noreturn int testsuite_uname(void)
+static int testsuite_uname(void)
 {
 	struct utsname u;
 	int err = uname(&u);
 
 	if (err < 0)
-		exit(EXIT_FAILURE);
+		return EXIT_FAILURE;
 
 	if (!streq(u.release, TEST_UNAME)) {
 		const char *ldpreload = getenv("LD_PRELOAD");
 		ERR("u.release=%s should be %s\n", u.release, TEST_UNAME);
 		ERR("LD_PRELOAD=%s\n", ldpreload);
-		exit(EXIT_FAILURE);
+		return EXIT_FAILURE;
 	}
 
-	exit(EXIT_SUCCESS);
+	return EXIT_SUCCESS;
 }
 DEFINE_TEST(testsuite_uname, .description = "test if trap to uname() works",
 	    .config = {
