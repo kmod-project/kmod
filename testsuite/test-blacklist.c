@@ -30,15 +30,14 @@ static int blacklist_1(void)
 	int err;
 	size_t len = 0;
 
-	static const char *const names[] = { "pcspkr", "pcspkr2", "floppy", "ext4", NULL};
-	const char **name;
+	static const char *const names[] = { "pcspkr", "pcspkr2", "floppy", "ext4" };
 
 	ctx = kmod_new(NULL, NULL);
 	if (ctx == NULL)
 		exit(EXIT_FAILURE);
 
-	for (name = names; *name; name++) {
-		err = kmod_module_new_from_name(ctx, *name, &mod);
+	for (size_t i = 0; i < ARRAY_SIZE(names); i++) {
+		err = kmod_module_new_from_name(ctx, names[i], &mod);
 		if (err < 0)
 			goto fail_lookup;
 		list = kmod_list_append(list, mod);

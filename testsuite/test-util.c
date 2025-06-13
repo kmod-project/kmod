@@ -19,26 +19,24 @@
 
 static int alias_1(void)
 {
-	static const char *const input[] = {
+	static const char *const aliases[] = {
 		// clang-format off
 		"test1234",
 		"test[abcfoobar]2211",
 		"bar[aaa][bbbb]sss",
 		"kmod[p.b]lib",
 		"[az]1234[AZ]",
-		NULL,
 		// clang-format on
 	};
 
 	char buf[PATH_MAX];
 	size_t len;
-	const char *const *alias;
 
-	for (alias = input; *alias != NULL; alias++) {
+	for (size_t i = 0; i < ARRAY_SIZE(aliases); i++) {
 		int ret;
 
-		ret = alias_normalize(*alias, buf, &len);
-		printf("input   %s\n", *alias);
+		ret = alias_normalize(aliases[i], buf, &len);
+		printf("input   %s\n", aliases[i]);
 		printf("return  %d\n", ret);
 
 		if (ret == 0) {
@@ -135,6 +133,7 @@ static int test_path_ends_with_kmod_ext(void)
 		const char *val;
 		bool res;
 	} teststr[] = {
+		// clang-format off
 		{ "/bla.ko", true },
 #if ENABLE_ZLIB
 		{ "/bla.ko.gz", true },
@@ -149,12 +148,13 @@ static int test_path_ends_with_kmod_ext(void)
 		{ "/bla.ko.", false },
 		{ "/bla.koz", false },
 		{ "/b", false },
-		{ },
-	}, *iter;
+		// clang-format on
+	};
 
-	for (iter = &teststr[0]; iter->val != NULL; iter++) {
-		assert_return(path_ends_with_kmod_ext(iter->val, strlen(iter->val)) ==
-				      iter->res,
+	for (size_t i = 0; i < ARRAY_SIZE(teststr); i++) {
+		assert_return(path_ends_with_kmod_ext(teststr[i].val,
+						      strlen(teststr[i].val)) ==
+				      teststr[i].res,
 			      EXIT_FAILURE);
 	}
 
