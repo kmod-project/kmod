@@ -13,13 +13,9 @@
 
 #include "testsuite.h"
 
-#define EXEC_MODPROBE(...)                     \
-	test_spawn_prog(TOOLS_DIR "/modprobe", \
-			(const char *[]){ TOOLS_DIR "/modprobe", ##__VA_ARGS__, NULL })
-
 static noreturn int modprobe_show_depends(void)
 {
-	EXEC_MODPROBE("--show-depends", "mod-loop-a");
+	EXEC_TOOL(modprobe, "--show-depends", "mod-loop-a");
 	exit(EXIT_FAILURE);
 }
 DEFINE_TEST(modprobe_show_depends,
@@ -34,7 +30,7 @@ DEFINE_TEST(modprobe_show_depends,
 
 static noreturn int modprobe_show_depends2(void)
 {
-	EXEC_MODPROBE("--show-depends", "mod-simple");
+	EXEC_TOOL(modprobe, "--show-depends", "mod-simple");
 	exit(EXIT_FAILURE);
 }
 DEFINE_TEST(modprobe_show_depends2,
@@ -57,7 +53,7 @@ DEFINE_TEST_WITH_FUNC(modprobe_show_depends_no_load, modprobe_show_depends2,
 
 static noreturn int modprobe_show_alias_to_none(void)
 {
-	EXEC_MODPROBE("--show-depends", "--ignore-install", "mod-simple");
+	EXEC_TOOL(modprobe, "--show-depends", "--ignore-install", "mod-simple");
 	exit(EXIT_FAILURE);
 }
 DEFINE_TEST(modprobe_show_alias_to_none,
@@ -74,7 +70,7 @@ DEFINE_TEST(modprobe_show_alias_to_none,
 
 static noreturn int modprobe_show_exports(void)
 {
-	EXEC_MODPROBE("--show-exports", "/mod-loop-a.ko");
+	EXEC_TOOL(modprobe, "--show-exports", "/mod-loop-a.ko");
 	exit(EXIT_FAILURE);
 }
 DEFINE_TEST(modprobe_show_exports,
@@ -89,7 +85,7 @@ DEFINE_TEST(modprobe_show_exports,
 
 static noreturn int modprobe_show_exports_module(void)
 {
-	EXEC_MODPROBE("--show-exports", "mod-loop-b");
+	EXEC_TOOL(modprobe, "--show-exports", "mod-loop-b");
 	exit(EXIT_FAILURE);
 }
 DEFINE_TEST(modprobe_show_exports_module,
@@ -105,7 +101,7 @@ DEFINE_TEST(modprobe_show_exports_module,
 
 static noreturn int modprobe_builtin(void)
 {
-	EXEC_MODPROBE("unix");
+	EXEC_TOOL(modprobe, "unix");
 	exit(EXIT_FAILURE);
 }
 DEFINE_TEST(modprobe_builtin, .description = "check if modprobe return 0 for builtin",
@@ -116,7 +112,7 @@ DEFINE_TEST(modprobe_builtin, .description = "check if modprobe return 0 for bui
 
 static noreturn int modprobe_builtin_lookup_only(void)
 {
-	EXEC_MODPROBE("-R", "unix");
+	EXEC_TOOL(modprobe, "-R", "unix");
 	exit(EXIT_FAILURE);
 }
 DEFINE_TEST(modprobe_builtin_lookup_only,
@@ -131,7 +127,7 @@ DEFINE_TEST(modprobe_builtin_lookup_only,
 
 static noreturn int modprobe_softdep_loop(void)
 {
-	EXEC_MODPROBE("mod-loop-b");
+	EXEC_TOOL(modprobe, "mod-loop-b");
 	exit(EXIT_FAILURE);
 }
 DEFINE_TEST(modprobe_softdep_loop,
@@ -146,7 +142,7 @@ DEFINE_TEST(modprobe_softdep_loop,
 
 static noreturn int modprobe_weakdep_loop(void)
 {
-	EXEC_MODPROBE("mod-loop-b");
+	EXEC_TOOL(modprobe, "mod-loop-b");
 	exit(EXIT_FAILURE);
 }
 DEFINE_TEST(modprobe_weakdep_loop,
@@ -162,7 +158,7 @@ DEFINE_TEST(modprobe_weakdep_loop,
 
 static noreturn int modprobe_install_cmd_loop(void)
 {
-	EXEC_MODPROBE("mod-loop-a");
+	EXEC_TOOL(modprobe, "mod-loop-a");
 	exit(EXIT_FAILURE);
 }
 DEFINE_TEST(modprobe_install_cmd_loop,
@@ -181,7 +177,7 @@ DEFINE_TEST(modprobe_install_cmd_loop,
 
 static noreturn int modprobe_param_kcmdline_show_deps(void)
 {
-	EXEC_MODPROBE("--show-depends", "mod-simple");
+	EXEC_TOOL(modprobe, "--show-depends", "mod-simple");
 	exit(EXIT_FAILURE);
 }
 DEFINE_TEST(modprobe_param_kcmdline_show_deps,
@@ -196,7 +192,7 @@ DEFINE_TEST(modprobe_param_kcmdline_show_deps,
 
 static noreturn int modprobe_param_kcmdline(void)
 {
-	EXEC_MODPROBE("-c");
+	EXEC_TOOL(modprobe, "-c");
 	exit(EXIT_FAILURE);
 }
 DEFINE_TEST_WITH_FUNC(modprobe_param_kcmdline2, modprobe_param_kcmdline,
@@ -283,7 +279,7 @@ DEFINE_TEST_WITH_FUNC(modprobe_param_kcmdline9, modprobe_param_kcmdline,
 
 static noreturn int modprobe_force(void)
 {
-	EXEC_MODPROBE("--force", "mod-simple");
+	EXEC_TOOL(modprobe, "--force", "mod-simple");
 	exit(EXIT_FAILURE);
 }
 DEFINE_TEST(modprobe_force,
@@ -298,7 +294,7 @@ DEFINE_TEST(modprobe_force,
 
 static noreturn int modprobe_force_modversion(void)
 {
-	EXEC_MODPROBE("--force-modversion", "mod-simple");
+	EXEC_TOOL(modprobe, "--force-modversion", "mod-simple");
 	exit(EXIT_FAILURE);
 }
 DEFINE_TEST(modprobe_force_modversion,
@@ -313,7 +309,7 @@ DEFINE_TEST(modprobe_force_modversion,
 
 static noreturn int modprobe_force_vermagic(void)
 {
-	EXEC_MODPROBE("--force-vermagic", "mod-simple");
+	EXEC_TOOL(modprobe, "--force-vermagic", "mod-simple");
 	exit(EXIT_FAILURE);
 }
 DEFINE_TEST(modprobe_force_vermagic,
@@ -328,7 +324,7 @@ DEFINE_TEST(modprobe_force_vermagic,
 
 static noreturn int modprobe_oldkernel(void)
 {
-	EXEC_MODPROBE("mod-simple");
+	EXEC_TOOL(modprobe, "mod-simple");
 	exit(EXIT_FAILURE);
 }
 DEFINE_TEST(modprobe_oldkernel,
@@ -343,7 +339,7 @@ DEFINE_TEST(modprobe_oldkernel,
 
 static noreturn int modprobe_oldkernel_force(void)
 {
-	EXEC_MODPROBE("--force", "mod-simple");
+	EXEC_TOOL(modprobe, "--force", "mod-simple");
 	exit(EXIT_FAILURE);
 }
 DEFINE_TEST(modprobe_oldkernel_force,
@@ -358,7 +354,7 @@ DEFINE_TEST(modprobe_oldkernel_force,
 
 static noreturn int modprobe_oldkernel_force_modversion(void)
 {
-	EXEC_MODPROBE("--force-modversion", "mod-simple");
+	EXEC_TOOL(modprobe, "--force-modversion", "mod-simple");
 	exit(EXIT_FAILURE);
 }
 DEFINE_TEST(modprobe_oldkernel_force_modversion,
@@ -373,7 +369,7 @@ DEFINE_TEST(modprobe_oldkernel_force_modversion,
 
 static noreturn int modprobe_oldkernel_force_vermagic(void)
 {
-	EXEC_MODPROBE("--force-vermagic", "mod-simple");
+	EXEC_TOOL(modprobe, "--force-vermagic", "mod-simple");
 	exit(EXIT_FAILURE);
 }
 DEFINE_TEST(modprobe_oldkernel_force_vermagic,
@@ -388,7 +384,7 @@ DEFINE_TEST(modprobe_oldkernel_force_vermagic,
 
 static noreturn int modprobe_external(void)
 {
-	EXEC_MODPROBE("mod-simple");
+	EXEC_TOOL(modprobe, "mod-simple");
 	exit(EXIT_FAILURE);
 }
 DEFINE_TEST(modprobe_external,
@@ -403,7 +399,7 @@ DEFINE_TEST(modprobe_external,
 
 static noreturn int modprobe_module_from_abspath(void)
 {
-	EXEC_MODPROBE("/home/foo/mod-simple.ko");
+	EXEC_TOOL(modprobe, "/home/foo/mod-simple.ko");
 	exit(EXIT_FAILURE);
 }
 DEFINE_TEST(modprobe_module_from_abspath,
@@ -423,7 +419,7 @@ static noreturn int modprobe_module_from_relpath(void)
 		exit(EXIT_FAILURE);
 	}
 
-	EXEC_MODPROBE("./mod-simple.ko");
+	EXEC_TOOL(modprobe, "./mod-simple.ko");
 	exit(EXIT_FAILURE);
 }
 DEFINE_TEST(modprobe_module_from_relpath,

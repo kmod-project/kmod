@@ -14,10 +14,6 @@
 
 #include "testsuite.h"
 
-#define EXEC_MODPROBE(...)                     \
-	test_spawn_prog(TOOLS_DIR "/modprobe", \
-			(const char *[]){ TOOLS_DIR "/modprobe", ##__VA_ARGS__, NULL })
-
 static int test_weakdep(void)
 {
 	static const char *const mod_name[] = {
@@ -85,7 +81,7 @@ DEFINE_TEST(test_weakdep,
 
 static noreturn int modprobe_config(void)
 {
-	EXEC_MODPROBE("-c");
+	EXEC_TOOL(modprobe, "-c");
 	exit(EXIT_FAILURE);
 }
 DEFINE_TEST(modprobe_config,

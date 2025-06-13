@@ -108,6 +108,10 @@ const struct test *test_find(const struct test *start, const struct test *stop,
 int test_spawn_prog(const char *prog, const char *const args[]);
 int test_run(const struct test *t);
 
+#define EXEC_TOOL(tool, ...)                 \
+	test_spawn_prog(TOOLS_DIR "/" #tool, \
+			(const char *[]){ TOOLS_DIR "/" #tool, ##__VA_ARGS__, NULL })
+
 #define TS_EXPORT __attribute__((visibility("default")))
 
 #define _LOG(prefix, fmt, ...) printf("TESTSUITE: " prefix fmt, ##__VA_ARGS__)

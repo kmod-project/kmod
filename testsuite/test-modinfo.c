@@ -12,17 +12,12 @@
 
 #include "testsuite.h"
 
-static const char *progname = TOOLS_DIR "/modinfo";
-
-#define DEFINE_MODINFO_TEST(_field, _flavor, ...)                   \
-	static noreturn int test_modinfo_##_field(void)             \
-	{                                                           \
-		const char *const args[] = {                        \
-			progname, "-F", #_field, __VA_ARGS__, NULL, \
-		};                                                  \
-		test_spawn_prog(progname, args);                    \
-		exit(EXIT_FAILURE);                                 \
-	}                                                           \
+#define DEFINE_MODINFO_TEST(_field, _flavor, ...)               \
+	static noreturn int test_modinfo_##_field(void)         \
+	{                                                       \
+		EXEC_TOOL(modinfo, "-F", #_field, __VA_ARGS__); \
+		exit(EXIT_FAILURE);                             \
+	}                                                       \
 	DEFINE_TEST(test_modinfo_##_field, \
 	.description = "check " #_field " output of modinfo for different architectures", \
 	.config = { \
@@ -60,12 +55,7 @@ DEFINE_MODINFO_SIGN_TEST(sig_hashalgo);
 #if 0
 static noreturn int test_modinfo_signature(void)
 {
-	const char *const args[] = {
-		progname,
-		NULL,
-	};
-
-	test_spawn_prog(progname, args);
+	EXEC_TOOL(modinfo);
 	exit(EXIT_FAILURE);
 }
 DEFINE_TEST(test_modinfo_signature,
@@ -80,15 +70,7 @@ DEFINE_TEST(test_modinfo_signature,
 
 static noreturn int test_modinfo_external(void)
 {
-	const char *const args[] = {
-		// clang-format off
-		progname,
-		"-F", "filename",
-		"mod-simple",
-		NULL,
-		// clang-format on
-	};
-	test_spawn_prog(progname, args);
+	EXEC_TOOL(modinfo, "-F", "filename", "mod-simple");
 	exit(EXIT_FAILURE);
 }
 DEFINE_TEST(test_modinfo_external,
@@ -103,14 +85,7 @@ DEFINE_TEST(test_modinfo_external,
 
 static noreturn int test_modinfo_builtin(void)
 {
-	const char *const args[] = {
-		// clang-format off
-		progname,
-		"intel_uncore",
-		NULL,
-		// clang-format on
-	};
-	test_spawn_prog(progname, args);
+	EXEC_TOOL(modinfo, "intel_uncore");
 	exit(EXIT_FAILURE);
 }
 DEFINE_TEST(test_modinfo_builtin,
