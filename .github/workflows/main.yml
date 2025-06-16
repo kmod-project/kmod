@@ -32,7 +32,7 @@ jobs:
             only_bits: '64'
           - container: 'archlinux:multilib-devel'
           - container: 'debian:bullseye-slim'
-            meson_setup: '-Dzstd=disabled -Dxz=disabled -Dzlib=disabled -Dopenssl=enabled -Dtools=true'
+            meson_setup: '-Dzstd=disabled -Dxz=disabled -Dzlib=disabled'
             only_compiler: 'gcc'
           - container: 'debian:unstable'
           - container: 'fedora:latest'
