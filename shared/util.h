@@ -88,7 +88,7 @@ unsigned long long get_backoff_delta_msec(unsigned long long tend,
 		__p->__v = (val);                \
 	} while (0)
 
-static _always_inline_ unsigned int ALIGN_POWER2(unsigned int u)
+static inline unsigned int align_power2(unsigned int u)
 {
 	return 1 << ((sizeof(u) * 8) - __builtin_clz(u - 1));
 }

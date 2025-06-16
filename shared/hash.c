@@ -34,7 +34,7 @@ struct hash *hash_new(unsigned int n_buckets, void (*free_value)(void *value))
 {
 	struct hash *hash;
 
-	n_buckets = ALIGN_POWER2(n_buckets);
+	n_buckets = align_power2(n_buckets);
 	hash = calloc(1, sizeof(struct hash) + n_buckets * sizeof(struct hash_bucket));
 	if (hash == NULL)
 		return NULL;
