@@ -37,18 +37,20 @@ jobs:
           - container: 'debian:unstable'
           - container: 'fedora:latest'
             only_bits: '64'
+          - container: 'ubuntu:22.04'
+          - container: 'ubuntu:24.04'
+
+          # Special configurations
+
+          # Variants with different compression options
           - container: 'fedora:latest'
             meson_setup: '-Dxz=disabled -Ddlopen=all'
             only_bits: '64'
             custom: 'no-xz-dlopen-all'
           - container: 'ubuntu:22.04'
-          - container: 'ubuntu:22.04'
             meson_setup: '-Ddlopen=zstd,zlib'
             only_bits: '64'
             custom: 'dlopen-zstd-zlib'
-          - container: 'ubuntu:24.04'
-
-          # Special configurations
 
           # Variant with lld as linker
           - container: 'archlinux:multilib-devel'
