@@ -121,13 +121,13 @@ int test_run(const struct test *t);
 
 #define assert_return(expr, r) OK(expr, "Failed assertion")
 
-#define OK(expr, msg)                                                         \
-	do {                                                                  \
-		if ((!(expr))) {                                              \
-			ERR(msg ": " #expr " %s:%d %s\n", __FILE__, __LINE__, \
-			    __PRETTY_FUNCTION__);                             \
-			return EXIT_FAILURE;                                  \
-		}                                                             \
+#define OK(expr, fmt, ...)                                                         \
+	do {                                                                       \
+		if ((!(expr))) {                                                   \
+			ERR(fmt ": " #expr " %s:%d %s\n", ##__VA_ARGS__, __FILE__, \
+			    __LINE__, __PRETTY_FUNCTION__);                        \
+			return EXIT_FAILURE;                                       \
+		}                                                                  \
 	} while (false)
 
 /* Test definitions */
