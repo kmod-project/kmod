@@ -227,8 +227,8 @@ static void test_export_environ(const struct test *t)
 		setenv(env->key, env->val, 1);
 }
 
-static noreturn inline int test_run_child(const struct test *t, int fdout[2],
-					  int fderr[2], int fdmonitor[2])
+static inline int test_run_child(const struct test *t, int fdout[2], int fderr[2],
+				 int fdmonitor[2])
 {
 	/* kill child if parent dies */
 	prctl(PR_SET_PDEATHSIG, SIGTERM);
@@ -240,7 +240,7 @@ static noreturn inline int test_run_child(const struct test *t, int fdout[2],
 		close(fdout[0]);
 		if (dup2(fdout[1], STDOUT_FILENO) < 0) {
 			ERR("could not redirect stdout to pipe: %m\n");
-			exit(EXIT_FAILURE);
+			return EXIT_FAILURE;
 		}
 	}
 
@@ -248,7 +248,7 @@ static noreturn inline int test_run_child(const struct test *t, int fdout[2],
 		close(fderr[0]);
 		if (dup2(fderr[1], STDERR_FILENO) < 0) {
 			ERR("could not redirect stderr to pipe: %m\n");
-			exit(EXIT_FAILURE);
+			return EXIT_FAILURE;
 		}
 	}
 
@@ -261,22 +261,22 @@ static noreturn inline int test_run_child(const struct test *t, int fdout[2],
 
 		if (stat(stamp, &stampst) != 0) {
 			ERR("could not stat %s\n - %m", stamp);
-			exit(EXIT_FAILURE);
+			return EXIT_FAILURE;
 		}
 
 		if (stat(rootfs, &rootfsst) != 0) {
 			ERR("could not stat %s\n - %m", rootfs);
-			exit(EXIT_FAILURE);
+			return EXIT_FAILURE;
 		}
 
 		if (stat_mstamp(&rootfsst) > stat_mstamp(&stampst)) {
 			ERR("rootfs %s is dirty, please run 'meson compile testsuite/create-rootfs' before running this test\n",
 			    rootfs);
-			exit(EXIT_FAILURE);
+			return EXIT_FAILURE;
 		}
 	}
 
-	exit(test_spawn_test(t));
+	return test_spawn_test(t);
 }
 
 #define BUFSZ 4096
@@ -1194,5 +1194,5 @@ int test_run(const struct test *t)
 	if (pid > 0)
 		return test_run_parent(t, fdout, fderr, fdmonitor, pid);
 
-	test_run_child(t, fdout, fderr, fdmonitor);
+	exit(test_run_child(t, fdout, fderr, fdmonitor));
 }
