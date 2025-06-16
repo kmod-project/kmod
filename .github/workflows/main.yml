@@ -28,7 +28,7 @@ jobs:
       matrix:
         include:
           - container: 'alpine:latest'
-            meson_setup: '-Ddocs=false -Db_sanitize=none'
+            meson_setup: '-Db_sanitize=none'
             only_bits: '64'
           - container: 'archlinux:multilib-devel'
             skip_test: '32'
