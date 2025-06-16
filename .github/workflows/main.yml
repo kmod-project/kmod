@@ -31,13 +31,10 @@ jobs:
             meson_setup: '-Db_sanitize=none'
             only_bits: '64'
           - container: 'archlinux:multilib-devel'
-            skip_test: '32'
           - container: 'debian:bullseye-slim'
             meson_setup: '-Dzstd=disabled -Dxz=disabled -Dzlib=disabled -Dopenssl=enabled -Dtools=true'
             only_compiler: 'gcc'
-            skip_test: '32'
           - container: 'debian:unstable'
-            skip_test: '32'
           - container: 'fedora:latest'
             only_bits: '64'
           - container: 'fedora:latest'
@@ -45,13 +42,11 @@ jobs:
             only_bits: '64'
             custom: 'no-xz-dlopen-all'
           - container: 'ubuntu:22.04'
-            skip_test: '32'
           - container: 'ubuntu:22.04'
             meson_setup: '-Ddlopen=zstd,zlib'
             only_bits: '64'
             custom: 'dlopen-zstd-zlib'
           - container: 'ubuntu:24.04'
-            skip_test: '32'
 
           # Special configurations
 
@@ -131,6 +126,9 @@ jobs:
             if [[ "$2" == "32" ]]; then
               echo "::notice::TODO fix and reuse the original options."
               setup_options="$setup_options -Dzstd=disabled -Dxz=disabled -Dzlib=disabled -Dopenssl=disabled"
+
+              echo "::notice::TODO fix and re-enable sanitizer(s)."
+              setup_options="$setup_options -Db_sanitize=none"
             fi
 
             [[ -n "${{ matrix.linker }}" ]] && export CC_LD="${{ matrix.linker }}"
