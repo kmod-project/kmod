@@ -129,17 +129,9 @@ int test_run(const struct test *t);
 	} while (false)
 
 /* Test definitions */
-// clang-format off: At least up to version 18, it just makes a mess with _Pragma()
-#define DEFINE_TEST_WITH_FUNC(_name, _func, ...)                                         \
-	_Pragma("GCC diagnostic ignored \"-Wattributes\"")                               \
-	_used_                                                                           \
-	_retain_                                                                         \
-	_section_("kmod_tests")                                                          \
-	_alignedptr_                                                                     \
-	static const struct test UNIQ(s##_name) = {                                      \
-		.name = #_name, .func = _func, ##__VA_ARGS__                             \
-	}
-// clang-format on
+#define DEFINE_TEST_WITH_FUNC(_name, _func, ...)                                      \
+	_used_ _retain_ _section_("kmod_tests") _alignedptr_ static const struct test \
+	UNIQ(s##_name) = { .name = #_name, .func = _func, ##__VA_ARGS__ }
 
 #define DEFINE_TEST(_name, ...) DEFINE_TEST_WITH_FUNC(_name, _name, __VA_ARGS__)
 
