@@ -144,10 +144,12 @@ int test_run(const struct test *t);
 		int arg, ret = EXIT_SUCCESS;                                             \
                                                                                          \
 		arg = test_init(__start_kmod_tests, __stop_kmod_tests, argc, argv);      \
-		if (arg == 0)                                                            \
-			return 0;                                                        \
+		/* Invalid arguments */                                                  \
 		if (arg < 0)                                                             \
 			return EXIT_FAILURE;                                             \
+		/* Print and exit options - list, help */                                \
+		if (arg == 0)                                                            \
+			return 0;                                                        \
                                                                                          \
 		if (arg < argc) {                                                        \
 			t = test_find(__start_kmod_tests, __stop_kmod_tests, argv[arg]); \

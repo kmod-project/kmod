@@ -108,6 +108,18 @@ int test_init(const struct test *start, const struct test *stop, int argc,
 		}
 	}
 
+	if (oneshot) {
+		if ((optind + 1) != argc) {
+			ERR("Too many arguments provided. Only one is supported - the testname\n");
+			return -1;
+		}
+	} else {
+		if (optind != argc && (optind + 1) != argc) {
+			ERR("Invalid number of arguments provided. One optional can be provided - the testname\n");
+			return -1;
+		}
+	}
+
 	if (isatty(STDOUT_FILENO) == 0) {
 		ANSI_HIGHLIGHT_OFF = "";
 		ANSI_HIGHLIGHT_RED_ON = "";
@@ -140,9 +152,9 @@ static int test_spawn_test(const struct test *t)
 	return EXIT_FAILURE;
 }
 
-static noreturn int test_run_spawned(const struct test *t)
+static int test_run_spawned(const struct test *t)
 {
-	exit(t->func());
+	return t->func();
 }
 
 int test_spawn_prog(const char *prog, const char *const args[])
@@ -1144,7 +1156,7 @@ int test_run(const struct test *t)
 	int fdmonitor[2];
 
 	if (oneshot)
-		test_run_spawned(t);
+		return test_run_spawned(t);
 
 	if (t->output.out != NULL) {
 		if (pipe(fdout) != 0) {
