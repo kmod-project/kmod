@@ -81,7 +81,6 @@ AttributeMacros:
   - KMOD_EXPORT
   - TS_EXPORT
   - _alignedptr_
-  - _always_inline_
   - _clang_suppress_alloc_
   - _cleanup_
   - _cleanup_free_

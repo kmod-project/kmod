@@ -104,7 +104,7 @@ add_project_arguments(
     '-Wmissing-noreturn',
     '-Wmissing-prototypes',
     '-Wnested-externs',
-    '-Wno-attributes=clang::suppress',
+    '-Wno-attributes',
     '-Wno-declaration-after-statement',
     '-Wno-unused-parameter',
     '-Wold-style-definition',

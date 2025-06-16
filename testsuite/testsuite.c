@@ -32,7 +32,7 @@ static const char *ANSI_HIGHLIGHT_OFF = "\x1B[0m";
 
 static const char *progname;
 static int oneshot;
-static const char options_short[] = "lhn";
+static const char options_short[] = "lhn:";
 static const struct option options[] = {
 	{ "list", no_argument, 0, 'l' },
 	{ "help", no_argument, 0, 'h' },
@@ -98,7 +98,16 @@ int test_init(const struct test *start, const struct test *stop, int argc,
 			help();
 			return 0;
 		case 'n':
+			if (oneshot) {
+				ERR("oneshot can be provided only once\n");
+				return -1;
+			}
 			oneshot = 1;
+			/*
+			 * The option requires an argument, thus getopt will return an
+			 * index just past it... Even though we want the argument's index.
+			 */
+			optind--;
 			break;
 		case '?':
 			return -1;
@@ -112,6 +121,11 @@ int test_init(const struct test *start, const struct test *stop, int argc,
 		ANSI_HIGHLIGHT_OFF = "";
 		ANSI_HIGHLIGHT_RED_ON = "";
 		ANSI_HIGHLIGHT_GREEN_ON = "";
+	}
+
+	if ((optind + 1) < argc) {
+		ERR("too many arguments provided. only one (testname) is supported\n");
+		return -1;
 	}
 
 	return optind;
@@ -140,9 +154,9 @@ static int test_spawn_test(const struct test *t)
 	return EXIT_FAILURE;
 }
 
-static noreturn int test_run_spawned(const struct test *t)
+static int test_run_spawned(const struct test *t)
 {
-	exit(t->func());
+	return t->func();
 }
 
 int test_spawn_prog(const char *prog, const char *const args[])
@@ -215,8 +229,8 @@ static void test_export_environ(const struct test *t)
 		setenv(env->key, env->val, 1);
 }
 
-static noreturn inline int test_run_child(const struct test *t, int fdout[2],
-					  int fderr[2], int fdmonitor[2])
+static inline int test_run_child(const struct test *t, int fdout[2], int fderr[2],
+				 int fdmonitor[2])
 {
 	/* kill child if parent dies */
 	prctl(PR_SET_PDEATHSIG, SIGTERM);
@@ -228,7 +242,7 @@ static noreturn inline int test_run_child(const struct test *t, int fdout[2],
 		close(fdout[0]);
 		if (dup2(fdout[1], STDOUT_FILENO) < 0) {
 			ERR("could not redirect stdout to pipe: %m\n");
-			exit(EXIT_FAILURE);
+			return EXIT_FAILURE;
 		}
 	}
 
@@ -236,7 +250,7 @@ static noreturn inline int test_run_child(const struct test *t, int fdout[2],
 		close(fderr[0]);
 		if (dup2(fderr[1], STDERR_FILENO) < 0) {
 			ERR("could not redirect stderr to pipe: %m\n");
-			exit(EXIT_FAILURE);
+			return EXIT_FAILURE;
 		}
 	}
 
@@ -249,22 +263,22 @@ static noreturn inline int test_run_child(const struct test *t, int fdout[2],
 
 		if (stat(stamp, &stampst) != 0) {
 			ERR("could not stat %s\n - %m", stamp);
-			exit(EXIT_FAILURE);
+			return EXIT_FAILURE;
 		}
 
 		if (stat(rootfs, &rootfsst) != 0) {
 			ERR("could not stat %s\n - %m", rootfs);
-			exit(EXIT_FAILURE);
+			return EXIT_FAILURE;
 		}
 
 		if (stat_mstamp(&rootfsst) > stat_mstamp(&stampst)) {
 			ERR("rootfs %s is dirty, please run 'meson compile testsuite/create-rootfs' before running this test\n",
 			    rootfs);
-			exit(EXIT_FAILURE);
+			return EXIT_FAILURE;
 		}
 	}
 
-	exit(test_spawn_test(t));
+	return test_spawn_test(t);
 }
 
 #define BUFSZ 4096
@@ -1144,7 +1158,7 @@ int test_run(const struct test *t)
 	int fdmonitor[2];
 
 	if (oneshot)
-		test_run_spawned(t);
+		return test_run_spawned(t);
 
 	if (t->output.out != NULL) {
 		if (pipe(fdout) != 0) {
@@ -1182,5 +1196,5 @@ int test_run(const struct test *t)
 	if (pid > 0)
 		return test_run_parent(t, fdout, fderr, fdmonitor, pid);
 
-	test_run_child(t, fdout, fderr, fdmonitor);
+	exit(test_run_child(t, fdout, fderr, fdmonitor));
 }
