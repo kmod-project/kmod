@@ -14,7 +14,7 @@ threads, although it's not thread safe (you must lock explicitly).
 OVERVIEW
 ========
 
-Every user should create and manage it's own library context with:
+Every user should create and manage its own library context with:
 
    struct kmod_ctx *ctx = kmod_new(kernel_dirname);
    kmod_unref(ctx);
