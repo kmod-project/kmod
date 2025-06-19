@@ -542,10 +542,10 @@ unsigned long long get_backoff_delta_msec(unsigned long long tend,
 
 	if (!*delta)
 		*delta = 1;
-	else
+	else if (*delta <= ULLONG_MAX / 2)
 		*delta <<= 1;
 
-	while (t + *delta > tend)
+	while (*delta && t + *delta > tend)
 		*delta >>= 1;
 
 	if (!*delta && tend > t)
