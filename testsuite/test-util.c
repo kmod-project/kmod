@@ -286,6 +286,11 @@ static int test_backoff_time(void)
 		assert_return(delta == 0, EXIT_FAILURE);
 	}
 
+	/* Check when end time has passed */
+	delta = 0;
+	get_backoff_delta_msec(now_msec() - 10, &delta);
+	assert_return(delta == 0, EXIT_FAILURE);
+
 	return EXIT_SUCCESS;
 }
 DEFINE_TEST(test_backoff_time,
