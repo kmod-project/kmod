@@ -407,6 +407,7 @@ static int rmmod_do_remove_module(struct kmod_module *mod)
 				err = -EAGAIN;
 				break;
 			}
+			err = -EAGAIN;
 		} else {
 			break;
 		}
