@@ -1040,10 +1040,10 @@ KMOD_EXPORT int kmod_module_probe_insert_module(
 
 		err = kmod_module_apply_filter(mod->ctx, KMOD_FILTER_BLACKLIST, list,
 					       &filtered);
+		kmod_module_unref_list(list);
 		if (err < 0)
 			return err;
 
-		kmod_module_unref_list(list);
 		if (filtered == NULL)
 			return KMOD_PROBE_APPLY_BLACKLIST_ALL;
 
