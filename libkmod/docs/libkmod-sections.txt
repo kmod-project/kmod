@@ -35,6 +35,7 @@ kmod_list_prev
 kmod_config_iter
 kmod_config_get_blacklists
 kmod_config_get_install_commands
+kmod_config_get_masks
 kmod_config_get_remove_commands
 kmod_config_get_aliases
 kmod_config_get_options

@@ -1,0 +1,9 @@
+mask foo_bar
+mask bar
+mask foo2
+mask bar_2
+mask foobar
+
+# End of configuration files. Dumping indexes now:
+
+

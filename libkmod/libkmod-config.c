@@ -51,6 +51,11 @@ struct kmod_weakdep {
 	unsigned int n_weak;
 };
 
+const char *kmod_mask_get_modname(const struct kmod_list *l)
+{
+	return l->data;
+}
+
 const char *kmod_blacklist_get_modname(const struct kmod_list *l)
 {
 	return l->data;
@@ -228,6 +233,27 @@ static int kmod_config_add_blacklist(struct kmod_config *config, const char *mod
 
 	TAKE_PTR(p);
 	config->blacklists = list;
+
+	return 0;
+}
+
+static int kmod_config_add_mask(struct kmod_config *config, const char *modname)
+{
+	_cleanup_free_ char *p;
+	struct kmod_list *list;
+
+	DBG(config->ctx, "modname=%s\n", modname);
+
+	_clang_suppress_alloc_ p = strdup(modname);
+	if (!p)
+		return -ENOMEM;
+
+	list = kmod_list_append(config->masks, p);
+	if (!list)
+		return -ENOMEM;
+
+	TAKE_PTR(p);
+	config->masks = list;
 
 	return 0;
 }
@@ -607,12 +633,15 @@ static char *weakdep_to_char(struct kmod_weakdep *dep)
 static void kcmdline_parse_result(struct kmod_config *config, char *modname, char *param,
 				  char *value)
 {
+	bool is_blacklist, is_mask;
 	if (modname == NULL || param == NULL)
 		return;
 
 	DBG(config->ctx, "%s %s\n", modname, param);
 
-	if (streq(modname, "modprobe") && strstartswith(param, "blacklist=")) {
+	is_blacklist = strstartswith(param, "blacklist=");
+	is_mask = strstartswith(param, "mask=");
+	if (streq(modname, "modprobe") && (is_blacklist || is_mask)) {
 		for (;;) {
 			char *t = strsep(&value, ",");
 			if (t == NULL)
@@ -621,7 +650,10 @@ static void kcmdline_parse_result(struct kmod_config *config, char *modname, cha
 			if (underscores(t) < 0)
 				continue;
 
-			kmod_config_add_blacklist(config, t);
+			if (is_blacklist)
+				kmod_config_add_blacklist(config, t);
+			else
+				kmod_config_add_mask(config, t);
 		}
 	} else {
 		if (underscores(modname) < 0) {
@@ -827,6 +859,13 @@ static int kmod_config_parse(struct kmod_config *config, int fd, const char *fil
 
 			kmod_config_add_command(config, modname, installcmd, cmd,
 						&config->install_commands);
+		} else if (streq(cmd, "mask")) {
+			char *modname = strtok_r(NULL, "\t ", &saveptr);
+
+			if (underscores(modname) < 0)
+				goto syntax_error;
+
+			kmod_config_add_mask(config, modname);
 		} else if (streq(cmd, "remove")) {
 			char *modname = strtok_r(NULL, "\t ", &saveptr);
 			char *removecmd = strtok_r(NULL, "\0", &saveptr);
@@ -876,6 +915,7 @@ void kmod_config_free(struct kmod_config *config)
 	kmod_list_release(config->blacklists, free);
 	kmod_list_release(config->options, free);
 	kmod_list_release(config->install_commands, free);
+	kmod_list_release(config->masks, free);
 	kmod_list_release(config->remove_commands, free);
 	kmod_list_release(config->softdeps, free);
 	kmod_list_release(config->weakdeps, free);
@@ -1098,6 +1138,7 @@ oom:
 enum config_type {
 	CONFIG_TYPE_BLACKLIST = 0,
 	CONFIG_TYPE_INSTALL,
+	CONFIG_TYPE_MASK,
 	CONFIG_TYPE_REMOVE,
 	CONFIG_TYPE_ALIAS,
 	CONFIG_TYPE_OPTION,
@@ -1148,6 +1189,10 @@ static struct kmod_config_iter *kmod_config_iter_new(const struct kmod_ctx *ctx,
 		iter->get_key = kmod_command_get_modname;
 		iter->get_value = kmod_command_get_command;
 		break;
+	case CONFIG_TYPE_MASK:
+		iter->list = config->masks;
+		iter->get_key = kmod_mask_get_modname;
+		break;
 	case CONFIG_TYPE_REMOVE:
 		iter->list = config->remove_commands;
 		iter->get_key = kmod_command_get_modname;
@@ -1196,6 +1241,14 @@ KMOD_EXPORT struct kmod_config_iter *kmod_config_get_install_commands(const stru
 		return NULL;
 
 	return kmod_config_iter_new(ctx, CONFIG_TYPE_INSTALL);
+}
+
+KMOD_EXPORT struct kmod_config_iter *kmod_config_get_masks(const struct kmod_ctx *ctx)
+{
+	if (ctx == NULL)
+		return NULL;
+
+	return kmod_config_iter_new(ctx, CONFIG_TYPE_MASK);
 }
 
 // clang-format off

@@ -1,0 +1,2 @@
+# Aliases for symbols, used by symbol_request().
+alias symbol:print_fooA mod_foo_a
