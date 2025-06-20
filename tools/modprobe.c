@@ -160,6 +160,7 @@ static int show_config(struct kmod_ctx *ctx)
 		const char *name;
 		struct kmod_config_iter *(*get_iter)(const struct kmod_ctx *ctx);
 	} ci[] = {
+		{ "mask", kmod_config_get_masks },
 		{ "blacklist", kmod_config_get_blacklists },
 		{ "install", kmod_config_get_install_commands },
 		{ "remove", kmod_config_get_remove_commands },

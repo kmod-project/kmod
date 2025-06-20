@@ -1,0 +1,1 @@
+modprobe.mask=foo,bar modprobe.mask=foo2 quiet modprobe.mask=bar2 rw modprobe.mask=foobar

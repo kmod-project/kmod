@@ -23,7 +23,8 @@ that for convenience, there is no difference between \_ and - in module names
 directory @DISTCONFDIR@/`uname -r` for all the modules and other files, except
 for the optional configuration files (see *modprobe.d*(5)). *modprobe* will also
 use module options specified on the kernel command line in the form of
-<module>.<option> and blacklists in the form of modprobe.blacklist=<module>.
+<module>.<option>, blacklists in the form of modprobe.blacklist=<module>
+and masks in modprobe.mask=<module>.
 
 Note that unlike in 2.4 series Linux kernels (which are not supported by this
 tool) this version of *modprobe* does not do anything to the module itself: the
