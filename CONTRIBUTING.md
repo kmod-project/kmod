@@ -7,14 +7,15 @@ patches sent to the [mailing list]. In addition you can open issues and feature
 requests on our [GitHub tracker].
 
 In this file you can find:
+
   * [License and SPDX](#license-and-spdx)
   * [Commit style and history](#commit-style-and-history)
   * [Using commit trailers](#using-commit-trailers)
     + [Signed-off-by](#signed-off-by)
-    + [Issues, feature requests](#issues--feature-requests)
-    + [Discussions, references](#discussions--references)
-    + [Link(s)](#link-s-)
-    + [Bugfixes, regressions](#bugfixes--regressions)
+    + [Issues, feature requests](#issues-feature-requests)
+    + [Discussions, references](#discussions-references)
+    + [Link(s)](#links)
+    + [Bugfixes, regressions](#bugfixes-regressions)
   * [Coding style](#coding-style)
   * [API documentation](#api-documentation)
   * [Tools manual pages](#tools-manual-pages)

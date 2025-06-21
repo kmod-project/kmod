@@ -14,33 +14,35 @@ module-init-tools project.
 
 Links
 =====
-- Mailing list (no subscription needed): linux-modules@vger.kernel.org
-- Mailing list archives: https://lore.kernel.org/linux-modules/
+- Mailing list (no subscription needed): <linux-modules@vger.kernel.org>
+- Mailing list archives: <https://lore.kernel.org/linux-modules/>
 
-- Signed packages: http://www.kernel.org/pub/linux/utils/kernel/kmod/
+- Signed packages: <http://www.kernel.org/pub/linux/utils/kernel/kmod/>
 
 - Git:
-  - Official: https://git.kernel.org/pub/scm/utils/kernel/kmod/kmod.git
-  - Mirror: https://github.com/kmod-project/kmod
-  - Mirror: https://kernel.googlesource.com/pub/scm/utils/kernel/kmod/kmod.git
+    - Official: <https://git.kernel.org/pub/scm/utils/kernel/kmod/kmod.git>
+    - Mirror: <https://github.com/kmod-project/kmod>
+    - Mirror: <https://kernel.googlesource.com/pub/scm/utils/kernel/kmod/kmod.git>
 
 - License:
-  - LGPLv2.1+ for libkmod, testsuite and helper libraries
-  - GPLv2+ for tools/*
+    - LGPLv2.1+ for libkmod, testsuite and helper libraries
+    - GPLv2+ for tools/*
 
 - Irc: `#kmod` on irc.oftc.net
 
-- Issues: https://github.com/kmod-project/kmod/issues
+- Issues: <https://github.com/kmod-project/kmod/issues>
 
 
 Compilation and installation
 ============================
 
 In order to compile the source code you need:
+
 - C11 compiler, supporting a range of GNU extensions - GCC 8+, Clang 6+
 - POSIX.1-2008 C runtime library - Bionic, GNU C library, musl
 
 Optional dependencies, required with the default build configuration:
+
 - ZLIB library
 - LZMA library
 - ZSTD library
