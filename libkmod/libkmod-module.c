@@ -978,9 +978,6 @@ static int kmod_module_get_probe_list(struct kmod_module *mod, bool ignorecmd,
 {
 	int err;
 
-	assert(mod != NULL);
-	assert(list != NULL && *list == NULL);
-
 	/*
 	 * Make sure we don't get screwed by previous calls to this function
 	 */
