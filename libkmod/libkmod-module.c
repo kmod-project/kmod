@@ -805,16 +805,13 @@ struct probe_insert_cb {
 	void *data;
 };
 
-static int module_do_install_commands(struct kmod_module *mod, const char *options,
-				      struct probe_insert_cb *cb)
+static int module_do_install_commands(struct kmod_module *mod, const char *command,
+				      const char *options, struct probe_insert_cb *cb)
 {
-	const char *command = kmod_module_get_install_commands(mod);
 	char *p;
 	_cleanup_free_ char *cmd;
 	int err;
 	size_t cmdlen, options_len, varlen;
-
-	assert(command);
 
 	if (options == NULL)
 		options = "";
@@ -1073,7 +1070,7 @@ KMOD_EXPORT int kmod_module_probe_insert_module(
 				print_action(m, true, options ?: "");
 
 			if (!(flags & KMOD_PROBE_DRY_RUN))
-				err = module_do_install_commands(m, options, &cb);
+				err = module_do_install_commands(m, cmd, options, &cb);
 		} else {
 			if (print_action != NULL)
 				print_action(m, false, options ?: "");
