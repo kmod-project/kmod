@@ -4,16 +4,10 @@
  */
 #pragma once
 
+#include <assert.h>
 #include <stddef.h>
 
-#if HAVE_STATIC_ASSERT
-#define assert_cc(expr) _Static_assert((expr), #expr)
-#else
-#define assert_cc(expr)                              \
-	do {                                         \
-		(void)sizeof(char[1 - 2 * !(expr)]); \
-	} while (0)
-#endif
+#define assert_cc(expr) static_assert((expr), #expr)
 
 #define check_types_match(expr1, expr2) ((typeof(expr1) *)0 != (typeof(expr2) *)0)
 
