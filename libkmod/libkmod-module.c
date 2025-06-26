@@ -3,7 +3,6 @@
  * Copyright (C) 2011-2013  ProFUSION embedded systems
  */
 
-#include <assert.h>
 #include <ctype.h>
 #include <dirent.h>
 #include <errno.h>
@@ -117,7 +116,7 @@ void kmod_module_parse_depline(struct kmod_module *mod, char *line)
 
 	if (mod->init.dep)
 		return;
-	assert(mod->dep == NULL);
+
 	mod->init.dep = true;
 
 	p = strchr(line, ':');
