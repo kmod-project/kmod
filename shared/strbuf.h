@@ -51,7 +51,7 @@ void strbuf_clear(struct strbuf *buf);
 const char *strbuf_str(struct strbuf *buf);
 
 bool strbuf_pushchar(struct strbuf *buf, char ch);
-size_t strbuf_pushmem(struct strbuf *buf, const char *src, size_t sz);
+_nonnull_all_ size_t strbuf_pushmem(struct strbuf *buf, const char *src, size_t sz);
 static inline size_t strbuf_pushchars(struct strbuf *buf, const char *str)
 {
 	return strbuf_pushmem(buf, str, strlen(str));
