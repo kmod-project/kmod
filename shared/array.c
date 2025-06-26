@@ -3,7 +3,6 @@
  * Copyright (C) 2011-2013  ProFUSION embedded systems
  */
 
-#include <assert.h>
 #include <errno.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -39,7 +38,6 @@ static void array_trim(struct array *array)
 
 void array_init(struct array *array, size_t step)
 {
-	assert(step > 0);
 	array->array = NULL;
 	array->count = 0;
 	array->total = 0;
