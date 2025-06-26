@@ -1243,11 +1243,8 @@ KMOD_EXPORT int kmod_module_get_softdeps(const struct kmod_module *mod,
 	const struct kmod_list *l;
 	const struct kmod_config *config;
 
-	if (mod == NULL || pre == NULL || post == NULL)
+	if (mod == NULL || pre == NULL || *pre != NULL || post == NULL || *post != NULL)
 		return -ENOENT;
-
-	assert(*pre == NULL);
-	assert(*post == NULL);
 
 	config = kmod_get_config(mod->ctx);
 
@@ -1280,10 +1277,8 @@ KMOD_EXPORT int kmod_module_get_weakdeps(const struct kmod_module *mod,
 	const struct kmod_list *l;
 	const struct kmod_config *config;
 
-	if (mod == NULL || weak == NULL)
+	if (mod == NULL || weak == NULL || *weak != NULL)
 		return -ENOENT;
-
-	assert(*weak == NULL);
 
 	config = kmod_get_config(mod->ctx);
 
@@ -1858,10 +1853,8 @@ KMOD_EXPORT int kmod_module_get_info(const struct kmod_module *mod,
 	int i, count, ret = -ENOMEM;
 	struct kmod_signature_info sig_info = {};
 
-	if (mod == NULL || list == NULL)
+	if (mod == NULL || list == NULL || *list != NULL)
 		return -ENOENT;
-
-	assert(*list == NULL);
 
 	/* remove const: this can only change internal state */
 	if (kmod_module_is_builtin((struct kmod_module *)mod)) {
@@ -2013,10 +2006,8 @@ KMOD_EXPORT int kmod_module_get_versions(const struct kmod_module *mod,
 	struct kmod_modversion *versions;
 	int i, count, ret = 0;
 
-	if (mod == NULL || list == NULL)
+	if (mod == NULL || list == NULL || *list != NULL)
 		return -ENOENT;
-
-	assert(*list == NULL);
 
 	ret = kmod_module_get_elf(mod, &elf);
 	if (ret)
@@ -2114,10 +2105,8 @@ KMOD_EXPORT int kmod_module_get_symbols(const struct kmod_module *mod,
 	struct kmod_modversion *symbols;
 	int i, count, ret = 0;
 
-	if (mod == NULL || list == NULL)
+	if (mod == NULL || list == NULL || *list != NULL)
 		return -ENOENT;
-
-	assert(*list == NULL);
 
 	ret = kmod_module_get_elf(mod, &elf);
 	if (ret)
@@ -2220,10 +2209,8 @@ KMOD_EXPORT int kmod_module_get_dependency_symbols(const struct kmod_module *mod
 	struct kmod_modversion *symbols;
 	int i, count, ret = 0;
 
-	if (mod == NULL || list == NULL)
+	if (mod == NULL || list == NULL || *list != NULL)
 		return -ENOENT;
-
-	assert(*list == NULL);
 
 	ret = kmod_module_get_elf(mod, &elf);
 	if (ret)
