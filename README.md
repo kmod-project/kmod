@@ -65,6 +65,18 @@ When working on kmod, use the included `build-dev.ini` file, as:
 
     meson setup --native-file build-dev.ini builddir/
 
+The testsuite can be executed with:
+
+    meson test -C builddir
+
+It builds test kernel modules, so kernel headers need to be pre-installed. By
+default it tries to use the kernel header for the currently running kernel.
+`KDIR=any` environment variable can be used to tell it to use any installed
+kernel header or `KDIR=/path/to/specific/headers` when a specific one is
+needed. Example:
+
+    KDIR=any meson test -C builddir
+
 Make sure to read [our contributing guide](CONTRIBUTING.md) and the other
 READMEs: [libkmod](libkmod/README) and [testsuite](testsuite/README).
 
