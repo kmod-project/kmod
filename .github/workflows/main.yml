@@ -20,6 +20,9 @@ defaults:
   run:
     shell: bash
 
+env:
+  KDIR: 'any'
+
 jobs:
   build:
     runs-on: ubuntu-24.04
@@ -96,10 +99,6 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-
-      - name: Set the environment
-        run: |
-          .github/print-kdir.sh >> "$GITHUB_ENV"
 
       - name: configure checks
         run: |
