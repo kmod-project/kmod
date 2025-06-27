@@ -99,7 +99,7 @@ struct test {
 	bool expected_fail;
 	/* allow to skip tests that don't meet compile-time dependencies */
 	bool skip;
-} __attribute__((aligned(8)));
+};
 
 int test_init(const struct test *start, const struct test *stop, int argc,
 	      char *const argv[]);
@@ -129,17 +129,9 @@ int test_run(const struct test *t);
 	} while (false)
 
 /* Test definitions */
-// clang-format off: At least up to version 18, it just makes a mess with _Pragma()
-#define DEFINE_TEST_WITH_FUNC(_name, _func, ...)                                         \
-	_Pragma("GCC diagnostic ignored \"-Wattributes\"")                               \
-	_used_                                                                           \
-	_retain_                                                                         \
-	_section_("kmod_tests")                                                          \
-	_alignedptr_                                                                     \
-	static const struct test UNIQ(s##_name) = {                                      \
-		.name = #_name, .func = _func, ##__VA_ARGS__                             \
-	}
-// clang-format on
+#define DEFINE_TEST_WITH_FUNC(_name, _func, ...)                                      \
+	_used_ _retain_ _section_("kmod_tests") _alignedptr_ static const struct test \
+	UNIQ(s##_name) = { .name = #_name, .func = _func, ##__VA_ARGS__ }
 
 #define DEFINE_TEST(_name, ...) DEFINE_TEST_WITH_FUNC(_name, _name, __VA_ARGS__)
 
@@ -152,10 +144,13 @@ int test_run(const struct test *t);
 		int arg, ret = EXIT_SUCCESS;                                             \
                                                                                          \
 		arg = test_init(__start_kmod_tests, __stop_kmod_tests, argc, argv);      \
-		if (arg == 0)                                                            \
-			return 0;                                                        \
+		/* Invalid arguments */                                                  \
 		if (arg < 0)                                                             \
 			return EXIT_FAILURE;                                             \
+                                                                                         \
+		/* Print and exit options - list, help */                                \
+		if (arg == 0)                                                            \
+			return 0;                                                        \
                                                                                          \
 		if (arg < argc) {                                                        \
 			t = test_find(__start_kmod_tests, __stop_kmod_tests, argv[arg]); \
