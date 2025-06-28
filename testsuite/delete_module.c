@@ -3,7 +3,6 @@
  * Copyright (C) 2012-2013  ProFUSION embedded systems
  */
 
-#include <assert.h>
 #include <dirent.h>
 #include <dlfcn.h>
 #include <errno.h>

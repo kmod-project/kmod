@@ -5,7 +5,6 @@
  * Copyright (C) 2013-2014  Intel Corporation. All rights reserved.
  */
 
-#include <assert.h>
 #include <ctype.h>
 #include <dlfcn.h>
 #include <errno.h>

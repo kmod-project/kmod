@@ -5,7 +5,6 @@
  * Copyright (C) 2011-2013  ProFUSION embedded systems
  */
 
-#include <assert.h>
 #include <errno.h>
 #include <getopt.h>
 #include <limits.h>

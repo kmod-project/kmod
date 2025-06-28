@@ -6,7 +6,6 @@
 #include <sys/param.h>
 
 #include <arpa/inet.h>
-#include <assert.h>
 #include <errno.h>
 #include <fnmatch.h>
 #include <inttypes.h>
@@ -751,8 +750,6 @@ int index_mm_open(const struct kmod_ctx *ctx, const char *filename,
 		uint32_t root_offset;
 	} hdr;
 	const void *p;
-
-	assert(pidx != NULL);
 
 	DBG(ctx, "file=%s\n", filename);
 
