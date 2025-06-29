@@ -536,22 +536,34 @@ int sleep_until_msec(unsigned long long msec)
 unsigned long long get_backoff_delta_msec(unsigned long long tend,
 					  unsigned long long *delta)
 {
-	unsigned long long t;
+	unsigned long long d, t;
 
+	d = *delta;
 	t = now_msec();
 
-	if (!*delta)
-		*delta = 1;
-	else
-		*delta <<= 1;
+	if (tend <= t) {
+		/* Timeout already reached */
+		d = 0;
+	} else {
+		const unsigned long long limit = tend - t;
 
-	while (t + *delta > tend)
-		*delta >>= 1;
+		/* Double the amount of requested delta, if possible */
+		if (!d)
+			d = 1;
+		else if (umulll_overflow(d, 2, &d))
+			d = ULLONG_MAX;
 
-	if (!*delta && tend > t)
-		*delta = tend - t;
+		/* Search for a fitting backoff delta */
+		while (d > limit)
+			d >>= 1;
 
-	return t + *delta;
+		/* If none found, use maximum wait time */
+		if (!d)
+			d = limit;
+	}
+
+	*delta = d;
+	return t + d;
 }
 
 unsigned long long now_usec(void)
