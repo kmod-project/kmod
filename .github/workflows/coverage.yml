@@ -16,6 +16,9 @@ on:
 permissions:
   contents: read
 
+env:
+  KDIR: 'any'
+
 jobs:
   analyze:
     name: Analyze
@@ -37,10 +40,6 @@ jobs:
 
       - name: Setup OS
         uses: ./.github/actions/setup-os
-
-      - name: Set the environment
-        run: |
-          .github/print-kdir.sh >> "$GITHUB_ENV"
 
       - name: Build
         run: |
