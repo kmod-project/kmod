@@ -370,6 +370,13 @@ TS_EXPORT long int syscall(long int __sysno, ...)
 		return nextlib_syscall(__NR_gettid);
 	}
 
+#ifdef __NR_riscv_hwprobe
+	if (__sysno == __NR_riscv_hwprobe) {
+		errno = ENOSYS;
+		return -1;
+	}
+#endif
+
 	/*
 	 * FIXME: no way to call the libc function due since this is a
 	 * variadic argument function and we don't have a vsyscall() variant
