@@ -151,6 +151,17 @@ static inline bool umul64_overflow(uint64_t a, uint64_t b, uint64_t *res)
 #endif
 }
 
+static inline bool umulll_overflow(unsigned long long a, unsigned long long b,
+				   unsigned long long *res)
+{
+#if (HAVE___BUILTIN_UMULLL_OVERFLOW)
+	return __builtin_umulll_overflow(a, b, res);
+#else
+	*res = a * b;
+	return UINT64_MAX / a < b;
+#endif
+}
+
 static inline bool umulsz_overflow(size_t a, size_t b, size_t *res)
 {
 #if __SIZEOF_SIZE_T__ == 8

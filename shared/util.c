@@ -546,14 +546,17 @@ unsigned long long get_backoff_delta_msec(unsigned long long tend,
 	} else {
 		const unsigned long long limit = tend - t;
 
+		/* Double the amount of requested delta, if possible */
 		if (!*delta)
 			*delta = 1;
-		else
-			*delta <<= 1;
+		else if (umulll_overflow(*delta, 2, delta))
+			*delta = ULLONG_MAX;
 
+		/* Search for a fitting backoff delta */
 		while (*delta > limit)
 			*delta >>= 1;
 
+		/* If none found, use maximum wait time */
 		if (!*delta)
 			*delta = limit;
 	}
