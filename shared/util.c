@@ -540,16 +540,23 @@ unsigned long long get_backoff_delta_msec(unsigned long long tend,
 
 	t = now_msec();
 
-	if (!*delta)
-		*delta = 1;
-	else
-		*delta <<= 1;
+	if (tend <= t) {
+		/* Timeout already reached */
+		*delta = 0;
+	} else {
+		const unsigned long long limit = tend - t;
 
-	while (t + *delta > tend)
-		*delta >>= 1;
+		if (!*delta)
+			*delta = 1;
+		else
+			*delta <<= 1;
 
-	if (!*delta && tend > t)
-		*delta = tend - t;
+		while (*delta > limit)
+			*delta >>= 1;
+
+		if (!*delta)
+			*delta = limit;
+	}
 
 	return t + *delta;
 }
