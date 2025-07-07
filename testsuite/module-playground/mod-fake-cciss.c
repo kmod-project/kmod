@@ -14,6 +14,7 @@ module_exit(test_module_exit);
 
 MODULE_AUTHOR("Lucas De Marchi <lucas.demarchi@intel.com>");
 MODULE_LICENSE("LGPL");
+MODULE_DESCRIPTION("dummy test module");
 
 MODULE_ALIAS("pci:v00000E11d0000B060sv00000E11sd00004070bc*sc*i*");
 MODULE_ALIAS("pci:v00000E11d0000B178sv00000E11sd00004080bc*sc*i*");

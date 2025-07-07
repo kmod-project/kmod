@@ -13,3 +13,4 @@ module_init(softdep_init);
 
 MODULE_AUTHOR("Dan He <dan.h.he@intel.com>");
 MODULE_LICENSE("LGPL");
+MODULE_DESCRIPTION("dummy test module");

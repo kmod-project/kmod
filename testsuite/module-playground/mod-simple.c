@@ -30,3 +30,4 @@ module_exit(test_module_exit);
 
 MODULE_AUTHOR("Lucas De Marchi <lucas.demarchi@intel.com>");
 MODULE_LICENSE("GPL");
+MODULE_DESCRIPTION("dummy test module");

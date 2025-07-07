@@ -19,3 +19,4 @@ module_init(foo_init);
 
 MODULE_AUTHOR("Lucas De Marchi <lucas.demarchi@intel.com>");
 MODULE_LICENSE("LGPL");
+MODULE_DESCRIPTION("dummy test module");
