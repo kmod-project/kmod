@@ -16,4 +16,5 @@ module_init(weakdep_init);
 
 MODULE_AUTHOR("Jose Ignacio Tornos Martinez <jtornosm@redhat.com>");
 MODULE_LICENSE("LGPL");
+MODULE_DESCRIPTION("dummy test module");
 MODULE_WEAKDEP("mod-simple");
