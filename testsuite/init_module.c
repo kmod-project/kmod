@@ -332,12 +332,14 @@ TS_EXPORT long int syscall(long int __sysno, ...)
 	va_list ap;
 	long ret;
 
-	if (__sysno == -1) {
+	switch (__sysno) {
+	case -1:
+#ifdef __NR_riscv_hwprobe
+	case __NR_riscv_hwprobe:
+#endif
 		errno = ENOSYS;
 		return -1;
-	}
-
-	if (__sysno == __NR_finit_module) {
+	case __NR_finit_module:
 		const char *args;
 		int flags;
 		int fd;
@@ -352,9 +354,7 @@ TS_EXPORT long int syscall(long int __sysno, ...)
 
 		va_end(ap);
 		return ret;
-	}
-
-	if (__sysno == __NR_gettid) {
+	case __NR_gettid:
 		static long (*nextlib_syscall)(long number, ...);
 
 		if (nextlib_syscall == NULL) {
@@ -369,13 +369,6 @@ TS_EXPORT long int syscall(long int __sysno, ...)
 
 		return nextlib_syscall(__NR_gettid);
 	}
-
-#ifdef __NR_riscv_hwprobe
-	if (__sysno == __NR_riscv_hwprobe) {
-		errno = ENOSYS;
-		return -1;
-	}
-#endif
 
 	/*
 	 * FIXME: no way to call the libc function due since this is a
