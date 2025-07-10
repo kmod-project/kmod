@@ -1,0 +1,4 @@
+kernel/mod-foo-b.ko:
+kernel/mod-foo-c.ko:
+kernel/mod-foo-a.ko:
+kernel/mod-foo.ko: kernel/mod-foo-b.ko kernel/mod-foo-a.ko kernel/mod-foo-c.ko
