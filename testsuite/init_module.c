@@ -339,7 +339,7 @@ TS_EXPORT long int syscall(long int __sysno, ...)
 #endif
 		errno = ENOSYS;
 		return -1;
-	case __NR_finit_module:
+	case __NR_finit_module:;
 		const char *args;
 		int flags;
 		int fd;
@@ -354,7 +354,7 @@ TS_EXPORT long int syscall(long int __sysno, ...)
 
 		va_end(ap);
 		return ret;
-	case __NR_gettid:
+	case __NR_gettid:;
 		static long (*nextlib_syscall)(long number, ...);
 
 		if (nextlib_syscall == NULL) {
