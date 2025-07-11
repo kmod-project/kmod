@@ -8,7 +8,6 @@
 #define HAVE_FINIT_MODULE 1
 #endif
 
-#include <assert.h>
 #include <dirent.h>
 #include <dlfcn.h>
 #include <elf.h>
@@ -111,9 +110,6 @@ static int write_one_line_file(const char *fn, const char *line)
 	FILE *f;
 	int r;
 
-	assert(fn);
-	assert(line);
-
 	f = fopen(fn, "we");
 	if (!f)
 		return -errno;
@@ -144,12 +140,15 @@ static int create_sysfs_files(const char *modname)
 	char buf[PATH_MAX];
 	const char *sysfsmod = "/sys/module/";
 	int len = strlen(sysfsmod);
+	int err;
 
 	memcpy(buf, sysfsmod, len);
 	strcpy(buf + len, modname);
 	len += strlen(modname);
 
-	assert(mkdir_p(buf, len, 0755) >= 0);
+	err = mkdir_p(buf, len, 0755);
+	if (err != 0)
+		return err;
 
 	strcpy(buf + len, "/initstate");
 	return write_one_line_file(buf, "live\n");
@@ -275,8 +274,11 @@ long init_module(void *mem, unsigned long len, _maybe_unused_ const char *args)
 	} else
 		err = 0;
 
-	if (err == 0)
-		create_sysfs_files(modname);
+	if (err == 0) {
+		err = create_sysfs_files(modname);
+		if (err != 0)
+			err = -1;
+	}
 
 	return err;
 }

@@ -3,7 +3,6 @@
  * Copyright (C) 2011-2013  ProFUSION embedded systems
  */
 
-#include <assert.h>
 #include <ctype.h>
 #include <dirent.h>
 #include <errno.h>
@@ -117,7 +116,7 @@ void kmod_module_parse_depline(struct kmod_module *mod, char *line)
 
 	if (mod->init.dep)
 		return;
-	assert(mod->dep == NULL);
+
 	mod->init.dep = true;
 
 	p = strchr(line, ':');
@@ -805,16 +804,13 @@ struct probe_insert_cb {
 	void *data;
 };
 
-static int module_do_install_commands(struct kmod_module *mod, const char *options,
-				      struct probe_insert_cb *cb)
+static int module_do_install_commands(struct kmod_module *mod, const char *command,
+				      const char *options, struct probe_insert_cb *cb)
 {
-	const char *command = kmod_module_get_install_commands(mod);
 	char *p;
 	_cleanup_free_ char *cmd;
 	int err;
 	size_t cmdlen, options_len, varlen;
-
-	assert(command);
 
 	if (options == NULL)
 		options = "";
@@ -981,9 +977,6 @@ static int kmod_module_get_probe_list(struct kmod_module *mod, bool ignorecmd,
 {
 	int err;
 
-	assert(mod != NULL);
-	assert(list != NULL && *list == NULL);
-
 	/*
 	 * Make sure we don't get screwed by previous calls to this function
 	 */
@@ -1073,7 +1066,7 @@ KMOD_EXPORT int kmod_module_probe_insert_module(
 				print_action(m, true, options ?: "");
 
 			if (!(flags & KMOD_PROBE_DRY_RUN))
-				err = module_do_install_commands(m, options, &cb);
+				err = module_do_install_commands(m, cmd, options, &cb);
 		} else {
 			if (print_action != NULL)
 				print_action(m, false, options ?: "");
@@ -1243,11 +1236,8 @@ KMOD_EXPORT int kmod_module_get_softdeps(const struct kmod_module *mod,
 	const struct kmod_list *l;
 	const struct kmod_config *config;
 
-	if (mod == NULL || pre == NULL || post == NULL)
+	if (mod == NULL || pre == NULL || *pre != NULL || post == NULL || *post != NULL)
 		return -ENOENT;
-
-	assert(*pre == NULL);
-	assert(*post == NULL);
 
 	config = kmod_get_config(mod->ctx);
 
@@ -1280,10 +1270,8 @@ KMOD_EXPORT int kmod_module_get_weakdeps(const struct kmod_module *mod,
 	const struct kmod_list *l;
 	const struct kmod_config *config;
 
-	if (mod == NULL || weak == NULL)
+	if (mod == NULL || weak == NULL || *weak != NULL)
 		return -ENOENT;
-
-	assert(*weak == NULL);
 
 	config = kmod_get_config(mod->ctx);
 
@@ -1858,10 +1846,8 @@ KMOD_EXPORT int kmod_module_get_info(const struct kmod_module *mod,
 	int i, count, ret = -ENOMEM;
 	struct kmod_signature_info sig_info = {};
 
-	if (mod == NULL || list == NULL)
+	if (mod == NULL || list == NULL || *list != NULL)
 		return -ENOENT;
-
-	assert(*list == NULL);
 
 	/* remove const: this can only change internal state */
 	if (kmod_module_is_builtin((struct kmod_module *)mod)) {
@@ -2013,10 +1999,8 @@ KMOD_EXPORT int kmod_module_get_versions(const struct kmod_module *mod,
 	struct kmod_modversion *versions;
 	int i, count, ret = 0;
 
-	if (mod == NULL || list == NULL)
+	if (mod == NULL || list == NULL || *list != NULL)
 		return -ENOENT;
-
-	assert(*list == NULL);
 
 	ret = kmod_module_get_elf(mod, &elf);
 	if (ret)
@@ -2114,10 +2098,8 @@ KMOD_EXPORT int kmod_module_get_symbols(const struct kmod_module *mod,
 	struct kmod_modversion *symbols;
 	int i, count, ret = 0;
 
-	if (mod == NULL || list == NULL)
+	if (mod == NULL || list == NULL || *list != NULL)
 		return -ENOENT;
-
-	assert(*list == NULL);
 
 	ret = kmod_module_get_elf(mod, &elf);
 	if (ret)
@@ -2220,10 +2202,8 @@ KMOD_EXPORT int kmod_module_get_dependency_symbols(const struct kmod_module *mod
 	struct kmod_modversion *symbols;
 	int i, count, ret = 0;
 
-	if (mod == NULL || list == NULL)
+	if (mod == NULL || list == NULL || *list != NULL)
 		return -ENOENT;
-
-	assert(*list == NULL);
 
 	ret = kmod_module_get_elf(mod, &elf);
 	if (ret)
