@@ -8,7 +8,6 @@
 #undef _FILE_OFFSET_BITS
 #undef _TIME_BITS
 
-#include <assert.h>
 #include <dirent.h>
 #include <dlfcn.h>
 #include <errno.h>
