@@ -410,4 +410,20 @@ DEFINE_TEST(modprobe_module_from_relpath,
 	.modules_loaded = "mod-simple",
 	);
 
+static noreturn int modprobe_show_modversions(const struct test *t)
+{
+	EXEC_MODPROBE("--show-modversions", "/mod-simple.ko");
+	exit(EXIT_FAILURE);
+}
+DEFINE_TEST(modprobe_show_modversions,
+	.description = "check if output for modprobe --show-modversions is correct",
+	.config = {
+		[TC_UNAME_R] = "4.4.4",
+		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-modprobe/show-modversions",
+	},
+	.output = {
+		.out = TESTSUITE_ROOTFS "test-modprobe/show-modversions/versions-mod-simple.txt",
+		.regex = true,
+	});
+
 TESTSUITE_MAIN();
