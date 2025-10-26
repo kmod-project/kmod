@@ -34,7 +34,7 @@ jobs:
             meson_setup: '-Db_sanitize=none'
             only_bits: '64'
           - container: 'archlinux:multilib-devel'
-          - container: 'debian:bullseye-slim'
+          - container: 'debian:bookworm-slim'
             meson_setup: '-Dzstd=disabled -Dxz=disabled -Dzlib=disabled'
             only_compiler: 'gcc'
           - container: 'debian:unstable'
