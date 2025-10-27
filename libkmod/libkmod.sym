@@ -105,3 +105,8 @@ global:
 	kmod_config_get_weakdeps;
 	kmod_module_get_weakdeps;
 } LIBKMOD_30;
+
+LIBKMOD_35 {
+global:
+	kmod_config_get_masks;
+} LIBKMOD_33;
