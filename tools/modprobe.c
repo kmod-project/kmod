@@ -507,9 +507,12 @@ static int rmmod_do_module(struct kmod_module *mod, int flags)
 		}
 	}
 
-	if (!cmd)
-		err = rmmod_do_remove_module(mod);
-	else
+	if (!cmd) {
+		if (kmod_module_get_refcnt(mod) != -ENOENT)
+			err = rmmod_do_remove_module(mod);
+		else
+			err = 0;
+	} else
 		err = command_do(mod, "remove", cmd, NULL);
 
 	if (err < 0)
