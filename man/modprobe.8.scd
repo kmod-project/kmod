@@ -6,14 +6,14 @@ modprobe - Add and remove modules from the Linux Kernel
 
 # SYNOPSIS
 
-*modprobe* [*-v*] [*-V*] [*-C* _config-file_] [*-n*] [*-i*] [*-q*] [*-b*] [_modulename_]
+*modprobe* [*-v*] [*-V*] [*-C* _config-file_] [*-n*] [*-i*] [*-q*] [*-b*] _modulename_
 \ \ \ \ \ \ \ \ \ \[_module parameters_...]
 
-*modprobe* [*-r*] [*-v*] [*-n*] [*-i*] [_modulename_...]
+*modprobe* [*-r*] [*-v*] [*-n*] [*-i*] _modulename_...
 
 *modprobe* [*-c*]
 
-*modprobe* [*--show-modversions*] [_filename_]
+*modprobe* [*--show-modversions*] _filename_
 
 # DESCRIPTION
 
