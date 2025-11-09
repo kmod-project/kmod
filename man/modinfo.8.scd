@@ -6,7 +6,7 @@ modinfo - Show information about a Linux Kernel module
 
 # SYNOPSIS
 
-*modinfo* [*-0*] [*-F* _field_] [*-k* _kernel_] modulename|filename
+*modinfo* [*-0*] [*-F* _field_] [*-k* _kernel_] _modulename_|_filename_
 
 *modinfo* *-V*
 
