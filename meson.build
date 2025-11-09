@@ -447,7 +447,6 @@ kmod = executable(
   kmod_sources,
   link_with : [libshared, libkmod_internal],
   gnu_symbol_visibility : 'hidden',
-  build_by_default : get_option('tools'),
   install : get_option('tools'),
 )
 
