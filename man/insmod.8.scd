@@ -6,7 +6,7 @@ insmod - Simple program to insert a module into the Linux Kernel
 
 # SYNOPSIS
 
-*insmod* [_OPTIONS_] [_filename_] [_module options_]
+*insmod* [_OPTIONS_] _filename_ [_module options_]
 
 # DESCRIPTION
 
