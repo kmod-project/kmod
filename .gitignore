@@ -1,32 +1,9 @@
-*.o
-*.gcda
-*.gcno
-*.pc
 /*.tar.xz
 /*.md5sum
 /*.mbx
 /*.cover
-.deps/
-.libs/
-/Makefile
-/Makefile.in
 
-/aclocal.m4
-/autom4te.cache/
-/build-aux/
-/config.h
-/config.h.in
-/config.log
-/config.status
-/configure
-/cov-int
-/coverage
-/gtk-doc.make
-/gtk-doc.m4
 /kmod-*.tar.*
-/libtool
-/stamp-h1
-/test-suite.log
 /build
 /build-*
 
