@@ -36,7 +36,8 @@ _funcs = [
   'secure_getenv',
 ]
 foreach func : _funcs
-  cdata.set10('HAVE_@0@'.format(func.to_upper()), cc.has_function(func, args : '-D_GNU_SOURCE'))
+  func_to_upper = func.to_upper()
+  cdata.set10(f'HAVE_@func_to_upper@', cc.has_function(func, args : '-D_GNU_SOURCE'))
 endforeach
 
 # Meson has some amount of support for finding builtins by passing the symbol
@@ -57,12 +58,13 @@ foreach tuple : _builtins
   args = tuple[1]
   required = tuple[2]
   # XXX: meson 1.5.0 has links(... required ) flag
-  have = cc.links('int main(void){@0@(@1@);return 0;}'.format(builtin, args))
+  have = cc.links(f'int main(void){@builtin@(@args@);return 0;}')
   if required and not have
-    error('required builtin function not found: @0@'.format(builtin))
+    error(f'required builtin function not found: @builtin@')
   endif
 
-  cdata.set10('HAVE_@0@'.format(builtin.to_upper()), have)
+  builtin_to_upper = builtin.to_upper()
+  cdata.set10(f'HAVE_@builtin_to_upper@', have)
 endforeach
 
 # basename may be only available in libgen.h with the POSIX behavior,
@@ -75,7 +77,8 @@ foreach tuple : _decls
   decl = tuple[0]
   header = tuple[1]
   have  = cc.has_header_symbol(header, decl, args : '-D_GNU_SOURCE')
-  cdata.set10('HAVE_DECL_@0@'.format(decl.to_upper()), have)
+  decl_to_upper = decl.to_upper()
+  cdata.set10(f'HAVE_DECL_@decl_to_upper@', have)
 endforeach
 
 cdata.set10('HAVE_STATIC_ASSERT', cc.compiles('_Static_assert(1, "Test");', name : '_Static_assert'))
@@ -158,6 +161,9 @@ dlopen_all = get_option('dlopen').contains('all')
 # Directories
 #-------------------------------------------------------------------------------
 
+project_source_root = meson.project_source_root()
+project_build_root = meson.project_build_root()
+
 prefixdir = get_option('prefix')
 sysconfdir = get_option('sysconfdir')
 bindir = prefixdir / get_option('bindir')
@@ -191,8 +197,7 @@ foreach tuple : _customdirs
     customdir = def_path
   else
     if not customdir.startswith('/')
-      error('User provided @0@, \'@1@\' is not an absolute path.'
-          .format(dir_option, customdir))
+      error(f'User provided @dir_option@, \'@customdir@\' is not an absolute path.')
     endif
     # Strip all leading/trailing and re-add only the leading one.
     customdir = '/' / customdir.strip('/')
@@ -224,10 +229,8 @@ foreach tuple : _completiondirs
     if completion.found()
       completion_prefix = completion.get_variable(pkgconfig : 'prefix')
       if completion_prefix != prefixdir
-        warning('User provided prefix \'@0@\' differs from @1@ one \'@2@\'.'
-                .format(prefixdir, pkg_dep, completion_prefix))
-        warning('Not installing completion. To re-enable, manually set @0@.'
-                .format(dir_option))
+        warning(f'User provided prefix \'@prefixdir@\' differs from @pkg_dep@ one \'@completion_prefix@\'.')
+        warning(f'Not installing completion. To re-enable, manually set @dir_option@.')
         completiondir = 'no'
       else
         completiondir = completion.get_variable(pkgconfig : 'completionsdir')
@@ -279,7 +282,7 @@ foreach tuple : _compression
 
   dlopen = dlopen_all or get_option('dlopen').contains(opt)
   if not dlopen_all and dlopen and get_option(opt).disabled()
-    error('Incompatiable options: dlopen=@0@ for disabled @0@'.format(opt))
+    error(f'Incompatiable options: dlopen=@opt@ for disabled @opt@')
   endif
 
   dep = dependency(pkg_dep, version : pkg_dep_version, required : get_option(opt))
@@ -292,7 +295,7 @@ foreach tuple : _compression
   cdata.set10('ENABLE_' + opt.to_upper() + '_DLOPEN', have and dlopen)
 
   if have
-    module_compressions += '@0@ '.format(opt)
+    module_compressions += f'@opt@ '
   endif
 
   features += ['@0@@1@'.format(have ? '+' : '-', opt.to_upper())]

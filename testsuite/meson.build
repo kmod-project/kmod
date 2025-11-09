@@ -6,7 +6,7 @@ build_module_playground = custom_target(
   'build-module-playground',
   command : [
     setup_modules,
-    meson.project_source_root(),
+    project_source_root,
     'testsuite/module-playground', # do not prepend source/build root
   ],
   # The command ensures we don't do extra work, so the missing output token file
@@ -21,10 +21,10 @@ create_rootfs = custom_target(
   'create-rootfs',
   command : [
     setup_rootfs,
-    meson.project_source_root() / 'testsuite/rootfs-pristine',
-    meson.project_build_root() / 'testsuite/rootfs',
-    meson.project_build_root() / 'testsuite/module-playground',
-    meson.project_build_root() / 'config.h',
+    f'@project_source_root@/testsuite/rootfs-pristine',
+    f'@project_build_root@/testsuite/rootfs',
+    f'@project_build_root@/testsuite/module-playground',
+    f'@project_build_root@/config.h',
     sysconfdir,
     moduledir,
   ],
@@ -48,9 +48,9 @@ test_override_mods = []
 foreach mod : _test_override_mods
   test_override_mods += shared_module(
     mod,
-    files('@0@.c'.format(mod)),
+    files(f'@mod@.c'),
     include_directories : top_include,
-    c_args : '-DABS_TOP_BUILDDIR="@0@"'.format(meson.project_build_root()),
+    c_args : f'-DABS_TOP_BUILDDIR="@project_build_root@"',
     dependencies : libdl,
     link_with : [libshared, libkmod_internal],
     gnu_symbol_visibility : 'hidden',
@@ -62,9 +62,9 @@ endforeach
 
 testsuite_c_args = [
   '-UNDEBUG',
-  '-DTESTSUITE_ROOTFS="@0@/testsuite/rootfs/"'.format(meson.project_build_root()),
-  '-DTOOLS_DIR="@0@/"'.format(meson.project_build_root()),
-  '-DOVERRIDE_LIBDIR="@0@/testsuite/"'.format(meson.project_build_root()),
+  f'-DTESTSUITE_ROOTFS="@project_build_root@/testsuite/rootfs/"',
+  f'-DTOOLS_DIR="@project_build_root@/"',
+  f'-DOVERRIDE_LIBDIR="@project_build_root@/testsuite/"',
 ]
 
 libtestsuite = static_library(
@@ -106,7 +106,7 @@ endif
 foreach input : _testsuite
   exec = executable(
     input,
-    files('@0@.c'.format(input)),
+    files(f'@input@.c'),
     include_directories : top_include,
     c_args : testsuite_c_args,
     link_with : [libshared, libkmod_internal, libtestsuite],
