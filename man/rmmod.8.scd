@@ -6,7 +6,7 @@ rmmod - Simple program to remove a module from the Linux Kernel
 
 # SYNOPSIS
 
-*rmmod* [_OPTIONS_] [_list of modulenames_]
+*rmmod* [_OPTIONS_] _modulenames_
 
 # DESCRIPTION
 
