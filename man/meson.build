@@ -29,8 +29,7 @@ foreach tuple : _man_pages
     input : '@0@.@1@.scd'.format(man, section),
     output : '@0@.@1@'.format(man, section),
     capture : true,
-    build_by_default : get_option('manpages'),
-    install : true,
+    install : get_option('manpages'),
     install_dir : get_option('mandir') / 'man@0@'.format(section)
   )
 endforeach
@@ -50,8 +49,7 @@ foreach tuple : _man_aliases
     command : ['echo', '.so @0@'.format(dest)],
     output : '@0@.@1@'.format(man, section),
     capture : true,
-    build_by_default : get_option('manpages'),
-    install : true,
+    install : get_option('manpages'),
     install_dir : get_option('mandir') / 'man@0@'.format(section)
   )
 endforeach
