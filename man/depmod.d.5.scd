@@ -49,7 +49,7 @@ later).
 
 # COMMANDS
 
-search _subdirectory..._
+search _subdirectory_
 	This allows you to specify the order in which @MODULE_DIRECTORY@ (or
 	other configured module location) subdirectories will be processed by
 	*depmod*. Directories are listed in order, with the highest priority
@@ -79,7 +79,7 @@ override _modulename_ _kernelversion_ _modulesubdirectory_
 	module location) will take priority over any likenamed module already
 	provided by the kernel.
 
-external _kernelversion_ _absolutemodulesdirectory..._
+external _kernelversion_ _absolutemodulesdirectory_
 	This specifies a list of directories, which will be checked according to
 	the priorities in the *search* command. The order matters also, the
 	first directory has the higher priority.

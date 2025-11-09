@@ -10,7 +10,7 @@ depmod - Generate modules.dep and map files.
 \ \ \ \ \ \ \ \[*-F* _System.map_] [*-n*] [*-v*] [*-A*] [*-P* _prefix_] [*-w*] [_version_]
 
 *depmod* [*-e*] [*-E* _Module.symvers_] [*-F* _System.map_] [*-n*] [*-v*] [*-P* _prefix_]
-\ \ \ \ \ \ \ \[*-w*] [_version_] [_filename_...]
+\ \ \ \ \ \ \ \[*-w*] [_version_] [_filename_]
 
 # DESCRIPTION
 
