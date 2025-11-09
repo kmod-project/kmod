@@ -6,7 +6,7 @@ kmod - Program to manage Linux Kernel modules
 
 # SYNOPSIS
 
-*kmod* [*OPTIONS...*] [_COMMAND_] [*COMMAND_OPTIONS...*]
+*kmod* [*OPTIONS*] [_COMMAND_] [*COMMAND_OPTIONS*]
 
 # DESCRIPTION
 

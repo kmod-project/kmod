@@ -77,7 +77,7 @@ blacklist _modulename_
 	*blacklist* keyword indicates that all of that particular module's
 	internal aliases are to be ignored.
 
-install _modulename_ _command..._
+install _modulename_ _command_
 	This command instructs *modprobe* to run your command instead of
 	inserting the module in the kernel as normal. The command can be any
 	shell command: this allows you to do any kind of complex processing you
@@ -108,7 +108,7 @@ install _modulename_ _command..._
 	/sbin/modprobe barney; /sbin/modprobe --ignore-install fred
 	$CMDLINE_OPTS"
 
-options _modulename_ _option..._
+options _modulename_ _option_
 	This command allows you to add options to the module _modulename_ (which
 	might be an alias) every time it is inserted into the kernel: whether
 	directly (using *modprobe* _modulename_) or because the module being
@@ -117,11 +117,11 @@ options _modulename_ _option..._
 	All options are added together: they can come from an *option* for the
 	module itself, for an alias, and on the command line.
 
-remove _modulename_ _command..._
+remove _modulename_ _command_
 	This is similar to the *install* command above, except it is invoked
 	when "modprobe -r" is run.
 
-softdep _modulename_ pre: _modules..._ post: _modules..._
+softdep _modulename_ pre: _modules_ post: _modules_
 	The *softdep* command allows you to specify soft, or optional, module
 	dependencies. _modulename_ can be used without these optional modules
 	installed, but usually with some features missing. For example, a driver
@@ -141,7 +141,7 @@ softdep _modulename_ pre: _modules..._ post: _modules..._
 	Note: if there are *install* or *remove* commands with the same
 	_modulename_ argument, *softdep* takes precedence.
 
-weakdep _modulename_ _modules..._
+weakdep _modulename_ _modules_
 	The *weakdep* command allows you to specify weak module dependencies.
 	Those are similar to pre softdep, with the difference that userspace
 	doesn't attempt to load that dependency before the specified module.
