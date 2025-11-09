@@ -21,12 +21,12 @@ foreach tuple : _man_pages
     command : [
       build_scdoc,
       scdoc,
-      '@INPUT@',
       's|@SYSCONFDIR@|@0@|g;'.format(sysconfdir) +
       's|@DISTCONFDIR@|@0@|g;'.format(distconfdir) +
       's|@MODULE_DIRECTORY@|@0@|g;'.format(moduledir),
+      '@INPUT@',
     ],
-    input : f'@man@.@section@.scd',
+    input : [f'@man@.@section@.scd', files('trailer.scd')],
     output : f'@man@.@section@',
     capture : true,
     install : true,

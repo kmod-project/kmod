@@ -3,7 +3,9 @@
 set -euo pipefail
 
 SCDOC=$1
-INPUT=$2
-SED_PATTERN=$3
+shift
+SED_PATTERN=$1
+shift
+INPUT=$*
 
 sed -e $SED_PATTERN $INPUT | $SCDOC
