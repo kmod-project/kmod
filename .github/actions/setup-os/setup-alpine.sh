@@ -8,7 +8,6 @@ apk update
 apk add \
     bash \
     build-base \
-    coreutils \
     clang \
     git \
     gtk-doc \
