@@ -93,10 +93,6 @@ exclude _excludedir_
 
 	The _excludedir_ is the trailing directory to exclude.
 
-# COPYRIGHT
-
-This manual page Copyright 2006-2010, Jon Masters, Red Hat, Inc.
-
 # SEE ALSO
 
 *depmod*(8)

@@ -55,10 +55,6 @@ information about errors.
 *-h*, *--help*
 	Print the help message and exit.
 
-# COPYRIGHT
-
-This manual page originally Copyright 2002, Rusty Russell, IBM Corporation.
-
 # SEE ALSO
 
 *modprobe*(8), *rmmod*(8), *lsmod*(8), *modinfo*(8), *depmod*(8)
