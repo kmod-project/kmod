@@ -26,10 +26,6 @@ their format is subject to change in the future. You should use the *modinfo*(8)
 command to obtain information about modules in a future proof and compatible
 fashion rather than touching these files.
 
-# COPYRIGHT
-
-This manual page originally Copyright 2002, Rusty Russell, IBM Corporation.
-
 # SEE ALSO
 
 *depmod*(8), *modprobe*(8)

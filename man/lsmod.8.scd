@@ -28,10 +28,6 @@ _/proc/modules_, showing what kernel modules are currently loaded.
 *-h*, *--help*
 	Print the help message and exit.
 
-# COPYRIGHT
-
-This manual page originally Copyright 2002, Rusty Russell, IBM Corporation.
-
 # SEE ALSO
 
 *insmod*(8), *modprobe*(8), *modinfo*(8), *depmod*(8)

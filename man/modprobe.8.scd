@@ -222,10 +222,6 @@ the use by third-party tools and scripts is discouraged.
 The environment variable originates with the implementation of the install
 rules.
 
-# COPYRIGHT
-
-This manual page originally Copyright 2002, Rusty Russell, IBM Corporation.
-
 # SEE ALSO
 
 *modprobe.d*(5), *insmod*(8), *rmmod*(8), *lsmod*(8), *modinfo*(8), *depmod*(8)
