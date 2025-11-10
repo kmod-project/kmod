@@ -33,10 +33,6 @@ Linux Kernel modules. Most users will only run it using its other names.
 	Output the static device nodes information provided by the modules of
 	the currently running kernel version.
 
-# COPYRIGHT
-
-This manual page originally Copyright 2014, Marco d'Itri.
-
 # SEE ALSO
 
 *lsmod*(8), *rmmod*(8), *insmod*(8), *modinfo*(8), *modprobe*(8), *depmod*(8)

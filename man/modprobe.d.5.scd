@@ -164,10 +164,6 @@ dependencies in the kernel is complete. That support will complement the
 existing softdep support within this utility by providing such dependencies
 directly within the modules.
 
-# COPYRIGHT
-
-This manual page originally Copyright 2004, Rusty Russell, IBM Corporation.
-
 # SEE ALSO
 
 *modprobe*(8), *modules.dep*(5)

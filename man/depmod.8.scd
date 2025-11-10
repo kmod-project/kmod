@@ -155,11 +155,6 @@ depmod -b /tmp/build -m kernel-modules
 *-w*
 	Warn on duplicate dependencies, aliases, symbol versions, etc.
 
-# COPYRIGHT
-
-This manual page originally Copyright 2002, Rusty Russell, IBM Corporation.
-Portions Copyright Jon Masters, and others.
-
 # SEE ALSO
 
 *depmod.d*(5), *modprobe*(8), *modules.dep*(5)
