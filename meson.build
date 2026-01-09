@@ -78,7 +78,6 @@ foreach tuple : _decls
   cdata.set10('HAVE_DECL_@0@'.format(decl.to_upper()), have)
 endforeach
 
-cdata.set10('HAVE_STATIC_ASSERT', cc.compiles('_Static_assert(1, "Test");', name : '_Static_assert'))
 cdata.set10('HAVE_NORETURN', cc.compiles('#include <stdlib.h>; _Noreturn int foo(void) { exit(0); }', name : '_Noreturn'))
 
 ################################################################################
