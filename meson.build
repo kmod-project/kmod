@@ -2,7 +2,7 @@ project(
   'kmod',
   'c',
   version : '34',
-  license : ['LGPLv2.1', 'GPL-2.0-or-later'],
+  license : ['LGPL-2.1-or-later', 'GPL-2.0-or-later'],
   meson_version : '>=0.61.0',
   default_options : [
     'c_std=gnu11',
