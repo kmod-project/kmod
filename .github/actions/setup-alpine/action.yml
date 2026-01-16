@@ -22,7 +22,7 @@ runs:
           git \
           gtk-doc \
           libtool \
-          linux-edge-dev \
+          linux-stable-dev \
           meson \
           openssl-dev \
           scdoc \
