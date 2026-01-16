@@ -12,7 +12,7 @@ apk add \
     clang \
     git \
     gtk-doc \
-    linux-edge-dev \
+    linux-stable-dev \
     meson \
     openssl-dev \
     scdoc \
