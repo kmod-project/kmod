@@ -3,7 +3,6 @@
  * Copyright (C) 2011-2013  ProFUSION embedded systems
  */
 
-#include <assert.h>
 #include <ctype.h>
 #include <errno.h>
 #include <fnmatch.h>
@@ -359,8 +358,6 @@ static int kmod_lookup_alias_from_alias_bin(struct kmod_ctx *ctx,
 	struct index_file *idx;
 	struct index_value *realnames, *realname;
 
-	assert(*list == NULL);
-
 	if (ctx->indexes[index_number] != NULL) {
 		DBG(ctx, "use mmapped index '%s' for name=%s\n",
 		    index_files[index_number].fn, name);
@@ -485,8 +482,6 @@ int kmod_lookup_alias_from_kernel_builtin_file(struct kmod_ctx *ctx, const char 
 int kmod_lookup_alias_from_builtin_file(struct kmod_ctx *ctx, const char *name,
 					struct kmod_list **list)
 {
-	assert(*list == NULL);
-
 	if (lookup_builtin_file(ctx, name)) {
 		struct kmod_module *mod;
 		struct kmod_list *node;
@@ -529,8 +524,6 @@ int kmod_lookup_alias_from_moddep_file(struct kmod_ctx *ctx, const char *name,
 {
 	char *line;
 	int n = 0;
-
-	assert(*list == NULL);
 
 	/*
 	 * Module names do not contain ':'. Return early if we know it will
@@ -575,8 +568,6 @@ int kmod_lookup_alias_from_config(struct kmod_ctx *ctx, const char *name,
 	struct kmod_list *l;
 	int err, nmatch = 0;
 
-	assert(*list == NULL);
-
 	kmod_list_foreach(l, config->aliases) {
 		const char *aliasname = kmod_alias_get_name(l);
 		const char *modname = kmod_alias_get_modname(l);
@@ -618,8 +609,6 @@ int kmod_lookup_alias_from_commands(struct kmod_ctx *ctx, const char *name,
 	struct kmod_config *config = ctx->config;
 	struct kmod_list *l, *node;
 	int err, nmatch = 0;
-
-	assert(*list == NULL);
 
 	kmod_list_foreach(l, config->install_commands) {
 		const char *modname = kmod_command_get_modname(l);

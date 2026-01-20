@@ -187,19 +187,4 @@ static int test_strbuf_shrink_to(void)
 }
 DEFINE_TEST(test_strbuf_shrink_to, .description = "test strbuf_shrink_to");
 
-static int xfail_strbuf_shrink_to(void)
-{
-	_cleanup_strbuf_ struct strbuf buf;
-
-	strbuf_init(&buf);
-	strbuf_pushchar(&buf, '/');
-
-	/* This should crash on assert */
-	strbuf_shrink_to(&buf, 2);
-
-	return 0;
-}
-DEFINE_TEST(xfail_strbuf_shrink_to, .description = "xfail strbuf_shrink_to",
-	    .expected_fail = true);
-
 TESTSUITE_MAIN();

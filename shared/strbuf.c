@@ -4,7 +4,6 @@
  * Copyright (C) 2014  Intel Corporation. All rights reserved.
  */
 
-#include <assert.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
@@ -83,9 +82,6 @@ bool strbuf_pushchar(struct strbuf *buf, char ch)
 
 size_t strbuf_pushmem(struct strbuf *buf, const char *src, size_t sz)
 {
-	assert(src != NULL);
-	assert(buf != NULL);
-
 	if (sz == 0)
 		return 0;
 
@@ -100,19 +96,16 @@ size_t strbuf_pushmem(struct strbuf *buf, const char *src, size_t sz)
 
 void strbuf_popchar(struct strbuf *buf)
 {
-	assert(buf->used > 0);
 	buf->used--;
 }
 
 void strbuf_popchars(struct strbuf *buf, size_t n)
 {
-	assert(buf->used >= n);
 	buf->used -= n;
 }
 
 void strbuf_shrink_to(struct strbuf *buf, size_t sz)
 {
-	assert(buf->used >= sz);
 	buf->used = sz;
 }
 

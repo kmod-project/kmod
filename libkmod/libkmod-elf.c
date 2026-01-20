@@ -3,7 +3,6 @@
  * Copyright (C) 2011-2013  ProFUSION embedded systems
  */
 
-#include <assert.h>
 #include <elf.h>
 #include <endian.h>
 #include <limits.h>
@@ -146,8 +145,6 @@ static inline uint64_t elf_get_uint(const struct kmod_elf *elf, uint64_t offset,
 	const uint8_t *p;
 	uint64_t ret = 0;
 
-	assert(size <= sizeof(uint64_t));
-
 	p = elf->memory + offset;
 
 	if (elf->msb) {
@@ -173,8 +170,6 @@ static inline int elf_set_uint(const struct kmod_elf *elf, uint64_t offset, uint
 	ELFDBG(elf,
 	       "size=%" PRIu64 " offset=%" PRIu64 " value=%" PRIu64 " write memory=%p\n",
 	       size, offset, value, changed);
-
-	assert(size <= sizeof(uint64_t));
 
 	p = changed + offset;
 	if (elf->msb) {
@@ -204,8 +199,6 @@ static inline const void *elf_get_mem(const struct kmod_elf *elf, uint64_t offse
 static inline uint64_t elf_get_section_header_offset(const struct kmod_elf *elf,
 						     uint16_t idx)
 {
-	assert(idx != SHN_UNDEF);
-	assert(idx < elf->header.section.count);
 	if (idx == SHN_UNDEF || idx >= elf->header.section.count) {
 		ELFDBG(elf, "invalid section number: %" PRIu16 ", last=%" PRIu16 "\n",
 		       idx, elf->header.section.count);
@@ -661,8 +654,6 @@ int kmod_elf_strip(const struct kmod_elf *elf, unsigned int flags, const void **
 {
 	uint8_t *changed;
 	int err = 0;
-
-	assert(flags & (KMOD_INSERT_FORCE_MODVERSION | KMOD_INSERT_FORCE_VERMAGIC));
 
 	changed = memdup(elf->memory, elf->size);
 	if (changed == NULL)
