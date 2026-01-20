@@ -60,4 +60,8 @@
     <title>Index of new symbols in 33</title>
     <xi:include href="xml/api-index-33.xml"></xi:include>
   </chapter>
+  <chapter id="api-index-v35" role="35">
+    <title>Index of new symbols in 35</title>
+    <xi:include href="xml/api-index-35.xml"></xi:include>
+  </chapter>
 </book>

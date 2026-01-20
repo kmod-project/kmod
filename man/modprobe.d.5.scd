@@ -108,6 +108,10 @@ install _modulename_ _command..._
 	/sbin/modprobe barney; /sbin/modprobe --ignore-install fred
 	$CMDLINE_OPTS"
 
+mask _modulename_
+	This command prevents _modulename_ from being loaded directly
+	or through any of its aliases.
+
 options _modulename_ _option..._
 	This command allows you to add options to the module _modulename_ (which
 	might be an alias) every time it is inserted into the kernel: whether
