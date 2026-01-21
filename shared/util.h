@@ -123,7 +123,15 @@ static inline bool uaddsz_overflow(size_t a, size_t b, size_t *res)
 #if __SIZEOF_SIZE_T__ == 8
 	return uadd64_overflow(a, b, res);
 #elif __SIZEOF_SIZE_T__ == 4
+#ifdef __s390__
+	if (b < SIZE_MAX - a) {
+		*res = a + b;
+		return true;
+	}
+	return false;
+#else
 	return uadd32_overflow(a, b, res);
+#endif
 #else
 #error "Unknown sizeof(size_t)"
 #endif
@@ -167,7 +175,15 @@ static inline bool umulsz_overflow(size_t a, size_t b, size_t *res)
 #if __SIZEOF_SIZE_T__ == 8
 	return umul64_overflow(a, b, res);
 #elif __SIZEOF_SIZE_T__ == 4
+#ifdef __s390__
+	if (a == 0 || b <= SIZE_MAX / a) {
+		*res = a * b;
+		return true;
+	}
+	return false;
+#else
 	return umul32_overflow(a, b, res);
+#endif
 #else
 #error "Unknown sizeof(size_t)"
 #endif
