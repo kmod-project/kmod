@@ -11,6 +11,7 @@
 #include <errno.h>
 #include <getopt.h>
 #include <limits.h>
+#include <pthread.h>
 #include <regex.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -958,6 +959,8 @@ struct mod {
 	struct array softdep_values;
 	struct array weakdep_values;
 	struct array deps; /* struct symbol */
+	struct array all_deps_cache; /* cached transitive deps (struct mod *) */
+	bool all_deps_cached; /* whether all_deps_cache is valid */
 	size_t baselen; /* points to start of basename/filename */
 	size_t modnamesz;
 	int sort_idx; /* sort index using modules.order */
@@ -982,11 +985,15 @@ struct depmod {
 	struct hash *modules_by_uncrelpath;
 	struct hash *modules_by_name;
 	struct hash *symbols;
+	pthread_mutex_t symbols_mutex;
+	pthread_mutex_t deps_mutex;
+	pthread_mutex_t output_mutex; /* for synchronized FILE writes */
 };
 
 static void mod_free(struct mod *mod)
 {
 	DBG("free %p kmod=%p, path=%s\n", mod, mod->kmod, mod->path);
+	array_free_array(&mod->all_deps_cache);
 	array_free_array(&mod->deps);
 	array_free_array(&mod->weakdep_values);
 	array_free_array(&mod->softdep_values);
@@ -999,7 +1006,8 @@ static void mod_free(struct mod *mod)
 	free(mod);
 }
 
-static int mod_add_dependency(struct mod *mod, struct symbol *sym)
+static int mod_add_dependency(struct depmod *depmod, struct mod *mod,
+			      struct symbol *sym)
 {
 	int err;
 
@@ -1009,7 +1017,10 @@ static int mod_add_dependency(struct mod *mod, struct symbol *sym)
 	if (sym->owner == NULL)
 		return 0;
 
+	/* Protect mod->deps array from concurrent modifications */
+	pthread_mutex_lock(&depmod->deps_mutex);
 	err = array_append_unique(&mod->deps, sym->owner);
+	pthread_mutex_unlock(&depmod->deps_mutex);
 	if (err == -EEXIST)
 		return 0;
 	if (err < 0) {
@@ -1018,7 +1029,8 @@ static int mod_add_dependency(struct mod *mod, struct symbol *sym)
 		return err;
 	}
 
-	sym->owner->users++;
+	/* Use atomic increment for thread safety */
+	__sync_fetch_and_add(&sym->owner->users, 1);
 	SHOW("%s needs \"%s\": %s\n", mod->path, sym->name, sym->owner->path);
 	return 0;
 }
@@ -1034,36 +1046,72 @@ static void symbol_free(void *data)
 
 static int depmod_init(struct depmod *depmod, struct cfg *cfg, struct kmod_ctx *ctx)
 {
+	int err = 0;
+
 	depmod->cfg = cfg;
 	depmod->ctx = ctx;
 
 	array_init(&depmod->modules, 128);
 
 	depmod->modules_by_uncrelpath = hash_new(512, NULL);
-	if (depmod->modules_by_uncrelpath == NULL)
+	if (depmod->modules_by_uncrelpath == NULL) {
+		err = -ENOMEM;
 		goto modules_by_uncrelpath_failed;
+	}
 
 	depmod->modules_by_name = hash_new(512, NULL);
-	if (depmod->modules_by_name == NULL)
+	if (depmod->modules_by_name == NULL) {
+		err = -ENOMEM;
 		goto modules_by_name_failed;
+	}
 
 	depmod->symbols = hash_new(2048, symbol_free);
-	if (depmod->symbols == NULL)
+	if (depmod->symbols == NULL) {
+		err = -ENOMEM;
 		goto symbols_failed;
+	}
+
+	err = pthread_mutex_init(&depmod->symbols_mutex, NULL);
+	if (err != 0) {
+		err = -err;
+		goto symbols_mutex_failed;
+	}
+
+	err = pthread_mutex_init(&depmod->deps_mutex, NULL);
+	if (err != 0) {
+		err = -err;
+		goto deps_mutex_failed;
+	}
+
+	err = pthread_mutex_init(&depmod->output_mutex, NULL);
+	if (err != 0) {
+		err = -err;
+		goto output_mutex_failed;
+	}
 
 	return 0;
 
+output_mutex_failed:
+	pthread_mutex_destroy(&depmod->deps_mutex);
+deps_mutex_failed:
+	pthread_mutex_destroy(&depmod->symbols_mutex);
+symbols_mutex_failed:
+	hash_free(depmod->symbols);
 symbols_failed:
 	hash_free(depmod->modules_by_name);
 modules_by_name_failed:
 	hash_free(depmod->modules_by_uncrelpath);
 modules_by_uncrelpath_failed:
-	return -ENOMEM;
+	return err;
 }
 
 static void depmod_shutdown(struct depmod *depmod)
 {
 	size_t i;
+
+	pthread_mutex_destroy(&depmod->symbols_mutex);
+	pthread_mutex_destroy(&depmod->deps_mutex);
+	pthread_mutex_destroy(&depmod->output_mutex);
 
 	hash_free(depmod->symbols);
 
@@ -1103,6 +1151,8 @@ static int depmod_module_add(struct depmod *depmod, struct kmod_module *kmod)
 	array_init(&mod->weakdep_values, 4); // fits 100%
 
 	array_init(&mod->deps, 4);
+	array_init(&mod->all_deps_cache, 16);
+	mod->all_deps_cached = false;
 
 	mod->path = strdup(kmod_module_get_path(kmod));
 	if (mod->path == NULL) {
@@ -1548,8 +1598,9 @@ corrupted:
 	fclose(fp);
 }
 
-static int depmod_symbol_add(struct depmod *depmod, const char *name, bool prefix_skipped,
-			     uint64_t crc, const struct mod *owner)
+static int depmod_symbol_add_unlocked(struct depmod *depmod, const char *name,
+				       bool prefix_skipped, uint64_t crc,
+				       const struct mod *owner)
 {
 	size_t namelen;
 	int err;
@@ -1579,23 +1630,66 @@ static int depmod_symbol_add(struct depmod *depmod, const char *name, bool prefi
 	return 0;
 }
 
+static int depmod_symbol_add(struct depmod *depmod, const char *name, bool prefix_skipped,
+			     uint64_t crc, const struct mod *owner)
+{
+	int err;
+
+	pthread_mutex_lock(&depmod->symbols_mutex);
+	err = depmod_symbol_add_unlocked(depmod, name, prefix_skipped, crc, owner);
+	pthread_mutex_unlock(&depmod->symbols_mutex);
+
+	return err;
+}
+
 static struct symbol *depmod_symbol_find(const struct depmod *depmod, const char *name)
 {
+	struct symbol *sym;
+
 	if (name[0] == '.') /* PPC64 needs this: .foo == foo */
 		name++;
 	if (name[0] == depmod->cfg->sym_prefix)
 		name++;
-	return hash_find(depmod->symbols, name);
+	pthread_mutex_lock(&((struct depmod *)depmod)->symbols_mutex);
+	sym = hash_find(depmod->symbols, name);
+	pthread_mutex_unlock(&((struct depmod *)depmod)->symbols_mutex);
+	return sym;
 }
 
-static int depmod_load_modules(struct depmod *depmod)
+static unsigned int get_cpu_count(void)
 {
+	long nproc = sysconf(_SC_NPROCESSORS_ONLN);
+	if (nproc <= 0)
+		return 1;
+	return (unsigned int)nproc;
+}
+
+struct batched_symbol {
+	char *name; /* strdup'd, must be freed */
+	uint64_t crc;
+	const struct mod *owner;
+	bool prefix_skipped;
+};
+
+struct load_modules_work {
+	struct depmod *depmod;
+	struct mod **modules;
+	size_t start;
+	size_t end;
+	int err;
+	struct array symbol_batch; /* struct batched_symbol */
+};
+
+static void *load_modules_worker(void *arg)
+{
+	struct load_modules_work *work = arg;
 	struct mod **itr, **itr_end;
 
-	DBG("load symbols (%zu modules)\n", depmod->modules.count);
+	itr = work->modules + work->start;
+	itr_end = work->modules + work->end;
 
-	itr = (struct mod **)depmod->modules.array;
-	itr_end = itr + depmod->modules.count;
+	array_init(&work->symbol_batch, 128);
+
 	for (; itr < itr_end; itr++) {
 		struct mod *mod = *itr;
 		struct kmod_list *l, *list = NULL;
@@ -1611,7 +1705,36 @@ static int depmod_load_modules(struct depmod *depmod)
 		kmod_list_foreach(l, list) {
 			const char *name = kmod_module_symbol_get_symbol(l);
 			uint64_t crc = kmod_module_symbol_get_crc(l);
-			depmod_symbol_add(depmod, name, false, crc, mod);
+			struct batched_symbol *bsym;
+			int idx;
+
+			/* Allocate and batch symbol for later addition */
+			bsym = malloc(sizeof(struct batched_symbol));
+			if (bsym == NULL) {
+				work->err = -ENOMEM;
+				kmod_module_symbols_free_list(list);
+				return NULL;
+			}
+			/* Copy the name since it will be invalid after freeing the list */
+			bsym->name = strdup(name);
+			if (bsym->name == NULL) {
+				free(bsym);
+				work->err = -ENOMEM;
+				kmod_module_symbols_free_list(list);
+				return NULL;
+			}
+			bsym->crc = crc;
+			bsym->owner = mod;
+			bsym->prefix_skipped = false;
+
+			idx = array_append(&work->symbol_batch, bsym);
+			if (idx < 0) {
+				free(bsym->name);
+				free(bsym);
+				work->err = idx;
+				kmod_module_symbols_free_list(list);
+				return NULL;
+			}
 		}
 		kmod_module_symbols_free_list(list);
 
@@ -1623,22 +1746,28 @@ load_info:
 			if (streq(key, "alias")) {
 				const char *value = kmod_module_info_get_value(l);
 
-				if (array_append(&mod->alias_values, value) < 0)
-					return 0;
+				if (array_append(&mod->alias_values, value) < 0) {
+					work->err = -ENOMEM;
+					return NULL;
+				}
 				continue;
 			}
 			if (streq(key, "softdep")) {
 				const char *value = kmod_module_info_get_value(l);
 
-				if (array_append(&mod->softdep_values, value) < 0)
-					return 0;
+				if (array_append(&mod->softdep_values, value) < 0) {
+					work->err = -ENOMEM;
+					return NULL;
+				}
 				continue;
 			}
 			if (streq(key, "weakdep")) {
 				const char *value = kmod_module_info_get_value(l);
 
-				if (array_append(&mod->weakdep_values, value) < 0)
-					return 0;
+				if (array_append(&mod->weakdep_values, value) < 0) {
+					work->err = -ENOMEM;
+					return NULL;
+				}
 				continue;
 			}
 		}
@@ -1647,10 +1776,126 @@ load_info:
 		mod->kmod = NULL;
 	}
 
+	return NULL;
+}
+
+static int depmod_load_modules(struct depmod *depmod)
+{
+	unsigned int n_threads;
+	pthread_t *threads;
+	struct load_modules_work *work;
+	size_t modules_per_thread;
+	size_t i;
+	int err = 0;
+
+	DBG("load symbols (%zu modules)\n", depmod->modules.count);
+
+	if (depmod->modules.count == 0)
+		return 0;
+
+	n_threads = get_cpu_count();
+	if (n_threads > depmod->modules.count)
+		n_threads = depmod->modules.count;
+
+	threads = calloc(n_threads, sizeof(pthread_t));
+	if (threads == NULL)
+		return -ENOMEM;
+
+	work = calloc(n_threads, sizeof(struct load_modules_work));
+	if (work == NULL) {
+		free(threads);
+		return -ENOMEM;
+	}
+
+	modules_per_thread = (depmod->modules.count + n_threads - 1) / n_threads;
+
+	for (i = 0; i < n_threads; i++) {
+		work[i].depmod = depmod;
+		work[i].modules = (struct mod **)depmod->modules.array;
+		work[i].start = i * modules_per_thread;
+		work[i].end = work[i].start + modules_per_thread;
+		if (work[i].end > depmod->modules.count)
+			work[i].end = depmod->modules.count;
+		work[i].err = 0;
+
+		if (pthread_create(&threads[i], NULL, load_modules_worker, &work[i]) != 0) {
+			err = -errno;
+			/* Wait for already started threads */
+			for (size_t j = 0; j < i; j++) {
+				pthread_join(threads[j], NULL);
+				/* Free batched symbols */
+				for (size_t k = 0; k < work[j].symbol_batch.count; k++) {
+					struct batched_symbol *bsym = work[j].symbol_batch.array[k];
+					free(bsym->name);
+					free(bsym);
+				}
+				array_free_array(&work[j].symbol_batch);
+			}
+			free(work);
+			free(threads);
+			return err;
+		}
+	}
+
+	for (i = 0; i < n_threads; i++) {
+		pthread_join(threads[i], NULL);
+		if (work[i].err < 0 && err == 0)
+			err = work[i].err;
+	}
+
+	/* Merge all batched symbols in a single critical section */
+	if (err == 0) {
+		pthread_mutex_lock(&depmod->symbols_mutex);
+		for (i = 0; i < n_threads; i++) {
+			for (size_t j = 0; j < work[i].symbol_batch.count; j++) {
+				struct batched_symbol *bsym = work[i].symbol_batch.array[j];
+				int add_err = depmod_symbol_add_unlocked(depmod, bsym->name, bsym->prefix_skipped,
+									bsym->crc, bsym->owner);
+				free(bsym->name);
+				free(bsym);
+				if (add_err < 0) {
+					err = add_err;
+					/* Continue freeing remaining symbols from this thread */
+					for (size_t k = j + 1; k < work[i].symbol_batch.count; k++) {
+						bsym = work[i].symbol_batch.array[k];
+						free(bsym->name);
+						free(bsym);
+					}
+					/* Free remaining symbols from other threads */
+					for (size_t k = i + 1; k < n_threads; k++) {
+						for (size_t l = 0; l < work[k].symbol_batch.count; l++) {
+							bsym = work[k].symbol_batch.array[l];
+							free(bsym->name);
+							free(bsym);
+						}
+					}
+					break;
+				}
+			}
+			if (err < 0)
+				break;
+		}
+		pthread_mutex_unlock(&depmod->symbols_mutex);
+	} else {
+		/* Free batched symbols on error */
+		for (i = 0; i < n_threads; i++) {
+			for (size_t j = 0; j < work[i].symbol_batch.count; j++) {
+				struct batched_symbol *bsym = work[i].symbol_batch.array[j];
+				free(bsym->name);
+				free(bsym);
+			}
+		}
+	}
+
+	for (i = 0; i < n_threads; i++)
+		array_free_array(&work[i].symbol_batch);
+	free(work);
+	free(threads);
+
 	DBG("loaded symbols (%zu modules, %u symbols)\n", depmod->modules.count,
 	    hash_get_count(depmod->symbols));
 
-	return 0;
+	return err;
 }
 
 static int depmod_load_module_dependencies(struct depmod *depmod, struct mod *mod)
@@ -1684,7 +1929,7 @@ static int depmod_load_module_dependencies(struct depmod *depmod, struct mod *mo
 				    mod->path, name);
 		}
 
-		err = mod_add_dependency(mod, sym);
+		err = mod_add_dependency(depmod, mod, sym);
 		if (err < 0)
 			ret = err;
 	}
@@ -1692,16 +1937,23 @@ static int depmod_load_module_dependencies(struct depmod *depmod, struct mod *mo
 	return ret;
 }
 
-static int depmod_load_dependencies(struct depmod *depmod)
+struct load_dependencies_work {
+	struct depmod *depmod;
+	struct mod **modules;
+	size_t start;
+	size_t end;
+	int err;
+};
+
+static void *load_dependencies_worker(void *arg)
 {
+	struct load_dependencies_work *work = arg;
+	struct depmod *depmod = work->depmod;
 	struct mod **itr, **itr_end;
-	int ret = 0;
 
-	DBG("load dependencies (%zu modules, %u symbols)\n", depmod->modules.count,
-	    hash_get_count(depmod->symbols));
+	itr = work->modules + work->start;
+	itr_end = work->modules + work->end;
 
-	itr = (struct mod **)depmod->modules.array;
-	itr_end = itr + depmod->modules.count;
 	for (; itr < itr_end; itr++) {
 		struct mod *mod = *itr;
 		int err;
@@ -1713,8 +1965,75 @@ static int depmod_load_dependencies(struct depmod *depmod)
 
 		err = depmod_load_module_dependencies(depmod, mod);
 		if (err < 0)
-			ret = err;
+			work->err = err;
 	}
+
+	return NULL;
+}
+
+static int depmod_load_dependencies(struct depmod *depmod)
+{
+	unsigned int n_threads;
+	pthread_t *threads;
+	struct load_dependencies_work *work;
+	size_t modules_per_thread;
+	size_t i;
+	int ret = 0;
+
+	DBG("load dependencies (%zu modules, %u symbols)\n", depmod->modules.count,
+	    hash_get_count(depmod->symbols));
+
+	if (depmod->modules.count == 0)
+		return 0;
+
+	n_threads = get_cpu_count();
+	if (n_threads > depmod->modules.count)
+		n_threads = depmod->modules.count;
+
+	threads = calloc(n_threads, sizeof(pthread_t));
+	if (threads == NULL)
+		return -ENOMEM;
+
+	work = calloc(n_threads, sizeof(struct load_dependencies_work));
+	if (work == NULL) {
+		free(threads);
+		return -ENOMEM;
+	}
+
+	modules_per_thread = (depmod->modules.count + n_threads - 1) / n_threads;
+
+	for (i = 0; i < n_threads; i++) {
+		work[i].depmod = depmod;
+		work[i].modules = (struct mod **)depmod->modules.array;
+		work[i].start = i * modules_per_thread;
+		work[i].end = work[i].start + modules_per_thread;
+		if (work[i].end > depmod->modules.count)
+			work[i].end = depmod->modules.count;
+		work[i].err = 0;
+
+		if (pthread_create(&threads[i], NULL, load_dependencies_worker,
+				   &work[i]) != 0) {
+			ret = -errno;
+			/* Wait for already started threads */
+			for (size_t j = 0; j < i; j++)
+				pthread_join(threads[j], NULL);
+			free(work);
+			free(threads);
+			return ret;
+		}
+	}
+
+	for (i = 0; i < n_threads; i++) {
+		pthread_join(threads[i], NULL);
+		if (work[i].err < 0 && ret == 0)
+			ret = work[i].err;
+	}
+
+	/* Memory barrier to ensure all atomic increments are visible */
+	__sync_synchronize();
+
+	free(work);
+	free(threads);
 
 	DBG("loaded dependencies (%zu modules, %u symbols)\n", depmod->modules.count,
 	    hash_get_count(depmod->symbols));
@@ -1729,16 +2048,79 @@ static int dep_cmp(const void *pa, const void *pb)
 	return a->dep_sort_idx - b->dep_sort_idx;
 }
 
-static void depmod_sort_dependencies(struct depmod *depmod)
+struct sort_dependencies_work {
+	struct mod **modules;
+	size_t start;
+	size_t end;
+};
+
+static void *sort_dependencies_worker(void *arg)
 {
+	struct sort_dependencies_work *work = arg;
 	struct mod **itr, **itr_end;
-	itr = (struct mod **)depmod->modules.array;
-	itr_end = itr + depmod->modules.count;
+
+	itr = work->modules + work->start;
+	itr_end = work->modules + work->end;
+
 	for (; itr < itr_end; itr++) {
 		struct mod *m = *itr;
 		if (m->deps.count > 1)
 			array_sort(&m->deps, dep_cmp);
 	}
+
+	return NULL;
+}
+
+static void depmod_sort_dependencies(struct depmod *depmod)
+{
+	unsigned int n_threads;
+	pthread_t *threads;
+	struct sort_dependencies_work *work;
+	size_t modules_per_thread;
+	size_t i;
+
+	if (depmod->modules.count == 0)
+		return;
+
+	n_threads = get_cpu_count();
+	if (n_threads > depmod->modules.count)
+		n_threads = depmod->modules.count;
+
+	threads = calloc(n_threads, sizeof(pthread_t));
+	if (threads == NULL)
+		return;
+
+	work = calloc(n_threads, sizeof(struct sort_dependencies_work));
+	if (work == NULL) {
+		free(threads);
+		return;
+	}
+
+	modules_per_thread = (depmod->modules.count + n_threads - 1) / n_threads;
+
+	for (i = 0; i < n_threads; i++) {
+		work[i].modules = (struct mod **)depmod->modules.array;
+		work[i].start = i * modules_per_thread;
+		work[i].end = work[i].start + modules_per_thread;
+		if (work[i].end > depmod->modules.count)
+			work[i].end = depmod->modules.count;
+
+		if (pthread_create(&threads[i], NULL, sort_dependencies_worker,
+				   &work[i]) != 0) {
+			/* Wait for already started threads */
+			for (size_t j = 0; j < i; j++)
+				pthread_join(threads[j], NULL);
+			free(work);
+			free(threads);
+			return;
+		}
+	}
+
+	for (i = 0; i < n_threads; i++)
+		pthread_join(threads[i], NULL);
+
+	free(work);
+	free(threads);
 }
 
 struct vertex {
@@ -1994,6 +2376,7 @@ static int depmod_calculate_dependencies(struct depmod *depmod)
 	assert(depmod->modules.count < UINT16_MAX);
 
 	/* populate modules users (how many modules uses it) */
+	/* Memory barrier done in depmod_load_dependencies after pthread_join */
 	itrm = (const struct mod **)depmod->modules.array;
 	for (i = 0; i < n_mods; i++, itrm++) {
 		const struct mod *m = *itrm;
@@ -2090,14 +2473,49 @@ static int mod_fill_all_unique_dependencies(const struct mod *mod, struct array 
 	return err;
 }
 
-static bool mod_get_all_sorted_dependencies(const struct mod *mod, struct array *deps)
+static bool mod_get_all_sorted_dependencies(struct depmod *depmod,
+					    struct mod *mod, struct array *deps)
 {
+	/* Use cached result if available */
+	pthread_mutex_lock(&depmod->deps_mutex);
+	if (mod->all_deps_cached) {
+		deps->count = 0;
+		for (size_t i = 0; i < mod->all_deps_cache.count; i++) {
+			if (array_append(deps, mod->all_deps_cache.array[i]) < 0) {
+				pthread_mutex_unlock(&depmod->deps_mutex);
+				return false;
+			}
+		}
+		pthread_mutex_unlock(&depmod->deps_mutex);
+		return true;
+	}
+	pthread_mutex_unlock(&depmod->deps_mutex);
+
+	/* Compute and cache */
 	deps->count = 0;
 	if (mod_fill_all_unique_dependencies(mod, deps) < 0)
 		return false;
 
 	if (deps->count > 1)
 		array_sort(deps, dep_cmp);
+
+	/* Cache the result - protect with mutex */
+	pthread_mutex_lock(&depmod->deps_mutex);
+	/* Check again in case another thread computed it while we were working */
+	if (!mod->all_deps_cached) {
+		mod->all_deps_cache.count = 0;
+		for (size_t i = 0; i < deps->count; i++) {
+			if (array_append(&mod->all_deps_cache, deps->array[i]) < 0) {
+				/* Clear partial cache on failure */
+				mod->all_deps_cache.count = 0;
+				pthread_mutex_unlock(&depmod->deps_mutex);
+				return false;
+			}
+		}
+		mod->all_deps_cached = true;
+	}
+	pthread_mutex_unlock(&depmod->deps_mutex);
+
 	return true;
 }
 
@@ -2108,64 +2526,320 @@ static inline const char *mod_get_compressed_path(const struct mod *mod)
 	return mod->path;
 }
 
-static int output_deps(struct depmod *depmod, FILE *out)
+/* Pre-compute all dependency caches in parallel */
+struct cache_deps_work {
+	struct depmod *depmod;
+	struct mod **modules;
+	size_t start;
+	size_t end;
+	int err;
+};
+
+static void *cache_deps_worker(void *arg)
 {
-	size_t i;
+	struct cache_deps_work *work = arg;
+	struct depmod *depmod = work->depmod;
+	struct mod **itr, **itr_end;
 	struct array deps;
 
 	array_init(&deps, 64);
 
-	for (i = 0; i < depmod->modules.count; i++) {
-		const struct mod *mod = depmod->modules.array[i];
-		const char *p = mod_get_compressed_path(mod);
-		size_t j;
+	itr = work->modules + work->start;
+	itr_end = work->modules + work->end;
 
-		fprintf(out, "%s:", p);
-
-		if (mod->deps.count == 0)
-			goto end;
-
-		if (!mod_get_all_sorted_dependencies(mod, &deps)) {
-			ERR("could not get all sorted dependencies of %s\n", p);
-			goto end;
+	for (; itr < itr_end; itr++) {
+		struct mod *mod = *itr;
+		if (!mod_get_all_sorted_dependencies(depmod, mod, &deps)) {
+			work->err = -ENOMEM;
+			array_free_array(&deps);
+			return NULL;
 		}
-
-		for (j = 0; j < deps.count; j++) {
-			const struct mod *d = deps.array[j];
-			fprintf(out, " %s", mod_get_compressed_path(d));
-		}
-end:
-		putc('\n', out);
 	}
 
 	array_free_array(&deps);
-	return 0;
+	return NULL;
 }
 
-static int output_deps_bin(struct depmod *depmod, FILE *out)
+static int depmod_cache_all_dependencies(struct depmod *depmod)
 {
-	DECLARE_STRBUF_WITH_STACK(sbuf, 2048);
-	struct index_node *idx;
+	unsigned int n_threads;
+	pthread_t *threads;
+	struct cache_deps_work *work;
+	size_t modules_per_thread;
 	size_t i;
-	struct array array;
+	int ret = 0;
 
-	if (out == stdout)
+	if (depmod->modules.count == 0)
 		return 0;
 
-	idx = index_create();
-	if (idx == NULL)
+	n_threads = get_cpu_count();
+	if (n_threads > depmod->modules.count)
+		n_threads = depmod->modules.count;
+
+	threads = calloc(n_threads, sizeof(pthread_t));
+	if (threads == NULL)
 		return -ENOMEM;
+
+	work = calloc(n_threads, sizeof(struct cache_deps_work));
+	if (work == NULL) {
+		free(threads);
+		return -ENOMEM;
+	}
+
+	modules_per_thread = (depmod->modules.count + n_threads - 1) / n_threads;
+
+	for (i = 0; i < n_threads; i++) {
+		work[i].depmod = depmod;
+		work[i].modules = (struct mod **)depmod->modules.array;
+		work[i].start = i * modules_per_thread;
+		work[i].end = work[i].start + modules_per_thread;
+		if (work[i].end > depmod->modules.count)
+			work[i].end = depmod->modules.count;
+		work[i].err = 0;
+
+		if (pthread_create(&threads[i], NULL, cache_deps_worker, &work[i]) != 0) {
+			ret = -errno;
+			/* Wait for already started threads */
+			for (size_t j = 0; j < i; j++)
+				pthread_join(threads[j], NULL);
+			free(work);
+			free(threads);
+			return ret;
+		}
+	}
+
+	for (i = 0; i < n_threads; i++) {
+		pthread_join(threads[i], NULL);
+		if (work[i].err < 0 && ret == 0)
+			ret = work[i].err;
+	}
+
+	free(work);
+	free(threads);
+
+	return ret;
+}
+
+struct dep_line {
+	char *line;
+	const char *module_path; /* for sorting */
+};
+
+static int dep_line_cmp(const void *pa, const void *pb)
+{
+	const struct dep_line *a = *(const struct dep_line **)pa;
+	const struct dep_line *b = *(const struct dep_line **)pb;
+	return strcmp(a->module_path, b->module_path);
+}
+
+struct output_deps_work {
+	struct depmod *depmod;
+	struct array *lines; /* array of struct dep_line * */
+	struct mod **modules;
+	size_t start;
+	size_t end;
+	int err;
+};
+
+static void *output_deps_worker(void *arg)
+{
+	struct output_deps_work *work = arg;
+	struct depmod *depmod = work->depmod;
+	struct mod **itr, **itr_end;
+	struct array deps;
+	DECLARE_STRBUF_WITH_STACK(line_buf, 2048);
+
+	array_init(&deps, 64);
+
+	itr = work->modules + work->start;
+	itr_end = work->modules + work->end;
+
+	for (; itr < itr_end; itr++) {
+		struct mod *mod = *itr;
+		const char *p = mod_get_compressed_path(mod);
+		struct dep_line *dep_line;
+		size_t j;
+
+		/* Build the line in a buffer */
+		strbuf_clear(&line_buf);
+		if (!strbuf_pushchars(&line_buf, p) || !strbuf_pushchar(&line_buf, ':')) {
+			ERR("could not build line for %s\n", p);
+			continue;
+		}
+
+		if (mod->deps.count > 0) {
+			if (!mod_get_all_sorted_dependencies(depmod, mod, &deps)) {
+				ERR("could not get all sorted dependencies of %s\n", p);
+				/* Line with no dependencies */
+			} else {
+				for (j = 0; j < deps.count; j++) {
+					const struct mod *d = deps.array[j];
+					const char *dp = mod_get_compressed_path(d);
+					if (!strbuf_pushchar(&line_buf, ' ') ||
+					    !strbuf_pushchars(&line_buf, dp)) {
+						ERR("could not build line for %s\n", p);
+						break;
+					}
+				}
+			}
+		}
+
+		if (!strbuf_pushchar(&line_buf, '\n')) {
+			ERR("could not build line for %s\n", p);
+			continue;
+		}
+
+		/* Allocate and store the line */
+		dep_line = malloc(sizeof(struct dep_line));
+		if (dep_line == NULL) {
+			ERR("could not allocate memory for dep_line\n");
+			continue;
+		}
+
+		dep_line->line = strdup(strbuf_str(&line_buf));
+		if (dep_line->line == NULL) {
+			free(dep_line);
+			ERR("could not duplicate line for %s\n", p);
+			continue;
+		}
+
+		/* Store pointer to module path for sorting.
+		 * Safe: mod structures remain valid until after output_deps completes. */
+		dep_line->module_path = p;
+
+		/* Add to shared array with mutex protection */
+		pthread_mutex_lock(&depmod->output_mutex);
+		if (array_append(work->lines, dep_line) < 0) {
+			pthread_mutex_unlock(&depmod->output_mutex);
+			free(dep_line->line);
+			free(dep_line);
+			ERR("could not append line for %s\n", p);
+			continue;
+		}
+		pthread_mutex_unlock(&depmod->output_mutex);
+	}
+
+	array_free_array(&deps);
+	return NULL;
+}
+
+static int output_deps(struct depmod *depmod, FILE *out)
+{
+	unsigned int n_threads;
+	pthread_t *threads;
+	struct output_deps_work *work;
+	struct array lines;
+	size_t modules_per_thread;
+	size_t i;
+	int ret = 0;
+
+	if (depmod->modules.count == 0)
+		return 0;
+
+	array_init(&lines, depmod->modules.count);
+
+	n_threads = get_cpu_count();
+	if (n_threads > depmod->modules.count)
+		n_threads = depmod->modules.count;
+
+	threads = calloc(n_threads, sizeof(pthread_t));
+	if (threads == NULL) {
+		array_free_array(&lines);
+		return -ENOMEM;
+	}
+
+	work = calloc(n_threads, sizeof(struct output_deps_work));
+	if (work == NULL) {
+		free(threads);
+		array_free_array(&lines);
+		return -ENOMEM;
+	}
+
+	modules_per_thread = (depmod->modules.count + n_threads - 1) / n_threads;
+
+	for (i = 0; i < n_threads; i++) {
+		work[i].depmod = depmod;
+		work[i].lines = &lines;
+		work[i].modules = (struct mod **)depmod->modules.array;
+		work[i].start = i * modules_per_thread;
+		work[i].end = work[i].start + modules_per_thread;
+		if (work[i].end > depmod->modules.count)
+			work[i].end = depmod->modules.count;
+		work[i].err = 0;
+
+		if (pthread_create(&threads[i], NULL, output_deps_worker, &work[i]) != 0) {
+			ret = -errno;
+			/* Wait for already started threads */
+			for (size_t j = 0; j < i; j++)
+				pthread_join(threads[j], NULL);
+			/* Free any lines already collected by worker threads */
+			for (size_t k = 0; k < lines.count; k++) {
+				struct dep_line *dl = lines.array[k];
+				free(dl->line);
+				free(dl);
+			}
+			lines.count = 0;
+			goto cleanup;
+		}
+	}
+
+	for (i = 0; i < n_threads; i++) {
+		pthread_join(threads[i], NULL);
+		if (work[i].err < 0 && ret == 0)
+			ret = work[i].err;
+	}
+
+	/* Sort lines by module path (alphabetically) */
+	if (lines.count > 1)
+		array_sort(&lines, dep_line_cmp);
+
+	/* Write sorted lines to output */
+	for (i = 0; i < lines.count; i++) {
+		struct dep_line *dep_line = lines.array[i];
+		fputs(dep_line->line, out);
+		free(dep_line->line);
+		free(dep_line);
+	}
+
+cleanup:
+	free(work);
+	free(threads);
+	array_free_array(&lines);
+
+	return ret;
+}
+
+struct output_deps_bin_work {
+	struct depmod *depmod;
+	struct index_node *idx;
+	struct mod **modules;
+	size_t start;
+	size_t end;
+	int err;
+};
+
+static void *output_deps_bin_worker(void *arg)
+{
+	struct output_deps_bin_work *work = arg;
+	struct depmod *depmod = work->depmod;
+	struct index_node *idx = work->idx;
+	DECLARE_STRBUF_WITH_STACK(sbuf, 2048);
+	struct mod **itr, **itr_end;
+	struct array array;
 
 	array_init(&array, 64);
 
-	for (i = 0; i < depmod->modules.count; i++) {
-		const struct mod *mod = depmod->modules.array[i];
+	itr = work->modules + work->start;
+	itr_end = work->modules + work->end;
+
+	for (; itr < itr_end; itr++) {
+		struct mod *mod = *itr;
 		const char *p = mod_get_compressed_path(mod);
 		const char *line;
 		size_t j;
 		int duplicate;
 
-		if (!mod_get_all_sorted_dependencies(mod, &array)) {
+		if (!mod_get_all_sorted_dependencies(depmod, mod, &array)) {
 			ERR("could not get all sorted dependencies of %s\n", p);
 			continue;
 		}
@@ -2187,16 +2861,96 @@ static int output_deps_bin(struct depmod *depmod, FILE *out)
 		}
 		line = strbuf_str(&sbuf);
 
+		/* Synchronize index_insert calls */
+		pthread_mutex_lock(&depmod->output_mutex);
 		duplicate = index_insert(idx, mod->modname, line, mod->idx);
+		pthread_mutex_unlock(&depmod->output_mutex);
 		if (duplicate && depmod->cfg->warn_dups)
 			WRN("duplicate module deps:\n%s\n", line);
 	}
 
 	array_free_array(&array);
+	return NULL;
+}
+
+static int output_deps_bin(struct depmod *depmod, FILE *out)
+{
+	unsigned int n_threads;
+	pthread_t *threads;
+	struct output_deps_bin_work *work;
+	struct index_node *idx;
+	size_t modules_per_thread;
+	size_t i;
+	int ret = 0;
+
+	if (out == stdout)
+		return 0;
+
+	idx = index_create();
+	if (idx == NULL)
+		return -ENOMEM;
+
+	if (depmod->modules.count == 0) {
+		index_write(idx, out);
+		index_destroy(idx);
+		return 0;
+	}
+
+	n_threads = get_cpu_count();
+	if (n_threads > depmod->modules.count)
+		n_threads = depmod->modules.count;
+
+	threads = calloc(n_threads, sizeof(pthread_t));
+	if (threads == NULL) {
+		index_destroy(idx);
+		return -ENOMEM;
+	}
+
+	work = calloc(n_threads, sizeof(struct output_deps_bin_work));
+	if (work == NULL) {
+		free(threads);
+		index_destroy(idx);
+		return -ENOMEM;
+	}
+
+	modules_per_thread = (depmod->modules.count + n_threads - 1) / n_threads;
+
+	for (i = 0; i < n_threads; i++) {
+		work[i].depmod = depmod;
+		work[i].idx = idx;
+		work[i].modules = (struct mod **)depmod->modules.array;
+		work[i].start = i * modules_per_thread;
+		work[i].end = work[i].start + modules_per_thread;
+		if (work[i].end > depmod->modules.count)
+			work[i].end = depmod->modules.count;
+		work[i].err = 0;
+
+		if (pthread_create(&threads[i], NULL, output_deps_bin_worker,
+				   &work[i]) != 0) {
+			ret = -errno;
+			/* Wait for already started threads */
+			for (size_t j = 0; j < i; j++)
+				pthread_join(threads[j], NULL);
+			free(work);
+			free(threads);
+			index_destroy(idx);
+			return ret;
+		}
+	}
+
+	for (i = 0; i < n_threads; i++) {
+		pthread_join(threads[i], NULL);
+		if (work[i].err < 0 && ret == 0)
+			ret = work[i].err;
+	}
+
+	free(work);
+	free(threads);
+
 	index_write(idx, out);
 	index_destroy(idx);
 
-	return 0;
+	return ret;
 }
 
 static int output_aliases(struct depmod *depmod, FILE *out)
@@ -2206,7 +2960,7 @@ static int output_aliases(struct depmod *depmod, FILE *out)
 	fputs("# Aliases extracted from modules themselves.\n", out);
 
 	for (i = 0; i < depmod->modules.count; i++) {
-		const struct mod *mod = depmod->modules.array[i];
+		struct mod *mod = depmod->modules.array[i];
 		const struct array *values = &mod->alias_values;
 
 		for (size_t j = 0; j < values->count; j++) {
@@ -2231,7 +2985,7 @@ static int output_aliases_bin(struct depmod *depmod, FILE *out)
 		return -ENOMEM;
 
 	for (i = 0; i < depmod->modules.count; i++) {
-		const struct mod *mod = depmod->modules.array[i];
+		struct mod *mod = depmod->modules.array[i];
 		const struct array *values = &mod->alias_values;
 
 		for (size_t j = 0; j < values->count; j++) {
@@ -2266,7 +3020,7 @@ static int output_softdeps(struct depmod *depmod, FILE *out)
 	fputs("# Soft dependencies extracted from modules themselves.\n", out);
 
 	for (i = 0; i < depmod->modules.count; i++) {
-		const struct mod *mod = depmod->modules.array[i];
+		struct mod *mod = depmod->modules.array[i];
 		const struct array *values = &mod->softdep_values;
 
 		for (size_t j = 0; j < values->count; j++) {
@@ -2285,7 +3039,7 @@ static int output_weakdeps(struct depmod *depmod, FILE *out)
 	fputs("# Weak dependencies extracted from modules themselves.\n", out);
 
 	for (i = 0; i < depmod->modules.count; i++) {
-		const struct mod *mod = depmod->modules.array[i];
+		struct mod *mod = depmod->modules.array[i];
 		const struct array *values = &mod->weakdep_values;
 
 		for (size_t j = 0; j < values->count; j++) {
@@ -2507,7 +3261,7 @@ static int output_devname(struct depmod *depmod, FILE *out)
 	bool empty = true;
 
 	for (i = 0; i < depmod->modules.count; i++) {
-		const struct mod *mod = depmod->modules.array[i];
+		struct mod *mod = depmod->modules.array[i];
 		const struct array *values = &mod->alias_values;
 		const char *devname = NULL;
 		char type = '\0';
@@ -3110,6 +3864,13 @@ static int do_depmod(int argc, char *argv[])
 	err = depmod_load(&depmod);
 	if (err < 0)
 		goto cmdline_modules_failed;
+
+	/* Pre-compute all dependency caches in parallel */
+	err = depmod_cache_all_dependencies(&depmod);
+	if (err < 0) {
+		CRIT("could not cache dependencies: %s\n", strerror(-err));
+		goto cmdline_modules_failed;
+	}
 
 	err = depmod_output(&depmod, out);
 

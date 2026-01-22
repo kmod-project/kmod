@@ -442,10 +442,13 @@ kmod_sources = files(
   'tools/static-nodes.c',
 )
 
+pthread_dep = dependency('threads', required : true)
+
 kmod = executable(
   'kmod',
   kmod_sources,
   link_with : [libshared, libkmod_internal],
+  dependencies : [pthread_dep],
   gnu_symbol_visibility : 'hidden',
   build_by_default : get_option('tools'),
   install : get_option('tools'),
