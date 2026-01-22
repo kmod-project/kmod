@@ -188,6 +188,7 @@ static void test_export_environ(const struct test *t)
 		tmp = realloc(preload, preloadlen + 2 + ldpreloadlen);
 		if (tmp == NULL) {
 			ERR("oom: test_export_environ()\n");
+			free(preload);
 			return;
 		}
 		preload = tmp;
@@ -208,6 +209,7 @@ static void test_export_environ(const struct test *t)
 			tmp = malloc(preloadlen + 2 + len);
 			if (tmp == NULL) {
 				ERR("oom: test_export_environ()\n");
+				free(preload);
 				return;
 			}
 			memcpy(tmp, existing_preload, len);

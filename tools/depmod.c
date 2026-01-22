@@ -1147,6 +1147,7 @@ static int depmod_module_add(struct depmod *depmod, struct kmod_module *kmod)
 
 fail:
 	free(mod->uncrelpath);
+	free(mod->path);
 	free(mod);
 	return err;
 }
