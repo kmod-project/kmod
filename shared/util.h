@@ -136,7 +136,7 @@ static inline bool umul32_overflow(uint32_t a, uint32_t b, uint32_t *res)
 	return __builtin_umul_overflow(a, b, res);
 #else
 	*res = a * b;
-	return UINT32_MAX / a < b;
+	return a != 0 && UINT32_MAX / a < b;
 #endif
 }
 
@@ -148,7 +148,7 @@ static inline bool umul64_overflow(uint64_t a, uint64_t b, uint64_t *res)
 	return __builtin_umulll_overflow(a, b, res);
 #else
 	*res = a * b;
-	return UINT64_MAX / a < b;
+	return a != 0 && UINT64_MAX / a < b;
 #endif
 }
 
@@ -159,14 +159,14 @@ static inline bool umulll_overflow(unsigned long long a, unsigned long long b,
 	return __builtin_umulll_overflow(a, b, res);
 #else
 	*res = a * b;
-	return UINT64_MAX / a < b;
+	return a != 0 && UINT64_MAX / a < b;
 #endif
 }
 
 static inline bool simple_umulsz_overflow(size_t a, size_t b, size_t *res)
 {
 	*res = a * b;
-	return SIZE_MAX / a < b;
+	return a != 0 && SIZE_MAX / a < b;
 }
 
 #define umulsz_overflow(a, b, res)           \
