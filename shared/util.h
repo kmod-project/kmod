@@ -118,16 +118,17 @@ static inline bool uadd64_overflow(uint64_t a, uint64_t b, uint64_t *res)
 #endif
 }
 
-static inline bool uaddsz_overflow(size_t a, size_t b, size_t *res)
+static inline bool simple_uaddsz_overflow(size_t a, size_t b, size_t *res)
 {
-#if __SIZEOF_SIZE_T__ == 8
-	return uadd64_overflow(a, b, res);
-#elif __SIZEOF_SIZE_T__ == 4
-	return uadd32_overflow(a, b, res);
-#else
-#error "Unknown sizeof(size_t)"
-#endif
+	*res = a + b;
+	return SIZE_MAX - a < b;
 }
+
+#define uaddsz_overflow(a, b, res)           \
+	_Generic((res),                      \
+		uint32_t *: uadd32_overflow, \
+		uint64_t *: uadd64_overflow, \
+		default: simple_uaddsz_overflow)(a, b, res)
 
 static inline bool umul32_overflow(uint32_t a, uint32_t b, uint32_t *res)
 {
@@ -135,7 +136,7 @@ static inline bool umul32_overflow(uint32_t a, uint32_t b, uint32_t *res)
 	return __builtin_umul_overflow(a, b, res);
 #else
 	*res = a * b;
-	return UINT32_MAX / a < b;
+	return a != 0 && UINT32_MAX / a < b;
 #endif
 }
 
@@ -147,7 +148,7 @@ static inline bool umul64_overflow(uint64_t a, uint64_t b, uint64_t *res)
 	return __builtin_umulll_overflow(a, b, res);
 #else
 	*res = a * b;
-	return UINT64_MAX / a < b;
+	return a != 0 && UINT64_MAX / a < b;
 #endif
 }
 
@@ -158,20 +159,21 @@ static inline bool umulll_overflow(unsigned long long a, unsigned long long b,
 	return __builtin_umulll_overflow(a, b, res);
 #else
 	*res = a * b;
-	return UINT64_MAX / a < b;
+	return a != 0 && UINT64_MAX / a < b;
 #endif
 }
 
-static inline bool umulsz_overflow(size_t a, size_t b, size_t *res)
+static inline bool simple_umulsz_overflow(size_t a, size_t b, size_t *res)
 {
-#if __SIZEOF_SIZE_T__ == 8
-	return umul64_overflow(a, b, res);
-#elif __SIZEOF_SIZE_T__ == 4
-	return umul32_overflow(a, b, res);
-#else
-#error "Unknown sizeof(size_t)"
-#endif
+	*res = a * b;
+	return a != 0 && SIZE_MAX / a < b;
 }
+
+#define umulsz_overflow(a, b, res)           \
+	_Generic((res),                      \
+		uint32_t *: umul32_overflow, \
+		uint64_t *: umul64_overflow, \
+		default: simple_umulsz_overflow)(a, b, res)
 
 #define TAKE_PTR(x)                \
 	({                         \
