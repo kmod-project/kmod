@@ -16,15 +16,8 @@ ASAP.
 
 # Inspiration
 
-First of all, kmod coding style must follow every rule for [Linux kernel]. There also exists a tool
-named `checkpatch.pl` to help you check the compliance with it. Just type
-"checkpatch.pl --no-tree patch_name" to check your patch. In theory, you need
-to clean up all the warnings and errors. In certain circumstances one can ignore
-the 80 character per line limit. This is generally only allowed if the
-alternative would make the code even less readable.
-
-Besides the kernel coding style above, kmod coding style is heavily based on
-oFono's and BlueZ's. Below some basic rules:
+The kmod coding style is heavily based on the [Linux kernel]'s, oFono's and
+BlueZ's. Below some basic rules:
 
 ## Line wrap
 
@@ -90,4 +83,4 @@ Let the includes in the following order, separated by a new line:
     < tool >
     "local headers"
 
-[Linux Kernel]: http://www.kernel.org/doc/Documentation/CodingStyle
+[Linux Kernel]: https://www.kernel.org/doc/html/v6.9/process/coding-style.html
