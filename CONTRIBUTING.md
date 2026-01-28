@@ -139,8 +139,8 @@ make sure to update them as you add new options to the kmod tools.
 ## Tools shell completion
 
 The project aims to provide `bash`, `zsh` and `fish` shell completions for all
-the kmod tools. Currently support is borderline non-existent, so your help is
-greatly appreciated.
+the kmod tools. Currently only a limited set of tools/options are supported -
+patches improving on those are greatly appreciated.
 
 [pull requests]: https://github.com/kmod-project/kmod/pull/
 [mailing list]: mailto:linux-modules@vger.kernel.org
