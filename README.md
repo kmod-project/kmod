@@ -78,7 +78,7 @@ needed. Example:
     KDIR=any meson test -C builddir
 
 Make sure to read [our contributing guide](CONTRIBUTING.md) and the other
-READMEs: [libkmod](libkmod/README) and [testsuite](testsuite/README).
+READMEs: [libkmod](libkmod/README) and [testsuite](testsuite/README.md).
 
 Compatibility with module-init-tools
 ====================================

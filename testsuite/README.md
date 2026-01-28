@@ -1,0 +1,55 @@
+# Overview
+
+Kmod's testsuite was designed to automate the process of running tests with
+different scenarios, configurations and architectures. The idea is that once we
+received a bug report, we reproduce it using the testsuite so we avoid
+recurring on the same bug in future.
+
+
+# Features
+
+- Isolate each test by running them in separate processes;
+- Exec a binary, so we can test the tools and not only the lib API
+- Fake accesses to filesystem so we can provide a test rootfs with all the
+  configuration, indexes, etc that test needs to be executed.
+- Fake calls to init_module(), delete_module() and uname(), so we don't have to
+  run tests as root and figure out how to deal with different architectures.
+
+# How to add a test
+
+The simplest way to add a test is to copy and paste one already there. Most of
+the options you can have are covered by another tests. This is what you need to
+pay attention when writing a test:
+
+1. Look at testsuite.h, struct test, to see all the options available.
+
+1. Use TESTSUITE_MAIN and DEFINE_TEST to add new tests. Don't forget to fill
+   its description.
+
+1. If you want testsuite to compare the stdout/stderr of your tests in order
+   to check if it worked or not, fill in output.{stderr,stdout} the file with
+   the expected output. Bear in mind the same file is used for all
+   architectures, so don't print arch-dependent content if you are comparing
+   the output.
+
+1. Fill in the config vector. Setting any of these configuration will make
+   testsuite to export LD_PRELOAD with the necessary override libs before
+   executing the test. See each config description in testsuite.h
+
+1. expected_fail: if that test is expected to fail, i.e. the return code is
+   expected not to be 0.
+
+1. The rootfs is populated by copying the entire contents of rootfs-pristine
+   through setup-rootfs.sh then running setup-modules.sh to copy generated
+   modules from module-playground. Update the latter script to include any
+   modules your test needs.
+
+1. Tests can be run individually, outside of 'meson test'. strace and gdb
+   work too, as long as you tell them to operate on child process.
+
+   When running with sanitizers, make sure to 'source scripts/sanitizer-env.sh'.
+   Sanitizers are not guaranteed to work well with other tools like strace and gdb.
+
+1. Make sure test passes when using "default" build flags, i.e. by running
+   'meson setup --native-file build-dev.ini ...', which by default enables the
+   sanitizers.
