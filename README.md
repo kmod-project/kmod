@@ -7,7 +7,7 @@ kmod is a set of tools to handle common tasks with Linux kernel modules like
 insert, remove, list, check properties, resolve dependencies and aliases.
 
 These tools are designed on top of libkmod, a library that is shipped with
-kmod. See libkmod/README for more details on this library and how to use it.
+kmod. See libkmod/README.md for more details on this library and how to use it.
 The aim is to be compatible with tools, configurations and indexes from
 module-init-tools project.
 
@@ -78,7 +78,7 @@ needed. Example:
     KDIR=any meson test -C builddir
 
 Make sure to read [our contributing guide](CONTRIBUTING.md) and the other
-READMEs: [libkmod](libkmod/README) and [testsuite](testsuite/README.md).
+READMEs: [libkmod](libkmod/README.md) and [testsuite](testsuite/README.md).
 
 Compatibility with module-init-tools
 ====================================
