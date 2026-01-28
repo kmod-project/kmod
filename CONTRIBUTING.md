@@ -107,8 +107,8 @@ merging the patch.
 
 ### Bugfixes, regressions
 
-Nobody is perfect and regressions happen from time to time. Whenever a commit
-addresses a regression caused by another commit, use `Fixes:` as below:
+Nothing is perfect - bugs and regressions happen from time to time. Whenever a
+commit addresses an issue caused by another commit, use `Fixes:` as below:
 
     Fixes: 38943b2 ("shared: use size_t for strbuf")
 
