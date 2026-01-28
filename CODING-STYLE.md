@@ -12,6 +12,7 @@ ASAP.
     + [Try to return/exit early](#try-to-return-exit-early)
     + [Avoid unnecessary initialization](#avoid-unnecessary-initialization)
     + [Sort the includes](#sort-the-includes)
+  * [Tooling - clang-format](#tooling-clang-format)
 
 
 # Inspiration
@@ -74,6 +75,8 @@ Example:
 
 ## Sort the includes
 
+> TODO: update our .clang-format to honour this rule
+
 Let the includes in the following order, separated by a new line:
 
     < system headers >
@@ -81,5 +84,12 @@ Let the includes in the following order, separated by a new line:
     < libkmod >
     < tool >
     "local headers"
+
+# Tooling - clang-format
+
+To ease and enforce the style a [.clang-format file](.clang-format) file is
+provided and ran in CI against all submissions.
+
+Make sure to run `git-clang-format` before submitting PRs/patches.
 
 [Linux Kernel]: https://www.kernel.org/doc/html/v6.9/process/coding-style.html
