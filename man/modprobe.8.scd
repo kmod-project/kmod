@@ -20,7 +20,7 @@ modprobe - Add and remove modules from the Linux Kernel
 *modprobe* intelligently adds or removes a module from the Linux kernel: note
 that for convenience, there is no difference between \_ and - in module names
 (automatic underscore conversion is performed). *modprobe* looks in the module
-directory @MODULE_DIRECTORY@/`uname -r` for all the modules and other files,
+directory @MODULE_DIRECTORY@/$(uname -r) for all the modules and other files,
 except for the optional configuration files (see *modprobe.d*(5)). *modprobe* will
 also use module options specified on the kernel command line in the form of
 <module>.<option> and blacklists in the form of modprobe.blacklist=<module>.
