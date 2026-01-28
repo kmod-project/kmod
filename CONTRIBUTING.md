@@ -23,10 +23,11 @@ In this file you can find:
 
 ## License and SPDX
 
-The project uses `GPLv2+` for `tools/` and `LGPLv2.1+` for everything else.
-New tools should be licensed under `LGPLv2.1+` to make it easy to migrate code
-to other places when/if needed. When adding new files use the respective
-`SPDX-License-Identifier:` instead of the complete license text.
+The project uses `GPL-2.0-or-later` for `tools/` and `LGPL-2.1-or-later` for
+everything else. New tools should be licensed under `LGPL-2.1-or-later` to make
+it easy to migrate code to other places when/if needed. When adding new files
+use the respective `SPDX-License-Identifier:` instead of the complete license
+text.
 
 ## Commit style and history
 

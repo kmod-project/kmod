@@ -25,8 +25,8 @@ Links
     - Mirror: <https://kernel.googlesource.com/pub/scm/utils/kernel/kmod/kmod.git>
 
 - License:
-    - LGPLv2.1+ for libkmod, testsuite and helper libraries
-    - GPLv2+ for tools/*
+    - `LGPL-2.1-or-later` for libkmod, testsuite and helper libraries
+    - `GPL-2.0-or-later` for tools/
 
 - Irc: `#kmod` on irc.oftc.net
 
