@@ -49,7 +49,7 @@ later).
 
 # COMMANDS
 
-search _subdirectory..._
+search _subdirectory_
 	This allows you to specify the order in which @MODULE_DIRECTORY@ (or
 	other configured module location) subdirectories will be processed by
 	*depmod*. Directories are listed in order, with the highest priority
@@ -79,7 +79,7 @@ override _modulename_ _kernelversion_ _modulesubdirectory_
 	module location) will take priority over any likenamed module already
 	provided by the kernel.
 
-external _kernelversion_ _absolutemodulesdirectory..._
+external _kernelversion_ _absolutemodulesdirectory_
 	This specifies a list of directories, which will be checked according to
 	the priorities in the *search* command. The order matters also, the
 	first directory has the higher priority.
@@ -93,26 +93,6 @@ exclude _excludedir_
 
 	The _excludedir_ is the trailing directory to exclude.
 
-# COPYRIGHT
-
-This manual page Copyright 2006-2010, Jon Masters, Red Hat, Inc.
-
 # SEE ALSO
 
 *depmod*(8)
-
-# BUGS
-
-Please direct any bug reports to kmod's issue tracker at
-https://github.com/kmod-project/kmod/issues/ alongside with version used, steps
-to reproduce the problem and the expected outcome.
-
-# AUTHORS
-
-Numerous contributions have come from the linux-modules mailing list
-<linux-modules@vger.kernel.org> and Github. If you have a clone of kmod.git
-itself, the output of *git-shortlog*(1) and *git-blame*(1) can show you the
-authors for specific parts of the project.
-
-*Lucas De Marchi* <lucas.de.marchi@gmail.com> is the current maintainer of the
-project.
