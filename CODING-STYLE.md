@@ -21,7 +21,7 @@ BlueZ's. Below some basic rules:
 
 ## Line wrap
 
-Wrap line at 80 char limit.
+Wrap line at 90 char limit.
 
 There are a few exceptions:
 
@@ -34,8 +34,7 @@ order to be able to grep for that string. E.g:
 - If code would become unreadable if line is wrapped
 - If there's only one argument to the function, don't put it alone in a new line
 
-Align the wrapped line either with tabs (BlueZ, oFono, etc) or tab + spaces
-(kernel), at your discretion. Kernel's is preferred.
+Align the wrapped line with tab + spaces.
 
 ## Try to return/exit early
 
