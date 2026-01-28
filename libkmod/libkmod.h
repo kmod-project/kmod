@@ -34,7 +34,7 @@ struct kmod_ctx;
 /**
  * kmod_new:
  * @dirname: what to consider as linux module's directory, if NULL
- *           defaults to $MODULE_DIRECTORY/`uname -r`. If it's relative,
+ *           defaults to $MODULE_DIRECTORY/$(uname -r). If it's relative,
  *           it's treated as relative to the current working directory.
  *           Otherwise, give an absolute dirname.
  * @config_paths: ordered array of paths (directories or files) where

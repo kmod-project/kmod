@@ -128,7 +128,7 @@ static void help(void)
 	       "\t-C, --config FILE           Use FILE instead of default search paths\n"
 	       "\t-d, --dirname DIR           Use DIR as filesystem root for " MODULE_DIRECTORY
 	       "\n"
-	       "\t-S, --set-version VERSION   Use VERSION instead of `uname -r`\n"
+	       "\t-S, --set-version VERSION   Use VERSION instead of $(uname -r)\n"
 
 	       "\t-s, --syslog                print to syslog, not stderr\n"
 	       "\t-q, --quiet                 disable messages\n"
