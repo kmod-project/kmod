@@ -115,7 +115,7 @@ commit addresses an issue caused by another commit, use `Fixes:` as below:
 ## Coding style
 
 The project uses style practically identical to the kernel style. You can see
-the in-tree [CODING-STYLE file](CODING-STYLE) for quick references.
+the in-tree [CODING-STYLE.md file](CODING-STYLE.md) for quick references.
 
 To ease and enforce the style a [.clang-format file](.clang-format) file is
 provided and ran in CI against all submissions.
