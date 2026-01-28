@@ -22,7 +22,7 @@ enum test_config {
 	TC_ROOTFS = 0,
 
 	/*
-	 * What's the desired string to be returned by `uname -r`. It will
+	 * What's the desired string to be returned by $(uname -r). It will
 	 * trap calls to uname(3P) by LD_PRELOAD'ing uname.so and then filling
 	 * in the information in u.release.
 	 */
