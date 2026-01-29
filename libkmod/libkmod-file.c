@@ -58,22 +58,6 @@ static const struct comp_type {
 	// clang-format on
 };
 
-int kmod_file_get_elf(struct kmod_file *file, struct kmod_elf **elf)
-{
-	if (!file->elf) {
-		int err = kmod_file_load_contents(file);
-		if (err)
-			return err;
-
-		err = kmod_elf_new(file->memory, file->size, &file->elf);
-		if (err)
-			return err;
-	}
-
-	*elf = file->elf;
-	return 0;
-}
-
 int kmod_file_open(const struct kmod_ctx *ctx, const char *filename,
 		   struct kmod_file **out_file)
 {
@@ -159,9 +143,6 @@ int kmod_file_get_fd(const struct kmod_file *file)
 
 void kmod_file_unref(struct kmod_file *file)
 {
-	if (file->elf)
-		kmod_elf_unref(file->elf);
-
 	if (file->compression == KMOD_FILE_COMPRESSION_NONE) {
 		if (file->memory)
 			munmap(file->memory, file->size);

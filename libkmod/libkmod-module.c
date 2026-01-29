@@ -45,6 +45,7 @@ struct kmod_module {
 	const char *remove_commands; /* owned by kmod_config */
 	char *alias; /* only set if this module was created from an alias */
 	struct kmod_file *file;
+	struct kmod_elf *elf;
 	int refcount;
 	struct {
 		bool dep : 1;
@@ -384,6 +385,9 @@ KMOD_EXPORT struct kmod_module *kmod_module_unref(struct kmod_module *mod)
 	kmod_pool_del_module(mod->ctx, mod, mod->hashkey);
 	kmod_module_unref_list(mod->dep);
 
+	if (mod->elf)
+		kmod_elf_unref(mod->elf);
+
 	if (mod->file)
 		kmod_file_unref(mod->file);
 
@@ -652,31 +656,32 @@ static int do_finit_module(struct kmod_module *mod, unsigned int flags, const ch
 static int do_init_module(struct kmod_module *mod, unsigned int flags, const char *args)
 {
 	_cleanup_free_ const void *stripped = NULL;
-	struct kmod_elf *elf;
 	const void *mem;
 	off_t size;
 	int err;
 
-	if (flags & (KMOD_INSERT_FORCE_VERMAGIC | KMOD_INSERT_FORCE_MODVERSION)) {
-		err = kmod_file_get_elf(mod->file, &elf);
-		if (err)
-			return err;
+	err = kmod_file_load_contents(mod->file);
+	if (err)
+		return err;
 
-		err = kmod_elf_strip(elf, flags, &stripped);
+	mem = kmod_file_get_contents(mod->file);
+	size = kmod_file_get_size(mod->file);
+
+	if (flags & (KMOD_INSERT_FORCE_VERMAGIC | KMOD_INSERT_FORCE_MODVERSION)) {
+		if (mod->elf == NULL) {
+			err = kmod_elf_new(mem, size, &mod->elf);
+			if (err)
+				return err;
+		}
+
+		err = kmod_elf_strip(mod->elf, flags, &stripped);
 		if (err) {
 			ERR(mod->ctx, "Failed to strip version information: %s\n",
 			    strerror(-err));
 			return err;
 		}
 		mem = stripped;
-	} else {
-		err = kmod_file_load_contents(mod->file);
-		if (err)
-			return err;
-
-		mem = kmod_file_get_contents(mod->file);
 	}
-	size = kmod_file_get_size(mod->file);
 
 	err = init_module(mem, size, args);
 	if (err < 0)
@@ -1749,7 +1754,23 @@ static int kmod_module_get_elf(const struct kmod_module *mod, struct kmod_elf **
 			return ret;
 	}
 
-	return kmod_file_get_elf(mod->file, elf);
+	if (mod->elf == NULL) {
+		const void *mem;
+		off_t size;
+		int err = kmod_file_load_contents(mod->file);
+		if (err)
+			return err;
+
+		mem = kmod_file_get_contents(mod->file);
+		size = kmod_file_get_size(mod->file);
+
+		err = kmod_elf_new(mem, size, &((struct kmod_module *)mod)->elf);
+		if (err)
+			return err;
+	}
+
+	*elf = mod->elf;
+	return 0;
 }
 
 struct kmod_module_info {

@@ -6,7 +6,6 @@
 #include <libkmod/libkmod-internal.h>
 
 struct kmod_ctx;
-struct kmod_elf;
 
 struct kmod_file {
 	int fd;
@@ -15,7 +14,6 @@ struct kmod_file {
 	void *memory;
 	int (*load)(struct kmod_file *file);
 	const struct kmod_ctx *ctx;
-	struct kmod_elf *elf;
 };
 
 #if ENABLE_XZ
