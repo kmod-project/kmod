@@ -495,7 +495,7 @@ if get_option('tools')
 
     internal_kmod_symlinks += custom_target(
       tool,
-      command : ['ln', '-sf', kmod, '@OUTPUT@'],
+      command : ['ln', '-sfr', kmod, '@OUTPUT@'],
       output : tool,
       depends : kmod,
       build_by_default : true,
