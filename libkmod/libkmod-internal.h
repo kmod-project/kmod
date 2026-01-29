@@ -155,7 +155,6 @@ struct kmod_modversion {
 
 _must_check_ _nonnull_all_ int kmod_elf_new(const void *memory, off_t size, struct kmod_elf **elf);
 _nonnull_all_ void kmod_elf_unref(struct kmod_elf *elf);
-_must_check_ _nonnull_all_ const void *kmod_elf_get_memory(const struct kmod_elf *elf);
 _must_check_ _nonnull_all_ int kmod_elf_get_modinfo_strings(const struct kmod_elf *elf, char ***array);
 _must_check_ _nonnull_all_ int kmod_elf_get_modversions(const struct kmod_elf *elf, struct kmod_modversion **array);
 _must_check_ _nonnull_all_ int kmod_elf_get_symbols(const struct kmod_elf *elf, struct kmod_modversion **array);

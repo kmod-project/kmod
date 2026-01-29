@@ -398,11 +398,6 @@ void kmod_elf_unref(struct kmod_elf *elf)
 	free(elf);
 }
 
-const void *kmod_elf_get_memory(const struct kmod_elf *elf)
-{
-	return elf->memory;
-}
-
 /*
  * Returns section index on success, negative value otherwise.
  * On success, sec_off and sec_size are range checked and valid.

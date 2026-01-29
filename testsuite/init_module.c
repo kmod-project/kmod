@@ -251,7 +251,7 @@ long init_module(void *mem, unsigned long len, _maybe_unused_ const char *args)
 	}
 
 	err = kmod_elf_get_section(elf, ".gnu.linkonce.this_module", &off, &bufsize);
-	buf = (const char *)kmod_elf_get_memory(elf) + off;
+	buf = (const char *)mem + off;
 	kmod_elf_unref(elf);
 
 	if (err < 0)
