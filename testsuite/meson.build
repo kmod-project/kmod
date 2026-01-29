@@ -74,7 +74,6 @@ libtestsuite = static_library(
   c_args : testsuite_c_args,
   dependencies : cc.find_library('rt'),
   build_by_default : false,
-  install : false,
 )
 
 _testsuite = [
