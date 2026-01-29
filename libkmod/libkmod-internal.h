@@ -136,9 +136,7 @@ _nonnull_all_ bool kmod_module_is_builtin(struct kmod_module *mod);
 
 /* libkmod-file.c */
 struct kmod_file;
-struct kmod_elf;
 _must_check_ _nonnull_all_ int kmod_file_open(const struct kmod_ctx *ctx, const char *filename, struct kmod_file **file);
-_must_check_ _nonnull_all_ int kmod_file_get_elf(struct kmod_file *file, struct kmod_elf **elf);
 _nonnull_all_ int kmod_file_load_contents(struct kmod_file *file);
 _must_check_ _nonnull_all_ const void *kmod_file_get_contents(const struct kmod_file *file);
 _must_check_ _nonnull_all_ off_t kmod_file_get_size(const struct kmod_file *file);
@@ -153,6 +151,7 @@ struct kmod_modversion {
 	const char *symbol;
 };
 
+struct kmod_elf;
 _must_check_ _nonnull_all_ int kmod_elf_new(const void *memory, off_t size, struct kmod_elf **elf);
 _nonnull_all_ void kmod_elf_unref(struct kmod_elf *elf);
 _must_check_ _nonnull_all_ int kmod_elf_get_modinfo_strings(const struct kmod_elf *elf, char ***array);
