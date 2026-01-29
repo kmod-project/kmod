@@ -351,7 +351,6 @@ libshared = static_library(
     'shared/tmpfile-util.h',
   ),
   gnu_symbol_visibility : 'hidden',
-  install : false,
 )
 
 libkmod_files = files(
@@ -423,7 +422,6 @@ libkmod_internal = static_library(
   'kmod-internal',
   objects : libkmod.extract_all_objects(recursive : true),
   dependencies : libkmod_deps + cdeps,
-  install : false,
 )
 
 kmod_sources = files(
