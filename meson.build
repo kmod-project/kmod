@@ -418,93 +418,90 @@ pkg.generate(
   libraries_private : cdeps,
 )
 
-libkmod_internal = static_library(
-  'kmod-internal',
-  objects : libkmod.extract_all_objects(recursive : true),
-  dependencies : libkmod_deps + cdeps,
-)
-
-kmod_sources = files(
-  'tools/depmod.c',
-  'tools/insmod.c',
-  'tools/kmod.c',
-  'tools/kmod.h',
-  'tools/log.c',
-  'tools/log.h',
-  'tools/lsmod.c',
-  'tools/modinfo.c',
-  'tools/modprobe.c',
-  'tools/opt.c',
-  'tools/opt.h',
-  'tools/rmmod.c',
-  'tools/static-nodes.c',
-)
-
-kmod = executable(
-  'kmod',
-  kmod_sources,
-  link_with : [libshared, libkmod_internal],
-  gnu_symbol_visibility : 'hidden',
-  build_by_default : get_option('tools'),
-  install : get_option('tools'),
-)
-
-_kmod_variables = [
-  'sysconfdir=' + sysconfdir,
-  'distconfdir=' + distconfdir,
-  'module_directory=' + moduledir,
-]
-
-# Don't (space) escape variables with space-separated lists, for consistency
-# with the autotools build.
-_kmod_unescaped_variables = [
-  'module_signatures=' + module_signatures,
-]
-
-# XXX: Support for empty variables was added in meson v1.4.0.
-# pkgconf behaves identically on missing and empty variable.
-if module_compressions != ''
-  _kmod_unescaped_variables += ['module_compressions=' + module_compressions]
-endif
-
-pkg.generate(
-  name : 'kmod',
-  description : 'Tools to deal with kernel modules',
-  install_dir : datadir / 'pkgconfig',
-  unescaped_variables : _kmod_unescaped_variables,
-  variables : _kmod_variables,
-)
-
-_tools = [
-  'depmod',
-  'insmod',
-  'lsmod',
-  'modinfo',
-  'modprobe',
-  'rmmod',
-]
-
 if get_option('tools')
+  libkmod_internal = static_library(
+    'kmod-internal',
+    objects : libkmod.extract_all_objects(recursive : true),
+    dependencies : libkmod_deps + cdeps,
+  )
+
+  kmod_sources = files(
+    'tools/depmod.c',
+    'tools/insmod.c',
+    'tools/kmod.c',
+    'tools/kmod.h',
+    'tools/log.c',
+    'tools/log.h',
+    'tools/lsmod.c',
+    'tools/modinfo.c',
+    'tools/modprobe.c',
+    'tools/opt.c',
+    'tools/opt.h',
+    'tools/rmmod.c',
+    'tools/static-nodes.c',
+  )
+
+  kmod = executable(
+    'kmod',
+    kmod_sources,
+    link_with : [libshared, libkmod_internal],
+    gnu_symbol_visibility : 'hidden',
+    install : true,
+)
+
+  _kmod_variables = [
+    'sysconfdir=' + sysconfdir,
+    'distconfdir=' + distconfdir,
+    'module_directory=' + moduledir,
+  ]
+
+  # Don't (space) escape variables with space-separated lists, for consistency
+  # with the autotools build.
+  _kmod_unescaped_variables = [
+    'module_signatures=' + module_signatures,
+  ]
+
+  # XXX: Support for empty variables was added in meson v1.4.0.
+  # pkgconf behaves identically on missing and empty variable.
+  if module_compressions != ''
+    _kmod_unescaped_variables += ['module_compressions=' + module_compressions]
+  endif
+
+  pkg.generate(
+    name : 'kmod',
+    description : 'Tools to deal with kernel modules',
+    install_dir : datadir / 'pkgconfig',
+    unescaped_variables : _kmod_unescaped_variables,
+    variables : _kmod_variables,
+  )
+
+  _tools = [
+    'depmod',
+    'insmod',
+    'lsmod',
+    'modinfo',
+    'modprobe',
+    'rmmod',
+  ]
+
   mkdir_p = 'mkdir -p "$DESTDIR@0@"'
   meson.add_install_script('sh', '-c', mkdir_p.format(sbindir))
 
   ln_s = 'ln -sfr "$DESTDIR@0@/kmod" "$DESTDIR@1@"'
+  internal_kmod_symlinks = []
+
   foreach tool : _tools
     meson.add_install_script('sh', '-c', ln_s.format(bindir, sbindir / tool))
+
+    internal_kmod_symlinks += custom_target(
+      tool,
+      command : ['ln', '-sf', kmod, '@OUTPUT@'],
+      output : tool,
+      depends : kmod,
+      build_by_default : true,
+    )
   endforeach
 endif
-
-internal_kmod_symlinks = []
-
-foreach tool : _tools
-  internal_kmod_symlinks += custom_target(
-    tool,
-    command : ['ln', '-sf', kmod, '@OUTPUT@'],
-    output : tool,
-    depends : kmod,
-    build_by_default : true,
-  )
-endforeach
 
 # ------------------------------------------------------------------------------
 # TESTSUITE
