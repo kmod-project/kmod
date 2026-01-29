@@ -6,14 +6,14 @@ modprobe - Add and remove modules from the Linux Kernel
 
 # SYNOPSIS
 
-*modprobe* [*-v*] [*-V*] [*-C* _config-file_] [*-n*] [*-i*] [*-q*] [*-b*] [_modulename_]
-\ \ \ \ \ \ \ \ \ \[_module parameters_...]
+*modprobe* [*-v*] [*-V*] [*-C* _config-file_] [*-n*] [*-i*] [*-q*] [*-b*] _modulename_
+\ \ \ \ \ \ \ \ \ \[_module parameters_]
 
-*modprobe* [*-r*] [*-v*] [*-n*] [*-i*] [_modulename_...]
+*modprobe* [*-r*] [*-v*] [*-n*] [*-i*] _modulename_
 
 *modprobe* [*-c*]
 
-*modprobe* [*--show-modversions*] [_filename_]
+*modprobe* [*--show-modversions*] _filename_
 
 # DESCRIPTION
 
@@ -222,26 +222,6 @@ the use by third-party tools and scripts is discouraged.
 The environment variable originates with the implementation of the install
 rules.
 
-# COPYRIGHT
-
-This manual page originally Copyright 2002, Rusty Russell, IBM Corporation.
-
 # SEE ALSO
 
 *modprobe.d*(5), *insmod*(8), *rmmod*(8), *lsmod*(8), *modinfo*(8), *depmod*(8)
-
-# BUGS
-
-Please direct any bug reports to kmod's issue tracker at
-https://github.com/kmod-project/kmod/issues/ alongside with version used, steps
-to reproduce the problem and the expected outcome.
-
-# AUTHORS
-
-Numerous contributions have come from the linux-modules mailing list
-<linux-modules@vger.kernel.org> and Github. If you have a clone of kmod.git
-itself, the output of *git-shortlog*(1) and *git-blame*(1) can show you the
-authors for specific parts of the project.
-
-*Lucas De Marchi* <lucas.de.marchi@gmail.com> is the current maintainer of the
-project.

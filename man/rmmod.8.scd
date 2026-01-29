@@ -6,7 +6,7 @@ rmmod - Simple program to remove a module from the Linux Kernel
 
 # SYNOPSIS
 
-*rmmod* [_OPTIONS_] [_list of modulenames_]
+*rmmod* [_OPTIONS_] _modulenames_
 
 # DESCRIPTION
 
@@ -41,26 +41,6 @@ the next module. This behaviour is NOT controlled by the *--force* option.
 *-h*, *--help*
 	Print the help message and exit.
 
-# COPYRIGHT
-
-This manual page originally Copyright 2002, Rusty Russell, IBM Corporation.
-
 # SEE ALSO
 
 *modprobe*(8), *insmod*(8), *lsmod*(8), *modinfo*(8), *depmod*(8)
-
-# BUGS
-
-Please direct any bug reports to kmod's issue tracker at
-https://github.com/kmod-project/kmod/issues/ alongside with version used, steps
-to reproduce the problem and the expected outcome.
-
-# AUTHORS
-
-Numerous contributions have come from the linux-modules mailing list
-<linux-modules@vger.kernel.org> and Github. If you have a clone of kmod.git
-itself, the output of *git-shortlog*(1) and *git-blame*(1) can show you the
-authors for specific parts of the project.
-
-*Lucas De Marchi* <lucas.de.marchi@gmail.com> is the current maintainer of the
-project.

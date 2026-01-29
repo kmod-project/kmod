@@ -17,21 +17,20 @@ foreach tuple : _man_pages
   man = tuple[1]
 
   custom_target(
-    'man_@0@_@1@'.format(section, man),
+    f'man_@section@_@man@',
     command : [
       build_scdoc,
       scdoc,
-      '@INPUT@',
       's|@SYSCONFDIR@|@0@|g;'.format(sysconfdir) +
       's|@DISTCONFDIR@|@0@|g;'.format(distconfdir) +
       's|@MODULE_DIRECTORY@|@0@|g;'.format(moduledir),
+      '@INPUT@',
     ],
-    input : '@0@.@1@.scd'.format(man, section),
-    output : '@0@.@1@'.format(man, section),
+    input : [f'@man@.@section@.scd', files('trailer.scd')],
+    output : f'@man@.@section@',
     capture : true,
-    build_by_default : get_option('manpages'),
     install : true,
-    install_dir : get_option('mandir') / 'man@0@'.format(section)
+    install_dir : get_option('mandir') / f'man@section@',
   )
 endforeach
 
@@ -46,12 +45,11 @@ foreach tuple : _man_aliases
   dest = tuple[2]
 
   custom_target(
-    'man_@0@_@1@'.format(section, man),
-    command : ['echo', '.so @0@'.format(dest)],
-    output : '@0@.@1@'.format(man, section),
+    f'man_@section@_@man@',
+    command : ['echo', f'.so @dest@'],
+    output : f'@man@.@section@',
     capture : true,
-    build_by_default : get_option('manpages'),
     install : true,
-    install_dir : get_option('mandir') / 'man@0@'.format(section)
+    install_dir : get_option('mandir') / f'man@section@',
   )
 endforeach

@@ -36,7 +36,8 @@ _funcs = [
   'secure_getenv',
 ]
 foreach func : _funcs
-  cdata.set10('HAVE_@0@'.format(func.to_upper()), cc.has_function(func, args : '-D_GNU_SOURCE'))
+  func_to_upper = func.to_upper()
+  cdata.set10(f'HAVE_@func_to_upper@', cc.has_function(func, args : '-D_GNU_SOURCE'))
 endforeach
 
 # Meson has some amount of support for finding builtins by passing the symbol
@@ -57,12 +58,13 @@ foreach tuple : _builtins
   args = tuple[1]
   required = tuple[2]
   # XXX: meson 1.5.0 has links(... required ) flag
-  have = cc.links('int main(void){@0@(@1@);return 0;}'.format(builtin, args))
+  have = cc.links(f'int main(void){@builtin@(@args@);return 0;}')
   if required and not have
-    error('required builtin function not found: @0@'.format(builtin))
+    error(f'required builtin function not found: @builtin@')
   endif
 
-  cdata.set10('HAVE_@0@'.format(builtin.to_upper()), have)
+  builtin_to_upper = builtin.to_upper()
+  cdata.set10(f'HAVE_@builtin_to_upper@', have)
 endforeach
 
 # basename may be only available in libgen.h with the POSIX behavior,
@@ -75,7 +77,8 @@ foreach tuple : _decls
   decl = tuple[0]
   header = tuple[1]
   have  = cc.has_header_symbol(header, decl, args : '-D_GNU_SOURCE')
-  cdata.set10('HAVE_DECL_@0@'.format(decl.to_upper()), have)
+  decl_to_upper = decl.to_upper()
+  cdata.set10(f'HAVE_DECL_@decl_to_upper@', have)
 endforeach
 
 cdata.set10('HAVE_STATIC_ASSERT', cc.compiles('_Static_assert(1, "Test");', name : '_Static_assert'))
@@ -158,6 +161,9 @@ dlopen_all = get_option('dlopen').contains('all')
 # Directories
 #-------------------------------------------------------------------------------
 
+project_source_root = meson.project_source_root()
+project_build_root = meson.project_build_root()
+
 prefixdir = get_option('prefix')
 sysconfdir = get_option('sysconfdir')
 bindir = prefixdir / get_option('bindir')
@@ -191,8 +197,7 @@ foreach tuple : _customdirs
     customdir = def_path
   else
     if not customdir.startswith('/')
-      error('User provided @0@, \'@1@\' is not an absolute path.'
-          .format(dir_option, customdir))
+      error(f'User provided @dir_option@, \'@customdir@\' is not an absolute path.')
     endif
     # Strip all leading/trailing and re-add only the leading one.
     customdir = '/' / customdir.strip('/')
@@ -224,10 +229,8 @@ foreach tuple : _completiondirs
     if completion.found()
       completion_prefix = completion.get_variable(pkgconfig : 'prefix')
       if completion_prefix != prefixdir
-        warning('User provided prefix \'@0@\' differs from @1@ one \'@2@\'.'
-                .format(prefixdir, pkg_dep, completion_prefix))
-        warning('Not installing completion. To re-enable, manually set @0@.'
-                .format(dir_option))
+        warning(f'User provided prefix \'@prefixdir@\' differs from @pkg_dep@ one \'@completion_prefix@\'.')
+        warning(f'Not installing completion. To re-enable, manually set @dir_option@.')
         completiondir = 'no'
       else
         completiondir = completion.get_variable(pkgconfig : 'completionsdir')
@@ -279,7 +282,7 @@ foreach tuple : _compression
 
   dlopen = dlopen_all or get_option('dlopen').contains(opt)
   if not dlopen_all and dlopen and get_option(opt).disabled()
-    error('Incompatiable options: dlopen=@0@ for disabled @0@'.format(opt))
+    error(f'Incompatiable options: dlopen=@opt@ for disabled @opt@')
   endif
 
   dep = dependency(pkg_dep, version : pkg_dep_version, required : get_option(opt))
@@ -292,7 +295,7 @@ foreach tuple : _compression
   cdata.set10('ENABLE_' + opt.to_upper() + '_DLOPEN', have and dlopen)
 
   if have
-    module_compressions += '@0@ '.format(opt)
+    module_compressions += f'@opt@ '
   endif
 
   features += ['@0@@1@'.format(have ? '+' : '-', opt.to_upper())]
@@ -351,7 +354,6 @@ libshared = static_library(
     'shared/tmpfile-util.h',
   ),
   gnu_symbol_visibility : 'hidden',
-  install : false,
 )
 
 libkmod_files = files(
@@ -419,94 +421,90 @@ pkg.generate(
   libraries_private : cdeps,
 )
 
-libkmod_internal = static_library(
-  'kmod-internal',
-  objects : libkmod.extract_all_objects(recursive : true),
-  dependencies : libkmod_deps + cdeps,
-  install : false,
-)
-
-kmod_sources = files(
-  'tools/depmod.c',
-  'tools/insmod.c',
-  'tools/kmod.c',
-  'tools/kmod.h',
-  'tools/log.c',
-  'tools/log.h',
-  'tools/lsmod.c',
-  'tools/modinfo.c',
-  'tools/modprobe.c',
-  'tools/opt.c',
-  'tools/opt.h',
-  'tools/rmmod.c',
-  'tools/static-nodes.c',
-)
-
-kmod = executable(
-  'kmod',
-  kmod_sources,
-  link_with : [libshared, libkmod_internal],
-  gnu_symbol_visibility : 'hidden',
-  build_by_default : get_option('tools'),
-  install : get_option('tools'),
-)
-
-_kmod_variables = [
-  'sysconfdir=' + sysconfdir,
-  'distconfdir=' + distconfdir,
-  'module_directory=' + moduledir,
-]
-
-# Don't (space) escape variables with space-separated lists, for consistency
-# with the autotools build.
-_kmod_unescaped_variables = [
-  'module_signatures=' + module_signatures,
-]
-
-# XXX: Support for empty variables was added in meson v1.4.0.
-# pkgconf behaves identically on missing and empty variable.
-if module_compressions != ''
-  _kmod_unescaped_variables += ['module_compressions=' + module_compressions]
-endif
-
-pkg.generate(
-  name : 'kmod',
-  description : 'Tools to deal with kernel modules',
-  install_dir : datadir / 'pkgconfig',
-  unescaped_variables : _kmod_unescaped_variables,
-  variables : _kmod_variables,
-)
-
-_tools = [
-  'depmod',
-  'insmod',
-  'lsmod',
-  'modinfo',
-  'modprobe',
-  'rmmod',
-]
-
 if get_option('tools')
+  libkmod_internal = static_library(
+    'kmod-internal',
+    objects : libkmod.extract_all_objects(recursive : true),
+    dependencies : libkmod_deps + cdeps,
+  )
+
+  kmod_sources = files(
+    'tools/depmod.c',
+    'tools/insmod.c',
+    'tools/kmod.c',
+    'tools/kmod.h',
+    'tools/log.c',
+    'tools/log.h',
+    'tools/lsmod.c',
+    'tools/modinfo.c',
+    'tools/modprobe.c',
+    'tools/opt.c',
+    'tools/opt.h',
+    'tools/rmmod.c',
+    'tools/static-nodes.c',
+  )
+
+  kmod = executable(
+    'kmod',
+    kmod_sources,
+    link_with : [libshared, libkmod_internal],
+    gnu_symbol_visibility : 'hidden',
+    install : true,
+)
+
+  _kmod_variables = [
+    'sysconfdir=' + sysconfdir,
+    'distconfdir=' + distconfdir,
+    'module_directory=' + moduledir,
+  ]
+
+  # Don't (space) escape variables with space-separated lists, for consistency
+  # with the autotools build.
+  _kmod_unescaped_variables = [
+    'module_signatures=' + module_signatures,
+  ]
+
+  # XXX: Support for empty variables was added in meson v1.4.0.
+  # pkgconf behaves identically on missing and empty variable.
+  if module_compressions != ''
+    _kmod_unescaped_variables += ['module_compressions=' + module_compressions]
+  endif
+
+  pkg.generate(
+    name : 'kmod',
+    description : 'Tools to deal with kernel modules',
+    install_dir : datadir / 'pkgconfig',
+    unescaped_variables : _kmod_unescaped_variables,
+    variables : _kmod_variables,
+  )
+
+  _tools = [
+    'depmod',
+    'insmod',
+    'lsmod',
+    'modinfo',
+    'modprobe',
+    'rmmod',
+  ]
+
   mkdir_p = 'mkdir -p "$DESTDIR@0@"'
   meson.add_install_script('sh', '-c', mkdir_p.format(sbindir))
 
   ln_s = 'ln -sfr "$DESTDIR@0@/kmod" "$DESTDIR@1@"'
+  internal_kmod_symlinks = []
+
   foreach tool : _tools
     meson.add_install_script('sh', '-c', ln_s.format(bindir, sbindir / tool))
+
+    internal_kmod_symlinks += custom_target(
+      tool,
+      command : ['ln', '-sfr', kmod, '@OUTPUT@'],
+      output : tool,
+      depends : kmod,
+      build_by_default : true,
+    )
   endforeach
 endif
-
-internal_kmod_symlinks = []
-
-foreach tool : _tools
-  internal_kmod_symlinks += custom_target(
-    tool,
-    command : ['ln', '-sf', kmod, '@OUTPUT@'],
-    output : tool,
-    depends : kmod,
-    build_by_default : true,
-  )
-endforeach
 
 # ------------------------------------------------------------------------------
 # TESTSUITE
