@@ -336,7 +336,7 @@ static void help(void)
 	       "\t-0, --null                  Use \\0 instead of \\n\n"
 	       "\t-m, --modname               Handle argument as module name instead of alias or filename\n"
 	       "\t-F, --field FIELD           Print only provided FIELD\n"
-	       "\t-k, --set-version VERSION   Use VERSION instead of `uname -r`\n"
+	       "\t-k, --set-version VERSION   Use VERSION instead of $(uname -r)\n"
 	       "\t-b, --basedir DIR           Use DIR as filesystem root for " MODULE_DIRECTORY
 	       "\n"
 	       "\t-V, --version               Show version\n"
