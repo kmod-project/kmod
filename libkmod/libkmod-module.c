@@ -660,12 +660,9 @@ static int do_init_module(struct kmod_module *mod, unsigned int flags, const cha
 	off_t size;
 	int err;
 
-	err = kmod_file_load_contents(mod->file);
+	err = kmod_file_get_contents(mod->file, &mem, &size);
 	if (err)
 		return err;
-
-	mem = kmod_file_get_contents(mod->file);
-	size = kmod_file_get_size(mod->file);
 
 	if (flags & (KMOD_INSERT_FORCE_VERMAGIC | KMOD_INSERT_FORCE_MODVERSION)) {
 		if (mod->elf == NULL) {
@@ -1757,12 +1754,9 @@ static int kmod_module_load_elf(const struct kmod_module *mod)
 	if (mod->elf == NULL) {
 		const void *mem;
 		off_t size;
-		int err = kmod_file_load_contents(mod->file);
+		int err = kmod_file_get_contents(mod->file, &mem, &size);
 		if (err)
 			return err;
-
-		mem = kmod_file_get_contents(mod->file);
-		size = kmod_file_get_size(mod->file);
 
 		err = kmod_elf_new(mem, size, &((struct kmod_module *)mod)->elf);
 		if (err)

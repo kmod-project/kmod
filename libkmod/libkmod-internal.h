@@ -137,9 +137,7 @@ _nonnull_all_ bool kmod_module_is_builtin(struct kmod_module *mod);
 /* libkmod-file.c */
 struct kmod_file;
 _must_check_ _nonnull_all_ int kmod_file_open(const struct kmod_ctx *ctx, const char *filename, struct kmod_file **file);
-_nonnull_all_ int kmod_file_load_contents(struct kmod_file *file);
-_must_check_ _nonnull_all_ const void *kmod_file_get_contents(const struct kmod_file *file);
-_must_check_ _nonnull_all_ off_t kmod_file_get_size(const struct kmod_file *file);
+_must_check_ _nonnull_all_ int kmod_file_get_contents(const struct kmod_file *file, const void **contents, off_t *size);
 _must_check_ _nonnull_all_ enum kmod_file_compression_type kmod_file_get_compression(const struct kmod_file *file);
 _must_check_ _nonnull_all_ int kmod_file_get_fd(const struct kmod_file *file);
 _nonnull_all_ void kmod_file_unref(struct kmod_file *file);

@@ -305,12 +305,18 @@ bool kmod_module_signature_info(const struct kmod_file *file,
 				struct kmod_signature_info *sig_info)
 {
 	const char *mem;
+	const void *contents;
 	off_t size;
 	struct module_signature modsig;
 	size_t sig_len;
+	int ret;
 
-	size = kmod_file_get_size(file);
-	mem = kmod_file_get_contents(file);
+	ret = kmod_file_get_contents(file, &contents, &size);
+	if (ret)
+		return false;
+
+	mem = contents;
+
 	if (size < (off_t)strlen(SIG_MAGIC))
 		return false;
 	size -= strlen(SIG_MAGIC);
