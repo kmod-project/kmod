@@ -307,7 +307,7 @@ endforeach
 #-------------------------------------------------------------------------------
 
 opt = 'openssl'
-dep = dependency('libcrypto', version : '>= 1.1.0', required : get_option(opt))
+dep = dependency('libcrypto', version : '>= 3.0.0', required : get_option(opt))
 have = dep.found()
 
 if have
