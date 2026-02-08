@@ -3,6 +3,8 @@
  * Copyright (C) 2013 Michal Marek, SUSE
  */
 
+#define DLSYM_LOCALLY_ENABLED ENABLE_OPENSSL_DLOPEN
+
 #include <endian.h>
 #include <inttypes.h>
 #if ENABLE_OPENSSL
@@ -110,6 +112,48 @@ static bool fill_default(const char *mem, off_t size,
 
 #if ENABLE_OPENSSL
 
+#define DL_SYMBOL_TABLE(M)             \
+	M(ASN1_INTEGER_to_BN)          \
+	M(ASN1_STRING_get0_data)       \
+	M(ASN1_STRING_length)          \
+	M(BIO_free)                    \
+	M(BIO_new_mem_buf)             \
+	M(BN_bn2bin)                   \
+	M(BN_free)                     \
+	M(BN_num_bits)                 \
+	M(d2i_PKCS7_bio)               \
+	M(OBJ_obj2nid)                 \
+	M(OBJ_obj2txt)                 \
+	M(OPENSSL_sk_value)            \
+	M(PKCS7_free)                  \
+	M(PKCS7_get_signer_info)       \
+	M(PKCS7_SIGNER_INFO_get0_algs) \
+	M(X509_ALGOR_get0)             \
+	M(X509_NAME_entry_count)       \
+	M(X509_NAME_ENTRY_get_data)    \
+	M(X509_NAME_ENTRY_get_object)  \
+	M(X509_NAME_get_entry)
+
+DL_SYMBOL_TABLE(DECLARE_SYM)
+
+/* Portion of the libcrypto/openssl API is nested inline functions and/or macros. As such, we
+ * need to copy/paste a few so our forwarding works.
+ */
+#define sym_BN_num_bytes(a) ((sym_BN_num_bits(a) + 7) / 8)
+#define sym_sk_PKCS7_SIGNER_INFO_value(sk, idx)     \
+	((PKCS7_SIGNER_INFO *)sym_OPENSSL_sk_value( \
+		ossl_check_const_PKCS7_SIGNER_INFO_sk_type(sk), (idx)))
+
+static int dlopen_crypto(void)
+{
+	static void *dl;
+
+	if (!DLSYM_LOCALLY_ENABLED)
+		return 0;
+
+	return dlsym_many(&dl, "libcrypto.so.3", DL_SYMBOL_TABLE(DLSYM_ARG) NULL);
+}
+
 static const char *x509_name_to_str(X509_NAME *name)
 {
 	int i;
@@ -119,18 +163,18 @@ static const char *x509_name_to_str(X509_NAME *name)
 	int nid = -1;
 	const char *str;
 
-	for (i = 0; i < X509_NAME_entry_count(name); i++) {
-		e = X509_NAME_get_entry(name, i);
-		o = X509_NAME_ENTRY_get_object(e);
-		nid = OBJ_obj2nid(o);
+	for (i = 0; i < sym_X509_NAME_entry_count(name); i++) {
+		e = sym_X509_NAME_get_entry(name, i);
+		o = sym_X509_NAME_ENTRY_get_object(e);
+		nid = sym_OBJ_obj2nid(o);
 		if (nid == NID_commonName)
 			break;
 	}
 	if (nid == -1)
 		return NULL;
 
-	d = X509_NAME_ENTRY_get_data(e);
-	str = (const char *)ASN1_STRING_get0_data(d);
+	d = sym_X509_NAME_ENTRY_get_data(e);
+	str = (const char *)sym_ASN1_STRING_get0_data(d);
 
 	return str;
 }
@@ -153,23 +197,28 @@ static bool fill_pkcs7(const char *mem, off_t size, size_t sig_len,
 	const char *issuer_str;
 	int hash_algo_len;
 	size_t total_len;
+	int ret;
+
+	ret = dlopen_crypto();
+	if (ret < 0)
+		return false;
 
 	size -= sig_len;
 	pkcs7_raw = mem + size;
 
-	in = BIO_new_mem_buf(pkcs7_raw, sig_len);
+	in = sym_BIO_new_mem_buf(pkcs7_raw, sig_len);
 
-	pkcs7 = d2i_PKCS7_bio(in, NULL);
-	BIO_free(in);
+	pkcs7 = sym_d2i_PKCS7_bio(in, NULL);
+	sym_BIO_free(in);
 
 	if (pkcs7 == NULL)
 		goto err;
 
-	sis = PKCS7_get_signer_info(pkcs7);
+	sis = sym_PKCS7_get_signer_info(pkcs7);
 	if (sis == NULL)
 		goto err;
 
-	si = sk_PKCS7_SIGNER_INFO_value(sis, 0);
+	si = sym_sk_PKCS7_SIGNER_INFO_value(sis, 0);
 	if (si == NULL || si->issuer_and_serial == NULL || si->enc_digest == NULL)
 		goto err;
 
@@ -184,16 +233,16 @@ static bool fill_pkcs7(const char *mem, off_t size, size_t sig_len,
 		total_len += strlen(issuer_str);
 
 	/* key_id */
-	sno_bn = ASN1_INTEGER_to_BN(is->serial, NULL);
+	sno_bn = sym_ASN1_INTEGER_to_BN(is->serial, NULL);
 	if (sno_bn == NULL)
 		goto err;
 
-	total_len += BN_num_bytes(sno_bn);
+	total_len += sym_BN_num_bytes(sno_bn);
 
 	/* hash_algo */
-	PKCS7_SIGNER_INFO_get0_algs(si, NULL, &dig_alg, NULL);
-	X509_ALGOR_get0(&o, NULL, NULL, dig_alg);
-	hash_algo_len = OBJ_obj2txt(NULL, 0, o, 0);
+	sym_PKCS7_SIGNER_INFO_get0_algs(si, NULL, &dig_alg, NULL);
+	sym_X509_ALGOR_get0(&o, NULL, NULL, dig_alg);
+	hash_algo_len = sym_OBJ_obj2txt(NULL, 0, o, 0);
 	if (hash_algo_len < 0)
 		goto err1;
 
@@ -201,7 +250,7 @@ static bool fill_pkcs7(const char *mem, off_t size, size_t sig_len,
 
 	/* sig */
 	sig = si->enc_digest;
-	total_len += ASN1_STRING_length(sig);
+	total_len += sym_ASN1_STRING_length(sig);
 
 	sig_info = calloc(1, total_len);
 	if (sig_info == NULL)
@@ -222,15 +271,15 @@ static bool fill_pkcs7(const char *mem, off_t size, size_t sig_len,
 
 	/* key_id */
 	sig_info->key_id = p;
-	sig_info->key_id_len = BN_num_bytes(sno_bn);
+	sig_info->key_id_len = sym_BN_num_bytes(sno_bn);
 
-	BN_bn2bin(sno_bn, (unsigned char *)p);
+	sym_BN_bn2bin(sno_bn, (unsigned char *)p);
 	p += sig_info->key_id_len;
 
 	/* hash_algo */
 	sig_info->hash_algo = p;
 
-	hash_algo_len = OBJ_obj2txt(p, hash_algo_len + 1, o, 0);
+	hash_algo_len = sym_OBJ_obj2txt(p, hash_algo_len + 1, o, 0);
 	if (hash_algo_len < 0)
 		goto err2;
 	p += hash_algo_len;
@@ -240,12 +289,12 @@ static bool fill_pkcs7(const char *mem, off_t size, size_t sig_len,
 
 	/* sig */
 	sig_info->sig = p;
-	sig_info->sig_len = ASN1_STRING_length(sig);
+	sig_info->sig_len = sym_ASN1_STRING_length(sig);
 
-	memcpy(p, ASN1_STRING_get0_data(sig), sig_info->sig_len);
+	memcpy(p, sym_ASN1_STRING_get0_data(sig), sig_info->sig_len);
 
-	BN_free(sno_bn);
-	PKCS7_free(pkcs7);
+	sym_BN_free(sno_bn);
+	sym_PKCS7_free(pkcs7);
 
 	*out_sig_info = sig_info;
 
@@ -254,9 +303,9 @@ static bool fill_pkcs7(const char *mem, off_t size, size_t sig_len,
 err2:
 	free(sig_info);
 err1:
-	BN_free(sno_bn);
+	sym_BN_free(sno_bn);
 err:
-	PKCS7_free(pkcs7);
+	sym_PKCS7_free(pkcs7);
 	return false;
 }
 
