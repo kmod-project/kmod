@@ -266,16 +266,17 @@ if bashcompletiondir != 'no'
 endif
 
 #-------------------------------------------------------------------------------
-# Compression support
+# Compression support and signed modules
 #-------------------------------------------------------------------------------
 
-_compression = [
-  ['zstd', 'libzstd', '>= 1.4.4'],
-  ['xz',   'liblzma', '>= 4.99'],
-  ['zlib', 'zlib',    '>= 0'],
+_moar_deps = [
+  ['zstd',    'libzstd',   '>= 1.4.4'],
+  ['xz',      'liblzma',   '>= 4.99'],
+  ['zlib',    'zlib',      '>= 0'],
+  ['openssl', 'libcrypto', '>= 3.0.0'],
 ]
 
-foreach tuple : _compression
+foreach tuple : _moar_deps
   opt = tuple[0]
   pkg_dep = tuple[1]
   pkg_dep_version = tuple[2]
@@ -294,30 +295,15 @@ foreach tuple : _compression
   cdata.set10('ENABLE_' + opt.to_upper(), have)
   cdata.set10('ENABLE_' + opt.to_upper() + '_DLOPEN', have and dlopen)
 
-  if have
+  if opt == 'openssl'
+    module_signatures = have ? 'PKCS7 legacy' : 'legacy'
+  elif have
     module_compressions += f'@opt@ '
   endif
 
   features += ['@0@@1@'.format(have ? '+' : '-', opt.to_upper())]
   dep_map += {opt : dep}
 endforeach
-
-#-------------------------------------------------------------------------------
-# Signed modules
-#-------------------------------------------------------------------------------
-
-opt = 'openssl'
-dep = dependency('libcrypto', version : '>= 3.0.0', required : get_option(opt))
-have = dep.found()
-
-if have
-  module_signatures = 'PKCS7 legacy'
-else
-  module_signatures = 'legacy'
-endif
-cdata.set10('ENABLE_' + opt.to_upper(), have)
-features += ['@0@@1@'.format(have ? '+' : '-', opt.to_upper())]
-dep_map += {opt : dep}
 
 #-------------------------------------------------------------------------------
 # Config output
