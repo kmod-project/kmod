@@ -407,6 +407,11 @@ pkg.generate(
   libraries_private : cdeps,
 )
 
+install_data(
+  files('libkmod/valgrind/kmod.supp'),
+  install_dir : datadir / 'kmod/valgrind'
+)
+
 if get_option('tools')
   libkmod_internal = static_library(
     'kmod-internal',

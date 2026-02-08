@@ -1,0 +1,7 @@
+{
+   ignore-leaked-dlopen-handles
+   Memcheck:Leak
+   ...
+   fun:dlopen@@GLIBC_2.34
+}
+
