@@ -467,7 +467,7 @@ int mkdir_p(const char *path, int len, mode_t mode)
 
 int mkdir_parents(const char *path, mode_t mode)
 {
-	char *end = strrchr(path, '/');
+	const char *end = strrchr(path, '/');
 
 	/* no parent directories */
 	if (end == NULL)
