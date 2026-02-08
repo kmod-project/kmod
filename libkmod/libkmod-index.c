@@ -5,8 +5,8 @@
 
 #include <sys/param.h>
 
-#include <arpa/inet.h>
 #include <assert.h>
+#include <endian.h>
 #include <errno.h>
 #include <fnmatch.h>
 #include <inttypes.h>
@@ -225,7 +225,7 @@ static bool read_u32s(FILE *in, uint32_t *l, size_t n)
 		return false;
 	}
 	for (i = 0; i < n; i++)
-		l[i] = ntohl(l[i]);
+		l[i] = be32toh(l[i]);
 	return true;
 }
 
@@ -662,7 +662,7 @@ static inline uint32_t read_u32_mm(const void **p)
 	v = get_unaligned((const uint32_t *)addr);
 
 	*p = addr + sizeof(uint32_t);
-	return ntohl(v);
+	return be32toh(v);
 }
 
 static inline uint8_t read_char_mm(const void **p)

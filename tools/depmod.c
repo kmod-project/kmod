@@ -4,10 +4,10 @@
  * Copyright (C) 2011-2013  ProFUSION embedded systems
  */
 
-#include <arpa/inet.h>
 #include <assert.h>
 #include <ctype.h>
 #include <dirent.h>
+#include <endian.h>
 #include <errno.h>
 #include <getopt.h>
 #include <limits.h>
@@ -402,7 +402,7 @@ static uint32_t index_write__node(const struct index_node *node, FILE *out,
 			} else {
 				uint32_t mask = index_get_mask(child);
 				child_offs[i] =
-					htonl((offset + node->size + sizes) | mask);
+					htobe32((offset + node->size + sizes) | mask);
 				sizes += child->total;
 			}
 		}
@@ -428,11 +428,11 @@ static uint32_t index_write__node(const struct index_node *node, FILE *out,
 		value_count = 0;
 		for (v = node->values; v != NULL; v = v->next)
 			value_count++;
-		u = htonl(value_count);
+		u = htobe32(value_count);
 		fwrite(&u, sizeof(u), 1, out);
 
 		for (v = node->values; v != NULL; v = v->next) {
-			u = htonl(v->priority);
+			u = htobe32(v->priority);
 			fwrite(&u, sizeof(u), 1, out);
 			fputs(v->value, out);
 			fputc('\0', out);
@@ -462,13 +462,13 @@ static void index_write(struct index_node *node, FILE *out)
 
 	index_calculate_size(node);
 
-	u = htonl(INDEX_MAGIC);
+	u = htobe32(INDEX_MAGIC);
 	fwrite(&u, sizeof(u), 1, out);
-	u = htonl(INDEX_VERSION);
+	u = htobe32(INDEX_VERSION);
 	fwrite(&u, sizeof(u), 1, out);
 
 	/* Write offset of first node */
-	u = htonl(first_off | index_get_mask(node));
+	u = htobe32(first_off | index_get_mask(node));
 	fwrite(&u, sizeof(u), 1, out);
 
 	/* Dump trie */
