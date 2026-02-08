@@ -15,6 +15,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <shared/elf-note.h>
 #include <shared/missing.h>
 #include <shared/util.h>
 
@@ -146,12 +147,16 @@ DL_SYMBOL_TABLE(DECLARE_SYM)
 
 static int dlopen_crypto(void)
 {
+#if !DLSYM_LOCALLY_ENABLED
+	return 0;
+#else
 	static void *dl;
 
-	if (!DLSYM_LOCALLY_ENABLED)
-		return 0;
+	ELF_NOTE_DLOPEN("openssl", "Support for reading module signatures",
+			ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED, "libcrypto.so.3");
 
 	return dlsym_many(&dl, "libcrypto.so.3", DL_SYMBOL_TABLE(DLSYM_ARG) NULL);
+#endif
 }
 
 static const char *x509_name_to_str(X509_NAME *name)
