@@ -1623,22 +1623,25 @@ load_info:
 			if (streq(key, "alias")) {
 				const char *value = kmod_module_info_get_value(l);
 
-				if (array_append(&mod->alias_values, value) < 0)
-					return 0;
+				err = array_append(&mod->alias_values, value);
+				if (err < 0)
+					return err;
 				continue;
 			}
 			if (streq(key, "softdep")) {
 				const char *value = kmod_module_info_get_value(l);
 
-				if (array_append(&mod->softdep_values, value) < 0)
-					return 0;
+				err = array_append(&mod->softdep_values, value);
+				if (err < 0)
+					return err;
 				continue;
 			}
 			if (streq(key, "weakdep")) {
 				const char *value = kmod_module_info_get_value(l);
 
-				if (array_append(&mod->weakdep_values, value) < 0)
-					return 0;
+				err = array_append(&mod->weakdep_values, value);
+				if (err < 0)
+					return err;
 				continue;
 			}
 		}
