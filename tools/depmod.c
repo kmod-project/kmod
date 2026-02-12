@@ -1590,16 +1590,19 @@ static struct symbol *depmod_symbol_find(const struct depmod *depmod, const char
 	return hash_find(depmod->symbols, name);
 }
 
-static int depmod_load_modules(struct depmod *depmod)
+struct module_symbols {
+	struct depmod *depmod;
+	struct mod **modules;
+	size_t modules_count;
+	struct array symbols; /* struct symbol */
+};
+
+static int resolve_module_symbols(struct module_symbols *mod_syms)
 {
-	struct mod **itr, **itr_end;
+	array_init(&mod_syms->symbols, 128);
 
-	DBG("load symbols (%zu modules)\n", depmod->modules.count);
-
-	itr = (struct mod **)depmod->modules.array;
-	itr_end = itr + depmod->modules.count;
-	for (; itr < itr_end; itr++) {
-		struct mod *mod = *itr;
+	for (size_t i = 0; i < mod_syms->modules_count; i++) {
+		struct mod *mod = mod_syms->modules[i];
 		struct kmod_list *l, *list = NULL;
 		int err = kmod_module_get_symbols(mod->kmod, &list);
 		if (err < 0) {
@@ -1615,9 +1618,19 @@ static int depmod_load_modules(struct depmod *depmod)
 			uint64_t crc = kmod_module_symbol_get_crc(l);
 			struct symbol *sym;
 
-			sym = depmod_symbol_create(depmod, name, false, crc, mod);
-			if (sym)
-				depmod_symbol_add(depmod, sym);
+			sym = depmod_symbol_create(mod_syms->depmod, name, false, crc,
+						   mod);
+			if (sym == NULL) {
+				kmod_module_symbols_free_list(list);
+				return -ENOMEM;
+			}
+
+			err = array_append(&mod_syms->symbols, sym);
+			if (err < 0) {
+				free(sym);
+				kmod_module_symbols_free_list(list);
+				return -ENOMEM;
+			}
 		}
 		kmod_module_symbols_free_list(list);
 
@@ -1655,6 +1668,30 @@ load_info:
 		kmod_module_unref(mod->kmod);
 		mod->kmod = NULL;
 	}
+	return 0;
+}
+
+static int depmod_load_modules(struct depmod *depmod)
+{
+	struct module_symbols mod_syms = {
+		.depmod = depmod,
+		.modules = (struct mod **)depmod->modules.array,
+		.modules_count = depmod->modules.count,
+	};
+	int err;
+
+	DBG("load symbols (%zu modules)\n", depmod->modules.count);
+
+	err = resolve_module_symbols(&mod_syms);
+	if (err < 0)
+		return err;
+
+	for (size_t i = 0; i < mod_syms.symbols.count; i++) {
+		struct symbol *sym = mod_syms.symbols.array[i];
+
+		depmod_symbol_add(depmod, sym);
+	}
+	array_free_array(&mod_syms.symbols);
 
 	DBG("loaded symbols (%zu modules, %u symbols)\n", depmod->modules.count,
 	    hash_get_count(depmod->symbols));
