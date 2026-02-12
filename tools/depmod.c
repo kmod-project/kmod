@@ -1548,11 +1548,11 @@ corrupted:
 	fclose(fp);
 }
 
-static int depmod_symbol_add(struct depmod *depmod, const char *name, bool prefix_skipped,
-			     uint64_t crc, const struct mod *owner)
+static struct symbol *depmod_symbol_create(struct depmod *depmod, const char *name,
+					   bool prefix_skipped, uint64_t crc,
+					   const struct mod *owner)
 {
 	size_t namelen;
-	int err;
 	struct symbol *sym;
 
 	if (!prefix_skipped && (name[0] == depmod->cfg->sym_prefix))
@@ -1561,20 +1561,22 @@ static int depmod_symbol_add(struct depmod *depmod, const char *name, bool prefi
 	namelen = strlen(name) + 1;
 	sym = malloc(sizeof(struct symbol) + namelen);
 	if (sym == NULL)
-		return -ENOMEM;
+		return NULL;
 
 	sym->owner = (struct mod *)owner;
 	sym->crc = crc;
 	memcpy(sym->name, name, namelen);
+	return sym;
+}
 
-	err = hash_add(depmod->symbols, sym->name, sym);
-	if (err < 0) {
-		free(sym);
+static int depmod_symbol_add(struct depmod *depmod, struct symbol *sym)
+{
+	int err = hash_add(depmod->symbols, sym->name, sym);
+	if (err < 0)
 		return err;
-	}
 
-	DBG("add %p sym=%s, owner=%p %s\n", sym, sym->name, owner,
-	    owner != NULL ? owner->path : "");
+	DBG("add %p sym=%s, owner=%p %s\n", sym, sym->name, sym->owner,
+	    sym->owner != NULL ? sym->owner->path : "");
 
 	return 0;
 }
@@ -1611,7 +1613,11 @@ static int depmod_load_modules(struct depmod *depmod)
 		kmod_list_foreach(l, list) {
 			const char *name = kmod_module_symbol_get_symbol(l);
 			uint64_t crc = kmod_module_symbol_get_crc(l);
-			depmod_symbol_add(depmod, name, false, crc, mod);
+			struct symbol *sym;
+
+			sym = depmod_symbol_create(depmod, name, false, crc, mod);
+			if (sym)
+				depmod_symbol_add(depmod, sym);
 		}
 		kmod_module_symbols_free_list(list);
 
@@ -2645,13 +2651,24 @@ static int depmod_output(struct depmod *depmod, FILE *out)
 
 static void depmod_add_fake_syms(struct depmod *depmod)
 {
+	struct symbol *sym;
+
 	/* __this_module is magically inserted by kernel loader. */
-	depmod_symbol_add(depmod, "__this_module", true, 0, NULL);
+	sym = depmod_symbol_create(depmod, "__this_module", true, 0, NULL);
+	if (sym)
+		depmod_symbol_add(depmod, sym);
+
 	/* On S390, this is faked up too */
-	depmod_symbol_add(depmod, "_GLOBAL_OFFSET_TABLE_", true, 0, NULL);
+	sym = depmod_symbol_create(depmod, "_GLOBAL_OFFSET_TABLE_", true, 0, NULL);
+	if (sym)
+		depmod_symbol_add(depmod, sym);
+
 	/* On PowerPC64 ABIv2, .TOC. is more or less _GLOBAL_OFFSET_TABLE_ */
-	if (!depmod_symbol_find(depmod, "TOC."))
-		depmod_symbol_add(depmod, "TOC.", true, 0, NULL);
+	if (!depmod_symbol_find(depmod, "TOC.")) {
+		sym = depmod_symbol_create(depmod, "TOC.", true, 0, NULL);
+		if (sym)
+			depmod_symbol_add(depmod, sym);
+	}
 }
 
 static int depmod_load_symvers(struct depmod *depmod, const char *filename)
@@ -2670,6 +2687,7 @@ static int depmod_load_symvers(struct depmod *depmod, const char *filename)
 
 	/* eg. "0xb352177e\tfind_first_bit\tvmlinux\tEXPORT_SYMBOL" */
 	while (fgets(line, sizeof(line), fp) != NULL) {
+		struct symbol *symbol;
 		const char *ver, *sym, *where;
 		char *verend;
 		uint64_t crc;
@@ -2693,7 +2711,9 @@ static int depmod_load_symvers(struct depmod *depmod, const char *filename)
 			continue;
 		}
 
-		depmod_symbol_add(depmod, sym, false, crc, NULL);
+		symbol = depmod_symbol_create(depmod, sym, false, crc, NULL);
+		if (symbol)
+			depmod_symbol_add(depmod, symbol);
 	}
 	depmod_add_fake_syms(depmod);
 
@@ -2721,6 +2741,7 @@ static int depmod_load_system_map(struct depmod *depmod, const char *filename)
 
 	/* eg. c0294200 R __ksymtab_devfs_alloc_devnum */
 	while (fgets(line, sizeof(line), fp) != NULL) {
+		struct symbol *sym;
 		char *p, *end;
 
 		linenum++;
@@ -2746,7 +2767,10 @@ static int depmod_load_system_map(struct depmod *depmod, const char *filename)
 		if (end != NULL)
 			*end = '\0';
 
-		depmod_symbol_add(depmod, p + ksymstr_len, true, 0, NULL);
+		sym = depmod_symbol_create(depmod, p + ksymstr_len, true, 0, NULL);
+		if (sym)
+			depmod_symbol_add(depmod, sym);
+
 		continue;
 
 invalid_syntax:
