@@ -11,6 +11,7 @@
 #include <errno.h>
 #include <getopt.h>
 #include <limits.h>
+#include <pthread.h>
 #include <regex.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -1597,8 +1598,10 @@ struct module_symbols {
 	struct array symbols; /* struct symbol */
 };
 
-static int resolve_module_symbols(struct module_symbols *mod_syms)
+static void *resolve_module_symbols(void *arg)
 {
+	struct module_symbols *mod_syms = arg;
+
 	array_init(&mod_syms->symbols, 128);
 
 	for (size_t i = 0; i < mod_syms->modules_count; i++) {
@@ -1622,14 +1625,14 @@ static int resolve_module_symbols(struct module_symbols *mod_syms)
 						   mod);
 			if (sym == NULL) {
 				kmod_module_symbols_free_list(list);
-				return -ENOMEM;
+				return (void *)(intptr_t)-ENOMEM;
 			}
 
 			err = array_append(&mod_syms->symbols, sym);
 			if (err < 0) {
 				free(sym);
 				kmod_module_symbols_free_list(list);
-				return -ENOMEM;
+				return (void *)(intptr_t)-ENOMEM;
 			}
 		}
 		kmod_module_symbols_free_list(list);
@@ -1644,7 +1647,7 @@ load_info:
 
 				err = array_append(&mod->alias_values, value);
 				if (err < 0)
-					return err;
+					return (void *)(intptr_t)err;
 				continue;
 			}
 			if (streq(key, "softdep")) {
@@ -1652,7 +1655,7 @@ load_info:
 
 				err = array_append(&mod->softdep_values, value);
 				if (err < 0)
-					return err;
+					return (void *)(intptr_t)err;
 				continue;
 			}
 			if (streq(key, "weakdep")) {
@@ -1660,7 +1663,7 @@ load_info:
 
 				err = array_append(&mod->weakdep_values, value);
 				if (err < 0)
-					return err;
+					return (void *)(intptr_t)err;
 				continue;
 			}
 		}
@@ -1668,30 +1671,93 @@ load_info:
 		kmod_module_unref(mod->kmod);
 		mod->kmod = NULL;
 	}
-	return 0;
+	return (void *)(intptr_t)0;
+}
+
+static unsigned int get_cpu_count(void)
+{
+	long nproc = sysconf(_SC_NPROCESSORS_ONLN);
+	return nproc > 0 ? (unsigned int)nproc : 1;
 }
 
 static int depmod_load_modules(struct depmod *depmod)
 {
-	struct module_symbols mod_syms = {
-		.depmod = depmod,
-		.modules = (struct mod **)depmod->modules.array,
-		.modules_count = depmod->modules.count,
-	};
+	struct thread_info {
+		pthread_t tid;
+		struct module_symbols mod_syms;
+	} *tinfo;
+	unsigned int n_threads;
+	size_t modules_per_thread, last_modules_per_thread;
 	int err;
 
 	DBG("load symbols (%zu modules)\n", depmod->modules.count);
 
-	err = resolve_module_symbols(&mod_syms);
-	if (err < 0)
-		return err;
+	n_threads = get_cpu_count();
+	if (n_threads > depmod->modules.count)
+		n_threads = depmod->modules.count;
 
-	for (size_t i = 0; i < mod_syms.symbols.count; i++) {
-		struct symbol *sym = mod_syms.symbols.array[i];
+	tinfo = calloc(n_threads, sizeof(*tinfo));
+	if (tinfo == NULL)
+		return -ENOMEM;
 
-		depmod_symbol_add(depmod, sym);
+	modules_per_thread = (depmod->modules.count + n_threads - 1) / n_threads;
+	last_modules_per_thread =
+		modules_per_thread - (depmod->modules.count % n_threads);
+
+	for (unsigned int i = 0; i < n_threads; i++) {
+		struct module_symbols *mod_syms = &tinfo[i].mod_syms;
+
+		mod_syms->depmod = depmod;
+		mod_syms->modules =
+			(struct mod **)depmod->modules.array + (i * modules_per_thread);
+		mod_syms->modules_count = modules_per_thread;
+		if (i + 1 == n_threads)
+			mod_syms->modules_count = last_modules_per_thread;
+
+		err = pthread_create(&tinfo[i].tid, NULL, &resolve_module_symbols,
+				     mod_syms);
+		if (err != 0) {
+			err = -err; // Most/all pthread API returns positive error
+			n_threads = i;
+			break;
+		}
 	}
-	array_free_array(&mod_syms.symbols);
+
+	for (unsigned int i = 0; i < n_threads; i++) {
+		int local_err;
+		void *res;
+
+		local_err = pthread_join(tinfo[i].tid, &res);
+		if (err == 0) {
+			if (local_err != 0)
+				err = -local_err;
+			if ((int)(intptr_t)res != 0)
+				err = (int)(intptr_t)res;
+		}
+	}
+
+	if (err != 0) {
+		for (unsigned int i = 0; i < n_threads; i++) {
+			struct module_symbols *mod_syms = &tinfo[i].mod_syms;
+
+			for (size_t j = 0; j < mod_syms->symbols.count; j++)
+				free(mod_syms->symbols.array[j]);
+
+			array_free_array(&mod_syms->symbols);
+		}
+		free(tinfo);
+		return err;
+	}
+
+	for (unsigned int i = 0; i < n_threads; i++) {
+		struct module_symbols *mod_syms = &tinfo[i].mod_syms;
+
+		for (size_t j = 0; j < mod_syms->symbols.count; j++)
+			depmod_symbol_add(depmod, mod_syms->symbols.array[j]);
+
+		array_free_array(&mod_syms->symbols);
+	}
+	free(tinfo);
 
 	DBG("loaded symbols (%zu modules, %u symbols)\n", depmod->modules.count,
 	    hash_get_count(depmod->symbols));
