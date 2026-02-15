@@ -61,6 +61,13 @@ option(
 )
 
 option(
+  'mbedtls',
+  type : 'feature',
+  value : 'disabled',
+  description : 'MbedTLS support, PKCS7 signatures. Default: disabled',
+)
+
+option(
   'tools',
   type : 'boolean',
   value : true,
@@ -70,7 +77,7 @@ option(
 option(
   'dlopen',
   type : 'array',
-  choices : ['zstd', 'xz', 'zlib', 'openssl', 'all'],
+  choices : ['zstd', 'xz', 'zlib', 'openssl', 'mbedtls', 'all'],
   value : ['all'],
   description : 'Libraries to dlopen rather than linking. Default: "all"',
 )

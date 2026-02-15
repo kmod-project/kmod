@@ -274,6 +274,7 @@ _moar_deps = [
   ['xz',      'liblzma',   '>= 4.99'],
   ['zlib',    'zlib',      '>= 0'],
   ['openssl', 'libcrypto', '>= 3.0.0'],
+  ['mbedtls', 'mbedx509',  '>= 3.6.0'],
 ]
 
 foreach tuple : _moar_deps
@@ -296,7 +297,7 @@ foreach tuple : _moar_deps
   cdata.set10('ENABLE_' + opt.to_upper() + '_DLOPEN', have and dlopen)
 
   if have
-    if opt == 'openssl'
+    if opt == 'openssl' or opt == 'mbedtls'
       signatures += ['PKCS7']
     else
       compressions += [f'@opt@']
@@ -390,6 +391,11 @@ endif
 if dep_map.get('openssl').found()
   libkmod_files += files('libkmod/libkmod-signature-openssl.c')
   libkmod_deps += dep_map['openssl']
+endif
+
+if dep_map.get('mbedtls').found()
+  libkmod_files += files('libkmod/libkmod-signature-mbedtls.c')
+  libkmod_deps += dep_map['mbedtls']
 endif
 
 install_headers('libkmod/libkmod.h')

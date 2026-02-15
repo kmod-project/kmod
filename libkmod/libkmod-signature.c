@@ -169,6 +169,8 @@ bool kmod_module_signature_info(const struct kmod_file *file,
 	case PKEY_ID_PKCS7:
 		ret = kmod_fill_pkcs7_openssl(mem, size, sig_len, sig_info);
 		if (!ret)
+			ret = kmod_fill_pkcs7_mbedtls(mem, size, sig_len, sig_info);
+		if (!ret)
 			ret = kmod_fill_pkcs7_dummy(mem, size, sig_len, sig_info);
 		break;
 	default:
