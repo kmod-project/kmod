@@ -157,8 +157,6 @@ static bool fill_pkcs7(const char *mem, off_t size, size_t sig_len,
 	STACK_OF(PKCS7_SIGNER_INFO) * sis;
 	PKCS7_SIGNER_INFO *si;
 	PKCS7_ISSUER_AND_SERIAL *is;
-	X509_NAME *issuer;
-	ASN1_INTEGER *sno;
 	ASN1_OCTET_STRING *sig;
 	BIGNUM *sno_bn;
 	X509_ALGOR *dig_alg;
@@ -193,8 +191,6 @@ static bool fill_pkcs7(const char *mem, off_t size, size_t sig_len,
 		goto err;
 
 	is = si->issuer_and_serial;
-	issuer = is->issuer;
-	sno = is->serial;
 	sig = si->enc_digest;
 
 	PKCS7_SIGNER_INFO_get0_algs(si, NULL, &dig_alg, NULL);
@@ -202,7 +198,7 @@ static bool fill_pkcs7(const char *mem, off_t size, size_t sig_len,
 	sig_info->sig = (const char *)ASN1_STRING_get0_data(sig);
 	sig_info->sig_len = ASN1_STRING_length(sig);
 
-	sno_bn = ASN1_INTEGER_to_BN(sno, NULL);
+	sno_bn = ASN1_INTEGER_to_BN(is->serial, NULL);
 	if (sno_bn == NULL)
 		goto err;
 
@@ -215,7 +211,7 @@ static bool fill_pkcs7(const char *mem, off_t size, size_t sig_len,
 	sig_info->key_id = key_id_str;
 	sig_info->key_id_len = len;
 
-	issuer_str = x509_name_to_str(issuer);
+	issuer_str = x509_name_to_str(is->issuer);
 	if (issuer_str != NULL) {
 		sig_info->signer = issuer_str;
 		sig_info->signer_len = strlen(issuer_str);
