@@ -156,8 +156,8 @@ static bool fill_pkcs7(const char *mem, off_t size, size_t sig_len,
 	PKCS7 *pkcs7;
 	STACK_OF(PKCS7_SIGNER_INFO) * sis;
 	PKCS7_SIGNER_INFO *si;
-	PKCS7_ISSUER_AND_SERIAL *is;
-	ASN1_OCTET_STRING *sig;
+	const PKCS7_ISSUER_AND_SERIAL *is;
+	const ASN1_OCTET_STRING *sig;
 	BIGNUM *sno_bn;
 	X509_ALGOR *dig_alg;
 	const ASN1_OBJECT *o;
