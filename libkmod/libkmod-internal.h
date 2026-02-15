@@ -177,11 +177,8 @@ struct kmod_signature_info {
 	const char *hash_algo, *id_type;
 	const char *sig;
 	size_t sig_len;
-	void (*free)(void *);
-	void *private;
 };
-_must_check_ _nonnull_all_ bool kmod_module_signature_info(const struct kmod_file *file, struct kmod_signature_info *sig_info);
-_nonnull_all_ void kmod_module_signature_info_free(struct kmod_signature_info *sig_info);
+_must_check_ _nonnull_all_ bool kmod_module_signature_info(const struct kmod_file *file, struct kmod_signature_info **sig_info);
 
 /* libkmod-builtin.c */
 _nonnull_all_ ssize_t kmod_builtin_get_modinfo(struct kmod_ctx *ctx, const char *modname, char ***modinfo);

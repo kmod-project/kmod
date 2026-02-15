@@ -83,8 +83,12 @@ struct module_signature {
 
 static bool fill_default(const char *mem, off_t size,
 			 const struct module_signature *modsig, size_t sig_len,
-			 struct kmod_signature_info *sig_info)
+			 struct kmod_signature_info **out_sig_info)
 {
+	struct kmod_signature_info *sig_info = calloc(1, sizeof(*sig_info));
+	if (sig_info == NULL)
+		return false;
+
 	size -= sig_len;
 	sig_info->sig = mem + size;
 	sig_info->sig_len = sig_len;
@@ -99,30 +103,12 @@ static bool fill_default(const char *mem, off_t size,
 
 	sig_info->hash_algo = pkey_hash_algo[modsig->hash];
 
+	*out_sig_info = sig_info;
+
 	return true;
 }
 
 #if ENABLE_OPENSSL
-
-struct pkcs7_private {
-	PKCS7 *pkcs7;
-	char *key_id;
-	BIGNUM *sno;
-	char *hash_algo;
-};
-
-static void pkcs7_free(void *s)
-{
-	struct kmod_signature_info *si = s;
-	struct pkcs7_private *pvt = si->private;
-
-	PKCS7_free(pvt->pkcs7);
-	BN_free(pvt->sno);
-	free(pvt->key_id);
-	free(pvt->hash_algo);
-	free(pvt);
-	si->private = NULL;
-}
 
 static const char *x509_name_to_str(X509_NAME *name)
 {
@@ -150,8 +136,10 @@ static const char *x509_name_to_str(X509_NAME *name)
 }
 
 static bool fill_pkcs7(const char *mem, off_t size, size_t sig_len,
-		       struct kmod_signature_info *sig_info)
+		       struct kmod_signature_info **out_sig_info)
 {
+	struct kmod_signature_info *sig_info;
+	char *p;
 	const char *pkcs7_raw;
 	PKCS7 *pkcs7;
 	STACK_OF(PKCS7_SIGNER_INFO) * sis;
@@ -162,12 +150,9 @@ static bool fill_pkcs7(const char *mem, off_t size, size_t sig_len,
 	X509_ALGOR *dig_alg;
 	const ASN1_OBJECT *o;
 	BIO *in;
-	int len;
-	char *key_id_str;
-	struct pkcs7_private *pvt;
 	const char *issuer_str;
-	char *hash_algo;
 	int hash_algo_len;
+	size_t total_len;
 
 	size -= sig_len;
 	pkcs7_raw = mem + size;
@@ -175,12 +160,10 @@ static bool fill_pkcs7(const char *mem, off_t size, size_t sig_len,
 	in = BIO_new_mem_buf(pkcs7_raw, sig_len);
 
 	pkcs7 = d2i_PKCS7_bio(in, NULL);
-	if (pkcs7 == NULL) {
-		BIO_free(in);
-		return false;
-	}
-
 	BIO_free(in);
+
+	if (pkcs7 == NULL)
+		goto err;
 
 	sis = PKCS7_get_signer_info(pkcs7);
 	if (sis == NULL)
@@ -191,66 +174,86 @@ static bool fill_pkcs7(const char *mem, off_t size, size_t sig_len,
 		goto err;
 
 	is = si->issuer_and_serial;
-	sig = si->enc_digest;
 
-	PKCS7_SIGNER_INFO_get0_algs(si, NULL, &dig_alg, NULL);
+	/* Calculate the total length */
+	total_len = sizeof(struct kmod_signature_info);
 
-	sig_info->sig = (const char *)ASN1_STRING_get0_data(sig);
-	sig_info->sig_len = ASN1_STRING_length(sig);
+	/* signer */
+	issuer_str = x509_name_to_str(is->issuer);
+	if (issuer_str != NULL)
+		total_len += strlen(issuer_str);
 
+	/* key_id */
 	sno_bn = ASN1_INTEGER_to_BN(is->serial, NULL);
 	if (sno_bn == NULL)
 		goto err;
 
-	len = BN_num_bytes(sno_bn);
-	key_id_str = malloc(len);
-	if (key_id_str == NULL)
-		goto err2;
-	BN_bn2bin(sno_bn, (unsigned char *)key_id_str);
+	total_len += BN_num_bytes(sno_bn);
 
-	sig_info->key_id = key_id_str;
-	sig_info->key_id_len = len;
-
-	issuer_str = x509_name_to_str(is->issuer);
-	if (issuer_str != NULL) {
-		sig_info->signer = issuer_str;
-		sig_info->signer_len = strlen(issuer_str);
-	}
-
+	/* hash_algo */
+	PKCS7_SIGNER_INFO_get0_algs(si, NULL, &dig_alg, NULL);
 	X509_ALGOR_get0(&o, NULL, NULL, dig_alg);
-
-	// Use OBJ_obj2txt to calculate string length
 	hash_algo_len = OBJ_obj2txt(NULL, 0, o, 0);
 	if (hash_algo_len < 0)
-		goto err3;
-	hash_algo = malloc(hash_algo_len + 1);
-	if (hash_algo == NULL)
-		goto err3;
-	hash_algo_len = OBJ_obj2txt(hash_algo, hash_algo_len + 1, o, 0);
+		goto err1;
+
+	total_len += hash_algo_len + 1;
+
+	/* sig */
+	sig = si->enc_digest;
+	total_len += ASN1_STRING_length(sig);
+
+	sig_info = calloc(1, total_len);
+	if (sig_info == NULL)
+		goto err1;
+
+	p = (char *)sig_info;
+
+	p += sizeof(struct kmod_signature_info);
+
+	/* signer */
+	if (issuer_str != NULL) {
+		sig_info->signer = p;
+		sig_info->signer_len = strlen(issuer_str);
+
+		memcpy(p, issuer_str, sig_info->signer_len);
+		p += sig_info->signer_len;
+	}
+
+	/* key_id */
+	sig_info->key_id = p;
+	sig_info->key_id_len = BN_num_bytes(sno_bn);
+
+	BN_bn2bin(sno_bn, (unsigned char *)p);
+	p += sig_info->key_id_len;
+
+	/* hash_algo */
+	sig_info->hash_algo = p;
+
+	hash_algo_len = OBJ_obj2txt(p, hash_algo_len + 1, o, 0);
 	if (hash_algo_len < 0)
-		goto err4;
+		goto err2;
+	p += hash_algo_len;
 
-	// Assign libcrypto hash algo string or number
-	sig_info->hash_algo = hash_algo;
+	*p = '\0';
+	p++;
 
-	pvt = malloc(sizeof(*pvt));
-	if (pvt == NULL)
-		goto err4;
+	/* sig */
+	sig_info->sig = p;
+	sig_info->sig_len = ASN1_STRING_length(sig);
 
-	pvt->pkcs7 = pkcs7;
-	pvt->key_id = key_id_str;
-	pvt->sno = sno_bn;
-	pvt->hash_algo = hash_algo;
-	sig_info->private = pvt;
+	memcpy(p, ASN1_STRING_get0_data(sig), sig_info->sig_len);
 
-	sig_info->free = pkcs7_free;
+	BN_free(sno_bn);
+	PKCS7_free(pkcs7);
+
+	*out_sig_info = sig_info;
 
 	return true;
-err4:
-	free(hash_algo);
-err3:
-	free(key_id_str);
+
 err2:
+	free(sig_info);
+err1:
 	BN_free(sno_bn);
 err:
 	PKCS7_free(pkcs7);
@@ -260,9 +263,14 @@ err:
 #else
 
 static bool fill_pkcs7(const char *mem, off_t size, size_t sig_len,
-		       struct kmod_signature_info *sig_info)
+		       struct kmod_signature_info **out_sig_info)
 {
+	struct kmod_signature_info *sig_info = calloc(1, sizeof(*sig_info));
+	if (sig_info == NULL)
+		return false;
+
 	sig_info->hash_algo = "unknown";
+	*out_sig_info = sig_info;
 	return true;
 }
 
@@ -282,12 +290,13 @@ static bool fill_pkcs7(const char *mem, off_t size, size_t sig_len,
  */
 
 bool kmod_module_signature_info(const struct kmod_file *file,
-				struct kmod_signature_info *sig_info)
+				struct kmod_signature_info **sig_info)
 {
 	const char *mem;
 	off_t size;
 	struct module_signature modsig;
 	size_t sig_len;
+	bool ret;
 
 	size = kmod_file_get_size(file);
 	mem = kmod_file_get_contents(file);
@@ -312,18 +321,17 @@ bool kmod_module_signature_info(const struct kmod_file *file,
 	    size < (int64_t)sig_len + modsig.signer_len + modsig.key_id_len)
 		return false;
 
-	sig_info->id_type = pkey_id_type[modsig.id_type];
-
 	switch (modsig.id_type) {
 	case PKEY_ID_PKCS7:
-		return fill_pkcs7(mem, size, sig_len, sig_info);
+		ret = fill_pkcs7(mem, size, sig_len, sig_info);
+		break;
 	default:
-		return fill_default(mem, size, &modsig, sig_len, sig_info);
+		ret = fill_default(mem, size, &modsig, sig_len, sig_info);
+		break;
 	}
-}
 
-void kmod_module_signature_info_free(struct kmod_signature_info *sig_info)
-{
-	if (sig_info->free)
-		sig_info->free(sig_info);
+	if (ret)
+		(*sig_info)->id_type = pkey_id_type[modsig.id_type];
+
+	return ret;
 }
