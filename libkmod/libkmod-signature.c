@@ -276,7 +276,7 @@ err:
 	return false;
 }
 
-#else /* ENABLE OPENSSL */
+#else
 
 static bool fill_pkcs7(const char *mem, off_t size, const struct module_signature *modsig,
 		       size_t sig_len, struct kmod_signature_info *sig_info)
@@ -286,7 +286,7 @@ static bool fill_pkcs7(const char *mem, off_t size, const struct module_signatur
 	return true;
 }
 
-#endif /* ENABLE OPENSSL */
+#endif
 
 #define SIG_MAGIC "~Module signature appended~\n"
 
