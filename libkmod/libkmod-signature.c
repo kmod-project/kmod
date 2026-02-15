@@ -162,7 +162,6 @@ static bool fill_pkcs7(const char *mem, off_t size, size_t sig_len,
 	ASN1_OCTET_STRING *sig;
 	BIGNUM *sno_bn;
 	X509_ALGOR *dig_alg;
-	X509_ALGOR *sig_alg;
 	const ASN1_OBJECT *o;
 	BIO *in;
 	int len;
@@ -203,7 +202,7 @@ static bool fill_pkcs7(const char *mem, off_t size, size_t sig_len,
 	if (sig == NULL)
 		goto err;
 
-	PKCS7_SIGNER_INFO_get0_algs(si, NULL, &dig_alg, &sig_alg);
+	PKCS7_SIGNER_INFO_get0_algs(si, NULL, &dig_alg, NULL);
 
 	sig_info->sig = (const char *)ASN1_STRING_get0_data(sig);
 	sig_info->sig_len = ASN1_STRING_length(sig);
