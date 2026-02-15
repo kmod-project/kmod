@@ -174,7 +174,7 @@ struct kmod_signature_info {
 	size_t signer_len;
 	const char *key_id;
 	size_t key_id_len;
-	const char *algo, *hash_algo, *id_type;
+	const char *hash_algo, *id_type;
 	const char *sig;
 	size_t sig_len;
 	void (*free)(void *);

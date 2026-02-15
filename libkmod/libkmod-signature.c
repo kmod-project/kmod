@@ -28,11 +28,6 @@ enum pkey_algo {
 	PKEY_ALGO__LAST,
 };
 
-static const char *const pkey_algo[PKEY_ALGO__LAST] = {
-	[PKEY_ALGO_DSA] = "DSA",
-	[PKEY_ALGO_RSA] = "RSA",
-};
-
 enum pkey_hash_algo {
 	PKEY_HASH_MD4,
 	PKEY_HASH_MD5,
@@ -102,7 +97,6 @@ static bool fill_default(const char *mem, off_t size,
 	sig_info->signer = mem + size;
 	sig_info->signer_len = modsig->signer_len;
 
-	sig_info->algo = pkey_algo[modsig->algo];
 	sig_info->hash_algo = pkey_hash_algo[modsig->hash];
 
 	return true;
@@ -317,6 +311,9 @@ bool kmod_module_signature_info(const struct kmod_file *file,
 		return false;
 	size -= sizeof(struct module_signature);
 	memcpy(&modsig, mem + size, sizeof(struct module_signature));
+	/* The algo value seems to be hard-coded to PKEY_ALGO_RSA, so we don't bother
+	 * parsing and/or printing it.
+	 */
 	if (modsig.algo >= PKEY_ALGO__LAST || modsig.hash >= PKEY_HASH__LAST ||
 	    modsig.id_type >= PKEY_ID_TYPE__LAST)
 		return false;
