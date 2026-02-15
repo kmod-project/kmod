@@ -106,7 +106,7 @@ static bool fill_default(const char *mem, off_t size,
 
 struct pkcs7_private {
 	PKCS7 *pkcs7;
-	unsigned char *key_id;
+	char *key_id;
 	BIGNUM *sno;
 	char *hash_algo;
 };
@@ -166,7 +166,7 @@ static bool fill_pkcs7(const char *mem, off_t size, size_t sig_len,
 	const ASN1_OBJECT *o;
 	BIO *in;
 	int len;
-	unsigned char *key_id_str;
+	char *key_id_str;
 	struct pkcs7_private *pvt;
 	const char *issuer_str;
 	char *hash_algo;
@@ -216,9 +216,9 @@ static bool fill_pkcs7(const char *mem, off_t size, size_t sig_len,
 	key_id_str = malloc(len);
 	if (key_id_str == NULL)
 		goto err2;
-	BN_bn2bin(sno_bn, key_id_str);
+	BN_bn2bin(sno_bn, (unsigned char *)key_id_str);
 
-	sig_info->key_id = (const char *)key_id_str;
+	sig_info->key_id = key_id_str;
 	sig_info->key_id_len = len;
 
 	issuer_str = x509_name_to_str(issuer);
