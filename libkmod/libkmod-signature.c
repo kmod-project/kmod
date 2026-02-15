@@ -104,7 +104,6 @@ static bool fill_default(const char *mem, off_t size,
 
 	sig_info->algo = pkey_algo[modsig->algo];
 	sig_info->hash_algo = pkey_hash_algo[modsig->hash];
-	sig_info->id_type = pkey_id_type[modsig->id_type];
 
 	return true;
 }
@@ -156,8 +155,8 @@ static const char *x509_name_to_str(X509_NAME *name)
 	return str;
 }
 
-static bool fill_pkcs7(const char *mem, off_t size, const struct module_signature *modsig,
-		       size_t sig_len, struct kmod_signature_info *sig_info)
+static bool fill_pkcs7(const char *mem, off_t size, size_t sig_len,
+		       struct kmod_signature_info *sig_info)
 {
 	const char *pkcs7_raw;
 	PKCS7 *pkcs7;
@@ -250,8 +249,6 @@ static bool fill_pkcs7(const char *mem, off_t size, const struct module_signatur
 	// Assign libcrypto hash algo string or number
 	sig_info->hash_algo = hash_algo;
 
-	sig_info->id_type = pkey_id_type[modsig->id_type];
-
 	pvt = malloc(sizeof(*pvt));
 	if (pvt == NULL)
 		goto err4;
@@ -278,11 +275,10 @@ err:
 
 #else
 
-static bool fill_pkcs7(const char *mem, off_t size, const struct module_signature *modsig,
-		       size_t sig_len, struct kmod_signature_info *sig_info)
+static bool fill_pkcs7(const char *mem, off_t size, size_t sig_len,
+		       struct kmod_signature_info *sig_info)
 {
 	sig_info->hash_algo = "unknown";
-	sig_info->id_type = pkey_id_type[modsig->id_type];
 	return true;
 }
 
@@ -329,9 +325,11 @@ bool kmod_module_signature_info(const struct kmod_file *file,
 	    size < (int64_t)sig_len + modsig.signer_len + modsig.key_id_len)
 		return false;
 
+	sig_info->id_type = pkey_id_type[modsig.id_type];
+
 	switch (modsig.id_type) {
 	case PKEY_ID_PKCS7:
-		return fill_pkcs7(mem, size, &modsig, sig_len, sig_info);
+		return fill_pkcs7(mem, size, sig_len, sig_info);
 	default:
 		return fill_default(mem, size, &modsig, sig_len, sig_info);
 	}
