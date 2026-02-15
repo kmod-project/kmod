@@ -189,18 +189,13 @@ static bool fill_pkcs7(const char *mem, off_t size, size_t sig_len,
 		goto err;
 
 	si = sk_PKCS7_SIGNER_INFO_value(sis, 0);
-	if (si == NULL)
+	if (si == NULL || si->issuer_and_serial == NULL || si->enc_digest == NULL)
 		goto err;
 
 	is = si->issuer_and_serial;
-	if (is == NULL)
-		goto err;
 	issuer = is->issuer;
 	sno = is->serial;
-
 	sig = si->enc_digest;
-	if (sig == NULL)
-		goto err;
 
 	PKCS7_SIGNER_INFO_get0_algs(si, NULL, &dig_alg, NULL);
 
