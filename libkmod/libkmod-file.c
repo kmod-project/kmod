@@ -95,6 +95,15 @@ struct kmod_file *kmod_file_open(const struct kmod_ctx *ctx, const char *filenam
 		return NULL;
 	}
 
+	/*
+	 * Bail out if underlying fd is not seekable  - that is not supported
+	 */
+	if (lseek(file->fd, 0, SEEK_CUR) < 0) {
+		close(file->fd);
+		free(file);
+		return NULL;
+	}
+
 	sz = pread_str_safe(file->fd, buf, sizeof(buf), 0);
 	if (sz != (sizeof(buf) - 1)) {
 		if (sz < 0)
