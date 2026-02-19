@@ -96,6 +96,13 @@ int kmod_file_open(const struct kmod_ctx *ctx, const char *filename,
 	if (file->fd < 0)
 		return -errno;
 
+	/*
+	 * Bail out if underlying fd is not seekable  - that is not supported
+	 */
+	ret = lseek(file->fd, 0, SEEK_CUR);
+	if (ret < 0)
+		return ret;
+
 	sz = pread_str_safe(file->fd, buf, sizeof(buf), 0);
 	if (sz != (sizeof(buf) - 1)) {
 		if (sz < 0)
