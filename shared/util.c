@@ -79,10 +79,12 @@ int alias_normalize(const char *alias, char buf[static PATH_MAX], size_t *len)
 		case ']':
 			return -EINVAL;
 		case '[':
-			while (alias[i] != ']' && alias[i] != '\0') {
+			while (i < PATH_MAX - 1 && alias[i] != ']' && alias[i] != '\0') {
 				buf[i] = alias[i];
 				i++;
 			}
+			if (i >= PATH_MAX - 1)
+                		return -EINVAL;
 
 			if (alias[i] != ']')
 				return -EINVAL;
