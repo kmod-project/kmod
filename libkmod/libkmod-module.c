@@ -1914,6 +1914,22 @@ KMOD_EXPORT int kmod_module_get_info(const struct kmod_module *mod,
 			goto list_error;
 	}
 
+	if (mod->elf) {
+		const void *build_id;
+		size_t build_id_len;
+
+		if (kmod_elf_get_build_id(mod->elf, &build_id, &build_id_len) == 0) {
+			struct kmod_list *n;
+
+			n = kmod_module_info_append_hex(list, "build-id",
+							strlen("build-id"), build_id,
+							build_id_len);
+			if (n == NULL)
+				goto list_error;
+			count++;
+		}
+	}
+
 	if (mod->file && kmod_module_signature_info(mod->file, &sig_info)) {
 		struct kmod_list *n;
 
