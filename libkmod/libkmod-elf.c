@@ -125,8 +125,7 @@ static int elf_identify(struct kmod_elf *elf, const void *memory, uint64_t size)
 	return 0;
 }
 
-static inline bool elf_range_valid(const struct kmod_elf *elf, uint64_t offset,
-				   uint64_t size)
+static bool elf_range_valid(const struct kmod_elf *elf, uint64_t offset, uint64_t size)
 {
 	uint64_t min_size;
 
@@ -140,8 +139,7 @@ static inline bool elf_range_valid(const struct kmod_elf *elf, uint64_t offset,
 	return true;
 }
 
-static inline uint64_t elf_get_uint(const struct kmod_elf *elf, uint64_t offset,
-				    uint16_t size)
+static uint64_t elf_get_uint(const struct kmod_elf *elf, uint64_t offset, uint16_t size)
 {
 	const uint8_t *p;
 	uint64_t ret = 0;
@@ -164,8 +162,8 @@ static inline uint64_t elf_get_uint(const struct kmod_elf *elf, uint64_t offset,
 	return ret;
 }
 
-static inline int elf_set_uint(const struct kmod_elf *elf, uint64_t offset, uint64_t size,
-			       uint64_t value, uint8_t *changed)
+static int elf_set_uint(const struct kmod_elf *elf, uint64_t offset, uint64_t size,
+			uint64_t value, uint8_t *changed)
 {
 	uint8_t *p;
 	size_t i;
@@ -201,8 +199,7 @@ static inline const void *elf_get_mem(const struct kmod_elf *elf, uint64_t offse
  * Returns offset to section header for section with given index or 0 on error
  * (offset 0 cannot be a valid section offset because ELF header is located there).
  */
-static inline uint64_t elf_get_section_header_offset(const struct kmod_elf *elf,
-						     uint16_t idx)
+static uint64_t elf_get_section_header_offset(const struct kmod_elf *elf, uint16_t idx)
 {
 	assert(idx != SHN_UNDEF);
 	assert(idx < elf->header.section.count);
@@ -215,9 +212,8 @@ static inline uint64_t elf_get_section_header_offset(const struct kmod_elf *elf,
 	       (uint64_t)(idx * elf->header.section.entry_size);
 }
 
-static inline int elf_get_section_info(const struct kmod_elf *elf, uint16_t idx,
-				       uint64_t *offset, uint64_t *size,
-				       const char **name)
+static int elf_get_section_info(const struct kmod_elf *elf, uint16_t idx,
+				uint64_t *offset, uint64_t *size, const char **name)
 {
 	uint64_t nameoff;
 	uint64_t off = elf_get_section_header_offset(elf, idx);
