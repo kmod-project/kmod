@@ -32,6 +32,7 @@ enum kmod_elf_section {
 	KMOD_ELF_SECTION_STRTAB,
 	KMOD_ELF_SECTION_SYMTAB,
 	KMOD_ELF_SECTION_VERSIONS,
+	KMOD_ELF_SECTION_BUILD_ID,
 	KMOD_ELF_SECTION_MAX,
 };
 
@@ -41,6 +42,7 @@ static const char *const section_name_map[] = {
 	[KMOD_ELF_SECTION_STRTAB] = ".strtab",
 	[KMOD_ELF_SECTION_SYMTAB] = ".symtab",
 	[KMOD_ELF_SECTION_VERSIONS] = "__versions",
+	[KMOD_ELF_SECTION_BUILD_ID] = ".note.gnu.build-id",
 };
 
 struct kmod_elf {
@@ -1246,4 +1248,63 @@ int kmod_elf_get_dependency_symbols(const struct kmod_elf *elf,
 	}
 	free(visited_versions);
 	return count;
+}
+
+#ifndef NT_GNU_BUILD_ID
+#define NT_GNU_BUILD_ID 3
+#endif
+
+/*
+ * Read the .notes.gnu.build-id section that is added by the linker via --build-id. The
+ * section format follows the one defined in shared/elf-note.h, with name == "GNU\0",
+ * type == NT_GNU_BUILD_ID and desc being the hash.
+ */
+int kmod_elf_get_build_id(const struct kmod_elf *elf, const void **hash, size_t *hash_len)
+{
+	uint32_t namesz, descsz, type;
+	uint64_t off, size;
+	const char *name;
+
+	off = elf->sections[KMOD_ELF_SECTION_BUILD_ID].offset;
+	size = elf->sections[KMOD_ELF_SECTION_BUILD_ID].size;
+	if (off == 0 || size == 0)
+		/*
+		 * Conditionally available since 4.10 if toolchain supports it.
+		 * Unconditionally available since 5.10:
+		 * kernel- commit 89ff7131f78a ("kbuild: add --hash-style= and
+		 * --build-id unconditionally"). Just return an error and don't
+		 * log anything.
+		 */
+		return -ENODATA;
+
+	if (size < 3 * sizeof(uint32_t)) {
+		ELFDBG(elf, "build-id section is too small: %" PRIu64 "\n", size);
+		return -EINVAL;
+	}
+
+	namesz = elf_get_u32(elf, off);
+	off += sizeof(uint32_t);
+	descsz = elf_get_u32(elf, off);
+	off += sizeof(uint32_t);
+	type = elf_get_u32(elf, off);
+	off += sizeof(uint32_t);
+
+	if (size < 3 * sizeof(uint32_t) + namesz + descsz) {
+		ELFDBG(elf, "build-id section is too small: %" PRIu64 "\n", size);
+		return -EINVAL;
+	}
+
+	name = elf_get_mem(elf, off);
+
+	if (type != NT_GNU_BUILD_ID || !streq(name, "GNU")) {
+		ELFDBG(elf, "Invalid build-id section: type %" PRIu32 ", name %.3s\n",
+		       type, name);
+		return -EINVAL;
+	}
+
+	off += namesz;
+	*hash = elf_get_mem(elf, off);
+	*hash_len = descsz;
+
+	return 0;
 }

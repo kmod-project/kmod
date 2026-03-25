@@ -156,6 +156,7 @@ _must_check_ _nonnull_all_ int kmod_elf_get_modinfo_strings(const struct kmod_el
 _must_check_ _nonnull_all_ int kmod_elf_get_modversions(const struct kmod_elf *elf, struct kmod_modversion **array);
 _must_check_ _nonnull_all_ int kmod_elf_get_symbols(const struct kmod_elf *elf, struct kmod_modversion **array);
 _must_check_ _nonnull_all_ int kmod_elf_get_dependency_symbols(const struct kmod_elf *elf, struct kmod_modversion **array);
+_must_check_ _nonnull_all_ int kmod_elf_get_build_id(const struct kmod_elf *elf, const void **hash, size_t *hash_len);
 _must_check_ _nonnull_all_ int kmod_elf_strip(const struct kmod_elf *elf, unsigned int flags, const void **stripped);
 
 /*
