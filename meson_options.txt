@@ -71,8 +71,8 @@ option(
   'dlopen',
   type : 'array',
   choices : ['zstd', 'xz', 'zlib', 'openssl', 'all'],
-  value : [],
-  description : 'Libraries to dlopen rather than linking. Use \'all\' to . Default: none',
+  value : ['all'],
+  description : 'Libraries to dlopen rather than linking. Default: "all"',
 )
 
 option(
