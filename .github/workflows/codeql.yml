@@ -45,7 +45,7 @@ jobs:
         uses: ./.github/actions/setup-os
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@b20883b0cd1f46c72ae0ba6d1090936928f9fa30 # v4.32.0
+        uses: github/codeql-action/init@95e58e9a2cdfd71adc6e0353d5c52f41a045d225 # v4.35.2
         with:
           languages: cpp
           queries: +security-and-quality
@@ -56,14 +56,14 @@ jobs:
           meson compile -C builddir/
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@b20883b0cd1f46c72ae0ba6d1090936928f9fa30 # v4.32.0
+        uses: github/codeql-action/analyze@95e58e9a2cdfd71adc6e0353d5c52f41a045d225 # v4.35.2
         with:
           category: "/language:cpp"
           upload: false
           output: sarif-results
 
       - name: Filter out meson-internal test files
-        uses: advanced-security/filter-sarif@f3b8118a9349d88f7b1c0c488476411145b6270d # v1.0.1
+        uses: advanced-security/filter-sarif@2da736ff05ef065cb2894ac6892e47b5eac2c3c0 # v1.1
         with:
           patterns: |
             -builddir/meson-private/**/testfile.c
@@ -71,7 +71,7 @@ jobs:
           output: sarif-results/cpp.sarif
 
       - name: Upload CodeQL results to code scanning
-        uses: github/codeql-action/upload-sarif@b20883b0cd1f46c72ae0ba6d1090936928f9fa30 # v4.32.0
+        uses: github/codeql-action/upload-sarif@95e58e9a2cdfd71adc6e0353d5c52f41a045d225 # v4.35.2
         with:
           sarif_file: sarif-results/cpp.sarif
           category: "/language:cpp"
