@@ -11,6 +11,7 @@
 #include <errno.h>
 #include <getopt.h>
 #include <limits.h>
+#include <pthread.h>
 #include <regex.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -1549,11 +1550,11 @@ corrupted:
 	fclose(fp);
 }
 
-static int depmod_symbol_add(struct depmod *depmod, const char *name, bool prefix_skipped,
-			     uint64_t crc, const struct mod *owner)
+static struct symbol *depmod_symbol_create(struct depmod *depmod, const char *name,
+					   bool prefix_skipped, uint64_t crc,
+					   const struct mod *owner)
 {
 	size_t namelen;
-	int err;
 	struct symbol *sym;
 
 	if (!prefix_skipped && (name[0] == depmod->cfg->sym_prefix))
@@ -1562,20 +1563,22 @@ static int depmod_symbol_add(struct depmod *depmod, const char *name, bool prefi
 	namelen = strlen(name) + 1;
 	sym = malloc(sizeof(struct symbol) + namelen);
 	if (sym == NULL)
-		return -ENOMEM;
+		return NULL;
 
 	sym->owner = (struct mod *)owner;
 	sym->crc = crc;
 	memcpy(sym->name, name, namelen);
+	return sym;
+}
 
-	err = hash_add(depmod->symbols, sym->name, sym);
-	if (err < 0) {
-		free(sym);
+static int depmod_symbol_add(struct depmod *depmod, struct symbol *sym)
+{
+	int err = hash_add(depmod->symbols, sym->name, sym);
+	if (err < 0)
 		return err;
-	}
 
-	DBG("add %p sym=%s, owner=%p %s\n", sym, sym->name, owner,
-	    owner != NULL ? owner->path : "");
+	DBG("add %p sym=%s, owner=%p %s\n", sym, sym->name, sym->owner,
+	    sym->owner != NULL ? sym->owner->path : "");
 
 	return 0;
 }
@@ -1589,16 +1592,21 @@ static struct symbol *depmod_symbol_find(const struct depmod *depmod, const char
 	return hash_find(depmod->symbols, name);
 }
 
-static int depmod_load_modules(struct depmod *depmod)
+struct module_symbols {
+	struct depmod *depmod;
+	struct mod **modules;
+	size_t modules_count;
+	struct array symbols; /* struct symbol */
+};
+
+static void *resolve_module_symbols(void *arg)
 {
-	struct mod **itr, **itr_end;
+	struct module_symbols *mod_syms = arg;
 
-	DBG("load symbols (%zu modules)\n", depmod->modules.count);
+	array_init(&mod_syms->symbols, 128);
 
-	itr = (struct mod **)depmod->modules.array;
-	itr_end = itr + depmod->modules.count;
-	for (; itr < itr_end; itr++) {
-		struct mod *mod = *itr;
+	for (size_t i = 0; i < mod_syms->modules_count; i++) {
+		struct mod *mod = mod_syms->modules[i];
 		struct kmod_list *l, *list = NULL;
 		int err = kmod_module_get_symbols(mod->kmod, &list);
 		if (err < 0) {
@@ -1612,7 +1620,21 @@ static int depmod_load_modules(struct depmod *depmod)
 		kmod_list_foreach(l, list) {
 			const char *name = kmod_module_symbol_get_symbol(l);
 			uint64_t crc = kmod_module_symbol_get_crc(l);
-			depmod_symbol_add(depmod, name, false, crc, mod);
+			struct symbol *sym;
+
+			sym = depmod_symbol_create(mod_syms->depmod, name, false, crc,
+						   mod);
+			if (sym == NULL) {
+				kmod_module_symbols_free_list(list);
+				return (void *)(intptr_t)-ENOMEM;
+			}
+
+			err = array_append(&mod_syms->symbols, sym);
+			if (err < 0) {
+				free(sym);
+				kmod_module_symbols_free_list(list);
+				return (void *)(intptr_t)-ENOMEM;
+			}
 		}
 		kmod_module_symbols_free_list(list);
 
@@ -1624,22 +1646,25 @@ load_info:
 			if (streq(key, "alias")) {
 				const char *value = kmod_module_info_get_value(l);
 
-				if (array_append(&mod->alias_values, value) < 0)
-					return 0;
+				err = array_append(&mod->alias_values, value);
+				if (err < 0)
+					return (void *)(intptr_t)err;
 				continue;
 			}
 			if (streq(key, "softdep")) {
 				const char *value = kmod_module_info_get_value(l);
 
-				if (array_append(&mod->softdep_values, value) < 0)
-					return 0;
+				err = array_append(&mod->softdep_values, value);
+				if (err < 0)
+					return (void *)(intptr_t)err;
 				continue;
 			}
 			if (streq(key, "weakdep")) {
 				const char *value = kmod_module_info_get_value(l);
 
-				if (array_append(&mod->weakdep_values, value) < 0)
-					return 0;
+				err = array_append(&mod->weakdep_values, value);
+				if (err < 0)
+					return (void *)(intptr_t)err;
 				continue;
 			}
 		}
@@ -1647,6 +1672,93 @@ load_info:
 		kmod_module_unref(mod->kmod);
 		mod->kmod = NULL;
 	}
+	return (void *)(intptr_t)0;
+}
+
+static unsigned int get_cpu_count(void)
+{
+	long nproc = sysconf(_SC_NPROCESSORS_ONLN);
+	return nproc > 0 ? (unsigned int)nproc : 1;
+}
+
+static int depmod_load_modules(struct depmod *depmod)
+{
+	struct thread_info {
+		pthread_t tid;
+		struct module_symbols mod_syms;
+	} *tinfo;
+	unsigned int n_threads;
+	size_t modules_per_thread, last_modules_per_thread;
+	int err;
+
+	DBG("load symbols (%zu modules)\n", depmod->modules.count);
+
+	n_threads = get_cpu_count();
+	if (n_threads > depmod->modules.count)
+		n_threads = depmod->modules.count;
+
+	tinfo = calloc(n_threads, sizeof(*tinfo));
+	if (tinfo == NULL)
+		return -ENOMEM;
+
+	modules_per_thread = (depmod->modules.count + n_threads - 1) / n_threads;
+	last_modules_per_thread =
+		modules_per_thread - (depmod->modules.count % n_threads);
+
+	for (unsigned int i = 0; i < n_threads; i++) {
+		struct module_symbols *mod_syms = &tinfo[i].mod_syms;
+
+		mod_syms->depmod = depmod;
+		mod_syms->modules =
+			(struct mod **)depmod->modules.array + (i * modules_per_thread);
+		mod_syms->modules_count = modules_per_thread;
+		if (i + 1 == n_threads)
+			mod_syms->modules_count = last_modules_per_thread;
+
+		err = pthread_create(&tinfo[i].tid, NULL, &resolve_module_symbols,
+				     mod_syms);
+		if (err != 0) {
+			err = -err; // Most/all pthread API returns positive error
+			n_threads = i;
+			break;
+		}
+	}
+
+	for (unsigned int i = 0; i < n_threads; i++) {
+		int local_err;
+		void *res;
+
+		local_err = pthread_join(tinfo[i].tid, &res);
+		if (err == 0) {
+			if (local_err != 0)
+				err = -local_err;
+			if ((int)(intptr_t)res != 0)
+				err = (int)(intptr_t)res;
+		}
+	}
+
+	if (err != 0) {
+		for (unsigned int i = 0; i < n_threads; i++) {
+			struct module_symbols *mod_syms = &tinfo[i].mod_syms;
+
+			for (size_t j = 0; j < mod_syms->symbols.count; j++)
+				free(mod_syms->symbols.array[j]);
+
+			array_free_array(&mod_syms->symbols);
+		}
+		free(tinfo);
+		return err;
+	}
+
+	for (unsigned int i = 0; i < n_threads; i++) {
+		struct module_symbols *mod_syms = &tinfo[i].mod_syms;
+
+		for (size_t j = 0; j < mod_syms->symbols.count; j++)
+			depmod_symbol_add(depmod, mod_syms->symbols.array[j]);
+
+		array_free_array(&mod_syms->symbols);
+	}
+	free(tinfo);
 
 	DBG("loaded symbols (%zu modules, %u symbols)\n", depmod->modules.count,
 	    hash_get_count(depmod->symbols));
@@ -2643,13 +2755,24 @@ static int depmod_output(struct depmod *depmod, FILE *out)
 
 static void depmod_add_fake_syms(struct depmod *depmod)
 {
+	struct symbol *sym;
+
 	/* __this_module is magically inserted by kernel loader. */
-	depmod_symbol_add(depmod, "__this_module", true, 0, NULL);
+	sym = depmod_symbol_create(depmod, "__this_module", true, 0, NULL);
+	if (sym)
+		depmod_symbol_add(depmod, sym);
+
 	/* On S390, this is faked up too */
-	depmod_symbol_add(depmod, "_GLOBAL_OFFSET_TABLE_", true, 0, NULL);
+	sym = depmod_symbol_create(depmod, "_GLOBAL_OFFSET_TABLE_", true, 0, NULL);
+	if (sym)
+		depmod_symbol_add(depmod, sym);
+
 	/* On PowerPC64 ABIv2, .TOC. is more or less _GLOBAL_OFFSET_TABLE_ */
-	if (!depmod_symbol_find(depmod, "TOC."))
-		depmod_symbol_add(depmod, "TOC.", true, 0, NULL);
+	if (!depmod_symbol_find(depmod, "TOC.")) {
+		sym = depmod_symbol_create(depmod, "TOC.", true, 0, NULL);
+		if (sym)
+			depmod_symbol_add(depmod, sym);
+	}
 }
 
 static int depmod_load_symvers(struct depmod *depmod, const char *filename)
@@ -2668,6 +2791,7 @@ static int depmod_load_symvers(struct depmod *depmod, const char *filename)
 
 	/* eg. "0xb352177e\tfind_first_bit\tvmlinux\tEXPORT_SYMBOL" */
 	while (fgets(line, sizeof(line), fp) != NULL) {
+		struct symbol *symbol;
 		const char *ver, *sym, *where;
 		char *verend;
 		uint64_t crc;
@@ -2691,7 +2815,9 @@ static int depmod_load_symvers(struct depmod *depmod, const char *filename)
 			continue;
 		}
 
-		depmod_symbol_add(depmod, sym, false, crc, NULL);
+		symbol = depmod_symbol_create(depmod, sym, false, crc, NULL);
+		if (symbol)
+			depmod_symbol_add(depmod, symbol);
 	}
 	depmod_add_fake_syms(depmod);
 
@@ -2719,6 +2845,7 @@ static int depmod_load_system_map(struct depmod *depmod, const char *filename)
 
 	/* eg. c0294200 R __ksymtab_devfs_alloc_devnum */
 	while (fgets(line, sizeof(line), fp) != NULL) {
+		struct symbol *sym;
 		char *p, *end;
 
 		linenum++;
@@ -2744,7 +2871,10 @@ static int depmod_load_system_map(struct depmod *depmod, const char *filename)
 		if (end != NULL)
 			*end = '\0';
 
-		depmod_symbol_add(depmod, p + ksymstr_len, true, 0, NULL);
+		sym = depmod_symbol_create(depmod, p + ksymstr_len, true, 0, NULL);
+		if (sym)
+			depmod_symbol_add(depmod, sym);
+
 		continue;
 
 invalid_syntax:
