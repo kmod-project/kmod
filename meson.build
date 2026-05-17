@@ -364,6 +364,7 @@ libkmod_files = files(
   'libkmod/libkmod-list.c',
   'libkmod/libkmod-module.c',
   'libkmod/libkmod-signature.c',
+  'libkmod/libkmod-whitelist.c',
 )
 
 libkmod_deps = []

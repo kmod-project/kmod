@@ -1001,6 +1001,8 @@ static int kmod_module_get_probe_list(struct kmod_module *mod, bool ignorecmd,
 	return err;
 }
 
+bool whitelist_allowed(const char *modname);
+
 KMOD_EXPORT int kmod_module_probe_insert_module(
 	struct kmod_module *mod, unsigned int flags, const char *extra_options,
 	int (*run_install)(struct kmod_module *m, const char *cmd, void *data),
@@ -1031,6 +1033,9 @@ KMOD_EXPORT int kmod_module_probe_insert_module(
 		if (flags & KMOD_PROBE_APPLY_BLACKLIST)
 			return KMOD_PROBE_APPLY_BLACKLIST;
 	}
+
+	if (!whitelist_allowed(mod->name))
+		return -EPERM;
 
 	err = kmod_module_get_probe_list(mod, !!(flags & KMOD_PROBE_IGNORE_COMMAND),
 					 &list);
