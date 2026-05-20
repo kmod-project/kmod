@@ -43,6 +43,7 @@
  */
 static char  **wl_entries = NULL;
 static size_t  wl_count   = 0;
+static bool    wl_testmode = false;
 
 /*
  * 0 = not yet loaded
@@ -114,6 +115,11 @@ static void whitelist_load(void)
 		if (line[0] == '\0')
 			continue;
 
+		if (strcmp(line, "whitelist-test-mode") == 0) {
+			wl_testmode = true;
+			continue;
+		}
+
 		/* Expect: "whitelist <modname>" */
 		if (!(strncmp(line, "whitelist", 9) == 0 &&
 		      isspace((unsigned char)line[9]))) {
@@ -183,6 +189,13 @@ bool whitelist_allowed(const char *modname)
 	for (i = 0; i < wl_count; i++) {
 		if (strcmp(wl_entries[i], modname) == 0)
 			return true;
+	}
+
+	if (wl_testmode) {
+		syslog(LOG_NOTICE,
+		       "kmod whitelist: module '%s' would be denied"
+		       " (test mode active, load permitted)\n", modname);
+		return true;
 	}
 
 	syslog(LOG_NOTICE,
