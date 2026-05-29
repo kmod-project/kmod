@@ -16,6 +16,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+#include <shared/missing.h> // For basename
 #include <shared/util.h>
 
 #include "libkmod.h"

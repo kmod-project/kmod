@@ -14,7 +14,7 @@
 #include <unistd.h>
 
 #include <shared/macro.h>
-#include <shared/missing.h>
+#include <shared/missing.h> // For basename
 #include <shared/tmpfile-util.h>
 #include <shared/util.h>
 

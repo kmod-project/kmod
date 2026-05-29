@@ -27,6 +27,7 @@
 #include <sys/types.h>
 #include <sys/utsname.h>
 
+#include <shared/missing.h> // For finit_module
 #include <shared/util.h>
 
 /* kmod_elf_get_section() is not exported, we need the private header */

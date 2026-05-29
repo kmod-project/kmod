@@ -22,6 +22,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
+#include <shared/missing.h> // For finit_module
 #include <shared/strbuf.h>
 #include <shared/util.h>
 

@@ -20,7 +20,7 @@
 #include <sys/stat.h>
 #include <sys/wait.h>
 
-#include <shared/missing.h>
+#include <shared/missing.h> // For basename
 #include <shared/util.h>
 
 #include "testsuite.h"
