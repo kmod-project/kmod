@@ -63,8 +63,8 @@ option(
 option(
   'mbedtls',
   type : 'feature',
-  value : 'disabled',
-  description : 'MbedTLS support, PKCS7 signatures. Default: disabled',
+  value : 'enabled',
+  description : 'MbedTLS support, PKCS7 signatures. Default: enabled',
 )
 
 option(

@@ -13,6 +13,7 @@ apk add \
     git \
     gtk-doc \
     linux-stable-dev \
+    mbedtls-dev \
     meson \
     openssl-dev \
     scdoc \
