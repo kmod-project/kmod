@@ -19,6 +19,7 @@ dnf install -y \
     libubsan \
     libzstd-devel \
     make \
+    mbedtls-devel \
     meson \
     openssl-devel \
     scdoc \

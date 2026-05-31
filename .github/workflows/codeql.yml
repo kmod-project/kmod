@@ -32,7 +32,7 @@ jobs:
       matrix:
         include:
           - container: 'ubuntu:24.04'
-            meson_setup: '-D b_sanitize=none -D build-tests=false'
+            meson_setup: '-D b_sanitize=none -D build-tests=false -Dmbedtls=disabled'
 
     container:
       image: ${{ matrix.container }}
