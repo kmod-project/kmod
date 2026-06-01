@@ -388,6 +388,7 @@ if dep_map.get('zlib').found()
 endif
 
 if dep_map.get('openssl').found()
+  libkmod_files += files('libkmod/libkmod-signature-openssl.c')
   libkmod_deps += dep_map['openssl']
 endif
 
