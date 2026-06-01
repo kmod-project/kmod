@@ -23,6 +23,7 @@
 #include <shared/array.h>
 #include <shared/hash.h>
 #include <shared/macro.h>
+#include <shared/missing.h> // For basename
 #include <shared/strbuf.h>
 #include <shared/tmpfile-util.h>
 #include <shared/util.h>

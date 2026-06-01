@@ -22,6 +22,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
+#include <shared/missing.h> // For finit_module
 #include <shared/strbuf.h>
 #include <shared/util.h>
 
@@ -619,6 +620,16 @@ KMOD_EXPORT int kmod_module_remove_module(struct kmod_module *mod, unsigned int 
 }
 
 extern long init_module(const void *mem, unsigned long len, const char *args);
+
+/*
+ * (Re-)define some linux/module.h macros.
+ *
+ * In practice, most people/distros do not have the relevant package/header during the
+ * build. The values are UAPI and cannot change, so we might as well have them locally.
+ */
+#define MODULE_INIT_IGNORE_MODVERSIONS 1
+#define MODULE_INIT_IGNORE_VERMAGIC 2
+#define MODULE_INIT_COMPRESSED_FILE 4
 
 static int do_finit_module(struct kmod_module *mod, unsigned int flags, const char *args)
 {

@@ -16,7 +16,6 @@
 #include <string.h>
 
 #include <shared/elf-note.h>
-#include <shared/missing.h>
 #include <shared/util.h>
 
 #include "libkmod-internal.h"

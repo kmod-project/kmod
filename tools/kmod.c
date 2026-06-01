@@ -4,12 +4,12 @@
  */
 
 #include <getopt.h>
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include <shared/util.h>
-#include <shared/missing.h>
 
 #include <libkmod/libkmod.h>
 

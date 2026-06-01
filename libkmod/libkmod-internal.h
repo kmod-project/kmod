@@ -6,7 +6,6 @@
 #include <limits.h>
 
 #include <shared/macro.h>
-#include <shared/missing.h>
 
 #include "libkmod.h"
 
