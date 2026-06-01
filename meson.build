@@ -148,8 +148,8 @@ endif
 # Options
 ################################################################################
 
-module_compressions = ''
-module_signatures = ''
+compressions = []
+signatures = []
 
 features = []
 dep_map = {}
@@ -295,15 +295,22 @@ foreach tuple : _moar_deps
   cdata.set10('ENABLE_' + opt.to_upper(), have)
   cdata.set10('ENABLE_' + opt.to_upper() + '_DLOPEN', have and dlopen)
 
-  if opt == 'openssl'
-    module_signatures = have ? 'PKCS7 legacy' : 'legacy'
-  elif have
-    module_compressions += f'@opt@ '
+  if have
+    if opt == 'openssl'
+      signatures += ['PKCS7']
+    else
+      compressions += [f'@opt@']
+    endif
   endif
 
   features += ['@0@@1@'.format(have ? '+' : '-', opt.to_upper())]
   dep_map += {opt : dep}
 endforeach
+
+signatures += ['legacy']
+
+module_compressions = ' '.join(compressions)
+module_signatures = ' '.join(signatures)
 
 #-------------------------------------------------------------------------------
 # Config output
