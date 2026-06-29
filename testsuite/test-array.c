@@ -20,8 +20,8 @@ static int test_array_append1(void)
 
 	array_init(&array, 2);
 	array_append(&array, c1);
-	assert_return(array.count == 1, EXIT_FAILURE);
-	assert_return(array.array[0] == c1, EXIT_FAILURE);
+	OK(array.count == 1, "Incorrect number of array entries");
+	OK(array.array[0] == c1, "Incorrect array entry");
 	array_free_array(&array);
 
 	return 0;
@@ -39,10 +39,10 @@ static int test_array_append2(void)
 	array_append(&array, c1);
 	array_append(&array, c2);
 	array_append(&array, c3);
-	assert_return(array.count == 3, EXIT_FAILURE);
-	assert_return(array.array[0] == c1, EXIT_FAILURE);
-	assert_return(array.array[1] == c2, EXIT_FAILURE);
-	assert_return(array.array[2] == c3, EXIT_FAILURE);
+	OK(array.count == 3, "Incorrect number of array entries");
+	OK(array.array[0] == c1, "Incorrect array entry");
+	OK(array.array[1] == c2, "Incorrect array entry");
+	OK(array.array[2] == c3, "Incorrect array entry");
 	array_free_array(&array);
 
 	return 0;
@@ -63,10 +63,10 @@ static int test_array_append_unique(void)
 	array_append_unique(&array, c3);
 	array_append_unique(&array, c2);
 	array_append_unique(&array, c1);
-	assert_return(array.count == 3, EXIT_FAILURE);
-	assert_return(array.array[0] == c1, EXIT_FAILURE);
-	assert_return(array.array[1] == c2, EXIT_FAILURE);
-	assert_return(array.array[2] == c3, EXIT_FAILURE);
+	OK(array.count == 3, "Incorrect number of array entries");
+	OK(array.array[0] == c1, "Incorrect array entry");
+	OK(array.array[1] == c2, "Incorrect array entry");
+	OK(array.array[2] == c3, "Incorrect array entry");
 	array_free_array(&array);
 
 	return 0;
@@ -96,13 +96,13 @@ static int test_array_sort(void)
 	array_append(&array, c3);
 	array_append(&array, c1);
 	array_sort(&array, strptrcmp);
-	assert_return(array.count == 6, EXIT_FAILURE);
-	assert_return(array.array[0] == c1, EXIT_FAILURE);
-	assert_return(array.array[1] == c1, EXIT_FAILURE);
-	assert_return(array.array[2] == c2, EXIT_FAILURE);
-	assert_return(array.array[3] == c2, EXIT_FAILURE);
-	assert_return(array.array[4] == c3, EXIT_FAILURE);
-	assert_return(array.array[5] == c3, EXIT_FAILURE);
+	OK(array.count == 6, "Incorrect number of array entries");
+	OK(array.array[0] == c1, "Incorrect array entry");
+	OK(array.array[1] == c1, "Incorrect array entry");
+	OK(array.array[2] == c2, "Incorrect array entry");
+	OK(array.array[3] == c2, "Incorrect array entry");
+	OK(array.array[4] == c3, "Incorrect array entry");
+	OK(array.array[5] == c3, "Incorrect array entry");
 	array_free_array(&array);
 
 	return 0;
@@ -122,29 +122,29 @@ static int test_array_remove_at(void)
 	array_append(&array, c3);
 
 	array_remove_at(&array, 2);
-	assert_return(array.count == 2, EXIT_FAILURE);
-	assert_return(array.array[0] == c1, EXIT_FAILURE);
-	assert_return(array.array[1] == c2, EXIT_FAILURE);
-	assert_return(array.total == 4, EXIT_FAILURE);
+	OK(array.count == 2, "Incorrect number of array entries");
+	OK(array.array[0] == c1, "Incorrect array entry");
+	OK(array.array[1] == c2, "Incorrect array entry");
+	OK(array.total == 4, "Incorrect array size");
 
 	array_remove_at(&array, 0);
-	assert_return(array.count == 1, EXIT_FAILURE);
-	assert_return(array.array[0] == c2, EXIT_FAILURE);
-	assert_return(array.total == 2, EXIT_FAILURE);
+	OK(array.count == 1, "Incorrect number of array entries");
+	OK(array.array[0] == c2, "Incorrect array entry");
+	OK(array.total == 2, "Incorrect array size");
 
 	array_remove_at(&array, 0);
-	assert_return(array.count == 0, EXIT_FAILURE);
-	assert_return(array.total == 2, EXIT_FAILURE);
+	OK(array.count == 0, "Incorrect number of array entries");
+	OK(array.total == 2, "Incorrect array size");
 
 	array_append(&array, c1);
 	array_append(&array, c2);
 	array_append(&array, c3);
 
 	array_remove_at(&array, 1);
-	assert_return(array.count == 2, EXIT_FAILURE);
-	assert_return(array.array[0] == c1, EXIT_FAILURE);
-	assert_return(array.array[1] == c3, EXIT_FAILURE);
-	assert_return(array.total == 4, EXIT_FAILURE);
+	OK(array.count == 2, "Incorrect number of array entries");
+	OK(array.array[0] == c1, "Incorrect array entry");
+	OK(array.array[1] == c3, "Incorrect array entry");
+	OK(array.total == 4, "Incorrect array size");
 
 	array_free_array(&array);
 
@@ -166,18 +166,18 @@ static int test_array_pop(void)
 
 	array_pop(&array);
 
-	assert_return(array.count == 2, EXIT_FAILURE);
-	assert_return(array.array[0] == c1, EXIT_FAILURE);
-	assert_return(array.array[1] == c2, EXIT_FAILURE);
+	OK(array.count == 2, "Incorrect number of array entries");
+	OK(array.array[0] == c1, "Incorrect array entry");
+	OK(array.array[1] == c2, "Incorrect array entry");
 
 	array_pop(&array);
 	array_pop(&array);
 
-	assert_return(array.count == 0, EXIT_FAILURE);
+	OK(array.count == 0, "Incorrect number of array entries");
 
 	array_pop(&array);
 
-	assert_return(array.count == 0, EXIT_FAILURE);
+	OK(array.count == 0, "Incorrect number of array entries");
 
 	array_free_array(&array);
 

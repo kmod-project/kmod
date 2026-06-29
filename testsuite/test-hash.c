@@ -25,7 +25,7 @@ static void countfreecalls(_maybe_unused_ void *v)
 static int test_hash_new(void)
 {
 	struct hash *h = hash_new(8, NULL);
-	assert_return(h != NULL, EXIT_FAILURE);
+	OK(h != NULL, "Cannot create hash table");
 	hash_free(h);
 	return 0;
 }
@@ -41,7 +41,7 @@ static int test_hash_get_count(void)
 	hash_add(h, k2, v2);
 	hash_add(h, k3, v3);
 
-	assert_return(hash_get_count(h) == 3, EXIT_FAILURE);
+	OK(hash_get_count(h) == 3, "Wrong number of hash entries");
 
 	hash_free(h);
 	return 0;
@@ -63,13 +63,13 @@ static int test_hash_replace(void)
 	/* replace v1 */
 	r |= hash_add(h, k1, v4);
 
-	assert_return(r == 0, EXIT_FAILURE);
-	assert_return(hash_get_count(h) == 3, EXIT_FAILURE);
+	OK(r == 0, "Failed to add hash entry(ies)");
+	OK(hash_get_count(h) == 3, "Wrong number of hash entries");
 
 	v = hash_find(h, "k1");
-	assert_return(streq(v, v4), EXIT_FAILURE);
+	OK(streq(v, v4), "Found incorrect hash entry");
 
-	assert_return(freecount == 1, EXIT_FAILURE);
+	OK(freecount == 1, "Incorrect free hash entries");
 
 	hash_free(h);
 	return 0;
@@ -88,17 +88,17 @@ static int test_hash_replace_failing(void)
 	r |= hash_add(h, k2, v2);
 	r |= hash_add(h, k3, v3);
 
-	assert_return(r == 0, EXIT_FAILURE);
+	OK(r == 0, "Failed to add hash entry(ies)");
 
 	/* replace v1 */
 	r = hash_add_unique(h, k1, v4);
-	assert_return(r != 0, EXIT_FAILURE);
-	assert_return(hash_get_count(h) == 3, EXIT_FAILURE);
+	OK(r != 0, "Failed to add unique hash entry");
+	OK(hash_get_count(h) == 3, "Wrong number of hash entries");
 
 	v = hash_find(h, "k1");
-	assert_return(streq(v, v1), EXIT_FAILURE);
+	OK(streq(v, v1), "Found incorrect hash entry");
 
-	assert_return(freecount == 0, EXIT_FAILURE);
+	OK(freecount == 0, "Incorrect free hash entries");
 
 	hash_free(h);
 	return 0;
@@ -124,12 +124,12 @@ static int test_hash_iter(void)
 
 	for (hash_iter_init(h, &iter); hash_iter_next(&iter, &k, (const void **)&v);) {
 		v2 = hash_find(h2, k);
-		assert_return(v2 != NULL, EXIT_FAILURE);
+		OK(v2 != NULL, "Cannot find hash entry");
 		hash_del(h2, k);
 	}
 
-	assert_return(hash_get_count(h) == 3, EXIT_FAILURE);
-	assert_return(hash_get_count(h2) == 0, EXIT_FAILURE);
+	OK(hash_get_count(h) == 3, "Wrong number of hash entries");
+	OK(hash_get_count(h2) == 0, "Wrong number of hash entries");
 
 	hash_free(h);
 	hash_free(h2);
@@ -157,12 +157,12 @@ static int test_hash_iter_after_del(void)
 
 	for (hash_iter_init(h, &iter); hash_iter_next(&iter, &k, (const void **)&v);) {
 		v2 = hash_find(h2, k);
-		assert_return(v2 != NULL, EXIT_FAILURE);
+		OK(v2 != NULL, "Cannot find hash entry");
 		hash_del(h2, k);
 	}
 
-	assert_return(hash_get_count(h) == 2, EXIT_FAILURE);
-	assert_return(hash_get_count(h2) == 1, EXIT_FAILURE);
+	OK(hash_get_count(h) == 2, "Wrong number of hash entries");
+	OK(hash_get_count(h2) == 1, "Wrong number of hash entries");
 
 	hash_free(h);
 	hash_free(h2);
@@ -193,7 +193,7 @@ static int test_hash_del_nonexistent(void)
 	int rc;
 
 	rc = hash_del(h, k1);
-	assert_return(rc == -ENOENT, EXIT_FAILURE);
+	OK(rc == -ENOENT, "Incorrect ret code deleting non-existent entry");
 
 	hash_free(h);
 
@@ -214,13 +214,13 @@ static int test_hash_free(void)
 
 	hash_del(h, k1);
 
-	assert_return(freecount == 1, EXIT_FAILURE);
+	OK(freecount == 1, "Incorrect free hash entries");
 
-	assert_return(hash_get_count(h) == 2, EXIT_FAILURE);
+	OK(hash_get_count(h) == 2, "Wrong number of hash entries");
 
 	hash_free(h);
 
-	assert_return(freecount == 3, EXIT_FAILURE);
+	OK(freecount == 3, "Incorrect free hash entries");
 
 	return 0;
 }
@@ -244,7 +244,7 @@ static int test_hash_add_unique(void)
 			hash_add_unique(h, k[idx], v[idx]);
 		}
 
-		assert_return(hash_get_count(h) == N, EXIT_FAILURE);
+		OK(hash_get_count(h) == N, "Wrong number of hash entries");
 		hash_free(h);
 	}
 	return 0;
@@ -268,7 +268,7 @@ static int test_hash_massive_add_del(void)
 		k += 8;
 	}
 
-	assert_return(hash_get_count(h) == N, EXIT_FAILURE);
+	OK(hash_get_count(h) == N, "Wrong number of hash entries");
 
 	k = &buf[0];
 	for (i = 0; i < N; i++) {
@@ -276,7 +276,7 @@ static int test_hash_massive_add_del(void)
 		k += 8;
 	}
 
-	assert_return(hash_get_count(h) == 0, EXIT_FAILURE);
+	OK(hash_get_count(h) == 0, "Wrong number of hash entries");
 
 	hash_free(h);
 	return 0;
