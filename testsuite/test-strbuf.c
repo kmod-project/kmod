@@ -29,8 +29,8 @@ static int test_strbuf_pushchar(void)
 		strbuf_pushchar(&buf, *c);
 
 	result = strbuf_str(&buf);
-	assert_return(result == buf.bytes, EXIT_FAILURE);
-	assert_return(streq(result, TEXT), EXIT_FAILURE);
+	TS_ASSERT(result == buf.bytes);
+	TS_ASSERT(streq(result, TEXT));
 
 	return 0;
 }
@@ -60,15 +60,14 @@ static int test_strbuf_pushchars(void)
 	 */
 	strbuf_popchar(&buf);
 	result = strbuf_str(&buf);
-	assert_return(result == buf.bytes, EXIT_FAILURE);
-	assert_return(streq(result, TEXT), EXIT_FAILURE);
+	TS_ASSERT(result == buf.bytes);
+	TS_ASSERT(streq(result, TEXT));
 
 	strbuf_popchars(&buf, lastwordlen);
 	result = strbuf_str(&buf);
-	assert_return(!streq(TEXT, result), EXIT_FAILURE);
-	assert_return(strncmp(TEXT, result, strlen(TEXT) - lastwordlen) == 0,
-		      EXIT_FAILURE);
-	assert_return(result[strlen(TEXT) - lastwordlen] == '\0', EXIT_FAILURE);
+	TS_ASSERT(!streq(TEXT, result));
+	TS_ASSERT(strncmp(TEXT, result, strlen(TEXT) - lastwordlen) == 0);
+	TS_ASSERT(result[strlen(TEXT) - lastwordlen] == '\0');
 
 	free(str);
 
@@ -87,15 +86,15 @@ static int test_strbuf_with_stack(void)
 	DECLARE_STRBUF_WITH_STACK(buf3, sizeof(test) + 1);
 
 	strbuf_pushchars(&buf, test);
-	assert_return(streq(test, strbuf_str(&buf)), EXIT_FAILURE);
+	TS_ASSERT(streq(test, strbuf_str(&buf)));
 	p = strbuf_str(&buf);
-	assert_return(streq(test, p), EXIT_FAILURE);
+	TS_ASSERT(streq(test, p));
 
 	strbuf_pushchars(&buf2, test);
-	assert_return(streq(test, strbuf_str(&buf2)), EXIT_FAILURE);
+	TS_ASSERT(streq(test, strbuf_str(&buf2)));
 	/* It fits on stack, but when we steal, we get a copy on heap */
 	p = strbuf_str(&buf2);
-	assert_return(streq(test, p), EXIT_FAILURE);
+	TS_ASSERT(streq(test, p));
 
 	/*
 	 * Check assumption about buffer being on stack vs heap is indeed valid.
@@ -104,13 +103,13 @@ static int test_strbuf_with_stack(void)
 	strbuf_clear(&buf3);
 	stack_buf = buf3.bytes;
 	strbuf_pushchars(&buf3, test);
-	assert_return(stack_buf == buf3.bytes, EXIT_FAILURE);
+	TS_ASSERT(stack_buf == buf3.bytes);
 
-	assert_return(streq(test, strbuf_str(&buf3)), EXIT_FAILURE);
-	assert_return(stack_buf == buf3.bytes, EXIT_FAILURE);
+	TS_ASSERT(streq(test, strbuf_str(&buf3)));
+	TS_ASSERT(stack_buf == buf3.bytes);
 
 	strbuf_pushchars(&buf3, "-overflow");
-	assert_return(stack_buf != buf3.bytes, EXIT_FAILURE);
+	TS_ASSERT(stack_buf != buf3.bytes);
 
 	return 0;
 }
@@ -120,13 +119,13 @@ static int test_strbuf_with_heap(void)
 {
 	DECLARE_STRBUF(heapbuf);
 
-	assert_return(heapbuf.bytes == NULL, EXIT_FAILURE);
-	assert_return(heapbuf.size == 0, EXIT_FAILURE);
-	assert_return(heapbuf.used == 0, EXIT_FAILURE);
+	TS_ASSERT(heapbuf.bytes == NULL);
+	TS_ASSERT(heapbuf.size == 0);
+	TS_ASSERT(heapbuf.used == 0);
 	strbuf_pushchars(&heapbuf, "-overflow");
-	assert_return(heapbuf.bytes != NULL, EXIT_FAILURE);
-	assert_return(heapbuf.size != 0, EXIT_FAILURE);
-	assert_return(heapbuf.used != 0, EXIT_FAILURE);
+	TS_ASSERT(heapbuf.bytes != NULL);
+	TS_ASSERT(heapbuf.size != 0);
+	TS_ASSERT(heapbuf.used != 0);
 
 	return 0;
 }
@@ -140,7 +139,7 @@ static int test_strbuf_pushmem(void)
 	strbuf_pushmem(&buf, "", 0);
 	strbuf_pushmem(&buf, TEXT, strlen(TEXT) + 1);
 
-	assert_return(streq(TEXT, strbuf_str(&buf)), EXIT_FAILURE);
+	TS_ASSERT(streq(TEXT, strbuf_str(&buf)));
 
 	return 0;
 }
@@ -151,21 +150,21 @@ static int test_strbuf_used(void)
 	_cleanup_strbuf_ struct strbuf buf;
 
 	strbuf_init(&buf);
-	assert_return(strbuf_used(&buf) == 0, EXIT_FAILURE);
+	TS_ASSERT(strbuf_used(&buf) == 0);
 
 	strbuf_pushchars(&buf, TEXT);
-	assert_return(strbuf_used(&buf) == strlen(TEXT), EXIT_FAILURE);
+	TS_ASSERT(strbuf_used(&buf) == strlen(TEXT));
 
 	strbuf_pushchar(&buf, 'a');
 	strbuf_popchar(&buf);
-	assert_return(strbuf_used(&buf) == strlen(TEXT), EXIT_FAILURE);
+	TS_ASSERT(strbuf_used(&buf) == strlen(TEXT));
 
-	assert_return(streq(TEXT, strbuf_str(&buf)), EXIT_FAILURE);
-	assert_return(strbuf_used(&buf) == strlen(TEXT), EXIT_FAILURE);
+	TS_ASSERT(streq(TEXT, strbuf_str(&buf)));
+	TS_ASSERT(strbuf_used(&buf) == strlen(TEXT));
 
 	strbuf_pushchar(&buf, '\0');
-	assert_return(streq(TEXT, strbuf_str(&buf)), EXIT_FAILURE);
-	assert_return(strbuf_used(&buf) == strlen(TEXT) + 1, EXIT_FAILURE);
+	TS_ASSERT(streq(TEXT, strbuf_str(&buf)));
+	TS_ASSERT(strbuf_used(&buf) == strlen(TEXT) + 1);
 
 	return 0;
 }
@@ -177,11 +176,11 @@ static int test_strbuf_shrink_to(void)
 
 	strbuf_init(&buf);
 	strbuf_shrink_to(&buf, 0);
-	assert_return(strbuf_used(&buf) == 0, EXIT_FAILURE);
+	TS_ASSERT(strbuf_used(&buf) == 0);
 
 	strbuf_pushchars(&buf, TEXT);
 	strbuf_shrink_to(&buf, strlen(TEXT) - 1);
-	assert_return(strbuf_used(&buf) == strlen(TEXT) - 1, EXIT_FAILURE);
+	TS_ASSERT(strbuf_used(&buf) == strlen(TEXT) - 1);
 
 	return 0;
 }

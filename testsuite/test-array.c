@@ -20,8 +20,8 @@ static int test_array_append1(void)
 
 	array_init(&array, 2);
 	array_append(&array, c1);
-	assert_return(array.count == 1, EXIT_FAILURE);
-	assert_return(array.array[0] == c1, EXIT_FAILURE);
+	TS_ASSERT(array.count == 1);
+	TS_ASSERT(array.array[0] == c1);
 	array_free_array(&array);
 
 	return 0;
@@ -39,10 +39,10 @@ static int test_array_append2(void)
 	array_append(&array, c1);
 	array_append(&array, c2);
 	array_append(&array, c3);
-	assert_return(array.count == 3, EXIT_FAILURE);
-	assert_return(array.array[0] == c1, EXIT_FAILURE);
-	assert_return(array.array[1] == c2, EXIT_FAILURE);
-	assert_return(array.array[2] == c3, EXIT_FAILURE);
+	TS_ASSERT(array.count == 3);
+	TS_ASSERT(array.array[0] == c1);
+	TS_ASSERT(array.array[1] == c2);
+	TS_ASSERT(array.array[2] == c3);
 	array_free_array(&array);
 
 	return 0;
@@ -63,10 +63,10 @@ static int test_array_append_unique(void)
 	array_append_unique(&array, c3);
 	array_append_unique(&array, c2);
 	array_append_unique(&array, c1);
-	assert_return(array.count == 3, EXIT_FAILURE);
-	assert_return(array.array[0] == c1, EXIT_FAILURE);
-	assert_return(array.array[1] == c2, EXIT_FAILURE);
-	assert_return(array.array[2] == c3, EXIT_FAILURE);
+	TS_ASSERT(array.count == 3);
+	TS_ASSERT(array.array[0] == c1);
+	TS_ASSERT(array.array[1] == c2);
+	TS_ASSERT(array.array[2] == c3);
 	array_free_array(&array);
 
 	return 0;
@@ -96,13 +96,13 @@ static int test_array_sort(void)
 	array_append(&array, c3);
 	array_append(&array, c1);
 	array_sort(&array, strptrcmp);
-	assert_return(array.count == 6, EXIT_FAILURE);
-	assert_return(array.array[0] == c1, EXIT_FAILURE);
-	assert_return(array.array[1] == c1, EXIT_FAILURE);
-	assert_return(array.array[2] == c2, EXIT_FAILURE);
-	assert_return(array.array[3] == c2, EXIT_FAILURE);
-	assert_return(array.array[4] == c3, EXIT_FAILURE);
-	assert_return(array.array[5] == c3, EXIT_FAILURE);
+	TS_ASSERT(array.count == 6);
+	TS_ASSERT(array.array[0] == c1);
+	TS_ASSERT(array.array[1] == c1);
+	TS_ASSERT(array.array[2] == c2);
+	TS_ASSERT(array.array[3] == c2);
+	TS_ASSERT(array.array[4] == c3);
+	TS_ASSERT(array.array[5] == c3);
 	array_free_array(&array);
 
 	return 0;
@@ -122,29 +122,29 @@ static int test_array_remove_at(void)
 	array_append(&array, c3);
 
 	array_remove_at(&array, 2);
-	assert_return(array.count == 2, EXIT_FAILURE);
-	assert_return(array.array[0] == c1, EXIT_FAILURE);
-	assert_return(array.array[1] == c2, EXIT_FAILURE);
-	assert_return(array.total == 4, EXIT_FAILURE);
+	TS_ASSERT(array.count == 2);
+	TS_ASSERT(array.array[0] == c1);
+	TS_ASSERT(array.array[1] == c2);
+	TS_ASSERT(array.total == 4);
 
 	array_remove_at(&array, 0);
-	assert_return(array.count == 1, EXIT_FAILURE);
-	assert_return(array.array[0] == c2, EXIT_FAILURE);
-	assert_return(array.total == 2, EXIT_FAILURE);
+	TS_ASSERT(array.count == 1);
+	TS_ASSERT(array.array[0] == c2);
+	TS_ASSERT(array.total == 2);
 
 	array_remove_at(&array, 0);
-	assert_return(array.count == 0, EXIT_FAILURE);
-	assert_return(array.total == 2, EXIT_FAILURE);
+	TS_ASSERT(array.count == 0);
+	TS_ASSERT(array.total == 2);
 
 	array_append(&array, c1);
 	array_append(&array, c2);
 	array_append(&array, c3);
 
 	array_remove_at(&array, 1);
-	assert_return(array.count == 2, EXIT_FAILURE);
-	assert_return(array.array[0] == c1, EXIT_FAILURE);
-	assert_return(array.array[1] == c3, EXIT_FAILURE);
-	assert_return(array.total == 4, EXIT_FAILURE);
+	TS_ASSERT(array.count == 2);
+	TS_ASSERT(array.array[0] == c1);
+	TS_ASSERT(array.array[1] == c3);
+	TS_ASSERT(array.total == 4);
 
 	array_free_array(&array);
 
@@ -166,18 +166,18 @@ static int test_array_pop(void)
 
 	array_pop(&array);
 
-	assert_return(array.count == 2, EXIT_FAILURE);
-	assert_return(array.array[0] == c1, EXIT_FAILURE);
-	assert_return(array.array[1] == c2, EXIT_FAILURE);
+	TS_ASSERT(array.count == 2);
+	TS_ASSERT(array.array[0] == c1);
+	TS_ASSERT(array.array[1] == c2);
 
 	array_pop(&array);
 	array_pop(&array);
 
-	assert_return(array.count == 0, EXIT_FAILURE);
+	TS_ASSERT(array.count == 0);
 
 	array_pop(&array);
 
-	assert_return(array.count == 0, EXIT_FAILURE);
+	TS_ASSERT(array.count == 0);
 
 	array_free_array(&array);
 
