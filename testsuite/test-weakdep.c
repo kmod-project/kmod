@@ -57,7 +57,7 @@ static int test_weakdep(void)
 
 	kmod_unref(ctx);
 
-	return EXIT_SUCCESS;
+	return 0;
 }
 DEFINE_TEST(test_weakdep,
 	.description = "check if libkmod breaks weakdep",

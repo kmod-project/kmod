@@ -60,7 +60,7 @@ static int blacklist_1(void)
 	kmod_module_unref_list(list);
 	kmod_unref(ctx);
 
-	return EXIT_SUCCESS;
+	return 0;
 }
 
 DEFINE_TEST(blacklist_1, .description = "check if modules are correctly blacklisted",

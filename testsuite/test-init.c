@@ -33,7 +33,7 @@ static int test_load_resources(void)
 
 	kmod_unref(ctx);
 
-	return EXIT_SUCCESS;
+	return 0;
 }
 DEFINE_TEST_WITH_FUNC(
 	test_load_resource1, test_load_resources,
@@ -64,7 +64,7 @@ static int test_initlib(void)
 
 	kmod_unref(ctx);
 
-	return EXIT_SUCCESS;
+	return 0;
 }
 DEFINE_TEST(test_initlib, .description = "test if libkmod's init function work");
 
@@ -87,7 +87,7 @@ static int test_insert(void)
 	kmod_module_unref(mod);
 	kmod_unref(ctx);
 
-	return EXIT_SUCCESS;
+	return 0;
 }
 DEFINE_TEST(test_insert,
 	.description = "test if libkmod's insert_module returns ok",
@@ -123,7 +123,7 @@ static int test_remove(void)
 	kmod_module_unref(mod_simple);
 	kmod_unref(ctx);
 
-	return EXIT_SUCCESS;
+	return 0;
 }
 DEFINE_TEST(
 	test_remove, .description = "test if libkmod's remove_module returns ok",

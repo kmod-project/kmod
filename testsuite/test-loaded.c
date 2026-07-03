@@ -58,7 +58,7 @@ static int loaded_1(void)
 
 	kmod_unref(ctx);
 
-	return EXIT_SUCCESS;
+	return 0;
 }
 DEFINE_TEST(loaded_1,
 	.description = "check if list of module is created",
