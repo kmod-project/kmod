@@ -393,10 +393,7 @@ DEFINE_TEST(modprobe_module_from_abspath,
 
 static int modprobe_module_from_relpath(void)
 {
-	if (chdir("/home/foo") != 0) {
-		perror("failed to change into /home/foo");
-		return EXIT_FAILURE;
-	}
+	TS_ASSERT(chdir("/home/foo") == 0);
 
 	return EXEC_TOOL(modprobe, "./mod-simple.ko");
 }

@@ -24,8 +24,7 @@ static int test_weakdep(void)
 	int err;
 
 	ctx = kmod_new(NULL, NULL);
-	if (ctx == NULL)
-		return EXIT_FAILURE;
+	TS_ASSERT(ctx != NULL);
 
 	for (size_t i = 0; i < ARRAY_SIZE(mod_name); i++) {
 		struct kmod_list *list = NULL;
@@ -35,20 +34,12 @@ static int test_weakdep(void)
 
 		printf("%s:", mod_name[i]);
 		err = kmod_module_new_from_lookup(ctx, mod_name[i], &list);
-		if (list == NULL || err < 0) {
-			fprintf(stderr, "module %s not found in directory %s\n",
-				mod_name[i], ctx ? kmod_get_dirname(ctx) : "(missing)");
-			return EXIT_FAILURE;
-		}
+		TS_ASSERT(list != NULL && err == 0);
 
 		mod = kmod_module_get_module(list);
 
 		err = kmod_module_get_weakdeps(mod, &mod_list);
-		if (err) {
-			fprintf(stderr, "weak dependencies can not be read for %s (%d)\n",
-				mod_name[i], err);
-			return EXIT_FAILURE;
-		}
+		TS_ASSERT(err == 0);
 
 		kmod_list_foreach(itr, mod_list) {
 			struct kmod_module *weakdep_mod = kmod_module_get_module(itr);

@@ -22,15 +22,10 @@ static int loaded_1(void)
 	int err;
 
 	ctx = kmod_new(NULL, &null_config);
-	if (ctx == NULL)
-		return EXIT_FAILURE;
+	TS_ASSERT(ctx != NULL);
 
 	err = kmod_module_new_from_loaded(ctx, &list);
-	if (err < 0) {
-		fprintf(stderr, "%s\n", strerror(-err));
-		kmod_unref(ctx);
-		return EXIT_FAILURE;
-	}
+	TS_ASSERT(err == 0);
 
 	printf("Module                  Size  Used by\n");
 

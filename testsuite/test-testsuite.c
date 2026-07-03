@@ -26,15 +26,9 @@ static int testsuite_uname(void)
 	struct utsname u;
 	int err = uname(&u);
 
-	if (err < 0)
-		return EXIT_FAILURE;
+	TS_ASSERT(err == 0);
 
-	if (!streq(u.release, TEST_UNAME)) {
-		const char *ldpreload = getenv("LD_PRELOAD");
-		ERR("u.release=%s should be %s\n", u.release, TEST_UNAME);
-		ERR("LD_PRELOAD=%s\n", ldpreload);
-		return EXIT_FAILURE;
-	}
+	TS_ASSERT(streq(u.release, TEST_UNAME));
 
 	return EXIT_SUCCESS;
 }
@@ -50,15 +44,12 @@ static int testsuite_rootfs_fopen(void)
 	int n;
 
 	fp = fopen(MODULE_DIRECTORY "/a", "r");
-	if (fp == NULL)
-		return EXIT_FAILURE;
+	TS_ASSERT(fp != NULL);
 
 	n = fscanf(fp, "%s", s);
-	if (n != 1)
-		return EXIT_FAILURE;
+	TS_ASSERT(n == 1);
 
-	if (!streq(s, "kmod-test-chroot-works"))
-		return EXIT_FAILURE;
+	TS_ASSERT(streq(s, "kmod-test-chroot-works"));
 
 	return EXIT_SUCCESS;
 }
@@ -73,8 +64,7 @@ static int testsuite_rootfs_open(void)
 	int fd, done;
 
 	fd = open(MODULE_DIRECTORY "/a", O_RDONLY);
-	if (fd < 0)
-		return EXIT_FAILURE;
+	TS_ASSERT(fd >= 0);
 
 	for (done = 0;;) {
 		int r = read(fd, buf + done, sizeof(buf) - 1 - done);
@@ -88,8 +78,7 @@ static int testsuite_rootfs_open(void)
 
 	buf[done] = '\0';
 
-	if (!streq(buf, "kmod-test-chroot-works\n"))
-		return EXIT_FAILURE;
+	TS_ASSERT(streq(buf, "kmod-test-chroot-works\n"));
 
 	return EXIT_SUCCESS;
 }
@@ -102,10 +91,7 @@ static int testsuite_rootfs_stat(void)
 {
 	struct stat st;
 
-	if (stat(MODULE_DIRECTORY "/a", &st) < 0) {
-		ERR("stat failed: %m\n");
-		return EXIT_FAILURE;
-	}
+	TS_ASSERT(stat(MODULE_DIRECTORY "/a", &st) == 0);
 
 	return EXIT_SUCCESS;
 }
@@ -119,10 +105,7 @@ static int testsuite_rootfs_opendir(void)
 	DIR *d;
 
 	d = opendir("/testdir");
-	if (d == NULL) {
-		ERR("opendir failed: %m\n");
-		return EXIT_FAILURE;
-	}
+	TS_ASSERT(d != NULL);
 
 	closedir(d);
 	return EXIT_SUCCESS;

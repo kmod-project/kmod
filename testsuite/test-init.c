@@ -24,16 +24,12 @@ static int test_load_resources(void)
 	int err;
 
 	ctx = kmod_new(NULL, &null_config);
-	if (ctx == NULL)
-		return EXIT_FAILURE;
+	TS_ASSERT(ctx != NULL);
 
 	kmod_set_log_priority(ctx, 7);
 
 	err = kmod_load_resources(ctx);
-	if (err != 0) {
-		ERR("could not load libkmod resources: %s\n", strerror(-err));
-		return EXIT_FAILURE;
-	}
+	TS_ASSERT(err == 0);
 
 	kmod_unref(ctx);
 
@@ -64,8 +60,7 @@ static int test_initlib(void)
 	const char *null_config = NULL;
 
 	ctx = kmod_new(NULL, &null_config);
-	if (ctx == NULL)
-		return EXIT_FAILURE;
+	TS_ASSERT(ctx != NULL);
 
 	kmod_unref(ctx);
 
@@ -81,20 +76,14 @@ static int test_insert(void)
 	int err;
 
 	ctx = kmod_new(NULL, &null_config);
-	if (ctx == NULL)
-		return EXIT_FAILURE;
+	TS_ASSERT(ctx != NULL);
 
 	err = kmod_module_new_from_path(ctx, "/mod-simple.ko", &mod);
-	if (err != 0) {
-		ERR("could not create module from path: %s\n", strerror(-err));
-		return EXIT_FAILURE;
-	}
+	TS_ASSERT(err == 0);
 
 	err = kmod_module_insert_module(mod, 0, NULL);
-	if (err != 0) {
-		ERR("could not insert module: %s\n", strerror(-err));
-		return EXIT_FAILURE;
-	}
+	TS_ASSERT(err == 0);
+
 	kmod_module_unref(mod);
 	kmod_unref(ctx);
 
@@ -116,32 +105,19 @@ static int test_remove(void)
 	int err;
 
 	ctx = kmod_new(NULL, &null_config);
-	if (ctx == NULL)
-		return EXIT_FAILURE;
+	TS_ASSERT(ctx != NULL);
 
 	err = kmod_module_new_from_name(ctx, "mod-simple", &mod_simple);
-	if (err != 0) {
-		ERR("could not create module from name: %s\n", strerror(-err));
-		return EXIT_FAILURE;
-	}
+	TS_ASSERT(err == 0);
 
 	err = kmod_module_new_from_name(ctx, "bla", &mod_bla);
-	if (err != 0) {
-		ERR("could not create module from name: %s\n", strerror(-err));
-		return EXIT_FAILURE;
-	}
+	TS_ASSERT(err == 0);
 
 	err = kmod_module_remove_module(mod_simple, 0);
-	if (err != 0) {
-		ERR("could not remove module: %s\n", strerror(-err));
-		return EXIT_FAILURE;
-	}
+	TS_ASSERT(err == 0);
 
 	err = kmod_module_remove_module(mod_bla, 0);
-	if (err != -ENOENT) {
-		ERR("wrong return code for failure test: %d\n", err);
-		return EXIT_FAILURE;
-	}
+	TS_ASSERT(err == -ENOENT);
 
 	kmod_module_unref(mod_bla);
 	kmod_module_unref(mod_simple);
