@@ -83,7 +83,10 @@ int test_init(const struct test *start, const struct test *stop, int argc,
 	progname = argv[0];
 
 	/* An empty testsuite is not likely intended */
-	assert_return(start != stop, -EINVAL);
+	if (start == stop) {
+		ERR("Empty testsuite found. Did the compiler toolchain discard them?\n");
+		return -EINVAL;
+	}
 
 	for (;;) {
 		int c, idx = 0;
