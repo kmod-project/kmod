@@ -22,13 +22,13 @@ env:
 jobs:
   analyze:
     name: Analyze
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
 
     strategy:
       fail-fast: false
       matrix:
         include:
-          - container: 'ubuntu:24.04'
+          - container: 'ubuntu:26.04'
             meson_setup: '-D b_sanitize=none -D b_coverage=true -Dmbedtls=disabled'
 
     container:
