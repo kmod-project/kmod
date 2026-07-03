@@ -119,12 +119,14 @@ int test_run(const struct test *t);
 #define WARN(fmt, ...) _LOG("WARN: ", fmt, ##__VA_ARGS__)
 #define ERR(fmt, ...) _LOG("ERR: ", fmt, ##__VA_ARGS__)
 
-#define assert_return(expr, r)                                                  \
+#define assert_return(expr, r) TS_ASSERT(expr)
+
+#define TS_ASSERT(expr)                                                         \
 	do {                                                                    \
 		if ((!(expr))) {                                                \
-			ERR("Failed assertion: " #expr " %s:%d %s\n", __FILE__, \
-			    __LINE__, __PRETTY_FUNCTION__);                     \
-			return (r);                                             \
+			ERR("ASSERTION FAILED at %s:%d\n", __FILE__, __LINE__); \
+			ERR("\t" #expr "\n");                                   \
+			return EXIT_FAILURE;                                    \
 		}                                                               \
 	} while (false)
 
