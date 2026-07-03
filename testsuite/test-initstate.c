@@ -42,7 +42,7 @@ static int test_initstate_from_lookup(void)
 	kmod_module_unref_list(list);
 	kmod_unref(ctx);
 
-	return EXIT_SUCCESS;
+	return 0;
 }
 DEFINE_TEST(
 	test_initstate_from_lookup,
@@ -73,7 +73,7 @@ static int test_initstate_from_name(void)
 	kmod_module_unref(mod);
 	kmod_unref(ctx);
 
-	return EXIT_SUCCESS;
+	return 0;
 }
 DEFINE_TEST(test_initstate_from_name,
 	    .description =

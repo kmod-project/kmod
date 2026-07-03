@@ -58,7 +58,7 @@ static int test_dependencies(void)
 	kmod_module_unref(mod);
 	kmod_unref(ctx);
 
-	return EXIT_SUCCESS;
+	return 0;
 }
 DEFINE_TEST(test_dependencies,
 	    .description = "test if kmod_module_get_dependencies works",

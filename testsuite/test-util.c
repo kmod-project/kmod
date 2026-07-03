@@ -47,7 +47,7 @@ static int alias_1(void)
 		printf("\n");
 	}
 
-	return EXIT_SUCCESS;
+	return 0;
 }
 DEFINE_TEST(alias_1,
 	.description = "check if alias_normalize does the right thing",
@@ -75,7 +75,7 @@ static int test_freadline_wrapped(void)
 	}
 
 	fclose(fp);
-	return EXIT_SUCCESS;
+	return 0;
 }
 DEFINE_TEST(test_freadline_wrapped,
 	.description = "check if freadline_wrapped() does the right thing",
@@ -94,7 +94,7 @@ static int test_strchr_replace(void)
 	strchr_replace(s, 's', 'C');
 	TS_ASSERT(streq(s, res));
 
-	return EXIT_SUCCESS;
+	return 0;
 }
 DEFINE_TEST(test_strchr_replace,
 	    .description = "check implementation of strchr_replace()");
@@ -122,7 +122,7 @@ static int test_underscores(void)
 		TS_ASSERT(streq(val, teststr[i].res));
 	}
 
-	return EXIT_SUCCESS;
+	return 0;
 }
 DEFINE_TEST(test_underscores, .description = "check implementation of underscores()");
 
@@ -156,7 +156,7 @@ static int test_path_ends_with_kmod_ext(void)
 			teststr[i].res);
 	}
 
-	return EXIT_SUCCESS;
+	return 0;
 }
 DEFINE_TEST(test_path_ends_with_kmod_ext,
 	    .description = "check implementation of path_ends_with_kmod_ext()");
@@ -174,7 +174,7 @@ static int test_write_str_safe(void)
 	write_str_safe(fd, s, strlen(s));
 	close(fd);
 
-	return EXIT_SUCCESS;
+	return 0;
 }
 DEFINE_TEST(test_write_str_safe,
 	.description = "check implementation of write_str_safe()",
@@ -201,7 +201,7 @@ static int test_uadd32_overflow(void)
 	overflow = uadd32_overflow(UINT32_MAX, 1, &res);
 	TS_ASSERT(overflow);
 
-	return EXIT_SUCCESS;
+	return 0;
 }
 DEFINE_TEST(test_uadd32_overflow,
 	    .description = "check implementation of uadd32_overflow()");
@@ -218,7 +218,7 @@ static int test_uadd64_overflow(void)
 	overflow = uadd64_overflow(UINT64_MAX, 1, &res);
 	TS_ASSERT(overflow);
 
-	return EXIT_SUCCESS;
+	return 0;
 }
 DEFINE_TEST(test_uadd64_overflow,
 	    .description = "check implementation of uadd64_overflow()");
@@ -235,7 +235,7 @@ static int test_umul32_overflow(void)
 	overflow = umul32_overflow(UINT32_MAX, 0x10, &res);
 	TS_ASSERT(overflow);
 
-	return EXIT_SUCCESS;
+	return 0;
 }
 DEFINE_TEST(test_umul32_overflow,
 	    .description = "check implementation of umul32_overflow()");
@@ -252,7 +252,7 @@ static int test_umul64_overflow(void)
 	overflow = umul64_overflow(UINT64_MAX, 0x10, &res);
 	TS_ASSERT(overflow);
 
-	return EXIT_SUCCESS;
+	return 0;
 }
 DEFINE_TEST(test_umul64_overflow,
 	    .description = "check implementation of umul64_overflow()");
@@ -289,7 +289,7 @@ static int test_backoff_time(void)
 	get_backoff_delta_msec(now_msec() - 10, &delta);
 	TS_ASSERT(delta == 0);
 
-	return EXIT_SUCCESS;
+	return 0;
 }
 DEFINE_TEST(test_backoff_time,
 	    .description = "check implementation of get_backoff_delta_msec()");

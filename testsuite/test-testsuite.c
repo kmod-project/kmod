@@ -30,7 +30,7 @@ static int testsuite_uname(void)
 
 	TS_ASSERT(streq(u.release, TEST_UNAME));
 
-	return EXIT_SUCCESS;
+	return 0;
 }
 DEFINE_TEST(testsuite_uname, .description = "test if trap to uname() works",
 	    .config = {
@@ -51,7 +51,7 @@ static int testsuite_rootfs_fopen(void)
 
 	TS_ASSERT(streq(s, "kmod-test-chroot-works"));
 
-	return EXIT_SUCCESS;
+	return 0;
 }
 DEFINE_TEST(testsuite_rootfs_fopen, .description = "test if rootfs works - fopen()",
 	    .config = {
@@ -80,7 +80,7 @@ static int testsuite_rootfs_open(void)
 
 	TS_ASSERT(streq(buf, "kmod-test-chroot-works\n"));
 
-	return EXIT_SUCCESS;
+	return 0;
 }
 DEFINE_TEST(testsuite_rootfs_open, .description = "test if rootfs works - open()",
 	    .config = {
@@ -93,7 +93,7 @@ static int testsuite_rootfs_stat(void)
 
 	TS_ASSERT(stat(MODULE_DIRECTORY "/a", &st) == 0);
 
-	return EXIT_SUCCESS;
+	return 0;
 }
 DEFINE_TEST(testsuite_rootfs_stat, .description = "test if rootfs works - stat()",
 	    .config = {
@@ -108,7 +108,7 @@ static int testsuite_rootfs_opendir(void)
 	TS_ASSERT(d != NULL);
 
 	closedir(d);
-	return EXIT_SUCCESS;
+	return 0;
 }
 DEFINE_TEST(testsuite_rootfs_opendir, .description = "test if rootfs works - opendir()",
 	    .config = {

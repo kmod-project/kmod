@@ -43,7 +43,7 @@ static int from_name(void)
 
 	kmod_unref(ctx);
 
-	return EXIT_SUCCESS;
+	return 0;
 }
 DEFINE_TEST(from_name,
 	.description = "check if module names are parsed correctly",
@@ -83,7 +83,7 @@ static int from_alias(void)
 
 	kmod_unref(ctx);
 
-	return EXIT_SUCCESS;
+	return 0;
 }
 DEFINE_TEST(from_alias,
 	.description = "check if aliases are parsed correctly",

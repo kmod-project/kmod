@@ -42,7 +42,7 @@ static int test_remove(void)
 	kmod_module_unref(mod);
 	kmod_unref(ctx);
 
-	return EXIT_SUCCESS;
+	return 0;
 }
 DEFINE_TEST(test_remove,
 	    .description = "test if libkmod's delete_module removes module directory",

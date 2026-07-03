@@ -97,7 +97,7 @@ static int multi_softdep(void)
 		kmod_module_unref(mod);
 	}
 	kmod_unref(ctx);
-	return EXIT_SUCCESS;
+	return 0;
 }
 
 /*
