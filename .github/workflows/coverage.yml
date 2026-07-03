@@ -53,3 +53,4 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: builddir/meson-logs/coverage.xml
+          plugins: gcov
