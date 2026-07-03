@@ -33,50 +33,34 @@ static int blacklist_1(void)
 	static const char *const names[] = { "pcspkr", "pcspkr2", "floppy", "ext4" };
 
 	ctx = kmod_new(NULL, NULL);
-	if (ctx == NULL)
-		return EXIT_FAILURE;
+	TS_ASSERT(ctx != NULL);
 
 	for (size_t i = 0; i < ARRAY_SIZE(names); i++) {
 		err = kmod_module_new_from_name(ctx, names[i], &mod);
-		if (err < 0)
-			goto fail_lookup;
+		TS_ASSERT(err == 0);
 		list = kmod_list_append(list, mod);
 	}
 
 	err = kmod_module_apply_filter(ctx, KMOD_FILTER_BLACKLIST, list, &filtered);
-	if (err < 0) {
-		ERR("Could not filter: %s\n", strerror(-err));
-		goto fail;
-	}
-	if (filtered == NULL) {
-		ERR("All modules were filtered out!\n");
-		goto fail;
-	}
+	TS_ASSERT(err == 0);
+	TS_ASSERT(filtered != NULL);
 
 	kmod_list_foreach(l, filtered) {
 		const char *modname;
 		mod = kmod_module_get_module(l);
 		modname = kmod_module_get_name(mod);
-		if (streq("pcspkr", modname) || streq("floppy", modname))
-			goto fail;
+		TS_ASSERT(!streq("pcspkr", modname) && !streq("floppy", modname));
 		len++;
 		kmod_module_unref(mod);
 	}
 
-	if (len != 2)
-		goto fail;
+	TS_ASSERT(len == 2);
 
 	kmod_module_unref_list(filtered);
 	kmod_module_unref_list(list);
 	kmod_unref(ctx);
 
 	return EXIT_SUCCESS;
-
-fail:
-	kmod_module_unref_list(list);
-fail_lookup:
-	kmod_unref(ctx);
-	return EXIT_FAILURE;
 }
 
 DEFINE_TEST(blacklist_1, .description = "check if modules are correctly blacklisted",

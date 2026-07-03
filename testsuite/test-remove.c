@@ -26,31 +26,19 @@ static int test_remove(void)
 	struct stat st;
 
 	ctx = kmod_new(NULL, &null_config);
-	if (ctx == NULL)
-		return EXIT_FAILURE;
+	TS_ASSERT(ctx != NULL);
 
 	err = kmod_module_new_from_path(ctx, "/mod-simple.ko", &mod);
-	if (err != 0) {
-		ERR("could not create module from path: %s\n", strerror(-err));
-		return EXIT_FAILURE;
-	}
+	TS_ASSERT(err == 0);
 
 	err = kmod_module_insert_module(mod, 0, NULL);
-	if (err != 0) {
-		ERR("could not insert module: %s\n", strerror(-err));
-		return EXIT_FAILURE;
-	}
+	TS_ASSERT(err == 0);
 
 	err = kmod_module_remove_module(mod, 0);
-	if (err != 0) {
-		ERR("could not remove module: %s\n", strerror(-err));
-		return EXIT_FAILURE;
-	}
+	TS_ASSERT(err == 0);
 
-	if (stat("/sys/module/mod_simple", &st) == 0 && S_ISDIR(st.st_mode)) {
-		ERR("could not remove module directory.\n");
-		return EXIT_FAILURE;
-	}
+	TS_ASSERT(stat("/sys/module/mod_simple", &st) != 0 || !S_ISDIR(st.st_mode));
+
 	kmod_module_unref(mod);
 	kmod_unref(ctx);
 

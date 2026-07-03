@@ -36,7 +36,6 @@ static int check_dependencies(const char *const *modnames,
 	const struct kmod_list *itr;
 	bool visited[MAX_SOFTDEP_N] = {};
 	int mod_index;
-	bool all_loaded = true;
 
 	kmod_list_foreach(itr, mod_list) {
 		struct kmod_module *softdep_mod = kmod_module_get_module(itr);
@@ -56,15 +55,9 @@ static int check_dependencies(const char *const *modnames,
 	for (mod_index = 0; mod_index < MAX_SOFTDEP_N; mod_index++) {
 		if (!modnames[mod_index])
 			break;
-		if (!visited[mod_index]) {
-			ERR("softdep %s not loaded\n", modnames[mod_index]);
-			all_loaded = false;
-		}
+		TS_ASSERT(visited[mod_index]);
 	}
-	if (all_loaded)
-		return 0;
-	else
-		return -1;
+	return 0;
 }
 
 static int multi_softdep(void)
@@ -78,32 +71,26 @@ static int multi_softdep(void)
 	int err;
 
 	ctx = kmod_new(NULL, NULL);
-	if (ctx == NULL)
-		return EXIT_FAILURE;
+	TS_ASSERT(ctx != NULL);
 
 	for (mod_index = 0; mod_index < ARRAY_SIZE(test_modules); mod_index++) {
 		modname = test_modules[mod_index].modname;
 		printf("module %s:\n", modname);
 		err = kmod_module_new_from_name(ctx, modname, &mod);
-		if (err < 0)
-			goto fail;
+		TS_ASSERT(err == 0);
+
 		pre = NULL;
 		post = NULL;
 		err = kmod_module_get_softdeps(mod, &pre, &post);
-		if (err < 0) {
-			ERR("could not get softdeps of '%s': %s\n", modname,
-			    strerror(-err));
-			goto fail;
-		}
+		TS_ASSERT(err == 0);
 
 		printf("pre: ");
 		err = check_dependencies(test_modules[mod_index].pre, pre);
-		if (err < 0)
-			goto fail;
+		TS_ASSERT(err == 0);
+
 		printf("post: ");
 		err = check_dependencies(test_modules[mod_index].post, post);
-		if (err < 0)
-			goto fail;
+		TS_ASSERT(err == 0);
 
 		kmod_module_unref_list(pre);
 		kmod_module_unref_list(post);
@@ -111,13 +98,6 @@ static int multi_softdep(void)
 	}
 	kmod_unref(ctx);
 	return EXIT_SUCCESS;
-
-fail:
-	kmod_module_unref_list(pre);
-	kmod_module_unref_list(post);
-	kmod_module_unref(mod);
-	kmod_unref(ctx);
-	return EXIT_FAILURE;
 }
 
 /*

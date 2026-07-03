@@ -27,28 +27,16 @@ static int test_initstate_from_lookup(void)
 	int err, r;
 
 	ctx = kmod_new(NULL, &null_config);
-	if (ctx == NULL)
-		return EXIT_FAILURE;
+	TS_ASSERT(ctx != NULL);
 
 	err = kmod_module_new_from_lookup(ctx, "fake-builtin", &list);
-	if (err < 0) {
-		ERR("could not create module from lookup: %s\n", strerror(-err));
-		return EXIT_FAILURE;
-	}
-
-	if (!list) {
-		ERR("could not create module from lookup: module not found: fake-builtin\n");
-		return EXIT_FAILURE;
-	}
+	TS_ASSERT(err == 0);
+	TS_ASSERT(list != NULL);
 
 	mod = kmod_module_get_module(list);
 
 	r = kmod_module_get_initstate(mod);
-	if (r != KMOD_MODULE_BUILTIN) {
-		ERR("module should have builtin state but is: %s\n",
-		    kmod_module_initstate_str(r));
-		return EXIT_FAILURE;
-	}
+	TS_ASSERT(r == KMOD_MODULE_BUILTIN);
 
 	kmod_module_unref(mod);
 	kmod_module_unref_list(list);
@@ -73,26 +61,14 @@ static int test_initstate_from_name(void)
 	int err, r;
 
 	ctx = kmod_new(NULL, &null_config);
-	if (ctx == NULL)
-		return EXIT_FAILURE;
+	TS_ASSERT(ctx != NULL);
 
 	err = kmod_module_new_from_name(ctx, "fake-builtin", &mod);
-	if (err != 0) {
-		ERR("could not create module from lookup: %s\n", strerror(-err));
-		return EXIT_FAILURE;
-	}
-
-	if (!mod) {
-		ERR("could not create module from lookup: module not found: fake-builtin\n");
-		return EXIT_FAILURE;
-	}
+	TS_ASSERT(err == 0);
+	TS_ASSERT(mod != NULL);
 
 	r = kmod_module_get_initstate(mod);
-	if (r != KMOD_MODULE_BUILTIN) {
-		ERR("module should have builtin state but is: %s\n",
-		    kmod_module_initstate_str(r));
-		return EXIT_FAILURE;
-	}
+	TS_ASSERT(r == KMOD_MODULE_BUILTIN);
 
 	kmod_module_unref(mod);
 	kmod_unref(ctx);

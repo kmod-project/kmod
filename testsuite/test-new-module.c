@@ -31,13 +31,11 @@ static int from_name(void)
 	int err;
 
 	ctx = kmod_new(NULL, &null_config);
-	if (ctx == NULL)
-		return EXIT_FAILURE;
+	TS_ASSERT(ctx != NULL);
 
 	for (size_t i = 0; i < ARRAY_SIZE(modnames); i++) {
 		err = kmod_module_new_from_name(ctx, modnames[i], &mod);
-		if (err < 0)
-			return EXIT_FAILURE;
+		TS_ASSERT(err == 0);
 
 		printf("modname: %s\n", kmod_module_get_name(mod));
 		kmod_module_unref(mod);
@@ -65,15 +63,13 @@ static int from_alias(void)
 	int err;
 
 	ctx = kmod_new(NULL, NULL);
-	if (ctx == NULL)
-		return EXIT_FAILURE;
+	TS_ASSERT(ctx != NULL);
 
 	for (size_t i = 0; i < ARRAY_SIZE(modnames); i++) {
 		struct kmod_list *l, *list = NULL;
 
 		err = kmod_module_new_from_lookup(ctx, modnames[i], &list);
-		if (err < 0)
-			return EXIT_FAILURE;
+		TS_ASSERT(err == 0);
 
 		kmod_list_foreach(l, list) {
 			struct kmod_module *m;

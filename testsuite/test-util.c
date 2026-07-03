@@ -62,8 +62,7 @@ static int test_freadline_wrapped(void)
 {
 	FILE *fp = fopen("/freadline_wrapped-input.txt", "re");
 
-	if (!fp)
-		return EXIT_FAILURE;
+	TS_ASSERT(fp != NULL);
 
 	while (!feof(fp) && !ferror(fp)) {
 		unsigned int num = 0;

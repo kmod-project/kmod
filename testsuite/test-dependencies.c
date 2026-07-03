@@ -28,14 +28,10 @@ static int test_dependencies(void)
 	int fooa = 0, foob = 0, fooc = 0;
 
 	ctx = kmod_new(NULL, NULL);
-	if (ctx == NULL)
-		return EXIT_FAILURE;
+	TS_ASSERT(ctx != NULL);
 
 	err = kmod_module_new_from_name(ctx, "mod-foo", &mod);
-	if (err < 0 || mod == NULL) {
-		kmod_unref(ctx);
-		return EXIT_FAILURE;
-	}
+	TS_ASSERT(err == 0 && mod != NULL);
 
 	list = kmod_module_get_dependencies(mod);
 
@@ -56,8 +52,7 @@ static int test_dependencies(void)
 	}
 
 	/* fooa, foob, fooc */
-	if (len != 3 || !fooa || !foob || !fooc)
-		return EXIT_FAILURE;
+	TS_ASSERT(len == 3 && fooa && foob && fooc);
 
 	kmod_module_unref_list(list);
 	kmod_module_unref(mod);
