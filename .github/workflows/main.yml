@@ -44,6 +44,7 @@ jobs:
             meson_setup: '-Dmbedtls=disabled'
           - container: 'ubuntu:24.04'
             meson_setup: '-Dmbedtls=disabled'
+          - container: 'ubuntu:26.04'
 
           # Special configurations
 

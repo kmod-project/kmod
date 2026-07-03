@@ -6,6 +6,14 @@
 
 export DEBIAN_FRONTEND=noninteractive
 export TZ=Etc/UTC
+
+. /etc/os-release
+
+mbedtls_pkgs=()
+if [[ "$VERSION_CODENAME" == "resolute" ]]; then
+    mbedtls_pkgs=("libmbedtls-dev")
+fi
+
 apt-get update
 apt-get install --yes \
     bash \
@@ -21,6 +29,7 @@ apt-get install --yes \
     libzstd-dev \
     linux-headers-generic \
     meson \
+    "${mbedtls_pkgs[@]}" \
     scdoc \
     zlib1g-dev \
     zstd
