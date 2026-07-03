@@ -93,7 +93,7 @@ static int test_strchr_replace(void)
 	const char *res = "thiC iC a teCt Ctring";
 
 	strchr_replace(s, 's', 'C');
-	assert_return(streq(s, res), EXIT_FAILURE);
+	TS_ASSERT(streq(s, res));
 
 	return EXIT_SUCCESS;
 }
@@ -118,9 +118,9 @@ static int test_underscores(void)
 
 	for (size_t i = 0; i < ARRAY_SIZE(teststr); i++) {
 		_cleanup_free_ char *val = strdup(teststr[i].val);
-		assert_return(val != NULL, EXIT_FAILURE);
-		assert_return(!underscores(val), EXIT_FAILURE);
-		assert_return(streq(val, teststr[i].res), EXIT_FAILURE);
+		TS_ASSERT(val != NULL);
+		TS_ASSERT(!underscores(val));
+		TS_ASSERT(streq(val, teststr[i].res));
 	}
 
 	return EXIT_SUCCESS;
@@ -152,10 +152,9 @@ static int test_path_ends_with_kmod_ext(void)
 	};
 
 	for (size_t i = 0; i < ARRAY_SIZE(teststr); i++) {
-		assert_return(path_ends_with_kmod_ext(teststr[i].val,
-						      strlen(teststr[i].val)) ==
-				      teststr[i].res,
-			      EXIT_FAILURE);
+		TS_ASSERT(
+			path_ends_with_kmod_ext(teststr[i].val, strlen(teststr[i].val)) ==
+			teststr[i].res);
 	}
 
 	return EXIT_SUCCESS;
@@ -171,7 +170,7 @@ static int test_write_str_safe(void)
 	int fd;
 
 	fd = open(TEST_WRITE_STR_SAFE_FILE ".txt", O_CREAT | O_TRUNC | O_WRONLY, 0644);
-	assert_return(fd >= 0, EXIT_FAILURE);
+	TS_ASSERT(fd >= 0);
 
 	write_str_safe(fd, s, strlen(s));
 	close(fd);
@@ -197,11 +196,11 @@ static int test_uadd32_overflow(void)
 	bool overflow;
 
 	overflow = uadd32_overflow(UINT32_MAX - 1, 1, &res);
-	assert_return(!overflow, EXIT_FAILURE);
-	assert_return(res == UINT32_MAX, EXIT_FAILURE);
+	TS_ASSERT(!overflow);
+	TS_ASSERT(res == UINT32_MAX);
 
 	overflow = uadd32_overflow(UINT32_MAX, 1, &res);
-	assert_return(overflow, EXIT_FAILURE);
+	TS_ASSERT(overflow);
 
 	return EXIT_SUCCESS;
 }
@@ -214,11 +213,11 @@ static int test_uadd64_overflow(void)
 	bool overflow;
 
 	overflow = uadd64_overflow(UINT64_MAX - 1, 1, &res);
-	assert_return(!overflow, EXIT_FAILURE);
-	assert_return(res == UINT64_MAX, EXIT_FAILURE);
+	TS_ASSERT(!overflow);
+	TS_ASSERT(res == UINT64_MAX);
 
 	overflow = uadd64_overflow(UINT64_MAX, 1, &res);
-	assert_return(overflow, EXIT_FAILURE);
+	TS_ASSERT(overflow);
 
 	return EXIT_SUCCESS;
 }
@@ -231,11 +230,11 @@ static int test_umul32_overflow(void)
 	bool overflow;
 
 	overflow = umul32_overflow(UINT32_MAX / 0x10, 0x10, &res);
-	assert_return(!overflow, EXIT_FAILURE);
-	assert_return(res == (UINT32_MAX & ~0xf), EXIT_FAILURE);
+	TS_ASSERT(!overflow);
+	TS_ASSERT(res == (UINT32_MAX & ~0xf));
 
 	overflow = umul32_overflow(UINT32_MAX, 0x10, &res);
-	assert_return(overflow, EXIT_FAILURE);
+	TS_ASSERT(overflow);
 
 	return EXIT_SUCCESS;
 }
@@ -248,11 +247,11 @@ static int test_umul64_overflow(void)
 	bool overflow;
 
 	overflow = umul64_overflow(UINT64_MAX / 0x10, 0x10, &res);
-	assert_return(!overflow, EXIT_FAILURE);
-	assert_return(res == (UINT64_MAX & ~0xf), EXIT_FAILURE);
+	TS_ASSERT(!overflow);
+	TS_ASSERT(res == (UINT64_MAX & ~0xf));
 
 	overflow = umul64_overflow(UINT64_MAX, 0x10, &res);
-	assert_return(overflow, EXIT_FAILURE);
+	TS_ASSERT(overflow);
 
 	return EXIT_SUCCESS;
 }
@@ -265,31 +264,31 @@ static int test_backoff_time(void)
 
 	/* Check exponential increments */
 	get_backoff_delta_msec(now_msec() + 10, &delta);
-	assert_return(delta == 1, EXIT_FAILURE);
+	TS_ASSERT(delta == 1);
 	get_backoff_delta_msec(now_msec() + 10, &delta);
-	assert_return(delta == 2, EXIT_FAILURE);
+	TS_ASSERT(delta == 2);
 	get_backoff_delta_msec(now_msec() + 10, &delta);
-	assert_return(delta == 4, EXIT_FAILURE);
+	TS_ASSERT(delta == 4);
 	get_backoff_delta_msec(now_msec() + 10, &delta);
-	assert_return(delta == 8, EXIT_FAILURE);
+	TS_ASSERT(delta == 8);
 	get_backoff_delta_msec(now_msec() + 10, &delta);
-	assert_return(delta == 8, EXIT_FAILURE);
+	TS_ASSERT(delta == 8);
 
 	{
 		/* Check tail */
 		delta = 4;
 		get_backoff_delta_msec(now_msec() + 3, &delta);
-		assert_return(delta == 2, EXIT_FAILURE);
+		TS_ASSERT(delta == 2);
 		get_backoff_delta_msec(now_msec() + 1, &delta);
-		assert_return(delta == 1, EXIT_FAILURE);
+		TS_ASSERT(delta == 1);
 		get_backoff_delta_msec(now_msec(), &delta);
-		assert_return(delta == 0, EXIT_FAILURE);
+		TS_ASSERT(delta == 0);
 	}
 
 	/* Check when end time has passed */
 	delta = 0;
 	get_backoff_delta_msec(now_msec() - 10, &delta);
-	assert_return(delta == 0, EXIT_FAILURE);
+	TS_ASSERT(delta == 0);
 
 	return EXIT_SUCCESS;
 }

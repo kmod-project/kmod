@@ -36,10 +36,10 @@ static int test_list_last(void)
 
 	for (i = 0; i < N; i++)
 		list = kmod_list_append(list, v[i]);
-	assert_return(len(list) == N, EXIT_FAILURE);
+	TS_ASSERT(len(list) == N);
 
 	last = kmod_list_last(list);
-	assert_return(last->data == v[N - 1], EXIT_FAILURE);
+	TS_ASSERT(last->data == v[N - 1]);
 
 	kmod_list_remove_all(list);
 
@@ -55,19 +55,19 @@ static int test_list_prev(void)
 	const int N = ARRAY_SIZE(v);
 
 	l = kmod_list_prev(list, list);
-	assert_return(l == NULL, EXIT_FAILURE);
+	TS_ASSERT(l == NULL);
 
 	for (i = 0; i < N; i++)
 		list = kmod_list_append(list, v[i]);
 
 	l = kmod_list_prev(list, list);
-	assert_return(l == NULL, EXIT_FAILURE);
+	TS_ASSERT(l == NULL);
 
 	l = list;
 	for (i = 0; i < N - 1; i++) {
 		l = kmod_list_next(list, l);
 		p = kmod_list_prev(list, l);
-		assert_return(p->data == v[i], EXIT_FAILURE);
+		TS_ASSERT(p->data == v[i]);
 	}
 
 	kmod_list_remove_all(list);
@@ -89,10 +89,10 @@ static int test_list_remove_data(void)
 
 	removed = v[N / 2];
 	list = kmod_list_remove_data(list, removed);
-	assert_return(len(list) == N - 1, EXIT_FAILURE);
+	TS_ASSERT(len(list) == N - 1);
 
 	kmod_list_foreach(l, list)
-		assert_return(l->data != removed, EXIT_FAILURE);
+		TS_ASSERT(l->data != removed);
 
 	kmod_list_remove_all(list);
 
@@ -110,24 +110,24 @@ static int test_list_append_list(void)
 
 	for (i = 0; i < M; i++)
 		a = kmod_list_append(a, v[i]);
-	assert_return(len(a) == M, EXIT_FAILURE);
+	TS_ASSERT(len(a) == M);
 
 	for (i = M; i < N; i++)
 		b = kmod_list_append(b, v[i]);
-	assert_return(len(b) == N - M, EXIT_FAILURE);
+	TS_ASSERT(len(b) == N - M);
 
 	a = kmod_list_append_list(a, NULL);
-	assert_return(len(a) == M, EXIT_FAILURE);
+	TS_ASSERT(len(a) == M);
 
 	b = kmod_list_append_list(NULL, b);
-	assert_return(len(b) == N - M, EXIT_FAILURE);
+	TS_ASSERT(len(b) == N - M);
 
 	c = kmod_list_append_list(a, b);
-	assert_return(len(c) == N, EXIT_FAILURE);
+	TS_ASSERT(len(c) == N);
 
 	i = 0;
 	kmod_list_foreach(l, c) {
-		assert_return(l->data == v[i], EXIT_FAILURE);
+		TS_ASSERT(l->data == v[i]);
 		i++;
 	}
 
@@ -144,27 +144,27 @@ static int test_list_insert_before(void)
 	const char *v1 = "v1", *v2 = "v2", *v3 = "v3", *vx = "vx";
 
 	list = kmod_list_insert_before(list, v3);
-	assert_return(len(list) == 1, EXIT_FAILURE);
+	TS_ASSERT(len(list) == 1);
 
 	list = kmod_list_insert_before(list, v2);
 	list = kmod_list_insert_before(list, v1);
-	assert_return(len(list) == 3, EXIT_FAILURE);
+	TS_ASSERT(len(list) == 3);
 
 	l = list;
-	assert_return(l->data == v1, EXIT_FAILURE);
+	TS_ASSERT(l->data == v1);
 
 	l = kmod_list_next(list, l);
-	assert_return(l->data == v2, EXIT_FAILURE);
+	TS_ASSERT(l->data == v2);
 
 	l = kmod_list_insert_before(l, vx);
-	assert_return(len(list) == 4, EXIT_FAILURE);
-	assert_return(l->data == vx, EXIT_FAILURE);
+	TS_ASSERT(len(list) == 4);
+	TS_ASSERT(l->data == vx);
 
 	l = kmod_list_next(list, l);
-	assert_return(l->data == v2, EXIT_FAILURE);
+	TS_ASSERT(l->data == v2);
 
 	l = kmod_list_next(list, l);
-	assert_return(l->data == v3, EXIT_FAILURE);
+	TS_ASSERT(l->data == v3);
 
 	kmod_list_remove_all(list);
 
@@ -179,27 +179,27 @@ static int test_list_insert_after(void)
 	const char *v1 = "v1", *v2 = "v2", *v3 = "v3", *vx = "vx";
 
 	list = kmod_list_insert_after(list, v1);
-	assert_return(len(list) == 1, EXIT_FAILURE);
+	TS_ASSERT(len(list) == 1);
 
 	list = kmod_list_insert_after(list, v3);
 	list = kmod_list_insert_after(list, v2);
-	assert_return(len(list) == 3, EXIT_FAILURE);
+	TS_ASSERT(len(list) == 3);
 
 	l = list;
-	assert_return(l->data == v1, EXIT_FAILURE);
+	TS_ASSERT(l->data == v1);
 
 	l = kmod_list_insert_after(l, vx);
-	assert_return(len(list) == 4, EXIT_FAILURE);
-	assert_return(l->data == v1, EXIT_FAILURE);
+	TS_ASSERT(len(list) == 4);
+	TS_ASSERT(l->data == v1);
 
 	l = kmod_list_next(list, l);
-	assert_return(l->data == vx, EXIT_FAILURE);
+	TS_ASSERT(l->data == vx);
 
 	l = kmod_list_next(list, l);
-	assert_return(l->data == v2, EXIT_FAILURE);
+	TS_ASSERT(l->data == v2);
 
 	l = kmod_list_next(list, l);
-	assert_return(l->data == v3, EXIT_FAILURE);
+	TS_ASSERT(l->data == v3);
 
 	kmod_list_remove_all(list);
 
