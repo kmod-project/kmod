@@ -11,7 +11,7 @@ jobs:
   stylecheck:
     runs-on: ubuntu-26.04
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       - run: git fetch --depth=1 origin ${{ github.event.pull_request.base.sha }}
       - uses: yshui/git-clang-format-lint@0758f498e508097267c3f4d0827b2fefeb25cc9d # v1.18
         with:
