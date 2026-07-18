@@ -15,7 +15,7 @@
 
 #include <shared/macro.h>
 #include <shared/missing.h>
-#include <shared/tmpfile-util.h>
+#include <shared/tmpfile.h>
 #include <shared/util.h>
 
 FILE *tmpfile_openat(int dirfd, mode_t mode, struct tmpfile *file)
