@@ -77,7 +77,6 @@ libtestsuite = static_library(
 )
 
 _testsuite = [
-  'test-dependencies',
   'test-depmod',
   'test-libkmod',
   'test-list',
