@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 /*
- * Copyright Red Hat
+ * Copyright 2024 Red Hat
  * Copyright (C) 2011-2013  ProFUSION embedded systems
  * Copyright (C) 2015  Intel Corporation. All rights reserved.
  * Copyright © 2025 Intel Corporation
