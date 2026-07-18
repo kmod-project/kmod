@@ -16,6 +16,7 @@
 
 /* good luck building a kmod_list outside of the library... makes this blacklist
  * function rather pointless */
+/* FIXME: convert the test so we don't need the internal header */
 #include <libkmod/libkmod-internal.h>
 
 #include "testsuite.h"
