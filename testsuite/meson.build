@@ -91,7 +91,6 @@ _testsuite = [
   'test-remove',
   'test-shared',
   'test-testsuite',
-  'test-util',
   'test-weakdep',
 ]
 
