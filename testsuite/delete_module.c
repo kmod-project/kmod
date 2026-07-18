@@ -108,7 +108,6 @@ static struct mod *find_module(struct mod *_modules, const char *modname)
 static void init_retcodes(void)
 {
 	const char *s;
-	struct mod *mod;
 
 	if (!need_init)
 		return;
@@ -121,11 +120,6 @@ static void init_retcodes(void)
 	}
 
 	parse_retcodes(&modules, s);
-
-	for (mod = modules; mod != NULL; mod = mod->next) {
-		LOG("Added module to test delete_module:\n");
-		LOG("\tname=%s ret=%d errcode=%d\n", mod->name, mod->ret, mod->errcode);
-	}
 }
 
 static int remove_directory(const char *path)
