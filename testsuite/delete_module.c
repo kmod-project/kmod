@@ -130,8 +130,8 @@ static int remove_directory(const char *path)
 	char full_path[PATH_MAX];
 
 	if (stat(path, &st) != 0 || !S_ISDIR(st.st_mode)) {
-		LOG("Directory %s not found, skip remove.\n", path);
-		return 0;
+		ERR("Directory %s not found, skip remove.\n", path);
+		return -1;
 	}
 
 	dir = opendir(path);
