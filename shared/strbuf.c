@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 /*
- * Copyright (C) 2011-2013  ProFUSION embedded systems
- * Copyright (C) 2014  Intel Corporation. All rights reserved.
+ * Copyright (C) 2011-2013 ProFUSION embedded systems
+ * Copyright (C) 2014 Intel Corporation. All rights reserved.
  */
 
 #include <assert.h>

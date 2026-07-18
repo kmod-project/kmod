@@ -2,7 +2,7 @@
 /*
  * kmod-rmmod - remove modules from linux kernel using libkmod.
  *
- * Copyright (C) 2011-2013  ProFUSION embedded systems
+ * Copyright (C) 2011-2013 ProFUSION embedded systems
  */
 
 #include <errno.h>

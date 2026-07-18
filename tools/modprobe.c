@@ -2,7 +2,7 @@
 /*
  * kmod-modprobe - manage linux kernel modules using libkmod.
  *
- * Copyright (C) 2011-2013  ProFUSION embedded systems
+ * Copyright (C) 2011-2013 ProFUSION embedded systems
  */
 
 #include <assert.h>

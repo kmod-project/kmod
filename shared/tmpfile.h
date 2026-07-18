@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 /*
- * Copyright (C) 2025  Intel Corporation.
+ * Copyright (C) 2025 Intel Corporation.
  */
 
 #pragma once
