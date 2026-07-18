@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 /*
  * Copyright (C) 2012-2013  ProFUSION embedded systems
+ * Copyright © 2025 Intel Corporation
  */
 
 #include <errno.h>
@@ -10,6 +11,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+
+#include <sys/stat.h>
 
 #include <shared/macro.h>
 
@@ -40,7 +43,7 @@ DEFINE_TEST_WITH_FUNC(
 	.description =
 		"test if kmod_load_resources works (recent modprobe on kernel without modules.builtin.modinfo)",
 	.config = {
-		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-init-load-resources/",
+		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-libkmod/init-load-resources/",
 		[TC_UNAME_R] = "5.6.0",
 	});
 
@@ -50,7 +53,7 @@ DEFINE_TEST_WITH_FUNC(
 		"test if kmod_load_resources works with empty modules.builtin.aliases.bin (recent depmod on kernel without modules.builtin.modinfo)",
 	.config = {
 		[TC_ROOTFS] = TESTSUITE_ROOTFS
-		"test-init-load-resources-empty-builtin-aliases-bin/",
+		"test-libkmod/init-load-resources-empty-builtin-aliases-bin/",
 		[TC_UNAME_R] = "5.6.0",
 	});
 
@@ -92,7 +95,7 @@ static int test_insert(void)
 DEFINE_TEST(test_insert,
 	.description = "test if libkmod's insert_module returns ok",
 	.config = {
-		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-init/",
+		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-libkmod/init/",
 		[TC_INIT_MODULE_RETCODES] = "bla:1:20",
 	},
 	.modules_loaded = "mod_simple");
@@ -128,8 +131,43 @@ static int test_remove(void)
 DEFINE_TEST(
 	test_remove, .description = "test if libkmod's remove_module returns ok",
 	.config = {
-		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-remove/",
+		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-libkmod/remove/",
 		[TC_DELETE_MODULE_RETCODES] = "mod-simple:0:0:bla:-1:" STRINGIFY(ENOENT),
 	});
+
+static int test_remove2(void)
+{
+	struct kmod_ctx *ctx;
+	struct kmod_module *mod;
+	const char *null_config = NULL;
+	int err;
+	struct stat st;
+
+	ctx = kmod_new(NULL, &null_config);
+	TS_ASSERT(ctx != NULL);
+
+	err = kmod_module_new_from_path(ctx, "/mod-simple.ko", &mod);
+	TS_ASSERT(err == 0);
+
+	err = kmod_module_insert_module(mod, 0, NULL);
+	TS_ASSERT(err == 0);
+
+	err = kmod_module_remove_module(mod, 0);
+	TS_ASSERT(err == 0);
+
+	TS_ASSERT(stat("/sys/module/mod_simple", &st) != 0 || !S_ISDIR(st.st_mode));
+
+	kmod_module_unref(mod);
+	kmod_unref(ctx);
+
+	return 0;
+}
+DEFINE_TEST(test_remove2,
+	    .description = "test if libkmod's delete_module removes module directory",
+	    .config = {
+		    [TC_ROOTFS] = TESTSUITE_ROOTFS "test-libkmod/remove2/",
+		    [TC_INIT_MODULE_RETCODES] = "",
+		    [TC_DELETE_MODULE_RETCODES] = "mod_simple:0:0" STRINGIFY(ENOENT),
+	    });
 
 TESTSUITE_MAIN();
