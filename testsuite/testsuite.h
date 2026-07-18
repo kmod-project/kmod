@@ -129,9 +129,11 @@ int test_run(const struct test *t);
 	} while (false)
 
 /* Test definitions */
-#define DEFINE_TEST_WITH_FUNC(_name, _func, ...)                                      \
-	_used_ _retain_ _section_("kmod_tests") _alignedptr_ static const struct test \
-	UNIQ(s##_name) = { .name = #_name, .func = _func, ##__VA_ARGS__ }
+#define DEFINE_TEST_WITH_FUNC(_name, _func, ...)                           \
+	_used_ _retain_ _section_("kmod_tests")                            \
+	_alignedptr_ static const struct test s##_name = { .name = #_name, \
+							   .func = _func,  \
+							   ##__VA_ARGS__ }
 
 #define DEFINE_TEST(_name, ...) DEFINE_TEST_WITH_FUNC(_name, _name, __VA_ARGS__)
 
