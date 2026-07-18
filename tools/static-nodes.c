@@ -3,7 +3,7 @@
  * kmod-static-nodes - manage modules.devname
  *
  * Copyright (C) 2004-2012 Kay Sievers <kay@vrfy.org>
- * Copyright (C) 2011-2013  ProFUSION embedded systems
+ * Copyright (C) 2011-2013 ProFUSION embedded systems
  * Copyright (C) 2013 Tom Gundersen <teg@jklm.no>
  */
 

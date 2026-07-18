@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 /*
- * Copyright (C) 2019  Alexey Gladkov <gladkov.alexey@gmail.com>
- * Copyright (C) 2024  Tobias Stöckmann <tobias@stoeckmann.org>
+ * Copyright (C) 2019 Alexey Gladkov <gladkov.alexey@gmail.com>
+ * Copyright (C) 2024 Tobias Stöckmann <tobias@stoeckmann.org>
  */
 
 #include <sys/types.h>

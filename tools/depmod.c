@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /*
- * Copyright (C) 2008  Alan Jenkins <alan-jenkins@tuffmail.co.uk>.
- * Copyright (C) 2011-2013  ProFUSION embedded systems
+ * Copyright (C) 2008 lan Jenkins <alan-jenkins@tuffmail.co.uk>.
+ * Copyright (C) 2011-2013 ProFUSION embedded systems
  */
 
 #include <assert.h>
