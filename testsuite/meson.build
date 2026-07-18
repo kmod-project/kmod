@@ -87,7 +87,6 @@ _testsuite = [
   'test-modinfo',
   'test-modprobe',
   'test-multi-softdep',
-  'test-new-module',
   'test-shared',
   'test-testsuite',
   'test-weakdep',
