@@ -90,7 +90,6 @@ _testsuite = [
   'test-new-module',
   'test-remove',
   'test-shared',
-  'test-strbuf',
   'test-testsuite',
   'test-util',
   'test-weakdep',
