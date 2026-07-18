@@ -81,7 +81,6 @@ _testsuite = [
   'test-depmod',
   'test-libkmod',
   'test-list',
-  'test-loaded',
   'test-modinfo',
   'test-modprobe',
   'test-multi-softdep',

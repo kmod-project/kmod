@@ -368,4 +368,59 @@ DEFINE_TEST(blacklist_1, .description = "check if modules are correctly blacklis
 		    [TC_ROOTFS] = TESTSUITE_ROOTFS "test-blacklist/",
 	    });
 
+static int loaded_1(void)
+{
+	struct kmod_ctx *ctx;
+	const char *null_config = NULL;
+	struct kmod_list *list, *itr;
+	int err;
+
+	ctx = kmod_new(NULL, &null_config);
+	TS_ASSERT(ctx != NULL);
+
+	err = kmod_module_new_from_loaded(ctx, &list);
+	TS_ASSERT(err == 0);
+
+	printf("Module                  Size  Used by\n");
+
+	kmod_list_foreach(itr, list) {
+		struct kmod_module *mod = kmod_module_get_module(itr);
+		const char *name = kmod_module_get_name(mod);
+		int use_count = kmod_module_get_refcnt(mod);
+		long size = kmod_module_get_size(mod);
+		struct kmod_list *holders, *hitr;
+		int first = 1;
+
+		printf("%-19s %8ld  %d ", name, size, use_count);
+		holders = kmod_module_get_holders(mod);
+		kmod_list_foreach(hitr, holders) {
+			struct kmod_module *hm = kmod_module_get_module(hitr);
+
+			if (!first)
+				putchar(',');
+			else
+				first = 0;
+
+			fputs(kmod_module_get_name(hm), stdout);
+			kmod_module_unref(hm);
+		}
+		putchar('\n');
+		kmod_module_unref_list(holders);
+		kmod_module_unref(mod);
+	}
+	kmod_module_unref_list(list);
+
+	kmod_unref(ctx);
+
+	return 0;
+}
+DEFINE_TEST(loaded_1,
+	.description = "check if list of module is created",
+	.config = {
+		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-loaded/",
+	},
+	.output = {
+		.out = TESTSUITE_ROOTFS "test-loaded/correct.txt",
+	});
+
 TESTSUITE_MAIN();
