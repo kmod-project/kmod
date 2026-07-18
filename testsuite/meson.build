@@ -77,7 +77,6 @@ libtestsuite = static_library(
 )
 
 _testsuite = [
-  'test-array',
   'test-blacklist',
   'test-dependencies',
   'test-depmod',
@@ -91,6 +90,7 @@ _testsuite = [
   'test-multi-softdep',
   'test-new-module',
   'test-remove',
+  'test-shared',
   'test-strbuf',
   'test-testsuite',
   'test-util',
