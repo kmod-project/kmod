@@ -79,7 +79,7 @@ libtestsuite = static_library(
 _testsuite = [
   'test-depmod',
   'test-libkmod',
-  'test-list',
+  'test-libkmod-list',
   'test-modinfo',
   'test-modprobe',
   'test-shared',
