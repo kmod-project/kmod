@@ -114,18 +114,18 @@ int test_run(const struct test *t);
 
 #define TS_EXPORT __attribute__((visibility("default")))
 
-#define _LOG(prefix, fmt, ...) printf("TESTSUITE: " prefix fmt, ##__VA_ARGS__)
-#define LOG(fmt, ...) _LOG("", fmt, ##__VA_ARGS__)
-#define WARN(fmt, ...) _LOG("WARN: ", fmt, ##__VA_ARGS__)
-#define ERR(fmt, ...) _LOG("ERR: ", fmt, ##__VA_ARGS__)
+#define _TS_LOG(prefix, fmt, ...) printf("TESTSUITE: " prefix fmt, ##__VA_ARGS__)
+#define TS_LOG(fmt, ...) _TS_LOG("", fmt, ##__VA_ARGS__)
+#define TS_WARN(fmt, ...) _TS_LOG("WARN: ", fmt, ##__VA_ARGS__)
+#define TS_ERR(fmt, ...) _TS_LOG("ERR: ", fmt, ##__VA_ARGS__)
 
-#define TS_ASSERT(expr)                                                         \
-	do {                                                                    \
-		if ((!(expr))) {                                                \
-			ERR("ASSERTION FAILED at %s:%d\n", __FILE__, __LINE__); \
-			ERR("\t" #expr "\n");                                   \
-			return EXIT_FAILURE;                                    \
-		}                                                               \
+#define TS_ASSERT(expr)                                                            \
+	do {                                                                       \
+		if ((!(expr))) {                                                   \
+			TS_ERR("ASSERTION FAILED at %s:%d\n", __FILE__, __LINE__); \
+			TS_ERR("\t" #expr "\n");                                   \
+			return EXIT_FAILURE;                                       \
+		}                                                                  \
 	} while (false)
 
 /* Test definitions */

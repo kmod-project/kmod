@@ -54,7 +54,7 @@ static const char *trap_path(const char *path, char buf[PATH_MAX * 2])
 	if (rootpath == NULL) {
 		rootpath = getenv(S_TC_ROOTFS);
 		if (rootpath == NULL) {
-			ERR("TRAP: missing export %s?\n", S_TC_ROOTFS);
+			TS_ERR("TRAP: missing export %s?\n", S_TC_ROOTFS);
 			errno = ENOENT;
 			return NULL;
 		}
