@@ -70,18 +70,4 @@ DEFINE_TEST(test_weakdep,
 		.out = TESTSUITE_ROOTFS "test-weakdep/correct-weakdep.txt",
 	});
 
-static int modprobe_config(void)
-{
-	return EXEC_TOOL(modprobe, "-c");
-}
-DEFINE_TEST(modprobe_config,
-	.description = "check modprobe config parsing with weakdep",
-	.config = {
-		[TC_UNAME_R] = "4.4.4",
-		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-weakdep",
-	},
-	.output = {
-		.out = TESTSUITE_ROOTFS "test-weakdep/modprobe-c.txt",
-	});
-
 TESTSUITE_MAIN();

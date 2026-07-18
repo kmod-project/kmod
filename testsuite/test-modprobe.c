@@ -147,6 +147,20 @@ DEFINE_TEST(modprobe_weakdep_loop,
 	.modules_not_loaded = "mod-loop-a,mod-simple-c",
 	);
 
+static int modprobe_weakdep_config(void)
+{
+	return EXEC_TOOL(modprobe, "-c");
+}
+DEFINE_TEST(modprobe_weakdep_config,
+	.description = "check modprobe config parsing with weakdep",
+	.config = {
+		[TC_UNAME_R] = "4.4.4",
+		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-modprobe/weakdep-config",
+	},
+	.output = {
+		.out = TESTSUITE_ROOTFS "test-modprobe/weakdep-config/correct.txt",
+	});
+
 static int modprobe_install_cmd_loop(void)
 {
 	return EXEC_TOOL(modprobe, "mod-loop-a");
