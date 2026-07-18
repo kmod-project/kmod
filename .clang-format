@@ -71,6 +71,7 @@ FixNamespaceComments: false
 ForEachMacros:
   - 'kmod_list_foreach'
   - 'kmod_list_foreach_reverse'
+  - 'kmod_test_foreach'
 
 # Taken from:
 #  git grep -h '^#define .*__attribute__' \

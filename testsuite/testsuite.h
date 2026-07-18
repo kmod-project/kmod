@@ -135,6 +135,15 @@ int test_run(const struct test *t);
 
 #define DEFINE_TEST(_name, ...) DEFINE_TEST_WITH_FUNC(_name, _name, __VA_ARGS__)
 
+/* The order in which the entries are are added into the kmod_test section is
+ * implementation specific. In practise both gcc and clang, do so in order reserve to the
+ * one in the source.
+ *
+ * Flip them, so we can observe consistent ordering amongst the source, listing and
+ * execution.
+ */
+#define kmod_test_foreach(t, start, stop) for (t = stop - 1; t >= start; t--)
+
 #define TESTSUITE_MAIN()                                                                 \
 	extern const struct test __start_kmod_tests[];                                   \
 	extern const struct test __stop_kmod_tests[];                                    \
@@ -161,7 +170,7 @@ int test_run(const struct test *t);
 			return test_run(t);                                              \
 		}                                                                        \
                                                                                          \
-		for (t = __start_kmod_tests; t < __stop_kmod_tests; t++) {               \
+		kmod_test_foreach(t, __start_kmod_tests, __stop_kmod_tests) {            \
 			if (test_run(t) != 0)                                            \
 				ret = EXIT_FAILURE;                                      \
 		}                                                                        \

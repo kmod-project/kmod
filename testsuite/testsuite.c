@@ -73,7 +73,7 @@ static void test_list(const struct test *start, const struct test *stop)
 	const struct test *t;
 
 	printf("Available tests:\n");
-	for (t = start; t < stop; t++)
+	kmod_test_foreach(t, start, stop)
 		printf("\t%s, %s\n", t->name, t->description);
 }
 
@@ -137,7 +137,7 @@ const struct test *test_find(const struct test *start, const struct test *stop,
 {
 	const struct test *t;
 
-	for (t = start; t < stop; t++) {
+	kmod_test_foreach(t, start, stop) {
 		if (streq(t->name, name))
 			return t;
 	}
