@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 /*
- * Copyright (C) 2012-2013  ProFUSION embedded systems
+ * Copyright (C) 2012-2013 ProFUSION embedded systems
  */
 
 #include <assert.h>
@@ -108,7 +108,6 @@ static struct mod *find_module(struct mod *_modules, const char *modname)
 static void init_retcodes(void)
 {
 	const char *s;
-	struct mod *mod;
 
 	if (!need_init)
 		return;
@@ -116,16 +115,11 @@ static void init_retcodes(void)
 	need_init = false;
 	s = getenv(S_TC_DELETE_MODULE_RETCODES);
 	if (s == NULL) {
-		ERR("TRAP delete_module(): missing export %s?\n",
-		    S_TC_DELETE_MODULE_RETCODES);
+		TS_ERR("TRAP delete_module(): missing export %s?\n",
+		       S_TC_DELETE_MODULE_RETCODES);
 	}
 
 	parse_retcodes(&modules, s);
-
-	for (mod = modules; mod != NULL; mod = mod->next) {
-		LOG("Added module to test delete_module:\n");
-		LOG("\tname=%s ret=%d errcode=%d\n", mod->name, mod->ret, mod->errcode);
-	}
 }
 
 static int remove_directory(const char *path)
@@ -136,13 +130,13 @@ static int remove_directory(const char *path)
 	char full_path[PATH_MAX];
 
 	if (stat(path, &st) != 0 || !S_ISDIR(st.st_mode)) {
-		LOG("Directory %s not found, skip remove.\n", path);
-		return 0;
+		TS_ERR("Directory %s not found, skip remove.\n", path);
+		return -1;
 	}
 
 	dir = opendir(path);
 	if (!dir) {
-		ERR("Failed to open directory %s: %m (errno: %d)\n", path, errno);
+		TS_ERR("Failed to open directory %s: %m (errno: %d)\n", path, errno);
 		return -1;
 	}
 
@@ -154,12 +148,12 @@ static int remove_directory(const char *path)
 
 		if (entry->d_type == DT_DIR) {
 			if (remove_directory(full_path) != 0) {
-				ERR("Failed to remove directory %s: %m\n", full_path);
+				TS_ERR("Failed to remove directory %s: %m\n", full_path);
 				goto fail;
 			}
 		} else {
 			if (remove(full_path) != 0) {
-				ERR("Failed to remove file %s: %m\n", full_path);
+				TS_ERR("Failed to remove file %s: %m\n", full_path);
 				goto fail;
 			}
 		}
@@ -168,7 +162,7 @@ static int remove_directory(const char *path)
 	closedir(dir);
 
 	if (rmdir(path) != 0) {
-		ERR("Failed to remove directory %s: %m\n", path);
+		TS_ERR("Failed to remove directory %s: %m\n", path);
 		return -1;
 	}
 

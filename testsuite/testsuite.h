@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: LGPL-2.1-or-later */
 /*
- * Copyright (C) 2012-2013  ProFUSION embedded systems
+ * Copyright (C) 2012-2013 ProFUSION embedded systems
  */
 
 #pragma once
@@ -114,30 +114,32 @@ int test_run(const struct test *t);
 
 #define TS_EXPORT __attribute__((visibility("default")))
 
-#define _LOG(prefix, fmt, ...) printf("TESTSUITE: " prefix fmt, ##__VA_ARGS__)
-#define LOG(fmt, ...) _LOG("", fmt, ##__VA_ARGS__)
-#define WARN(fmt, ...) _LOG("WARN: ", fmt, ##__VA_ARGS__)
-#define ERR(fmt, ...) _LOG("ERR: ", fmt, ##__VA_ARGS__)
+#define _TS_LOG(prefix, fmt, ...) printf("TESTSUITE: " prefix fmt, ##__VA_ARGS__)
+#define TS_LOG(fmt, ...) _TS_LOG("", fmt, ##__VA_ARGS__)
+#define TS_WARN(fmt, ...) _TS_LOG("WARN: ", fmt, ##__VA_ARGS__)
+#define TS_ERR(fmt, ...) _TS_LOG("ERR: ", fmt, ##__VA_ARGS__)
 
-#define TS_ASSERT(expr)                                                         \
-	do {                                                                    \
-		if ((!(expr))) {                                                \
-			ERR("ASSERTION FAILED at %s:%d\n", __FILE__, __LINE__); \
-			ERR("\t" #expr "\n");                                   \
-			return EXIT_FAILURE;                                    \
-		}                                                               \
+#define TS_ASSERT(expr)                                                            \
+	do {                                                                       \
+		if ((!(expr))) {                                                   \
+			TS_ERR("ASSERTION FAILED at %s:%d\n", __FILE__, __LINE__); \
+			TS_ERR("\t" #expr "\n");                                   \
+			return EXIT_FAILURE;                                       \
+		}                                                                  \
 	} while (false)
 
 /* Test definitions */
-#define DEFINE_TEST_WITH_FUNC(_name, _func, ...)                                      \
-	_used_ _retain_ _section_("kmod_tests") _alignedptr_ static const struct test \
-	UNIQ(s##_name) = { .name = #_name, .func = _func, ##__VA_ARGS__ }
+#define DEFINE_TEST_WITH_FUNC(_name, _func, ...)                           \
+	_used_ _retain_ _section_("kmod_tests")                            \
+	_alignedptr_ static const struct test s##_name = { .name = #_name, \
+							   .func = _func,  \
+							   ##__VA_ARGS__ }
 
 #define DEFINE_TEST(_name, ...) DEFINE_TEST_WITH_FUNC(_name, _name, __VA_ARGS__)
 
 #define TESTSUITE_MAIN()                                                                 \
-	extern struct test __start_kmod_tests[] __attribute__((visibility("hidden")));   \
-	extern struct test __stop_kmod_tests[] __attribute__((visibility("hidden")));    \
+	extern const struct test __start_kmod_tests[];                                   \
+	extern const struct test __stop_kmod_tests[];                                    \
 	int main(int argc, char *argv[])                                                 \
 	{                                                                                \
 		const struct test *t;                                                    \

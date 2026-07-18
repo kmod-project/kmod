@@ -77,24 +77,13 @@ libtestsuite = static_library(
 )
 
 _testsuite = [
-  'test-array',
-  'test-blacklist',
-  'test-dependencies',
   'test-depmod',
-  'test-hash',
-  'test-init',
-  'test-initstate',
-  'test-list',
-  'test-loaded',
+  'test-libkmod',
+  'test-libkmod-list',
   'test-modinfo',
   'test-modprobe',
-  'test-multi-softdep',
-  'test-new-module',
-  'test-remove',
-  'test-strbuf',
+  'test-shared',
   'test-testsuite',
-  'test-util',
-  'test-weakdep',
 ]
 
 if get_option('b_sanitize') != 'none'

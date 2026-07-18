@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 /*
- * Copyright (C) 2012-2013  ProFUSION embedded systems
- * Copyright (C) 2012-2013  Lucas De Marchi <lucas.de.marchi@gmail.com>
+ * Copyright (C) 2012-2013 ProFUSION embedded systems
+ * Copyright (C) 2012-2013 Lucas De Marchi <lucas.de.marchi@gmail.com>
  */
 
 #ifndef HAVE_FINIT_MODULE
@@ -32,8 +32,6 @@
 /* kmod_elf_get_section() is not exported, we need the private header */
 #include <libkmod/libkmod-internal.h>
 
-/* FIXME: hack, change name so we don't clash */
-#undef ERR
 #include "testsuite.h"
 #include "stripped-module.h"
 

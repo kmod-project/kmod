@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 /*
- * Copyright (C)  2015 Intel Corporation. All rights reserved.
+ * Copyright (C) 2015 Intel Corporation. All rights reserved.
  */
 
 #include <stdio.h>
@@ -8,8 +8,6 @@
 
 #include <libkmod/libkmod-internal.h>
 
-/* FIXME: hack, change name so we don't clash */
-#undef ERR
 #include "testsuite.h"
 
 static int len(struct kmod_list *list)

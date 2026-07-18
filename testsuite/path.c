@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 /*
- * Copyright (C) 2012-2013  ProFUSION embedded systems
+ * Copyright (C) 2012-2013 ProFUSION embedded systems
  */
 
 /* We unset _FILE_OFFSET_BITS here so we can override both stat and stat64 on
@@ -54,7 +54,7 @@ static const char *trap_path(const char *path, char buf[PATH_MAX * 2])
 	if (rootpath == NULL) {
 		rootpath = getenv(S_TC_ROOTFS);
 		if (rootpath == NULL) {
-			ERR("TRAP: missing export %s?\n", S_TC_ROOTFS);
+			TS_ERR("TRAP: missing export %s?\n", S_TC_ROOTFS);
 			errno = ENOENT;
 			return NULL;
 		}

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 /*
- * Copyright (C) 2025  Intel Corporation.
+ * Copyright (C) 2025 Intel Corporation.
  */
 
 #include <errno.h>
@@ -15,7 +15,7 @@
 
 #include <shared/macro.h>
 #include <shared/missing.h>
-#include <shared/tmpfile-util.h>
+#include <shared/tmpfile.h>
 #include <shared/util.h>
 
 FILE *tmpfile_openat(int dirfd, mode_t mode, struct tmpfile *file)

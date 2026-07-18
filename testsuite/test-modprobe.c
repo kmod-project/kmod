@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 /*
- * Copyright (C) 2012-2013  ProFUSION embedded systems
+ * Copyright (C) 2012-2013 ProFUSION embedded systems
  */
 
 #include <inttypes.h>
@@ -146,6 +146,20 @@ DEFINE_TEST(modprobe_weakdep_loop,
 	.modules_loaded = "mod-loop-b",
 	.modules_not_loaded = "mod-loop-a,mod-simple-c",
 	);
+
+static int modprobe_weakdep_config(void)
+{
+	return EXEC_TOOL(modprobe, "-c");
+}
+DEFINE_TEST(modprobe_weakdep_config,
+	.description = "check modprobe config parsing with weakdep",
+	.config = {
+		[TC_UNAME_R] = "4.4.4",
+		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-weakdep",
+	},
+	.output = {
+		.out = TESTSUITE_ROOTFS "test-weakdep/modprobe-c.txt",
+	});
 
 static int modprobe_install_cmd_loop(void)
 {
