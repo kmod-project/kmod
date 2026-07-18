@@ -8,8 +8,6 @@
 
 #include <libkmod/libkmod-internal.h>
 
-/* FIXME: hack, change name so we don't clash */
-#undef ERR
 #include "testsuite.h"
 
 static int len(struct kmod_list *list)
