@@ -24,7 +24,7 @@
 #include <shared/hash.h>
 #include <shared/macro.h>
 #include <shared/strbuf.h>
-#include <shared/tmpfile-util.h>
+#include <shared/tmpfile.h>
 #include <shared/util.h>
 
 #include <libkmod/libkmod-internal.h>

@@ -342,10 +342,10 @@ libshared = static_library(
     'shared/missing.h',
     'shared/strbuf.c',
     'shared/strbuf.h',
+    'shared/tmpfile.c',
+    'shared/tmpfile.h',
     'shared/util.c',
     'shared/util.h',
-    'shared/tmpfile-util.c',
-    'shared/tmpfile-util.h',
   ),
   gnu_symbol_visibility : 'hidden',
 )
