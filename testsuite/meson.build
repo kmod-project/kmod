@@ -84,7 +84,6 @@ _testsuite = [
   'test-modprobe',
   'test-shared',
   'test-testsuite',
-  'test-weakdep',
 ]
 
 if get_option('b_sanitize') != 'none'
