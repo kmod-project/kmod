@@ -170,4 +170,84 @@ DEFINE_TEST(test_remove2,
 		    [TC_DELETE_MODULE_RETCODES] = "mod_simple:0:0" STRINGIFY(ENOENT),
 	    });
 
+static int from_name(void)
+{
+	static const char *const modnames[] = {
+		// clang-format off
+		"ext4",
+		"balbalbalbbalbalbalbalbalbalbal",
+		"snd-hda-intel",
+		"snd-timer",
+		"iTCO_wdt",
+		// clang-format on
+	};
+	struct kmod_ctx *ctx;
+	struct kmod_module *mod;
+	const char *null_config = NULL;
+	int err;
+
+	ctx = kmod_new(NULL, &null_config);
+	TS_ASSERT(ctx != NULL);
+
+	for (size_t i = 0; i < ARRAY_SIZE(modnames); i++) {
+		err = kmod_module_new_from_name(ctx, modnames[i], &mod);
+		TS_ASSERT(err == 0);
+
+		printf("modname: %s\n", kmod_module_get_name(mod));
+		kmod_module_unref(mod);
+	}
+
+	kmod_unref(ctx);
+
+	return 0;
+}
+DEFINE_TEST(from_name,
+	.description = "check if module names are parsed correctly",
+	.config = {
+		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-new-module/from_name/",
+	},
+	.output = {
+		.out = TESTSUITE_ROOTFS "test-new-module/from_name/correct.txt",
+	});
+
+static int from_alias(void)
+{
+	static const char *const modnames[] = {
+		"ext4.*",
+	};
+	struct kmod_ctx *ctx;
+	int err;
+
+	ctx = kmod_new(NULL, NULL);
+	TS_ASSERT(ctx != NULL);
+
+	for (size_t i = 0; i < ARRAY_SIZE(modnames); i++) {
+		struct kmod_list *l, *list = NULL;
+
+		err = kmod_module_new_from_lookup(ctx, modnames[i], &list);
+		TS_ASSERT(err == 0);
+
+		kmod_list_foreach(l, list) {
+			struct kmod_module *m;
+			m = kmod_module_get_module(l);
+
+			printf("modname: %s\n", kmod_module_get_name(m));
+			kmod_module_unref(m);
+		}
+		kmod_module_unref_list(list);
+	}
+
+	kmod_unref(ctx);
+
+	return 0;
+}
+DEFINE_TEST(from_alias,
+	.description = "check if aliases are parsed correctly",
+	.config = {
+		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-new-module/from_alias/",
+	},
+	.output = {
+		.out = TESTSUITE_ROOTFS "test-new-module/from_alias/correct.txt",
+	});
+
 TESTSUITE_MAIN();
