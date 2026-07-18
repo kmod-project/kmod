@@ -136,8 +136,8 @@ int test_run(const struct test *t);
 #define DEFINE_TEST(_name, ...) DEFINE_TEST_WITH_FUNC(_name, _name, __VA_ARGS__)
 
 #define TESTSUITE_MAIN()                                                                 \
-	extern struct test __start_kmod_tests[] __attribute__((visibility("hidden")));   \
-	extern struct test __stop_kmod_tests[] __attribute__((visibility("hidden")));    \
+	extern const struct test __start_kmod_tests[];                                   \
+	extern const struct test __stop_kmod_tests[];                                    \
 	int main(int argc, char *argv[])                                                 \
 	{                                                                                \
 		const struct test *t;                                                    \
