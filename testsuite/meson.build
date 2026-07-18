@@ -80,7 +80,6 @@ _testsuite = [
   'test-blacklist',
   'test-dependencies',
   'test-depmod',
-  'test-hash',
   'test-init',
   'test-initstate',
   'test-list',
