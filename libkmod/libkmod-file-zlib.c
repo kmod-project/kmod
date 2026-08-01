@@ -6,6 +6,7 @@
 #define DLSYM_LOCALLY_ENABLED ENABLE_ZLIB_DLOPEN
 
 #include <errno.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

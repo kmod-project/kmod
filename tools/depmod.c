@@ -9,6 +9,7 @@
 #include <dirent.h>
 #include <endian.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <getopt.h>
 #include <limits.h>
 #include <regex.h>

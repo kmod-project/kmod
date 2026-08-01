@@ -8,6 +8,7 @@
 #include <assert.h>
 #include <endian.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <fnmatch.h>
 #include <inttypes.h>
 #include <limits.h>
