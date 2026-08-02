@@ -42,7 +42,7 @@ static int dlopen_lzma(void)
 #endif
 }
 
-static void xz_uncompress_belch(struct kmod_file *file, lzma_ret ret)
+static void xz_error(struct kmod_file *file, lzma_ret ret)
 {
 	switch (ret) {
 	case LZMA_MEM_ERROR:
@@ -107,7 +107,7 @@ static int xz_uncompress(lzma_stream *strm, struct kmod_file *file)
 		if (ret == LZMA_STREAM_END)
 			break;
 		if (ret != LZMA_OK) {
-			xz_uncompress_belch(file, ret);
+			xz_error(file, ret);
 			ret = -EINVAL;
 			goto out;
 		}
@@ -134,10 +134,10 @@ int kmod_file_load_xz(struct kmod_file *file)
 
 	lzret = sym_lzma_stream_decoder(&strm, UINT64_MAX, LZMA_CONCATENATED);
 	if (lzret == LZMA_MEM_ERROR) {
-		ERR(file->ctx, "xz: %s\n", strerror(ENOMEM));
+		xz_error(file, lzret);
 		return -ENOMEM;
 	} else if (lzret != LZMA_OK) {
-		ERR(file->ctx, "xz: Internal error (bug)\n");
+		xz_error(file, lzret);
 		return -EINVAL;
 	}
 	ret = xz_uncompress(&strm, file);
