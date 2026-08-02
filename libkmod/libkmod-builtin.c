@@ -75,7 +75,7 @@ static ssize_t get_strings(struct kmod_builtin_info *info, const char *modname,
 		if (n == -1) {
 			if (!feof(info->fp)) {
 				count = -errno;
-				ERR(info->ctx, "get_strings: %m\n");
+				ERR(info->ctx, "%m\n");
 			}
 			break;
 		}
@@ -84,8 +84,7 @@ static ssize_t get_strings(struct kmod_builtin_info *info, const char *modname,
 		dot = strchr(line, '.');
 		if (dot == NULL) {
 			count = -EINVAL;
-			ERR(info->ctx, "get_strings: "
-				       "unexpected string without modname prefix\n");
+			ERR(info->ctx, "unexpected string without modname prefix\n");
 			return count;
 		}
 		if (strncmp(line, modname, modlen) || line[modlen] != '.') {
@@ -100,8 +99,7 @@ static ssize_t get_strings(struct kmod_builtin_info *info, const char *modname,
 		}
 		if (!strbuf_pushchars(buf, dot + 1) || !strbuf_pushchar(buf, '\0')) {
 			count = -ENOMEM;
-			ERR(info->ctx, "get_strings: "
-				       "failed to append modinfo string\n");
+			ERR(info->ctx, "failed to append modinfo string\n");
 			return count;
 		}
 		count++;
@@ -109,8 +107,7 @@ static ssize_t get_strings(struct kmod_builtin_info *info, const char *modname,
 
 	if (count == INTPTR_MAX) {
 		count = -ENOMEM;
-		ERR(info->ctx, "get_strings: "
-			       "too many modinfo strings encountered\n");
+		ERR(info->ctx, "too many modinfo strings encountered\n");
 		return count;
 	}
 
