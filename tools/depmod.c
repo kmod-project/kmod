@@ -2896,6 +2896,7 @@ static int do_depmod(int argc, char *argv[])
 	memset(&cfg, 0, sizeof(cfg));
 	memset(&depmod, 0, sizeof(depmod));
 
+	opterr = 0;
 	while ((c = getopt_long(argc, argv, cmdopts_s, cmdopts, NULL)) != -1) {
 		switch (c) {
 		case 'a':
@@ -2971,6 +2972,8 @@ static int do_depmod(int argc, char *argv[])
 			kmod_version();
 			return EXIT_SUCCESS;
 		case '?':
+			ERR("unrecognised option \'%s\'\n\n", argv[optind - 1]);
+			help();
 			goto cmdline_failed;
 		default:
 			ERR("unexpected getopt_long() value '%c'.\n", c);

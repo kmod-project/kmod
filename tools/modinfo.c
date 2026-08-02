@@ -367,6 +367,7 @@ static int do_modinfo(int argc, char *argv[])
 	bool arg_is_modname = false;
 	int i, err, c;
 
+	opterr = 0;
 	while ((c = getopt_long(argc, argv, cmdopts_s, cmdopts, NULL)) != -1) {
 		switch (c) {
 		case 'a':
@@ -406,6 +407,8 @@ static int do_modinfo(int argc, char *argv[])
 			kmod_version();
 			return EXIT_SUCCESS;
 		case '?':
+			ERR("unrecognised option \'%s\'\n\n", argv[optind - 1]);
+			help();
 			return EXIT_FAILURE;
 		default:
 			ERR("unexpected getopt_long() value '%c'.\n", c);

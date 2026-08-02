@@ -90,6 +90,7 @@ int test_init(const struct test *start, const struct test *stop, int argc,
 		return -EINVAL;
 	}
 
+	opterr = 0;
 	while ((c = getopt_long(argc, argv, options_short, options, NULL)) != -1) {
 		switch (c) {
 		case 'l':
@@ -102,6 +103,8 @@ int test_init(const struct test *start, const struct test *stop, int argc,
 			oneshot = 1;
 			break;
 		case '?':
+			TS_ERR("unrecognised option \'%s\'\n\n", argv[optind - 1]);
+			help();
 			return -1;
 		default:
 			TS_ERR("unexpected getopt_long() value %c\n", c);

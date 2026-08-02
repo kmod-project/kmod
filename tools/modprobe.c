@@ -813,6 +813,7 @@ static int do_modprobe(int argc, char **orig_argv)
 		return EXIT_FAILURE;
 	}
 
+	opterr = 0;
 	while ((c = getopt_long(argc, argv, cmdopts_s, cmdopts, NULL)) != -1) {
 		switch (c) {
 		case 'a':
@@ -935,6 +936,8 @@ static int do_modprobe(int argc, char **orig_argv)
 			err = 0;
 			goto done;
 		case '?':
+			ERR("unrecognised option \'%s\'\n\n", argv[optind - 1]);
+			help();
 			err = -1;
 			goto done;
 		default:

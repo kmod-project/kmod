@@ -101,6 +101,7 @@ static int do_rmmod(int argc, char *argv[])
 	int flags = 0;
 	int i, c, r = 0;
 
+	opterr = 0;
 	while ((c = getopt_long(argc, argv, cmdopts_s, cmdopts, NULL)) != -1) {
 		switch (c) {
 		case 'f':
@@ -119,6 +120,8 @@ static int do_rmmod(int argc, char *argv[])
 			kmod_version();
 			return EXIT_SUCCESS;
 		case '?':
+			ERR("unrecognised option \'%s\'\n\n", argv[optind - 1]);
+			help();
 			return EXIT_FAILURE;
 		default:
 			ERR("unexpected getopt_long() value '%c'.\n", c);

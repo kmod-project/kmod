@@ -151,6 +151,7 @@ static int do_static_nodes(int argc, char *argv[])
 	int r, ret = EXIT_SUCCESS;
 	int c, valid;
 
+	opterr = 0;
 	while ((c = getopt_long(argc, argv, cmdopts_s, cmdopts, NULL)) != -1) {
 		switch (c) {
 		case 'o':
@@ -177,6 +178,9 @@ static int do_static_nodes(int argc, char *argv[])
 			help();
 			goto finish;
 		case '?':
+			fprintf(stderr, "unrecognised option \'%s\'\n\n",
+				argv[optind - 1]);
+			help();
 			ret = EXIT_FAILURE;
 			goto finish;
 		default:

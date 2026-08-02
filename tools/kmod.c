@@ -85,6 +85,7 @@ static int handle_kmod_commands(int argc, char *argv[])
 	int err = 0, c;
 	size_t i;
 
+	opterr = 0;
 	while ((c = getopt_long(argc, argv, options_s, options, NULL)) != -1) {
 		switch (c) {
 		case 'h':
@@ -94,6 +95,8 @@ static int handle_kmod_commands(int argc, char *argv[])
 			kmod_version();
 			return EXIT_SUCCESS;
 		case '?':
+			ERR("unrecognised option \'%s\'\n\n", argv[optind - 1]);
+			kmod_help(argc, argv);
 			return EXIT_FAILURE;
 		default:
 			fprintf(stderr, "Error: unexpected getopt_long() value '%c'.\n",
