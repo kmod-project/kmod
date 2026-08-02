@@ -18,16 +18,14 @@
 
 static const char cmdopts_s[] = "fsvVh";
 static const struct option cmdopts[] = {
-	// clang-format off
-	{ "force", no_argument, 0, 'f' },
-	{ "force-modversion", no_argument, 0, 2 },
-	{ "force-vermagic", no_argument, 0, 1 },
-	{ "syslog", no_argument, 0, 's' },
-	{ "verbose", no_argument, 0, 'v' },
-	{ "version", no_argument, 0, 'V' },
-	{ "help", no_argument, 0, 'h' },
-	{ NULL, 0, 0, 0 },
-	// clang-format on
+	{ "force", no_argument, NULL, 'f' },
+	{ "force-modversion", no_argument, NULL, 2 },
+	{ "force-vermagic", no_argument, NULL, 1 },
+	{ "syslog", no_argument, NULL, 's' },
+	{ "verbose", no_argument, NULL, 'v' },
+	{ "version", no_argument, NULL, 'V' },
+	{ "help", no_argument, NULL, 'h' },
+	{},
 };
 
 static void help(void)

@@ -308,19 +308,19 @@ static int modinfo_alias_do(struct kmod_ctx *ctx, const char *alias)
 
 static const char cmdopts_s[] = "adlpn0mF:k:b:Vh";
 static const struct option cmdopts[] = {
-	{ "author", no_argument, 0, 'a' },
-	{ "description", no_argument, 0, 'd' },
-	{ "license", no_argument, 0, 'l' },
-	{ "parameters", no_argument, 0, 'p' },
-	{ "filename", no_argument, 0, 'n' },
-	{ "null", no_argument, 0, '0' },
-	{ "modname", no_argument, 0, 'm' },
-	{ "field", required_argument, 0, 'F' },
-	{ "set-version", required_argument, 0, 'k' },
-	{ "basedir", required_argument, 0, 'b' },
-	{ "version", no_argument, 0, 'V' },
-	{ "help", no_argument, 0, 'h' },
-	{ NULL, 0, 0, 0 },
+	{ "author", no_argument, NULL, 'a' },
+	{ "description", no_argument, NULL, 'd' },
+	{ "license", no_argument, NULL, 'l' },
+	{ "parameters", no_argument, NULL, 'p' },
+	{ "filename", no_argument, NULL, 'n' },
+	{ "null", no_argument, NULL, '0' },
+	{ "modname", no_argument, NULL, 'm' },
+	{ "field", required_argument, NULL, 'F' },
+	{ "set-version", required_argument, NULL, 'k' },
+	{ "basedir", required_argument, NULL, 'b' },
+	{ "version", no_argument, NULL, 'V' },
+	{ "help", no_argument, NULL, 'h' },
+	{},
 };
 
 static void help(void)

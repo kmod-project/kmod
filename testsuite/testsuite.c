@@ -34,9 +34,9 @@ static const char *progname;
 static int oneshot;
 static const char options_short[] = "lhn";
 static const struct option options[] = {
-	{ "list", no_argument, 0, 'l' },
-	{ "help", no_argument, 0, 'h' },
-	{ NULL, 0, 0, 0 },
+	{ "list", no_argument, NULL, 'l' },
+	{ "help", no_argument, NULL, 'h' },
+	{},
 };
 
 #define TEST_TIMEOUT_USEC 2 * USEC_PER_SEC

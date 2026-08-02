@@ -41,9 +41,9 @@ static const struct static_nodes_format *const static_nodes_formats[] = {
 
 static const char cmdopts_s[] = "o:f:h";
 static const struct option cmdopts[] = {
-	{ "output", required_argument, 0, 'o' },
-	{ "format", required_argument, 0, 'f' },
-	{ "help", no_argument, 0, 'h' },
+	{ "output", required_argument, NULL, 'o' },
+	{ "format", required_argument, NULL, 'f' },
+	{ "help", no_argument, NULL, 'h' },
 	{},
 };
 
