@@ -33,6 +33,7 @@ jobs:
           - container: 'alpine:latest'
             meson_setup: '-Db_sanitize=none'
             only_bits: '64'
+            modules_makeflags: "-j1"
           - container: 'archlinux:multilib-devel'
           - container: 'debian:bookworm-slim'
             meson_setup: '-Dzstd=disabled -Dxz=disabled -Dzlib=disabled -Dmbedtls=disabled'
@@ -160,9 +161,14 @@ jobs:
       - name: test
         run: |
           do_test() {
+            unset MAKEFLAGS
+
             if [[ -n "${{ matrix.skip_test }}" && "${{ matrix.skip_test }}" == "$2" ]]; then
               echo "::notice::Skipping tests"
               return 0
+            fi
+            if [[ -n "${{ matrix.modules_makeflags }}"
+              export MAKEFLAGS="${{ matrix.modules_makeflags" }}"
             fi
             meson test -C "$1" || meson test -C "$1" --verbose
           }
