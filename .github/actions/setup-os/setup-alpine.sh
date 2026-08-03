@@ -16,6 +16,7 @@ apk add \
     mbedtls-dev \
     meson \
     openssl-dev \
+    pahole \
     scdoc \
     tar \
     xz-dev \
