@@ -167,7 +167,7 @@ jobs:
               echo "::notice::Skipping tests"
               return 0
             fi
-            if [[ -n "${{ matrix.modules_makeflags }}"
+            if [[ -n "${{ matrix.modules_makeflags }}" ]]; then
               export MAKEFLAGS="${{ matrix.modules_makeflags }}"
             fi
             meson test -C "$1" || meson test -C "$1" --verbose
