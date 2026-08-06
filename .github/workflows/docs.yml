@@ -29,8 +29,8 @@ jobs:
 
       - name: Build docs
         run: |
-          meson setup -Ddocs=true builddir/
-          meson compile -C builddir/
+          meson setup --native-file build-dev.ini -Ddocs=true build-docs/
+          meson compile -C build-docs docs
 
       - name: Extract docs version
         shell: bash
@@ -50,7 +50,7 @@ jobs:
         env:
           API_TOKEN_GITHUB: ${{ secrets.KMOD_DOCS }}
         with:
-          source-directory: 'builddir/libkmod/docs/html'
+          source-directory: 'build-docs/libkmod/docs/html'
           destination-github-username: '${{ github.repository_owner }}'
           destination-repository-name: 'kmod-project.github.io'
           user-name: 'github-actions[bot]'
