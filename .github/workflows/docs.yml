@@ -8,6 +8,16 @@ on:
       - 'ci-test-docs'
     tags:
       - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to generate docs for'
+        required: true
+        type: string
+      publish:
+        description: 'Publish generated docs to website'
+        default: true
+        type: boolean
 
 # Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
 # However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
@@ -21,8 +31,19 @@ jobs:
     container:
       image: 'ubuntu:26.04'
     steps:
+      - name: Validate trigger
+        env:
+          INPUT_TAG: ${{ inputs.tag }}
+        run: |
+          if [[ -n "${INPUT_TAG}" ]] && [[ ! "$INPUT_TAG" =~ ^v[0-9\.]+$ ]]; then
+            echo "::error::Invalid tag format ${INPUT_TAG}"
+            exit 1
+          fi
+
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.tag }}
 
       - name: Setup OS
         uses: ./.github/actions/setup-os
@@ -34,19 +55,42 @@ jobs:
 
       - name: Extract docs version
         shell: bash
+        env:
+          INPUT_TAG: ${{ inputs.tag }}
         run: |
-          if [[ "${GITHUB_REF}" == refs/heads/* ]]; then
-            echo DOC_VERSION=${GITHUB_REF#refs/heads/} >> $GITHUB_ENV
+          if [[ -n "${INPUT_TAG}" ]]; then
+            TAG="${INPUT_TAG#refs/tags/}"
+            echo DOC_VERSION="${TAG%%.*}" >> $GITHUB_ENV
+            echo DOC_VERSION_COMMIT="$(git rev-parse HEAD)" >> $GITHUB_ENV
           elif [[ "${GITHUB_REF}" == refs/tags/* ]]; then
-            echo DOC_VERSION=${GITHUB_REF#refs/tags/} >> $GITHUB_ENV
+            TAG="${GITHUB_REF#refs/tags/}"
+            echo DOC_VERSION="${TAG%%.*}" >> $GITHUB_ENV
+            echo DOC_VERSION_COMMIT="${GITHUB_SHA}" >> $GITHUB_ENV
+          elif [[ "${GITHUB_REF}" == refs/heads/* ]]; then
+            echo DOC_VERSION="${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
+            echo DOC_VERSION_COMMIT="${GITHUB_SHA}" >> $GITHUB_ENV
           else
             exit 1
           fi
 
-          echo DOC_VERSION_COMMIT="${GITHUB_SHA}" >> $GITHUB_ENV
+      - name: Check publish
+        id: check_publish
+        env:
+          PUBLISH: ${{ inputs.publish }}
+        run: |
+          if [[ "$PUBLISH" == "false" ]]; then
+            echo "publish=false" >> $GITHUB_OUTPUT
+          elif [[ "$PUBLISH" == "true" ]]; then
+            echo "publish=true" >> $GITHUB_OUTPUT
+          elif [[ "${GITHUB_REF}" == refs/heads/master || "${GITHUB_REF}" == refs/tags/* ]]; then
+            echo "publish=true" >> $GITHUB_OUTPUT
+          else
+            echo "publish=false" >> $GITHUB_OUTPUT
+          fi
 
       - name: Push docs to kmod-project.github.io
         uses: QXIP/github-action-push-to-another-repository@a910af640bd64288db58f0e71a361aabac022f8b
+        if: steps.check_publish.outputs.publish == 'true'
         env:
           API_TOKEN_GITHUB: ${{ secrets.KMOD_DOCS }}
         with:
@@ -61,6 +105,7 @@ jobs:
 
       - name: Dispatch kmod-project.github.io
         uses: peter-evans/repository-dispatch@v4
+        if: steps.check_publish.outputs.publish == 'true'
         with:
           token: ${{ secrets.KMOD_DOCS }}
           repository: ${{ github.repository_owner }}/kmod-project.github.io
