@@ -22,6 +22,8 @@ built_docs = gnome.gtkdoc(
   main_xml : 'libkmod-docs.xml',
 )
 
+alias_target('docs', built_docs)
+
 test(
   'test-gtkdoc',
   test_gtkdoc,
