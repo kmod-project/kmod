@@ -6,7 +6,7 @@ Numerous contributions have come from the linux-modules mailing list
 itself, the output of *git-shortlog*(1) and *git-blame*(1) can show you the
 authors for specific parts of the project.
 
-*Lucas De Marchi* <lucas.de.marchi@gmail.com> is the current maintainer of the
+*Lucas De Marchi* <demarchi@kernel.org> is the current maintainer of the
 project.
 
 # BUGS

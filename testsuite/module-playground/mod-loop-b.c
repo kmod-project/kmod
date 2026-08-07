@@ -21,6 +21,6 @@ void printB(void)
 }
 EXPORT_SYMBOL(printB);
 
-MODULE_AUTHOR("Lucas De Marchi <lucas.demarchi@intel.com>");
+MODULE_AUTHOR("Lucas De Marchi <demarchi@kernel.org>");
 MODULE_LICENSE("LGPL");
 MODULE_DESCRIPTION("dummy test module");

@@ -15,7 +15,7 @@ static void test_module_exit(void)
 module_init(test_module_init);
 module_exit(test_module_exit);
 
-MODULE_AUTHOR("Lucas De Marchi <lucas.demarchi@intel.com>");
+MODULE_AUTHOR("Lucas De Marchi <demarchi@kernel.org>");
 MODULE_LICENSE("LGPL");
 MODULE_DESCRIPTION("dummy test module");
 
