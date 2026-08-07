@@ -63,7 +63,7 @@ jobs:
           - container: 'archlinux:multilib-devel'
             only_bits: '64'
             only_compiler: 'clang'
-            custom: 'ldd-as-linker'
+            custom: 'lld-as-linker'
             linker: 'lld'
 
           # Variants with moduledir
