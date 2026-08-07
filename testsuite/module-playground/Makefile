@@ -24,6 +24,10 @@ ifeq ($(origin LLVM), undefined)
   KERNEL_MAKE_ARGS += $(shell grep -qs "^CONFIG_CC_IS_CLANG=y" "$(KDIR)/include/config/auto.conf" && printf 'LLVM=1')
 endif
 
+# External modules built with potentially different tooling from what was
+# used for the kernel - since BTF sections are not used, disable it.
+KERNEL_MAKE_ARGS += CONFIG_DEBUG_INFO_BTF_MODULES=
+
 ARCH_SPECIFIC_MODULES := mod-simple-x86_64.ko mod-simple-i386.ko mod-simple-sparc64.ko
 
 default: modules
