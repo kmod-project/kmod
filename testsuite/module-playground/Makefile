@@ -19,6 +19,11 @@ else ifeq ($(KDIR),any)
   KDIR := $(shell find $(MODULE_DIRECTORY) -maxdepth 1 -mindepth 1 -type d | sort -V | tail -n1)/build
 endif
 
+KERNEL_MAKE_ARGS := M=$$PWD
+ifeq ($(origin LLVM), undefined)
+  KERNEL_MAKE_ARGS += $(shell grep -qs "^CONFIG_CC_IS_CLANG=y" "$(KDIR)/include/config/auto.conf" && printf 'LLVM=1')
+endif
+
 ARCH_SPECIFIC_MODULES := mod-simple-x86_64.ko mod-simple-i386.ko mod-simple-sparc64.ko
 
 default: modules
@@ -28,9 +33,9 @@ mod-simple-%.ko: mod-simple-%.c Makefile.arch
 	$(MAKE) KDIR=$(KDIR_$(arch)) ARCH=$(arch) CROSS_COMPILE=$(CROSS_COMPILE_$(arch)) -f Makefile.arch
 
 modules:
-	$(MAKE) -C $(KDIR) M=$$PWD modules
+	$(MAKE) -C $(KDIR) $(KERNEL_MAKE_ARGS) modules
 
 arch-modules: $(ARCH_SPECIFIC_MODULES)
 
 clean:
-	$(MAKE) -C $(KDIR) M=$$PWD clean
+	$(MAKE) -C $(KDIR) $(KERNEL_MAKE_ARGS) clean
