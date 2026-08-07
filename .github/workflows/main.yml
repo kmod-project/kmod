@@ -66,6 +66,13 @@ jobs:
             custom: 'lld-as-linker'
             linker: 'lld'
 
+          # Variant with kernel built with clang
+          - container: 'cachyos/cachyos:latest'
+            only_bits: '64'
+            only_compiler: 'clang'
+            custom: 'clang-kernel'
+            linker: 'lld'
+
           # Variants with moduledir
           - container: 'archlinux:multilib-devel'
             meson_setup: '-Dmoduledir=/usr/lib/modules'
