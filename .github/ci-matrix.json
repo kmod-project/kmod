@@ -21,7 +21,7 @@
         "meson_setup": "-Dc_args='-Wno-error=deprecated-declarations'",
         "only_bits": "64",
         "only_compiler": "clang",
-        "custom": "ldd-as-linker",
+        "custom": "lld-as-linker",
         "linker": "lld"
       },
       {
