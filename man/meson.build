@@ -12,11 +12,13 @@ _man_pages = [
   ['8', 'modprobe'],
   ['8', 'rmmod'],
 ]
+
+man_targets = []
 foreach tuple : _man_pages
   section = tuple[0]
   man = tuple[1]
 
-  custom_target(
+  man_targets += custom_target(
     f'man_@section@_@man@',
     command : [
       build_scdoc,
@@ -44,7 +46,7 @@ foreach tuple : _man_aliases
   man = tuple[1]
   dest = tuple[2]
 
-  custom_target(
+  man_targets += custom_target(
     f'man_@section@_@man@',
     command : ['echo', f'.so @dest@'],
     output : f'@man@.@section@',
@@ -53,3 +55,5 @@ foreach tuple : _man_aliases
     install_dir : get_option('mandir') / f'man@section@',
   )
 endforeach
+
+alias_target('man', man_targets)
