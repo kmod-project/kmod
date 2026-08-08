@@ -623,6 +623,9 @@ static void kcmdline_parse_result(struct kmod_config *config, char *modname, cha
 			if (t == NULL)
 				break;
 
+			if (underscores(t) < 0)
+				continue;
+
 			kmod_config_add_blacklist(config, t);
 		}
 	} else {

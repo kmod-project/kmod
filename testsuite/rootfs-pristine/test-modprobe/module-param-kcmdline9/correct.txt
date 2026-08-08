@@ -3,6 +3,7 @@ blacklist bar
 blacklist foo2
 blacklist bar2
 blacklist foobar
+blacklist foo_bar
 
 # End of configuration files. Dumping indexes now:
 
