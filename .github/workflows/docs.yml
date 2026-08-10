@@ -30,6 +30,9 @@ jobs:
     runs-on: ubuntu-26.04
     container:
       image: 'ubuntu:26.04'
+    defaults:
+      run:
+        shell: bash
     steps:
       - name: Validate trigger
         env:
