@@ -74,7 +74,9 @@ jobs:
       - name: Build docs
         run: |
           meson setup --native-file build-dev.ini -Ddocs=true build-docs/
-          meson compile -C build-docs docs
+          # XXX: change this to `meson compile -C build-docs docs` once only
+          # v35+ is supported
+          ninja -C build-docs libkmod-3-doc
 
       - name: Extract docs version
         shell: bash
