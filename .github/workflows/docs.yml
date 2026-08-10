@@ -106,6 +106,12 @@ jobs:
           if [[ "$PUBLISH" == "false" ]]; then
             echo "publish=false" >> $GITHUB_OUTPUT
           elif [[ "$PUBLISH" == "true" ]]; then
+            # this is a manual workflow, only allow to publish if being executed from master branch
+            # or a tag. We don't want a build from ci-test-docs to end up publishing anything
+            if [[ "${GITHUB_REF}" != refs/heads/master && "${GITHUB_REF}" != refs/tags/* ]]; then
+              echo "::error::Can't publish from branch != master or a valid tag (ref=${GITHUB_REF}"
+              exit 1
+            fi
             echo "publish=true" >> $GITHUB_OUTPUT
           elif [[ "${GITHUB_REF}" == refs/heads/master || "${GITHUB_REF}" == refs/tags/* ]]; then
             echo "publish=true" >> $GITHUB_OUTPUT
