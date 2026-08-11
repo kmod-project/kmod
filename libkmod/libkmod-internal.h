@@ -103,6 +103,9 @@ struct kmod_config {
 	struct kmod_list *install_commands;
 	struct kmod_list *softdeps;
 	struct kmod_list *weakdeps;
+	struct kmod_list *whitelists;
+	bool whitelist_active;
+	bool whitelist_test_mode;
 
 	struct kmod_list *paths;
 };
@@ -110,6 +113,7 @@ struct kmod_config {
 _nonnull_all_ int kmod_config_new(struct kmod_ctx *ctx, struct kmod_config **config, const char *const *config_paths);
 _nonnull_all_ void kmod_config_free(struct kmod_config *config);
 _nonnull_all_ const char *kmod_blacklist_get_modname(const struct kmod_list *l);
+_nonnull_all_ const char *kmod_whitelist_get_modname(const struct kmod_list *l);
 _nonnull_all_ const char *kmod_alias_get_name(const struct kmod_list *l);
 _nonnull_all_ const char *kmod_alias_get_modname(const struct kmod_list *l);
 _nonnull_all_ const char *kmod_option_get_options(const struct kmod_list *l);

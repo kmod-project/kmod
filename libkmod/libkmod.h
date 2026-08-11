@@ -780,7 +780,7 @@ enum kmod_probe {
  * output or in dry-run mode.
  *
  * Insert a module in the kernel resolving dependencies, soft dependencies,
- * install commands and applying blacklist.
+ * install commands and applying blacklist and whitelist.
  *
  * If @run_install is NULL, this function will fork and exec by calling
  * system(3). Don't pass a NULL argument in @run_install if your binary is

@@ -493,4 +493,60 @@ DEFINE_TEST(modprobe_blacklisted_softdep,
 	.modules_loaded = "mod-simple,mod-foo-a",
 	);
 
+static int modprobe_whitelist_inactive(void)
+{
+	return EXEC_TOOL(modprobe, "mod-simple");
+}
+DEFINE_TEST(modprobe_whitelist_inactive,
+	.description = "check that modules load normally when no whitelist directive is configured",
+	.config = {
+		[TC_UNAME_R] = "3.3.3",
+		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-modprobe/whitelist-inactive",
+		[TC_INIT_MODULE_RETCODES] = "",
+	},
+	.modules_loaded = "mod-simple",
+	);
+
+static int modprobe_whitelist_deny_all(void)
+{
+	return EXEC_TOOL(modprobe, "mod-simple");
+}
+DEFINE_TEST(modprobe_whitelist_deny_all,
+	.description = "check that modules are denied when whitelist-enable is set with no entries",
+	.config = {
+		[TC_UNAME_R] = "3.3.3",
+		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-modprobe/whitelist-deny-all",
+		[TC_INIT_MODULE_RETCODES] = "",
+	},
+	.expected_fail = true,
+	);
+
+static int modprobe_whitelist_allowed(void)
+{
+	return EXEC_TOOL(modprobe, "mod-simple");
+}
+DEFINE_TEST(modprobe_whitelist_allowed,
+	.description = "check that a listed module loads, also verifying hyphen/underscore normalisation",
+	.config = {
+		[TC_UNAME_R] = "3.3.3",
+		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-modprobe/whitelist-allowed",
+		[TC_INIT_MODULE_RETCODES] = "",
+	},
+	.modules_loaded = "mod-simple",
+	);
+
+static int modprobe_whitelist_test_mode(void)
+{
+	return EXEC_TOOL(modprobe, "mod-simple");
+}
+DEFINE_TEST(modprobe_whitelist_test_mode,
+	.description = "check that whitelist-test-mode permits loading a module that would otherwise be denied",
+	.config = {
+		[TC_UNAME_R] = "3.3.3",
+		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-modprobe/whitelist-test-mode",
+		[TC_INIT_MODULE_RETCODES] = "",
+	},
+	.modules_loaded = "mod-simple",
+	);
+
 TESTSUITE_MAIN();
