@@ -72,20 +72,17 @@ unsigned long long get_backoff_delta_msec(unsigned long long tend,
 
 /* endianness and alignments                                                */
 /* ************************************************************************ */
-#define get_unaligned(ptr)                       \
-	({                                       \
-		struct __attribute__((packed)) { \
-			typeof(*(ptr)) __v;      \
-		} *__p = (typeof(__p))(ptr);     \
-		__p->__v;                        \
+#define get_unaligned(ptr)                                                   \
+	__extension__({                                                      \
+		__typeof_unqual__(*(ptr)) __v;                               \
+		__builtin_memcpy((void *)&__v, (const void *)(ptr), sizeof(__v)); \
+		__v;                                                          \
 	})
 
-#define put_unaligned(val, ptr)                  \
-	do {                                     \
-		struct __attribute__((packed)) { \
-			typeof(*(ptr)) __v;      \
-		} *__p = (typeof(__p))(ptr);     \
-		__p->__v = (val);                \
+#define put_unaligned(val, ptr)                                              \
+	do {                                                                 \
+		__typeof_unqual__(*(ptr)) __v = (val);                       \
+		__builtin_memcpy((void *)(ptr), (const void *)&__v, sizeof(__v)); \
 	} while (0)
 
 static inline unsigned int align_power2(unsigned int u)
