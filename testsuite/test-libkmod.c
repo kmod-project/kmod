@@ -565,12 +565,7 @@ static int multi_softdep(void)
 	return 0;
 }
 
-/*
- * FIXME: This test indicates a bug in kmod. Once fixed, the expected_fail should be removed.
- * See https://github.com/kmod-project/kmod/issues/33 for more details.
- */
 DEFINE_TEST(multi_softdep, .description = "check if multiple softdep is supported",
-	    .expected_fail = true,
 	    .config = {
 		    [TC_UNAME_R] = "4.4.4",
 		    [TC_ROOTFS] = TESTSUITE_ROOTFS "test-libkmod/softdep/",

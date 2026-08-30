@@ -1270,16 +1270,11 @@ KMOD_EXPORT int kmod_module_get_softdeps(const struct kmod_module *mod,
 		if (fnmatch(modname, mod->name, 0) != 0)
 			continue;
 
+		/* accumulate all the softdep stanzas matching this module */
 		array = kmod_softdep_get_pre(l, &count);
-		*pre = lookup_dep(mod->ctx, array, count);
+		*pre = kmod_list_append_list(*pre, lookup_dep(mod->ctx, array, count));
 		array = kmod_softdep_get_post(l, &count);
-		*post = lookup_dep(mod->ctx, array, count);
-
-		/*
-		 * find only the first command, as modprobe from
-		 * module-init-tools does
-		 */
-		break;
+		*post = kmod_list_append_list(*post, lookup_dep(mod->ctx, array, count));
 	}
 
 	return 0;
@@ -1306,14 +1301,9 @@ KMOD_EXPORT int kmod_module_get_weakdeps(const struct kmod_module *mod,
 		if (fnmatch(modname, mod->name, 0) != 0)
 			continue;
 
+		/* accumulate all the weakdep stanzas matching this module */
 		array = kmod_weakdep_get_weak(l, &count);
-		*weak = lookup_dep(mod->ctx, array, count);
-
-		/*
-		 * find only the first command, as modprobe from
-		 * module-init-tools does
-		 */
-		break;
+		*weak = kmod_list_append_list(*weak, lookup_dep(mod->ctx, array, count));
 	}
 
 	return 0;
