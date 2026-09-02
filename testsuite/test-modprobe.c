@@ -493,4 +493,19 @@ DEFINE_TEST(modprobe_blacklisted_softdep,
 	.modules_loaded = "mod-simple,mod-foo-a",
 	);
 
+static int modprobe_install_cmd_softdep(void)
+{
+	return EXEC_TOOL(modprobe, "-n", "-v", "mod-foo");
+}
+DEFINE_TEST(modprobe_install_cmd_softdep,
+	.description = "check if install command is not dropped when module has softdeps",
+	.config = {
+		[TC_UNAME_R] = "4.4.4",
+		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-modprobe/install-cmd-softdep",
+		[TC_INIT_MODULE_RETCODES] = "",
+	},
+	.output = {
+		.out = TESTSUITE_ROOTFS "test-modprobe/install-cmd-softdep/correct.txt",
+	});
+
 TESTSUITE_MAIN();

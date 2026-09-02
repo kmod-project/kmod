@@ -912,7 +912,15 @@ static int __kmod_module_fill_softdep(struct kmod_module *mod, struct kmod_list 
 		goto fail;
 	}
 	*list = l;
-	mod->ignorecmd = (pre != NULL || post != NULL);
+	/*
+	 * Softdep entries suppress this module's own install command in the
+	 * probe list.  Keep that only as long as no install command is
+	 * configured: explicit configuration has always had precedence and
+	 * losing it silently breaks "install foo /bin/false" blocks for
+	 * modules that happen to ship softdeps.
+	 */
+	mod->ignorecmd = (pre != NULL || post != NULL) &&
+			 kmod_module_get_install_commands(mod) == NULL;
 
 	kmod_list_foreach(l, post) {
 		struct kmod_module *m = l->data;
