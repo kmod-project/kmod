@@ -261,7 +261,6 @@ static int kmod_module_new(struct kmod_ctx *ctx, const char *key,
 
 	memset(m, 0, sizeof(*m));
 
-	m->ctx = kmod_ref(ctx);
 	m->name = (char *)m + sizeof(*m);
 	memcpy(m->name, key, keylen + 1);
 	if (alias == NULL) {
@@ -280,6 +279,7 @@ static int kmod_module_new(struct kmod_ctx *ctx, const char *key,
 		free(m);
 		return err;
 	}
+	m->ctx = kmod_ref(ctx);
 	*mod = m;
 
 	return 0;
