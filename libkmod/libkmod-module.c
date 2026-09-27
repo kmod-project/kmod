@@ -231,24 +231,13 @@ bool kmod_module_is_builtin(struct kmod_module *mod)
  *        name ----. |
  * }               | |
  * name <----------'-'
- *
- * @key is "name\alias" or "name" (in which case alias == NULL)
  */
-/* TODO: rework to create the hash within this function and remove the _maybe_unused_
- * workaround */
-static int kmod_module_new(struct kmod_ctx *ctx, const char *key,
-			   _maybe_unused_ const char *name, size_t namelen,
+static int kmod_module_new(struct kmod_ctx *ctx, const char *name, size_t namelen,
 			   const char *alias, size_t aliaslen, struct kmod_module **mod)
 {
-	struct kmod_module *m;
+	struct kmod_module *m, *existing;
 	size_t keylen;
 	int err;
-
-	m = kmod_pool_get_module(ctx, key);
-	if (m != NULL) {
-		*mod = kmod_module_ref(m);
-		return 0;
-	}
 
 	if (alias == NULL)
 		keylen = namelen;
@@ -263,15 +252,25 @@ static int kmod_module_new(struct kmod_ctx *ctx, const char *key,
 
 	m->ctx = kmod_ref(ctx);
 	m->name = (char *)m + sizeof(*m);
-	memcpy(m->name, key, keylen + 1);
+	memcpy(m->name, name, namelen);
+	m->name[namelen] = '\0';
 	if (alias == NULL) {
 		m->hashkey = m->name;
 		m->alias = NULL;
 	} else {
-		m->name[namelen] = '\0';
 		m->alias = m->name + namelen + 1;
+		memcpy(m->alias, alias, aliaslen);
+		m->alias[aliaslen] = '\0';
 		m->hashkey = m->name + keylen + 1;
-		memcpy(m->hashkey, key, keylen + 1);
+		memcpy(m->hashkey, m->name, keylen + 1);
+		m->hashkey[namelen] = '\\';
+	}
+
+	existing = kmod_pool_get_module(ctx, m->hashkey);
+	if (existing != NULL) {
+		*mod = kmod_module_ref(existing);
+		free(m);
+		return 0;
 	}
 
 	m->refcount = 1;
@@ -296,24 +295,16 @@ KMOD_EXPORT int kmod_module_new_from_name(struct kmod_ctx *ctx, const char *name
 
 	modname_normalize(name, name_norm, &namelen);
 
-	return kmod_module_new(ctx, name_norm, name_norm, namelen, NULL, 0, mod);
+	return kmod_module_new(ctx, name_norm, namelen, NULL, 0, mod);
 }
 
 int kmod_module_new_from_alias(struct kmod_ctx *ctx, const char *alias, const char *name,
 			       struct kmod_module **mod)
 {
-	char key[PATH_MAX];
 	size_t namelen = strlen(name);
 	size_t aliaslen = strlen(alias);
 
-	if (namelen + aliaslen + 2 > sizeof(key))
-		return -ENAMETOOLONG;
-
-	memcpy(key, name, namelen);
-	memcpy(key + namelen + 1, alias, aliaslen + 1);
-	key[namelen] = '\\';
-
-	return kmod_module_new(ctx, key, name, namelen, alias, aliaslen, mod);
+	return kmod_module_new(ctx, name, namelen, alias, aliaslen, mod);
 }
 
 KMOD_EXPORT int kmod_module_new_from_path(struct kmod_ctx *ctx, const char *path,
@@ -349,7 +340,7 @@ KMOD_EXPORT int kmod_module_new_from_path(struct kmod_ctx *ctx, const char *path
 		return -ENOENT;
 	}
 
-	err = kmod_module_new(ctx, name, name, namelen, NULL, 0, &m);
+	err = kmod_module_new(ctx, name, namelen, NULL, 0, &m);
 	if (err < 0) {
 		free(abspath);
 		return err;
