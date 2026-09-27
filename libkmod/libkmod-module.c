@@ -236,15 +236,21 @@ static int kmod_module_new(struct kmod_ctx *ctx, const char *name, size_t namele
 			   const char *alias, size_t aliaslen, struct kmod_module **mod)
 {
 	struct kmod_module *m, *existing;
-	size_t keylen;
+	size_t keylen, malloclen;
 	int err;
 
 	if (alias == NULL)
 		keylen = namelen;
-	else
-		keylen = namelen + aliaslen + 1;
+	else if (uaddsz_overflow(namelen, aliaslen, &keylen) ||
+		 uaddsz_overflow(keylen, 1, &keylen))
+		return -ENAMETOOLONG;
 
-	m = malloc(sizeof(*m) + (alias == NULL ? 1 : 2) * (keylen + 1));
+	if (uaddsz_overflow(keylen, 1, &malloclen) ||
+	    umulsz_overflow(alias == NULL ? 1 : 2, malloclen, &malloclen) ||
+	    uaddsz_overflow(malloclen, sizeof(*m), &malloclen))
+		return -ENAMETOOLONG;
+
+	m = malloc(malloclen);
 	if (m == NULL)
 		return -ENOMEM;
 
