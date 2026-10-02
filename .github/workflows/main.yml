@@ -41,8 +41,6 @@ jobs:
           - container: 'debian:unstable'
           - container: 'fedora:latest'
             only_bits: '64'
-          - container: 'ubuntu:22.04'
-            meson_setup: '-Dmbedtls=disabled'
           - container: 'ubuntu:24.04'
             meson_setup: '-Dmbedtls=disabled'
           - container: 'ubuntu:26.04'
@@ -54,10 +52,6 @@ jobs:
             meson_setup: '-Dxz=disabled -Ddlopen=all'
             only_bits: '64'
             custom: 'no-xz-dlopen-all'
-          - container: 'ubuntu:22.04'
-            meson_setup: '-Ddlopen=zstd,zlib -Dmbedtls=disabled'
-            only_bits: '64'
-            custom: 'dlopen-zstd-zlib'
 
           # Variant with lld as linker
           - container: 'archlinux:multilib-devel'
