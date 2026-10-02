@@ -236,30 +236,30 @@ static int kmod_module_new(struct kmod_ctx *ctx, const char *name, size_t namele
 			   const char *alias, size_t aliaslen, struct kmod_module **mod)
 {
 	struct kmod_module *m, *existing;
-	size_t keylen;
+	size_t keylen, len = sizeof(*m);
 	int err;
 
-	if (alias == NULL)
-		keylen = namelen;
-	else
-		keylen = namelen + aliaslen + 1;
+	if (uaddsz_overflow(namelen, 1, &keylen))
+		return -ENAMETOOLONG;
 
-	m = malloc(sizeof(*m) + (alias == NULL ? 1 : 2) * (keylen + 1));
+	if (alias != NULL && (uaddsz_overflow(keylen, aliaslen, &keylen) ||
+			      uaddsz_overflow(keylen, 1, &keylen)))
+		return -ENAMETOOLONG;
+
+	if (uaddsz_overflow(keylen, len, &len))
+		return -ENAMETOOLONG;
+
+	m = calloc(alias == NULL ? 1 : 2, len);
 	if (m == NULL)
 		return -ENOMEM;
 
-	memset(m, 0, sizeof(*m));
-
 	m->name = (char *)m + sizeof(*m);
 	memcpy(m->name, name, namelen);
-	m->name[namelen] = '\0';
 	if (alias == NULL) {
 		m->hashkey = m->name;
-		m->alias = NULL;
 	} else {
 		m->alias = m->name + namelen + 1;
 		memcpy(m->alias, alias, aliaslen);
-		m->alias[aliaslen] = '\0';
 		m->hashkey = m->name + keylen + 1;
 		memcpy(m->hashkey, m->name, keylen + 1);
 		m->hashkey[namelen] = '\\';
