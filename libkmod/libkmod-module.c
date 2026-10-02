@@ -232,10 +232,12 @@ bool kmod_module_is_builtin(struct kmod_module *mod)
  * }               | |
  * name <----------'-'
  */
-static int kmod_module_new(struct kmod_ctx *ctx, const char *name, size_t namelen,
-			   const char *alias, size_t aliaslen, struct kmod_module **mod)
+static int kmod_module_new(struct kmod_ctx *ctx, const char *name, const char *alias,
+			   struct kmod_module **mod)
 {
 	struct kmod_module *m, *existing;
+	size_t namelen = strlen(name);
+	size_t aliaslen = (alias != NULL) ? strlen(alias) : 0;
 	size_t keylen, len = sizeof(*m);
 	int err;
 
@@ -287,7 +289,7 @@ static int kmod_module_new(struct kmod_ctx *ctx, const char *name, size_t namele
 KMOD_EXPORT int kmod_module_new_from_name(struct kmod_ctx *ctx, const char *name,
 					  struct kmod_module **mod)
 {
-	size_t namelen;
+	_maybe_unused_ size_t namelen;
 	char name_norm[PATH_MAX];
 
 	if (ctx == NULL || name == NULL || mod == NULL)
@@ -295,16 +297,13 @@ KMOD_EXPORT int kmod_module_new_from_name(struct kmod_ctx *ctx, const char *name
 
 	modname_normalize(name, name_norm, &namelen);
 
-	return kmod_module_new(ctx, name_norm, namelen, NULL, 0, mod);
+	return kmod_module_new(ctx, name_norm, NULL, mod);
 }
 
 int kmod_module_new_from_alias(struct kmod_ctx *ctx, const char *alias, const char *name,
 			       struct kmod_module **mod)
 {
-	size_t namelen = strlen(name);
-	size_t aliaslen = strlen(alias);
-
-	return kmod_module_new(ctx, name, namelen, alias, aliaslen, mod);
+	return kmod_module_new(ctx, name, alias, mod);
 }
 
 KMOD_EXPORT int kmod_module_new_from_path(struct kmod_ctx *ctx, const char *path,
@@ -315,7 +314,7 @@ KMOD_EXPORT int kmod_module_new_from_path(struct kmod_ctx *ctx, const char *path
 	struct stat st;
 	char name[PATH_MAX];
 	char *abspath;
-	size_t namelen;
+	_maybe_unused_ size_t namelen;
 
 	if (ctx == NULL || path == NULL || mod == NULL)
 		return -ENOENT;
@@ -340,7 +339,7 @@ KMOD_EXPORT int kmod_module_new_from_path(struct kmod_ctx *ctx, const char *path
 		return -ENOENT;
 	}
 
-	err = kmod_module_new(ctx, name, namelen, NULL, 0, &m);
+	err = kmod_module_new(ctx, name, NULL, &m);
 	if (err < 0) {
 		free(abspath);
 		return err;
