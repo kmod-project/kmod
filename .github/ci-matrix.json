@@ -70,20 +70,6 @@
     ]
   },
   {
-    "base": "ubuntu:22.04",
-    "tag": "ubuntu-22.04",
-    "build-variants": [
-      {
-        "meson_setup": "-Dmbedtls=disabled"
-      },
-      {
-        "meson_setup": "-Ddlopen=zstd,zlib -Dmbedtls=disabled",
-        "only_bits": "64",
-        "custom": "dlopen-zstd-zlib"
-      }
-    ]
-  },
-  {
     "base": "ubuntu:24.04",
     "tag": "ubuntu-24.04",
     "build-variants": [
