@@ -7,14 +7,6 @@
 export DEBIAN_FRONTEND=noninteractive
 export TZ=Etc/UTC
 
-# shellcheck source=/dev/null
-. /etc/os-release
-
-mbedtls_pkgs=()
-if [[ "$VERSION_CODENAME" != "bookworm" ]]; then
-    mbedtls_pkgs=("libmbedtls-dev")
-fi
-
 apt-get update
 apt-get install --yes \
     bash \
@@ -24,11 +16,11 @@ apt-get install --yes \
     git \
     gtk-doc-tools \
     liblzma-dev \
+    libmbedtls-dev \
     libssl-dev \
     libzstd-dev \
     linux-headers-generic \
     meson \
-    "${mbedtls_pkgs[@]}" \
     scdoc \
     zlib1g-dev \
     zstd

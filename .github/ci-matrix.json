@@ -39,8 +39,8 @@
     ]
   },
   {
-    "base": "debian:bookworm-slim",
-    "tag": "debian-bookworm-slim",
+    "base": "debian:trixie-slim",
+    "tag": "debian-trixie-slim",
     "build-variants": [
       {
         "meson_setup": "-Dzstd=disabled -Dxz=disabled -Dzlib=disabled -Dmbedtls=disabled",
