@@ -232,8 +232,8 @@ bool kmod_module_is_builtin(struct kmod_module *mod)
  * }               | |
  * name <----------'-'
  */
-static int kmod_module_new(struct kmod_ctx *ctx, const char *name, const char *alias,
-			   struct kmod_module **mod)
+int kmod_module_new(struct kmod_ctx *ctx, const char *name, const char *alias,
+		    struct kmod_module **mod)
 {
 	struct kmod_module *m, *existing;
 	size_t namelen = strlen(name);
@@ -298,12 +298,6 @@ KMOD_EXPORT int kmod_module_new_from_name(struct kmod_ctx *ctx, const char *name
 	modname_normalize(name, name_norm, &namelen);
 
 	return kmod_module_new(ctx, name_norm, NULL, mod);
-}
-
-int kmod_module_new_from_alias(struct kmod_ctx *ctx, const char *alias, const char *name,
-			       struct kmod_module **mod)
-{
-	return kmod_module_new(ctx, name, alias, mod);
 }
 
 KMOD_EXPORT int kmod_module_new_from_path(struct kmod_ctx *ctx, const char *path,
