@@ -354,42 +354,42 @@ void kmod_pool_del_module(struct kmod_ctx *ctx, struct kmod_module *mod, const c
 
 static int kmod_lookup_alias_from_alias_bin(struct kmod_ctx *ctx,
 					    enum kmod_index index_number,
-					    const char *name, struct kmod_list **list)
+					    const char *alias, struct kmod_list **list)
 {
 	int err, nmatch = 0;
 	struct index_file *idx;
-	struct index_value *realnames, *realname;
+	struct index_value *names, *name;
 
 	assert(*list == NULL);
 
 	if (ctx->indexes[index_number] != NULL) {
-		DBG(ctx, "use mmapped index '%s' for name=%s\n",
-		    index_files[index_number].fn, name);
-		realnames = index_mm_searchwild(ctx->indexes[index_number], name);
+		DBG(ctx, "use mmapped index '%s' for alias=%s\n",
+		    index_files[index_number].fn, alias);
+		names = index_mm_searchwild(ctx->indexes[index_number], alias);
 	} else {
 		char fn[PATH_MAX];
 
 		snprintf(fn, sizeof(fn), "%s/%s.bin", ctx->dirname,
 			 index_files[index_number].fn);
 
-		DBG(ctx, "file=%s name=%s\n", fn, name);
+		DBG(ctx, "file=%s alias=%s\n", fn, alias);
 
 		idx = index_file_open(fn);
 		if (idx == NULL)
 			return -ENOSYS;
 
-		realnames = index_searchwild(idx, name);
+		names = index_searchwild(idx, alias);
 		index_file_close(idx);
 	}
 
-	for (realname = realnames; realname; realname = realname->next) {
+	for (name = names; name; name = name->next) {
 		struct kmod_module *mod;
 		struct kmod_list *node;
 
-		err = kmod_module_new_from_alias(ctx, name, realname->value, &mod);
+		err = kmod_module_new(ctx, name->value, alias, &mod);
 		if (err < 0) {
-			ERR(ctx, "Could not create module for alias=%s realname=%s: %s\n",
-			    name, realname->value, strerror(-err));
+			ERR(ctx, "Could not create module for alias=%s name=%s: %s\n",
+			    alias, name->value, strerror(-err));
 			goto fail;
 		}
 
@@ -404,12 +404,12 @@ static int kmod_lookup_alias_from_alias_bin(struct kmod_ctx *ctx,
 		nmatch++;
 	}
 
-	index_values_free(realnames);
+	index_values_free(names);
 	return nmatch;
 
 fail:
 	kmod_list_release(*list, kmod_module_unref);
-	index_values_free(realnames);
+	index_values_free(names);
 	return err;
 }
 
@@ -586,7 +586,7 @@ int kmod_lookup_alias_from_config(struct kmod_ctx *ctx, const char *name,
 			struct kmod_module *mod;
 			struct kmod_list *node;
 
-			err = kmod_module_new_from_alias(ctx, aliasname, modname, &mod);
+			err = kmod_module_new(ctx, modname, aliasname, &mod);
 			if (err < 0) {
 				ERR(ctx,
 				    "Could not create module for alias=%s modname=%s: %s\n",
