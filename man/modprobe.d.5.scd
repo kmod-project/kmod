@@ -156,6 +156,23 @@ weakdep _modulename_ _modules_
 	required/desired at runtime. When c is loaded and is being probed, it
 	may issue calls to request_module() causing a or b to also be loaded.
 
+whitelist _modulename_
+	Adds _modulename_ to the whitelist of modules that are permitted to
+	load. This command only has an effect once *whitelist-enable* is
+	also given (in this or any other configuration file); by itself, a
+	*whitelist* entry is parsed but has no effect.
+
+whitelist-enable
+	Enables whitelist enforcement, where only modules listed via
+	*whitelist* commands are permitted to load, and all other modules
+	are denied.
+
+whitelist-test-mode
+	Used together with *whitelist-enable*. Modules that the whitelist
+	would otherwise deny are still permitted to load; a notice is logged
+	instead, reporting which module would have been denied. This allows
+	auditing the effect of a whitelist before enforcing it.
+
 # COMPATIBILITY
 
 A future version of kmod will come with a strong warning to avoid use of the

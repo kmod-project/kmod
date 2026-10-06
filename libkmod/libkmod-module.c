@@ -737,6 +737,23 @@ static bool module_is_blacklisted(const struct kmod_module *mod)
 	return false;
 }
 
+static bool module_is_whitelisted(const struct kmod_module *mod)
+{
+	const struct kmod_ctx *ctx = mod->ctx;
+	const struct kmod_config *config = kmod_get_config(ctx);
+	const struct kmod_list *wl = config->whitelists;
+	const struct kmod_list *l;
+
+	kmod_list_foreach(l, wl) {
+		const char *modname = kmod_whitelist_get_modname(l);
+
+		if (streq(modname, mod->name))
+			return true;
+	}
+
+	return false;
+}
+
 KMOD_EXPORT int kmod_module_apply_filter(const struct kmod_ctx *ctx,
 					 enum kmod_filter filter_type,
 					 const struct kmod_list *input,
@@ -1002,6 +1019,30 @@ static int kmod_module_get_probe_list(struct kmod_module *mod, bool ignorecmd,
 	return err;
 }
 
+static bool module_whitelist_check(struct kmod_module *mod)
+{
+	const struct kmod_config *config = kmod_get_config(mod->ctx);
+
+	if (!config->whitelist_active || module_is_whitelisted(mod))
+		return true;
+
+	/*
+	 * Bypass the usual NOTICE() verbosity gate: the kernel always invokes
+	 * the modprobe autoload helper with -q, which would otherwise
+	 * silence this message entirely, defeating whitelist auditing.
+	 */
+	if (config->whitelist_test_mode) {
+		kmod_log(mod->ctx, LOG_NOTICE, __FILE__, __LINE__, __func__,
+			 "whitelist: module '%s' would be denied (test mode active, load permitted)\n",
+			 mod->name);
+		return true;
+	}
+
+	kmod_log(mod->ctx, LOG_NOTICE, __FILE__, __LINE__, __func__,
+		 "whitelist: module '%s' not in whitelist, denied\n", mod->name);
+	return false;
+}
+
 KMOD_EXPORT int kmod_module_probe_insert_module(
 	struct kmod_module *mod, unsigned int flags, const char *extra_options,
 	int (*run_install)(struct kmod_module *m, const char *cmd, void *data),
@@ -1032,6 +1073,9 @@ KMOD_EXPORT int kmod_module_probe_insert_module(
 		if (flags & KMOD_PROBE_APPLY_BLACKLIST)
 			return KMOD_PROBE_APPLY_BLACKLIST;
 	}
+
+	if (!module_whitelist_check(mod))
+		return -EPERM;
 
 	err = kmod_module_get_probe_list(mod, !!(flags & KMOD_PROBE_IGNORE_COMMAND),
 					 &list);

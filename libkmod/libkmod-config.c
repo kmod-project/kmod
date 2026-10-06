@@ -56,6 +56,11 @@ const char *kmod_blacklist_get_modname(const struct kmod_list *l)
 	return l->data;
 }
 
+const char *kmod_whitelist_get_modname(const struct kmod_list *l)
+{
+	return l->data;
+}
+
 const char *kmod_alias_get_name(const struct kmod_list *l)
 {
 	const struct kmod_alias *alias = l->data;
@@ -228,6 +233,27 @@ static int kmod_config_add_blacklist(struct kmod_config *config, const char *mod
 
 	TAKE_PTR(p);
 	config->blacklists = list;
+
+	return 0;
+}
+
+static int kmod_config_add_whitelist(struct kmod_config *config, const char *modname)
+{
+	_cleanup_free_ char *p;
+	struct kmod_list *list;
+
+	DBG(config->ctx, "modname=%s\n", modname);
+
+	_clang_suppress_alloc_ p = strdup(modname);
+	if (!p)
+		return -ENOMEM;
+
+	list = kmod_list_append(config->whitelists, p);
+	if (!list)
+		return -ENOMEM;
+
+	TAKE_PTR(p);
+	config->whitelists = list;
 
 	return 0;
 }
@@ -810,6 +836,17 @@ static int kmod_config_parse(struct kmod_config *config, int fd, const char *fil
 				goto syntax_error;
 
 			kmod_config_add_blacklist(config, modname);
+		} else if (streq(cmd, "whitelist")) {
+			char *modname = strtok_r(NULL, "\t ", &saveptr);
+
+			if (underscores(modname) < 0)
+				goto syntax_error;
+
+			kmod_config_add_whitelist(config, modname);
+		} else if (streq(cmd, "whitelist-enable")) {
+			config->whitelist_active = true;
+		} else if (streq(cmd, "whitelist-test-mode")) {
+			config->whitelist_test_mode = true;
 		} else if (streq(cmd, "options")) {
 			char *modname = strtok_r(NULL, "\t ", &saveptr);
 			char *options = strtok_r(NULL, "\0", &saveptr);
@@ -879,6 +916,7 @@ void kmod_config_free(struct kmod_config *config)
 	kmod_list_release(config->remove_commands, free);
 	kmod_list_release(config->softdeps, free);
 	kmod_list_release(config->weakdeps, free);
+	kmod_list_release(config->whitelists, free);
 	kmod_list_release(config->paths, free);
 	free(config);
 }
