@@ -1705,7 +1705,7 @@ KMOD_EXPORT struct kmod_list *kmod_module_get_sections(const struct kmod_module 
 
 fail:
 	closedir(d);
-	kmod_module_unref_list(list);
+	kmod_module_section_free_list(list);
 	return NULL;
 }
 
