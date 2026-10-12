@@ -274,7 +274,7 @@ _moar_deps = [
   ['xz',      'liblzma',   '>= 4.99'],
   ['zlib',    'zlib',      '>= 0'],
   ['openssl', 'libcrypto', '>= 3.0.0'],
-  ['mbedtls', 'mbedx509',  '>= 3.6.0'],
+  ['mbedtls', 'mbedx509',  ['>= 3.6.0', '< 4.0.0']],
 ]
 
 foreach tuple : _moar_deps

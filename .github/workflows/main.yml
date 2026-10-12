@@ -78,13 +78,6 @@ jobs:
             only_compiler: 'gcc'
             custom: 'custom-moduledir'
 
-          # Variant without openssl - only mbedtls
-          - container: 'archlinux:multilib-devel'
-            meson_setup: '-Dopenssl=disabled'
-            only_bits: '64'
-            only_compiler: 'gcc'
-            custom: 'mbedtls-only'
-
     container:
       image: ${{ matrix.container }}
 
