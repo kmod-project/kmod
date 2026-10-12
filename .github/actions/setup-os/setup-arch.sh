@@ -20,4 +20,5 @@ pacman --noconfirm -Su \
     lld \
     mbedtls \
     meson \
+    pkgconf \
     scdoc
