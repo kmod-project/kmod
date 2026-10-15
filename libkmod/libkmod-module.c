@@ -885,17 +885,22 @@ static int module_do_install_commands(struct kmod_module *mod, const char *optio
 	return err;
 }
 
-static char *module_options_concat(const char *opt, const char *xopt)
+/* Join @opt and @xopt into a newly allocated string, separated by a space. */
+static int module_options_concat(const char *opt, const char *xopt, char **result)
 {
 	// TODO: we might need to check if xopt overrides options on opt
 	size_t optlen = opt == NULL ? 0 : strlen(opt);
 	size_t xoptlen = xopt == NULL ? 0 : strlen(xopt);
 	char *r;
 
+	*result = NULL;
+
 	if (optlen == 0 && xoptlen == 0)
-		return NULL;
+		return 0;
 
 	r = malloc(optlen + xoptlen + 2);
+	if (r == NULL)
+		return -ENOMEM;
 
 	if (opt != NULL) {
 		memcpy(r, opt, optlen);
@@ -908,7 +913,8 @@ static char *module_options_concat(const char *opt, const char *xopt)
 
 	r[optlen + xoptlen] = '\0';
 
-	return r;
+	*result = r;
+	return 0;
 }
 
 static int __kmod_module_get_probe_list(struct kmod_module *mod, bool required,
@@ -1109,8 +1115,10 @@ KMOD_EXPORT int kmod_module_probe_insert_module(
 			goto finish_module;
 		}
 
-		options =
-			module_options_concat(moptions, m == mod ? extra_options : NULL);
+		err = module_options_concat(moptions, m == mod ? extra_options : NULL,
+					    &options);
+		if (err < 0)
+			goto finish_module;
 
 		if (cmd != NULL && !m->ignorecmd) {
 			if (print_action != NULL)
@@ -1303,16 +1311,11 @@ KMOD_EXPORT int kmod_module_get_softdeps(const struct kmod_module *mod,
 		if (fnmatch(modname, mod->name, 0) != 0)
 			continue;
 
+		/* accumulate all the softdep stanzas matching this module */
 		array = kmod_softdep_get_pre(l, &count);
-		*pre = lookup_dep(mod->ctx, array, count);
+		*pre = kmod_list_append_list(*pre, lookup_dep(mod->ctx, array, count));
 		array = kmod_softdep_get_post(l, &count);
-		*post = lookup_dep(mod->ctx, array, count);
-
-		/*
-		 * find only the first command, as modprobe from
-		 * module-init-tools does
-		 */
-		break;
+		*post = kmod_list_append_list(*post, lookup_dep(mod->ctx, array, count));
 	}
 
 	return 0;
@@ -1339,14 +1342,9 @@ KMOD_EXPORT int kmod_module_get_weakdeps(const struct kmod_module *mod,
 		if (fnmatch(modname, mod->name, 0) != 0)
 			continue;
 
+		/* accumulate all the weakdep stanzas matching this module */
 		array = kmod_weakdep_get_weak(l, &count);
-		*weak = lookup_dep(mod->ctx, array, count);
-
-		/*
-		 * find only the first command, as modprobe from
-		 * module-init-tools does
-		 */
-		break;
+		*weak = kmod_list_append_list(*weak, lookup_dep(mod->ctx, array, count));
 	}
 
 	return 0;
