@@ -235,47 +235,49 @@ bool kmod_module_is_builtin(struct kmod_module *mod)
 static int kmod_module_new(struct kmod_ctx *ctx, const char *name, size_t namelen,
 			   const char *alias, size_t aliaslen, struct kmod_module **mod)
 {
-	struct kmod_module *m, *existing;
-	size_t keylen, malloclen;
+	struct kmod_module *m;
+	char key[PATH_MAX];
+	size_t keylen;
 	int err;
 
-	if (alias == NULL)
-		keylen = namelen;
-	else if (uaddsz_overflow(namelen, aliaslen, &keylen) ||
-		 uaddsz_overflow(keylen, 1, &keylen))
+	keylen = namelen;
+
+	if (alias != NULL && (uaddsz_overflow(namelen, 1, &keylen) ||
+			      uaddsz_overflow(keylen, aliaslen, &keylen)))
 		return -ENAMETOOLONG;
 
-	if (uaddsz_overflow(keylen, 1, &malloclen) ||
-	    umulsz_overflow(alias == NULL ? 1 : 2, malloclen, &malloclen) ||
-	    uaddsz_overflow(malloclen, sizeof(*m), &malloclen))
+	if (keylen >= sizeof(key))
 		return -ENAMETOOLONG;
 
-	m = malloc(malloclen);
+	memcpy(key, name, namelen);
+	if (alias != NULL) {
+		key[namelen] = '\\';
+		memcpy(key + namelen + 1, alias, aliaslen);
+	}
+	key[keylen] = '\0';
+
+	m = kmod_pool_get_module(ctx, key);
+	if (m != NULL) {
+		*mod = kmod_module_ref(m);
+		return 0;
+	}
+
+	m = malloc(sizeof(*m) + (alias == NULL ? 1 : 2) * (keylen + 1));
 	if (m == NULL)
 		return -ENOMEM;
 
 	memset(m, 0, sizeof(*m));
 
 	m->name = (char *)m + sizeof(*m);
-	memcpy(m->name, name, namelen);
-	m->name[namelen] = '\0';
+	memcpy(m->name, key, keylen + 1);
 	if (alias == NULL) {
 		m->hashkey = m->name;
 		m->alias = NULL;
 	} else {
+		m->name[namelen] = '\0';
 		m->alias = m->name + namelen + 1;
-		memcpy(m->alias, alias, aliaslen);
-		m->alias[aliaslen] = '\0';
 		m->hashkey = m->name + keylen + 1;
-		memcpy(m->hashkey, m->name, keylen + 1);
-		m->hashkey[namelen] = '\\';
-	}
-
-	existing = kmod_pool_get_module(ctx, m->hashkey);
-	if (existing != NULL) {
-		*mod = kmod_module_ref(existing);
-		free(m);
-		return 0;
+		memcpy(m->hashkey, key, keylen + 1);
 	}
 
 	m->refcount = 1;
