@@ -386,7 +386,7 @@ static int kmod_lookup_alias_from_alias_bin(struct kmod_ctx *ctx,
 		struct kmod_module *mod;
 		struct kmod_list *node;
 
-		err = kmod_module_new_from_alias(ctx, name, realname->value, &mod);
+		err = kmod_module_new(ctx, realname->value, name, &mod);
 		if (err < 0) {
 			ERR(ctx, "Could not create module for alias=%s realname=%s: %s\n",
 			    name, realname->value, strerror(-err));
@@ -586,7 +586,7 @@ int kmod_lookup_alias_from_config(struct kmod_ctx *ctx, const char *name,
 			struct kmod_module *mod;
 			struct kmod_list *node;
 
-			err = kmod_module_new_from_alias(ctx, aliasname, modname, &mod);
+			err = kmod_module_new(ctx, modname, aliasname, &mod);
 			if (err < 0) {
 				ERR(ctx,
 				    "Could not create module for alias=%s modname=%s: %s\n",

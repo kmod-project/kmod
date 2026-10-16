@@ -125,7 +125,7 @@ _nonnull_all_ const char * kmod_weakdep_get_name(const struct kmod_list *l);
 _nonnull_all_ const char *const *kmod_weakdep_get_weak(const struct kmod_list *l, unsigned int *count);
 
 /* libkmod-module.c */
-int kmod_module_new_from_alias(struct kmod_ctx *ctx, const char *alias, const char *name, struct kmod_module **mod);
+int kmod_module_new(struct kmod_ctx *ctx, const char *name, const char *alias, struct kmod_module **mod);
 _nonnull_all_ void kmod_module_parse_depline(struct kmod_module *mod, char *line);
 _nonnull_(1) void kmod_module_set_install_commands(struct kmod_module *mod, const char *cmd);
 _nonnull_(1) void kmod_module_set_remove_commands(struct kmod_module *mod, const char *cmd);
