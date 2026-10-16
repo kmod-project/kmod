@@ -522,6 +522,19 @@ if get_option('build-tests')
   setup_rootfs = find_program('scripts/setup-rootfs.sh')
   top_include = include_directories('.')
   subdir('testsuite')
+
+  bats = find_program('bats', required : false)
+  if bats.found()
+    test(
+      'stable-backport',
+      bats,
+      args : ['--tap', files('scripts/test/stable-backport.bats')],
+      protocol : 'tap',
+      suite : 'scripts',
+    )
+  else
+    message('bats not found, skipping tests for scripts/')
+  endif
 endif
 
 # ------------------------------------------------------------------
