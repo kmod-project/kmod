@@ -77,6 +77,12 @@ blacklist _modulename_
 	*blacklist* keyword indicates that all of that particular module's
 	internal aliases are to be ignored.
 
+	Note that *blacklist* command will not prevent _modulename_ from being
+	loaded if requested directly and not via an alias. To prevent modules
+	from being loaded at all see *mask* command below, *modprobe*(8)'s
+	**--use-blacklist** flag, or **install** command below together with
+	/bin/true or /bin/false executables.
+
 install _modulename_ _command_
 	This command instructs *modprobe* to run your command instead of
 	inserting the module in the kernel as normal. The command can be any
