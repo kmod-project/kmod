@@ -32,10 +32,13 @@ static const char *ANSI_HIGHLIGHT_OFF = "\x1B[0m";
 
 static const char *progname;
 static int oneshot;
-static const char options_short[] = "lhn";
+/* fd for TAP output when running with --tap, -1 otherwise */
+static int tap_fd = -1;
+static const char options_short[] = "lhtn";
 static const struct option options[] = {
 	{ "list", no_argument, NULL, 'l' },
 	{ "help", no_argument, NULL, 'h' },
+	{ "tap", no_argument, NULL, 't' },
 	{},
 };
 
@@ -91,6 +94,7 @@ static void test_list(const struct test *start, const struct test *stop)
 int test_init(const struct test *start, const struct test *stop, int argc,
 	      char *const argv[])
 {
+	bool tap = false;
 	int c;
 
 	progname = argv[0];
@@ -110,6 +114,9 @@ int test_init(const struct test *start, const struct test *stop, int argc,
 		case 'h':
 			help();
 			return 0;
+		case 't':
+			tap = true;
+			break;
 		case 'n':
 			oneshot = 1;
 			break;
@@ -135,6 +142,24 @@ int test_init(const struct test *start, const struct test *stop, int argc,
 		}
 	}
 
+	if (tap) {
+		if (optind != argc) {
+			TS_ERR("--tap is only supported when running all tests\n");
+			return -1;
+		}
+
+		/*
+		 * Keep stdout only for the TAP stream and send everything else,
+		 * including the output of the tests, to stderr
+		 */
+		fflush(stdout);
+		tap_fd = fcntl(STDOUT_FILENO, F_DUPFD_CLOEXEC, 3);
+		if (tap_fd < 0 || dup2(STDERR_FILENO, STDOUT_FILENO) < 0) {
+			TS_ERR("could not redirect stdout for TAP output: %m\n");
+			return -1;
+		}
+	}
+
 	if (isatty(STDOUT_FILENO) == 0) {
 		ANSI_HIGHLIGHT_OFF = "";
 		ANSI_HIGHLIGHT_RED_ON = "";
@@ -142,6 +167,12 @@ int test_init(const struct test *start, const struct test *stop, int argc,
 	}
 
 	return optind;
+}
+
+void test_release(void)
+{
+	if (tap_fd >= 0)
+		close(tap_fd);
 }
 
 const struct test *test_find(const struct test *start, const struct test *stop,
@@ -1217,10 +1248,21 @@ int test_run(const struct test *t)
 int test_run_all(const struct test *start, const struct test *stop)
 {
 	const struct test *t;
+	unsigned int i = 0;
 	int ret = EXIT_SUCCESS;
 
+	if (tap_fd >= 0)
+		dprintf(tap_fd, "1..%zu\n", (size_t)(stop - start));
+
 	kmod_test_foreach(t, start, stop) {
-		if (test_run(t) != 0)
+		int r = test_run(t);
+
+		if (tap_fd >= 0)
+			dprintf(tap_fd, "%sok %u - %s%s\n",
+				r == 0 || r == 77 ? "" : "not ", ++i, t->name,
+				r == 77 ? " # SKIP" : "");
+
+		if (r != 0)
 			ret = EXIT_FAILURE;
 	}
 
