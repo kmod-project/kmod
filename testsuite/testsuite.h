@@ -103,6 +103,7 @@ struct test {
 
 int test_init(const struct test *start, const struct test *stop, int argc,
 	      char *const argv[]);
+void test_release(void);
 const struct test *test_find(const struct test *start, const struct test *stop,
 			     const char *name);
 int test_spawn_prog(const char *prog, const char *const args[]);
@@ -144,7 +145,7 @@ int test_run_all(const struct test *start, const struct test *stop);
 	int main(int argc, char *argv[])                                                 \
 	{                                                                                \
 		const struct test *t;                                                    \
-		int arg;                                                                 \
+		int arg, ret;                                                            \
                                                                                          \
 		arg = test_init(__start_kmod_tests, __stop_kmod_tests, argc, argv);      \
 		/* Invalid arguments */                                                  \
@@ -161,8 +162,12 @@ int test_run_all(const struct test *start, const struct test *stop);
 				return EXIT_FAILURE;                                     \
 			}                                                                \
                                                                                          \
-			return test_run(t);                                              \
+			ret = test_run(t);                                               \
+		} else {                                                                 \
+			ret = test_run_all(__start_kmod_tests, __stop_kmod_tests);       \
 		}                                                                        \
                                                                                          \
-		return test_run_all(__start_kmod_tests, __stop_kmod_tests);              \
+		test_release();                                                          \
+                                                                                         \
+		return ret;                                                              \
 	}
