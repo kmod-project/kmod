@@ -1202,3 +1202,16 @@ int test_run(const struct test *t)
 
 	exit(test_run_child(t, fdout, fderr, fdmonitor));
 }
+
+int test_run_all(const struct test *start, const struct test *stop)
+{
+	const struct test *t;
+	int ret = EXIT_SUCCESS;
+
+	kmod_test_foreach(t, start, stop) {
+		if (test_run(t) != 0)
+			ret = EXIT_FAILURE;
+	}
+
+	return ret;
+}
