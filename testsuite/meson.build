@@ -106,8 +106,9 @@ foreach input : _testsuite
     bash,
     args : [
       '-c',
-      '@0@@1@'.format(source_env, exec.full_path()),
+      '@0@@1@ --tap'.format(source_env, exec.full_path()),
     ],
+    protocol : 'tap',
     depends : [exec, internal_kmod_symlinks, create_rootfs, test_override_mods],
   )
 endforeach

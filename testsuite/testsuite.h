@@ -107,6 +107,7 @@ const struct test *test_find(const struct test *start, const struct test *stop,
 			     const char *name);
 int test_spawn_prog(const char *prog, const char *const args[]);
 int test_run(const struct test *t);
+int test_run_all(const struct test *start, const struct test *stop);
 
 #define EXEC_TOOL(tool, ...)                 \
 	test_spawn_prog(TOOLS_DIR "/" #tool, \
@@ -152,7 +153,7 @@ int test_run(const struct test *t);
 	int main(int argc, char *argv[])                                                 \
 	{                                                                                \
 		const struct test *t;                                                    \
-		int arg, ret = EXIT_SUCCESS;                                             \
+		int arg;                                                                 \
                                                                                          \
 		arg = test_init(__start_kmod_tests, __stop_kmod_tests, argc, argv);      \
 		/* Invalid arguments */                                                  \
@@ -172,10 +173,5 @@ int test_run(const struct test *t);
 			return test_run(t);                                              \
 		}                                                                        \
                                                                                          \
-		kmod_test_foreach(t, __start_kmod_tests, __stop_kmod_tests) {            \
-			if (test_run(t) != 0)                                            \
-				ret = EXIT_FAILURE;                                      \
-		}                                                                        \
-                                                                                         \
-		return ret;                                                              \
+		return test_run_all(__start_kmod_tests, __stop_kmod_tests);              \
 	}
