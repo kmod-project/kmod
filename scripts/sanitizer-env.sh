@@ -30,7 +30,7 @@ if test -f "$OUR_PRELOAD"; then
 
     LD_PRELOAD=${LD_PRELOAD+${LD_PRELOAD}:}$OUR_PRELOAD
     export LD_PRELOAD
-    cat <<- EOF
+    cat <<- EOF >&2
 
     LD_PRELOAD has been set to "$LD_PRELOAD".
     The sanitizer might report issues with ANY process you execute.
