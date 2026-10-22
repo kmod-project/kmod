@@ -3,6 +3,7 @@
 #
 # Copyright 2010 Ran Benita
 # Copyright (C) 2013 Intel Corporation. All rights reserved.
+# shellcheck shell=bash disable=SC2207 # COMPREPLY=($(compgen ...)) is the usual completion idiom
 
 __contains_word () {
         local word=$1; shift
@@ -48,18 +49,18 @@ _kmod_static_nodes () {
 _kmod() {
         local cur=${COMP_WORDS[COMP_CWORD]} prev=${COMP_WORDS[COMP_CWORD-1]}
         local VERBS=(help list static-nodes)
-        local OPTS='-h --help -V --version'
+        local OPTS=(-h --help -V --version)
         local verb
 
         # standalone options, no other option or action allowed
-        for ((i=0; $i < $COMP_CWORD; i++)); do
-                if __contains_word "${COMP_WORDS[i]}" ${OPTS}; then
+        for ((i=0; i < COMP_CWORD; i++)); do
+                if __contains_word "${COMP_WORDS[i]}" "${OPTS[@]}"; then
                         return 0
                 fi
         done
 
         # find the action
-        for ((i=0; $i <= $COMP_CWORD; i++)); do
+        for ((i=0; i <= COMP_CWORD; i++)); do
                 if __contains_word "${COMP_WORDS[i]}" "${VERBS[@]}"; then
                         verb=${COMP_WORDS[i]}
                         break
@@ -67,14 +68,14 @@ _kmod() {
         done
 
         if [[ -z $verb ]]; then
-                COMPREPLY=( $(compgen -W '${OPTS[*]} ${VERBS[*]}' -- "$cur") )
+                COMPREPLY=( $(compgen -W "${OPTS[*]} ${VERBS[*]}" -- "$cur") )
                 return 0
         fi
 
         local func=${verb//-/_}
 
-        if declare -F _kmod_${func} > /dev/null; then
-                _kmod_${func}
+        if declare -F "_kmod_${func}" > /dev/null; then
+                "_kmod_${func}"
         fi
 
         # allow the space if there's only one completion and it doesn't end with

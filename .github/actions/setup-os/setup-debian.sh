@@ -7,6 +7,7 @@
 export DEBIAN_FRONTEND=noninteractive
 export TZ=Etc/UTC
 
+# shellcheck source=/dev/null
 . /etc/os-release
 
 mbedtls_pkgs=()
