@@ -5,6 +5,7 @@
 #
 # Formatted using:
 # shfmt --language-dialect bash --indent 4 --func-next-line
+# shellcheck shell=bash disable=SC2207 # COMPREPLY=($(compgen ...)) is the usual completion idiom
 
 _lsmod()
 {
