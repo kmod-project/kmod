@@ -1,6 +1,8 @@
 name: Check code style with clang-format
 
 on:
+  push:
+    branches: [master, ci-test]
   pull_request:
     branches: [master]
 
