@@ -90,6 +90,9 @@ Let the includes in the following order, separated by a new line:
 To ease and enforce the style a [.clang-format file](.clang-format) file is
 provided and ran in CI against all submissions.
 
-Make sure to run `git-clang-format` before submitting PRs/patches.
+Make sure to run `git-clang-format` before submitting PRs/patches. Since the
+entire codebase is formatted by clang-format, `ninja -C build clang-format`
+can also be used if git-clang-format is not available.
+
 
 [Linux Kernel]: https://www.kernel.org/doc/html/v6.9/process/coding-style.html
