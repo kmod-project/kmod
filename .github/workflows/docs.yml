@@ -1,3 +1,8 @@
+# SPDX-FileCopyrightText: 2025 Intel Corporation
+# SPDX-FileCopyrightText: 2025-2026 Lucas De Marchi <demarchi@kernel.org>
+#
+# SPDX-License-Identifier: LGPL-2.1-or-later
+
 name: Trigger kmod-project.github.io
 
 on:
