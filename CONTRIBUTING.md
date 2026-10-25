@@ -9,6 +9,7 @@ To submit changes, open a GitHub [pull requests] or send patches to the
 In this file you can find:
 
   * [License and SPDX](#license-and-spdx)
+  * [Copyright](#copyright)
   * [Commit style and history](#commit-style-and-history)
   * [Using commit trailers](#using-commit-trailers)
     + [Signed-off-by](#signed-off-by)
@@ -28,6 +29,11 @@ everything else. New tools should be licensed under `LGPL-2.1-or-later` to make
 it easy to migrate code to other places when/if needed. When adding new files
 use the respective `SPDX-License-Identifier:` instead of the complete license
 text.
+
+## Copyright
+
+Similar to the licensing above, kmod aims to use SPDX copyright identifier.
+Namely, where possible use `SPDX-FileCopyrightText: Year Entity` notation.
 
 ## Commit style and history
 
