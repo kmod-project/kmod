@@ -2,7 +2,7 @@
 
 Thanks for taking the time to contribute to kmod!
 
-To submit changes, open a GitHub [pull requests] or send patches to the
+To submit changes, open a GitHub [pull request] or send patches to the
 [mailing list]. In addition, issues and feature requests can be opened on our
 [GitHub tracker].
 
@@ -151,7 +151,7 @@ The project aims to provide `bash`, `zsh` and `fish` shell completions for all
 the kmod tools. Currently only a limited set of tools/options are supported -
 patches improving on those are greatly appreciated.
 
-[pull requests]: https://github.com/kmod-project/kmod/pull/
+[pull request]: https://github.com/kmod-project/kmod/pull/
 [mailing list]: mailto:linux-modules@vger.kernel.org
 [GitHub tracker]: https://github.com/kmod-project/kmod/issues/
 [linear, "recipe" style]: https://www.bitsnbites.eu/git-history-work-log-vs-recipe/
