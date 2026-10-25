@@ -2,13 +2,14 @@
 
 Thanks for taking the time to contribute to kmod!
 
-To submit changes, open a GitHub [pull requests] or send patches to the
+To submit changes, open a GitHub [pull request] or send patches to the
 [mailing list]. In addition, issues and feature requests can be opened on our
 [GitHub tracker].
 
 In this file you can find:
 
   * [License and SPDX](#license-and-spdx)
+  * [Copyright](#copyright)
   * [Commit style and history](#commit-style-and-history)
   * [Using commit trailers](#using-commit-trailers)
     + [Signed-off-by](#signed-off-by)
@@ -28,6 +29,11 @@ everything else. New tools should be licensed under `LGPL-2.1-or-later` to make
 it easy to migrate code to other places when/if needed. When adding new files
 use the respective `SPDX-License-Identifier:` instead of the complete license
 text.
+
+## Copyright
+
+Similar to the licensing above, kmod aims to use SPDX copyright identifier.
+Namely, where possible use `SPDX-FileCopyrightText: Year Entity` notation.
 
 ## Commit style and history
 
@@ -145,7 +151,7 @@ The project aims to provide `bash`, `zsh` and `fish` shell completions for all
 the kmod tools. Currently only a limited set of tools/options are supported -
 patches improving on those are greatly appreciated.
 
-[pull requests]: https://github.com/kmod-project/kmod/pull/
+[pull request]: https://github.com/kmod-project/kmod/pull/
 [mailing list]: mailto:linux-modules@vger.kernel.org
 [GitHub tracker]: https://github.com/kmod-project/kmod/issues/
 [linear, "recipe" style]: https://www.bitsnbites.eu/git-history-work-log-vs-recipe/

@@ -18,7 +18,7 @@ ASAP.
 # Inspiration
 
 The kmod coding style is heavily based on the [Linux kernel]'s, oFono's and
-BlueZ's. Below some basic rules:
+BlueZ's. Below are some basic rules:
 
 ## Line wrap
 
@@ -90,6 +90,9 @@ Let the includes in the following order, separated by a new line:
 To ease and enforce the style a [.clang-format file](.clang-format) file is
 provided and ran in CI against all submissions.
 
-Make sure to run `git-clang-format` before submitting PRs/patches.
+Make sure to run `git-clang-format` before submitting PRs/patches. Since the
+entire codebase is formatted by clang-format, `ninja -C build clang-format`
+can also be used if git-clang-format is not available.
+
 
 [Linux Kernel]: https://www.kernel.org/doc/html/v6.9/process/coding-style.html
