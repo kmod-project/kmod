@@ -35,6 +35,7 @@ jobs:
             only_bits: '64'
             modules_makeflags: '-j1'
           - container: 'archlinux:multilib-devel'
+            pkgconfig_path: '/usr/lib/mbedtls3/pkgconfig/'
           - container: 'debian:trixie-slim'
           - container: 'debian:unstable'
           - container: 'fedora:latest'
@@ -47,6 +48,7 @@ jobs:
 
           # Variant with lld as linker
           - container: 'archlinux:multilib-devel'
+            pkgconfig_path: '/usr/lib/mbedtls3/pkgconfig/'
             only_bits: '64'
             only_compiler: 'clang'
             custom: 'ldd-as-linker'
@@ -54,11 +56,13 @@ jobs:
 
           # Variants with moduledir
           - container: 'archlinux:multilib-devel'
+            pkgconfig_path: '/usr/lib/mbedtls3/pkgconfig/'
             meson_setup: '-Dmoduledir=/usr/lib/modules'
             only_bits: '64'
             only_compiler: 'gcc'
             custom: 'usr-moduledir'
           - container: 'archlinux:multilib-devel'
+            pkgconfig_path: '/usr/lib/mbedtls3/pkgconfig/'
             meson_setup: '-Dmoduledir=/kernel-modules'
             only_bits: '64'
             only_compiler: 'gcc'
@@ -100,6 +104,7 @@ jobs:
               setup_options="$setup_options -Db_sanitize=none"
             fi
 
+            [[ -n "${{ matrix.pkgconfig_path }}" ]] && export PKG_CONFIG_PATH="${{ matrix.pkgconfig_path }}"
             [[ -n "${{ matrix.linker }}" ]] && export CC_LD="${{ matrix.linker }}"
             meson setup --native-file build-dev.ini $setup_options "$1"
           }

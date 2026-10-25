@@ -13,7 +13,7 @@ apk add \
     git \
     gtk-doc \
     linux-stable-dev \
-    mbedtls-dev \
+    mbedtls3-dev \
     meson \
     openssl-dev \
     pahole \
