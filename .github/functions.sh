@@ -1,4 +1,7 @@
 #!/hint/bash
+# SPDX-FileCopyrightText: 2025 Emil Velikov <emil.l.velikov@gmail.com>
+#
+# SPDX-License-Identifier: LGPL-2.1-or-later
 
 # TODO: add helper to validate only_bits and skip_test
 # Allowed values are 32, 64 and help.
