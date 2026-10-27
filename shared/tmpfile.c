@@ -62,23 +62,24 @@ create_fail:
 	return NULL;
 }
 
+static void tmpfile_cleanup(struct tmpfile *file)
+{
+	file->dirfd = -1;
+	file->fd = -1;
+	memset(file->tmpname, 0, sizeof(file->tmpname));
+}
+
 int tmpfile_publish(struct tmpfile *file, const char *targetname)
 {
 	if (renameat(file->dirfd, file->tmpname, file->dirfd, targetname) != 0)
 		return -errno;
 
-	file->fd = -1;
-	file->dirfd = -1;
-	memset(file->tmpname, 0, sizeof(file->tmpname));
-
+	tmpfile_cleanup(file);
 	return 0;
 }
 
 void tmpfile_release(struct tmpfile *file)
 {
 	unlinkat(file->dirfd, file->tmpname, 0);
-
-	file->fd = -1;
-	file->dirfd = -1;
-	file->tmpname[0] = '\0';
+	tmpfile_cleanup(file);
 }
