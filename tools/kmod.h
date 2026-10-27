@@ -22,10 +22,8 @@ extern const struct kmod_cmd kmod_cmd_compat_modinfo;
 extern const struct kmod_cmd kmod_cmd_compat_modprobe;
 extern const struct kmod_cmd kmod_cmd_compat_depmod;
 
-extern const struct kmod_cmd kmod_cmd_insert;
 extern const struct kmod_cmd kmod_cmd_list;
 extern const struct kmod_cmd kmod_cmd_static_nodes;
-extern const struct kmod_cmd kmod_cmd_remove;
 
 static inline void kmod_version(void)
 {
