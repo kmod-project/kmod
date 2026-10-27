@@ -2617,21 +2617,23 @@ static int depmod_output(struct depmod *depmod, FILE *out)
 		if (r < 0) {
 			tmpfile_release(&file);
 
-			ERR("Could not write index '%s': %s\n", itr->name, strerror(-r));
 			err = r;
-			break;
-		}
-
-		err = tmpfile_publish(&file, itr->name);
-		if (err != 0) {
-			CRIT("publish temporary from %s to %s\n", file.tmpname, itr->name);
+			ERR("Could not write index '%s': %s\n", itr->name, strerror(-r));
 			break;
 		}
 
 		if (ferr) {
+			tmpfile_release(&file);
+
 			err = -ENOSPC;
-			ERR("Could not create index '%s'. Output is truncated: %s\n",
-			    itr->name, strerror(-err));
+			ERR("Could not create index '%s'. Output may be truncated.\n",
+			    itr->name);
+			break;
+		}
+		err = tmpfile_publish(&file, itr->name);
+		if (err != 0) {
+			tmpfile_release(&file);
+			CRIT("publish temporary from %s to %s\n", file.tmpname, itr->name);
 			break;
 		}
 	}
