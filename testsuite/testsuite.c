@@ -39,6 +39,17 @@ static const struct option options[] = {
 	{},
 };
 
+/*
+ * Iterate through the tests, hopefully in order: the order in which the
+ * entries are are added into the kmod_test section is implementation
+ * specific. In practise both gcc and clang, do so in order reserve to the
+ * one in the source.
+ *
+ * Flip them, so we can observe consistent ordering amongst the source,
+ * listing and execution.
+ */
+#define kmod_test_foreach(t, start, stop) for (t = stop - 1; t >= start; t--)
+
 #define TEST_TIMEOUT_USEC 2 * USEC_PER_SEC
 
 static const struct {
