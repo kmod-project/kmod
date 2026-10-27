@@ -1,3 +1,5 @@
+#!/hint/bash
+
 # TODO: add helper to validate only_bits and skip_test
 # Allowed values are 32, 64 and help.
 
@@ -10,8 +12,8 @@ for_each_config() {
     [[ -n $3 ]] && suffix="-$3" || suffix=""
     meson_cmd=$4
 
-    for compiler in ${compilers[@]}; do
-        for bit in ${bits[@]}; do
+    for compiler in $compilers; do
+        for bit in $bits; do
             echo "::group::$compiler, $bit bit"
             builddir="builddir-$compiler-$bit$suffix/"
 
