@@ -23,30 +23,31 @@ enum pkey_algo {
 	PKEY_ALGO__LAST,
 };
 
-enum pkey_hash_algo {
-	PKEY_HASH_MD4,
-	PKEY_HASH_MD5,
-	PKEY_HASH_SHA1,
-	PKEY_HASH_RIPE_MD_160,
-	PKEY_HASH_SHA256,
-	PKEY_HASH_SHA384,
-	PKEY_HASH_SHA512,
-	PKEY_HASH_SHA224,
-	PKEY_HASH_SM3,
-	PKEY_HASH__LAST,
-};
-
-const char *const pkey_hash_algo[PKEY_HASH__LAST] = {
+const char *const pkey_hash_algo[HASH_ALGO__LAST] = {
 	// clang-format off
-	[PKEY_HASH_MD4] = "md4",
-	[PKEY_HASH_MD5] = "md5",
-	[PKEY_HASH_SHA1] = "sha1",
-	[PKEY_HASH_RIPE_MD_160] = "rmd160",
-	[PKEY_HASH_SHA256] = "sha256",
-	[PKEY_HASH_SHA384] = "sha384",
-	[PKEY_HASH_SHA512] = "sha512",
-	[PKEY_HASH_SHA224] = "sha224",
-	[PKEY_HASH_SM3] = "sm3",
+	[HASH_ALGO_MD4] = "md4",
+	[HASH_ALGO_MD5] = "md5",
+	[HASH_ALGO_SHA1] = "sha1",
+	[HASH_ALGO_RIPE_MD_160] = "rmd160",
+	[HASH_ALGO_SHA256] = "sha256",
+	[HASH_ALGO_SHA384] = "sha384",
+	[HASH_ALGO_SHA512] = "sha512",
+	[HASH_ALGO_SHA224] = "sha224",
+	[HASH_ALGO_RIPE_MD_128] = "rmd128",
+	[HASH_ALGO_RIPE_MD_256] = "rmd256",
+	[HASH_ALGO_RIPE_MD_320] = "rmd320",
+	[HASH_ALGO_WP_256] = "wp256",
+	[HASH_ALGO_WP_384] = "wp384",
+	[HASH_ALGO_WP_512] = "wp512",
+	[HASH_ALGO_TGR_128] = "tgr128",
+	[HASH_ALGO_TGR_160] = "tgr160",
+	[HASH_ALGO_TGR_192] = "tgr192",
+	[HASH_ALGO_SM3_256] = "sm3",
+	[HASH_ALGO_STREEBOG_256] = "streebog256",
+	[HASH_ALGO_STREEBOG_512] = "streebog512",
+	[HASH_ALGO_SHA3_256] = "sha3-256",
+	[HASH_ALGO_SHA3_384] = "sha3-384",
+	[HASH_ALGO_SHA3_512] = "sha3-512",
 	// clang-format on
 };
 
@@ -157,7 +158,7 @@ bool kmod_module_signature_info(const struct kmod_file *file,
 	/* The algo value seems to be hard-coded to PKEY_ALGO_RSA, so we don't bother
 	 * parsing and/or printing it.
 	 */
-	if (modsig.algo >= PKEY_ALGO__LAST || modsig.hash >= PKEY_HASH__LAST ||
+	if (modsig.algo >= PKEY_ALGO__LAST || modsig.hash >= HASH_ALGO__LAST ||
 	    modsig.id_type >= PKEY_ID_TYPE__LAST)
 		return false;
 	sig_len = be32toh(modsig.sig_len);
