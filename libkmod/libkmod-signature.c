@@ -23,19 +23,6 @@ enum pkey_algo {
 	PKEY_ALGO__LAST,
 };
 
-enum pkey_hash_algo {
-	PKEY_HASH_MD4,
-	PKEY_HASH_MD5,
-	PKEY_HASH_SHA1,
-	PKEY_HASH_RIPE_MD_160,
-	PKEY_HASH_SHA256,
-	PKEY_HASH_SHA384,
-	PKEY_HASH_SHA512,
-	PKEY_HASH_SHA224,
-	PKEY_HASH_SM3,
-	PKEY_HASH__LAST,
-};
-
 const char *const pkey_hash_algo[PKEY_HASH__LAST] = {
 	// clang-format off
 	[PKEY_HASH_MD4] = "md4",
@@ -46,7 +33,21 @@ const char *const pkey_hash_algo[PKEY_HASH__LAST] = {
 	[PKEY_HASH_SHA384] = "sha384",
 	[PKEY_HASH_SHA512] = "sha512",
 	[PKEY_HASH_SHA224] = "sha224",
-	[PKEY_HASH_SM3] = "sm3",
+	[PKEY_HASH_RIPE_MD_128] = "rmd128",
+	[PKEY_HASH_RIPE_MD_256] = "rmd256",
+	[PKEY_HASH_RIPE_MD_320] = "rmd320",
+	[PKEY_HASH_WP_256] = "wp256",
+	[PKEY_HASH_WP_384] = "wp384",
+	[PKEY_HASH_WP_512] = "wp512",
+	[PKEY_HASH_TGR_128] = "tgr128",
+	[PKEY_HASH_TGR_160] = "tgr160",
+	[PKEY_HASH_TGR_192] = "tgr192",
+	[PKEY_HASH_SM3_256] = "sm3",
+	[PKEY_HASH_STREEBOG_256] = "streebog256",
+	[PKEY_HASH_STREEBOG_512] = "streebog512",
+	[PKEY_HASH_SHA3_256] = "sha3-256",
+	[PKEY_HASH_SHA3_384] = "sha3-384",
+	[PKEY_HASH_SHA3_512] = "sha3-512",
 	// clang-format on
 };
 

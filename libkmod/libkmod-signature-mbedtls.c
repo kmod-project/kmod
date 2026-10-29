@@ -17,35 +17,6 @@
 
 #include "libkmod-internal-signature.h"
 
-/* XXX: temporary copy from libkmod-signature.c */
-enum pkey_hash_algo {
-	PKEY_HASH_MD4,
-	PKEY_HASH_MD5,
-	PKEY_HASH_SHA1,
-	PKEY_HASH_RIPE_MD_160,
-	PKEY_HASH_SHA256,
-	PKEY_HASH_SHA384,
-	PKEY_HASH_SHA512,
-	PKEY_HASH_SHA224,
-	PKEY_HASH_SM3,
-	PKEY_HASH__LAST,
-};
-
-/* XXX: ditto */
-static const char *const pkey_hash_algo[PKEY_HASH__LAST] = {
-	// clang-format off
-	[PKEY_HASH_MD4] = "md4",
-	[PKEY_HASH_MD5] = "md5",
-	[PKEY_HASH_SHA1] = "sha1",
-	[PKEY_HASH_RIPE_MD_160] = "rmd160",
-	[PKEY_HASH_SHA256] = "sha256",
-	[PKEY_HASH_SHA384] = "sha384",
-	[PKEY_HASH_SHA512] = "sha512",
-	[PKEY_HASH_SHA224] = "sha224",
-	[PKEY_HASH_SM3] = "sm3",
-	// clang-format on
-};
-
 #define DL_SYMBOL_TABLE(M)         \
 	M(mbedtls_pkcs7_init)      \
 	M(mbedtls_pkcs7_parse_der) \
@@ -136,7 +107,6 @@ bool kmod_fill_pkcs7_mbedtls(const char *mem, off_t size, size_t sig_len,
 	total_len += signers->MBEDTLS_PRIVATE(serial).len;
 
 	/* hash_algo */
-	/* XXX: using an incomplete and not-fully correct static table */
 
 	/* sig */
 	total_len += signers->MBEDTLS_PRIVATE(sig).len;
