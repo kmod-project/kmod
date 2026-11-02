@@ -1,0 +1,1 @@
+Fixes: 708624a4ebff ("ELF: initial support for modinfo and strip of modversions and vermagic.")
