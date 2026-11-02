@@ -80,6 +80,7 @@ _testsuite = [
   'test-depmod',
   'test-libkmod',
   'test-libkmod-list',
+  'test-libkmod-signature',
   'test-modinfo',
   'test-modprobe',
   'test-shared',
