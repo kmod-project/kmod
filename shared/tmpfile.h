@@ -13,14 +13,13 @@
 struct tmpfile {
 	char tmpname[PATH_MAX];
 	int dirfd;
-	int fd;
+	FILE *fp;
 };
 
 /*
  * Create a temporary file at the directory of `dirfd`
 */
-_must_check_ _nonnull_(3) FILE *tmpfile_openat(int dirfd, mode_t mode,
-					       struct tmpfile *file);
+_must_check_ _nonnull_(3) int tmpfile_openat(int dirfd, mode_t mode, struct tmpfile *file);
 
 /*
  * Move the temporary file to `targetname`

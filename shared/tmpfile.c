@@ -18,54 +18,64 @@
 #include <shared/tmpfile.h>
 #include <shared/util.h>
 
-FILE *tmpfile_openat(int dirfd, mode_t mode, struct tmpfile *file)
+int tmpfile_openat(int dirfd, mode_t mode, struct tmpfile *file)
 {
 	const char *tmpname_tmpl = "/tmpfileXXXXXX";
 	const char *tmpname;
 	char tmpfile_path[PATH_MAX];
-	int fd, n;
+	int fd, n, ret;
 	FILE *fp;
 
 	n = fd_lookup_path(dirfd, tmpfile_path, sizeof(tmpfile_path));
-	if (n < 0)
+	if (n < 0) {
+		ret = n;
 		goto create_fail;
+	}
 
-	if (n + strlen(tmpname_tmpl) + 1 > sizeof(tmpfile_path))
+	if (n + strlen(tmpname_tmpl) + 1 > sizeof(tmpfile_path)) {
+		ret = ENOMEM;
 		goto create_fail;
+	}
 
 	memcpy(tmpfile_path + n, tmpname_tmpl, strlen(tmpname_tmpl) + 1);
 
 	fd = mkstemp(tmpfile_path);
-	if (fd < 0)
+	if (fd < 0) {
+		ret = -errno;
 		goto create_fail;
+	}
 
-	if (fchmod(fd, mode) < 0)
+	if (fchmod(fd, mode) < 0) {
+		ret = -errno;
 		goto checkout_fail;
+	}
 
 	fp = fdopen(fd, "wb");
-	if (fp == NULL)
+	if (fp == NULL) {
+		ret = -errno;
 		goto checkout_fail;
+	}
 
 	tmpname = basename(tmpfile_path);
 	memcpy(file->tmpname, tmpname, strlen(tmpname) + 1);
 
 	file->dirfd = dirfd;
-	file->fd = fd;
+	file->fp = fp;
 
-	return fp;
+	return 0;
 
 checkout_fail:
 	close(fd);
 	remove(tmpfile_path);
 
 create_fail:
-	return NULL;
+	return ret;
 }
 
 static void tmpfile_cleanup(struct tmpfile *file)
 {
 	file->dirfd = -1;
-	file->fd = -1;
+	file->fp = NULL;
 	memset(file->tmpname, 0, sizeof(file->tmpname));
 }
 
