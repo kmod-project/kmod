@@ -1,0 +1,1 @@
+Fixes: d80b103c63ce ("libkmod/module: add kmod_module_apply_filter method")
