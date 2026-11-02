@@ -1444,12 +1444,9 @@ static int depmod_modules_search(struct depmod *depmod)
 	if (err < 0)
 		return err;
 
-	for (ext = depmod->cfg->externals; ext != NULL; ext = ext->next) {
-		err = depmod_modules_search_path(depmod, ext->path);
-		if (err < 0 && err == -ENOENT)
-			/* ignore external dir absence */
-			continue;
-	}
+	for (ext = depmod->cfg->externals; ext != NULL; ext = ext->next)
+		/* Ignore errors, including directory absence */
+		depmod_modules_search_path(depmod, ext->path);
 
 	return 0;
 }
