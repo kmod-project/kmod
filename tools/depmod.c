@@ -2555,7 +2555,7 @@ static int output_devname(struct depmod *depmod, FILE *out)
 	return 0;
 }
 
-static int depmod_output(struct depmod *depmod, FILE *out)
+static int depmod_output(struct depmod *depmod, bool output_to_stdout)
 {
 	static const struct depfile {
 		const char *name;
@@ -2577,9 +2577,9 @@ static int depmod_output(struct depmod *depmod, FILE *out)
 	const char *dname = depmod->cfg->outdirname;
 	int dfd, err = 0;
 
-	if (out != NULL)
+	if (output_to_stdout) {
 		dfd = -1;
-	else {
+	} else {
 		err = mkdir_p(dname, strlen(dname), 0755);
 		if (err < 0) {
 			CRIT("could not create directory %s: %s\n", dname, strerror(-err));
@@ -2594,11 +2594,13 @@ static int depmod_output(struct depmod *depmod, FILE *out)
 	}
 
 	for (itr = depfiles; itr->name != NULL; itr++) {
-		FILE *fp = out;
+		FILE *fp;
 		struct tmpfile file;
 		int r, ferr;
 
-		if (fp == NULL) {
+		if (output_to_stdout) {
+			fp = stdout;
+		} else {
 			mode_t mode = 0644;
 
 			r = tmpfile_openat(dfd, mode, &file);
@@ -2612,7 +2614,7 @@ static int depmod_output(struct depmod *depmod, FILE *out)
 		}
 
 		r = itr->cb(depmod, fp);
-		if (fp == out)
+		if (output_to_stdout)
 			continue;
 
 		ferr = ferror(fp) | fclose(fp);
@@ -2641,7 +2643,7 @@ static int depmod_output(struct depmod *depmod, FILE *out)
 		}
 	}
 
-	if (dfd >= 0)
+	if (!output_to_stdout)
 		close(dfd);
 
 	return err;
@@ -2884,7 +2886,6 @@ static int is_version_number(const char *version)
 
 static int do_depmod(int argc, char *argv[])
 {
-	FILE *out = NULL;
 	int c, err = 0, all = 0, maybe_all = 0, n_config_paths = 0;
 	_cleanup_free_ char *root_arg = NULL;
 	_cleanup_free_ char *out_root = NULL;
@@ -2898,6 +2899,7 @@ static int do_depmod(int argc, char *argv[])
 	struct kmod_ctx *ctx = NULL;
 	struct cfg cfg;
 	struct depmod depmod;
+	bool output_to_stdout = false;
 
 	memset(&cfg, 0, sizeof(cfg));
 	memset(&depmod, 0, sizeof(depmod));
@@ -2959,7 +2961,7 @@ static int do_depmod(int argc, char *argv[])
 			verbose++;
 			break;
 		case 'n':
-			out = stdout;
+			output_to_stdout = true;
 			break;
 		case 'P':
 			if (strlen(optarg) != 1) {
@@ -3026,7 +3028,7 @@ static int do_depmod(int argc, char *argv[])
 		all = 1;
 
 	if (maybe_all) {
-		if (out == stdout)
+		if (output_to_stdout)
 			goto done;
 		/* ignore up-to-date errors (< 0) */
 		if (depfile_up_to_date(cfg.dirname) == 1)
@@ -3117,7 +3119,7 @@ static int do_depmod(int argc, char *argv[])
 	if (err < 0)
 		goto cmdline_modules_failed;
 
-	err = depmod_output(&depmod, out);
+	err = depmod_output(&depmod, output_to_stdout);
 
 done:
 	depmod_shutdown(&depmod);
