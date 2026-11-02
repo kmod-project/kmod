@@ -136,9 +136,12 @@ depmod -b /tmp/build -m kernel-modules
 *-h*, *--help*
 	Print the help message and exit.
 
-*-n*, *--show*, *--dry-run*
+*-n*, *--dry-run*
 	This sends the resulting *modules.dep* and the various map files to
 	standard output rather than writing them into the module directory.
+
+	For compatibility reasons *--show* is also accepted for this option but
+	will be removed after kmod 36.
 
 *-P*
 	Some architectures prefix symbols with an extraneous character. This
