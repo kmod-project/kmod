@@ -2598,11 +2598,13 @@ static int depmod_output(struct depmod *depmod, FILE *out)
 		if (fp == NULL) {
 			mode_t mode = 0644;
 
-			fp = tmpfile_openat(dfd, mode, &file);
-			if (fp == NULL) {
-				ERR("Could not create temporary file at '%s'\n", dname);
+			r = tmpfile_openat(dfd, mode, &file);
+			if (r < 0) {
+				ERR("Could not create temporary file at '%s': %s\n",
+				    dname, strerror(-r));
 				continue;
 			}
+			fp = file.fp;
 		}
 
 		r = itr->cb(depmod, fp);
