@@ -52,6 +52,10 @@ a range of trailers.
 
 ### Signed-off-by
 
+Contributing to the project requires all commits to be signed off, by the
+individual submitting the patches. Where possible, try to use your real name and
+ensure it is correctly set in git-config.
+
 By using a `Signed-off-by:` trailer the author agrees that they comply with the
 Developer Certificate of Origin v1.1, as seen below:
 
