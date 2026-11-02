@@ -1,0 +1,1 @@
+Fixes: 1684e4402c1c ("kmod_config: parse kernel command line for options and blacklist")
