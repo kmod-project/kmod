@@ -2603,9 +2603,10 @@ static int depmod_output(struct depmod *depmod, FILE *out)
 
 			r = tmpfile_openat(dfd, mode, &file);
 			if (r < 0) {
+				err = r;
 				ERR("Could not create temporary file at '%s': %s\n",
 				    dname, strerror(-r));
-				continue;
+				break;
 			}
 			fp = file.fp;
 		}
