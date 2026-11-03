@@ -52,12 +52,13 @@ static int dlopen_crypto(void)
 #if !DLSYM_LOCALLY_ENABLED
 	return 0;
 #else
+#define LIBCRYPTO_SONAME "libcrypto.so." STRINGIFY(OPENSSL_VERSION_MAJOR)
 	static void *dl;
 
 	ELF_NOTE_DLOPEN("openssl", "Support for reading module signatures",
-			ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED, "libcrypto.so.3");
+			ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED, LIBCRYPTO_SONAME);
 
-	return dlsym_many(&dl, "libcrypto.so.3", DL_SYMBOL_TABLE(DLSYM_ARG) NULL);
+	return dlsym_many(&dl, LIBCRYPTO_SONAME, DL_SYMBOL_TABLE(DLSYM_ARG) NULL);
 #endif
 }
 
