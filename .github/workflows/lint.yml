@@ -1,0 +1,77 @@
+
+# SPDX-License-Identifier: LGPL-2.1-or-later
+
+name: Lint checks
+
+on:
+  push:
+    branches: [master, ci-test]
+  pull_request:
+    branches: [master]
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-26.04
+
+    steps:
+      - name: Checkout
+        id: checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Codespell
+        id: codespell
+        continue-on-error: true
+        uses: codespell-project/actions-codespell@8f01853be192eb0f849a5c7d721450e7a467c579 # v2.2
+        with:
+          ignore_words_file: .codespellignore
+
+      - name: ShellCheck
+        id: shellcheck
+        continue-on-error: true
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y shellcheck
+          shellcheck --version
+          shellcheck \
+            .github/functions.sh \
+            .github/actions/setup-os/*.sh \
+            scripts/*.sh \
+            shell-completion/bash/*
+
+      - name: Fetch PR base
+        id: fetch-base
+        if: github.event_name == 'pull_request'
+        continue-on-error: true
+        run: git fetch --depth=1 origin ${{ github.event.pull_request.base.sha }}
+
+      - name: Clang-format
+        id: clang-format
+        if: github.event_name == 'pull_request' && steps.fetch-base.outcome == 'success'
+        continue-on-error: true
+        uses: yshui/git-clang-format-lint@0758f498e508097267c3f4d0827b2fefeb25cc9d # v1.18
+        with:
+          base: ${{ github.event.pull_request.base.sha }}
+
+      - name: Check lint results
+        if: ${{ !cancelled() && steps.checkout.outcome == 'success' }}
+        run: |
+          failed=0
+
+          for result in \
+            "${{ steps.codespell.outcome }}" \
+            "${{ steps.shellcheck.outcome }}" \
+            "${{ steps.fetch-base.outcome }}" \
+            "${{ steps.clang-format.outcome }}"
+          do
+            if [ "$result" = "failure" ]; then
+              failed=1
+            fi
+          done
+
+          if [ "$failed" -ne 0 ]; then
+            echo "::error::One or more lint checks failed"
+            exit 1
+          fi
