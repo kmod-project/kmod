@@ -36,7 +36,6 @@ jobs:
             modules_makeflags: '-j1'
           - container: 'archlinux:multilib-devel'
           - container: 'debian:trixie-slim'
-            meson_setup: '-Dzstd=disabled -Dxz=disabled -Dzlib=disabled'
           - container: 'debian:unstable'
           - container: 'fedora:latest'
             only_bits: '64'
@@ -45,12 +44,6 @@ jobs:
           - container: 'ubuntu:26.04'
 
           # Special configurations
-
-          # Variants with different compression options
-          - container: 'fedora:latest'
-            meson_setup: '-Dxz=disabled -Ddlopen=all'
-            only_bits: '64'
-            custom: 'no-xz-dlopen-all'
 
           # Variant with lld as linker
           - container: 'archlinux:multilib-devel'
