@@ -64,9 +64,9 @@ static int dlopen_crypto(void)
 static const char *x509_name_to_str(X509_NAME *name)
 {
 	int i;
-	X509_NAME_ENTRY *e;
-	ASN1_STRING *d;
-	ASN1_OBJECT *o;
+	const X509_NAME_ENTRY *e;
+	const ASN1_STRING *d;
+	const ASN1_OBJECT *o;
 	int nid = -1;
 	const char *str;
 
