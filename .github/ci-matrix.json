@@ -42,10 +42,7 @@
     "base": "debian:trixie-slim",
     "tag": "debian-trixie-slim",
     "build-variants": [
-      {
-        "meson_setup": "-Dzstd=disabled -Dxz=disabled -Dzlib=disabled -Dmbedtls=disabled",
-        "only_compiler": "gcc"
-      }
+      {}
     ]
   },
   {
@@ -61,11 +58,6 @@
     "build-variants": [
       {
         "only_bits": "64"
-      },
-      {
-        "meson_setup": "-Dxz=disabled -Ddlopen=all",
-        "only_bits": "64",
-        "custom": "no-xz-dlopen-all"
       }
     ]
   },
