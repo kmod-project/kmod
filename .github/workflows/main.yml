@@ -10,8 +10,14 @@ on:
     branches: [master, ci-test]
   pull_request:
     branches: [master]
-  schedule:
-    - cron: "30 2 * * 0"
+  workflow_call:
+    inputs:
+      image_repo:
+        description: 'Container image repository to use instead of the default'
+        type: string
+      image_suffix:
+        description: 'Suffix appended to the image tag, e.g. to test new images'
+        type: string
 
 permissions:
   contents: read
@@ -30,76 +36,67 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - container: 'alpine:latest'
+          - os: 'alpine-latest'
             meson_setup: '-Db_sanitize=none'
             only_bits: '64'
             modules_makeflags: '-j1'
-          - container: 'archlinux:multilib-devel'
-          - container: 'debian:bookworm-slim'
+          - os: 'archlinux-multilib-devel'
+          - os: 'debian-bookworm-slim'
             meson_setup: '-Dzstd=disabled -Dxz=disabled -Dzlib=disabled -Dmbedtls=disabled'
             only_compiler: 'gcc'
-          - container: 'debian:unstable'
-          - container: 'fedora:latest'
+          - os: 'debian-unstable'
+          - os: 'fedora-latest'
             only_bits: '64'
-          - container: 'ubuntu:22.04'
+          - os: 'ubuntu-22.04'
             meson_setup: '-Dmbedtls=disabled'
-          - container: 'ubuntu:24.04'
+          - os: 'ubuntu-24.04'
             meson_setup: '-Dmbedtls=disabled'
-          - container: 'ubuntu:26.04'
+          - os: 'ubuntu-26.04'
 
           # Special configurations
 
           # Variants with different compression options
-          - container: 'fedora:latest'
+          - os: 'fedora-latest'
             meson_setup: '-Dxz=disabled -Ddlopen=all'
             only_bits: '64'
             custom: 'no-xz-dlopen-all'
-          - container: 'ubuntu:22.04'
+          - os: 'ubuntu-22.04'
             meson_setup: '-Ddlopen=zstd,zlib -Dmbedtls=disabled'
             only_bits: '64'
             custom: 'dlopen-zstd-zlib'
 
           # Variant with lld as linker
-          - container: 'archlinux:multilib-devel'
+          - os: 'archlinux-multilib-devel'
             only_bits: '64'
             only_compiler: 'clang'
             custom: 'ldd-as-linker'
             linker: 'lld'
 
           # Variants with moduledir
-          - container: 'archlinux:multilib-devel'
+          - os: 'archlinux-multilib-devel'
             meson_setup: '-Dmoduledir=/usr/lib/modules'
             only_bits: '64'
             only_compiler: 'gcc'
             custom: 'usr-moduledir'
-          - container: 'archlinux:multilib-devel'
+          - os: 'archlinux-multilib-devel'
             meson_setup: '-Dmoduledir=/kernel-modules'
             only_bits: '64'
             only_compiler: 'gcc'
             custom: 'custom-moduledir'
 
     container:
-      image: ${{ matrix.container }}
+      image: ${{ inputs.image_repo || 'ghcr.io/kmod-project/kmod-ci' }}:${{ matrix.os }}${{ inputs.image_suffix }}
 
     steps:
-      - name: Sparse checkout the local actions
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          sparse-checkout: .github
-          path: local-actions
-
-      - name: Setup OS
-        uses: ./local-actions/.github/actions/setup-os
-
-      - name: Cleanup local actions
-        run: |
-          rm -rf local-actions
-          # The sparse checkout with REST API creates the current dir with the wrong
-          # user. Tell git to just ignore.
-          git config --global --add safe.directory '*'
-
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 2
+
+      - name: Setup OS if changed
+        uses: ./.github/actions/setup-os
+        with:
+          only-if-changed: true
 
       - name: configure checks
         run: |

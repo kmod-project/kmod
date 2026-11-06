@@ -1,8 +1,10 @@
 # SPDX-FileCopyrightText: 2026 Lucas De Marchi <demarchi@kernel.org>
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
-# Build the CI container images, one per supported OS, and rollout them so they
-# can be used by the PR/push runs.
+# Build the CI container images, one per supported OS, test them with the
+# normal CI workflows and, if everything passes, rollout them so they are used
+# by the PR/push runs. A failure here means the OS update caused a regression:
+# the images used by PRs remain the last known good ones.
 
 name: Build CI images
 
@@ -90,8 +92,34 @@ jobs:
       - name: Push
         run: docker push "$IMAGE"
 
-  rollout:
+  test-main:
     needs: [prep, build]
+    uses: ./.github/workflows/main.yml
+    with:
+      image_repo: ${{ needs.prep.outputs.repo }}
+      image_suffix: -${{ needs.prep.outputs.stamp }}
+
+  test-coverage:
+    needs: [prep, build]
+    uses: ./.github/workflows/coverage.yml
+    secrets: inherit
+    with:
+      image_repo: ${{ needs.prep.outputs.repo }}
+      image_suffix: -${{ needs.prep.outputs.stamp }}
+
+  test-codeql:
+    needs: [prep, build]
+    uses: ./.github/workflows/codeql.yml
+    permissions:
+      contents: read
+      actions: read
+      security-events: write
+    with:
+      image_repo: ${{ needs.prep.outputs.repo }}
+      image_suffix: -${{ needs.prep.outputs.stamp }}
+
+  rollout:
+    needs: [prep, test-main, test-coverage, test-codeql]
     if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-26.04
     permissions:

@@ -10,8 +10,14 @@ on:
     branches: [master, ci-test]
   pull_request:
     branches: [master]
-  schedule:
-    - cron: "30 2 * * 0"
+  workflow_call:
+    inputs:
+      image_repo:
+        description: 'Container image repository to use instead of the default'
+        type: string
+      image_suffix:
+        description: 'Suffix appended to the image tag, e.g. to test new images'
+        type: string
 
 permissions:
   contents: read
@@ -28,18 +34,22 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - container: 'ubuntu:26.04'
+          - os: 'ubuntu-26.04'
             meson_setup: '-D b_sanitize=none -D b_coverage=true -Dmbedtls=disabled'
 
     container:
-      image: ${{ matrix.container }}
+      image: ${{ inputs.image_repo || 'ghcr.io/kmod-project/kmod-ci' }}:${{ matrix.os }}${{ inputs.image_suffix }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 2
 
-      - name: Setup OS
+      - name: Setup OS if changed
         uses: ./.github/actions/setup-os
+        with:
+          only-if-changed: true
 
       - name: Build
         run: |

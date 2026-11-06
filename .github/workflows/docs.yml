@@ -29,7 +29,7 @@ jobs:
   docs:
     runs-on: ubuntu-26.04
     container:
-      image: 'ubuntu:26.04'
+      image: 'ghcr.io/kmod-project/kmod-ci:ubuntu-26.04'
     defaults:
       run:
         shell: bash
@@ -43,23 +43,6 @@ jobs:
             echo "::error::Invalid tag format ${INPUT_TAG}"
             exit 1
           fi
-
-      - name: Ref for setup
-        id: ref_for_setup
-        run: |
-          if [[ "${GITHUB_REF}" == refs/heads/ci-test-docs ]]; then
-            echo ref="ci-test-docs" >> $GITHUB_OUTPUT
-          else
-            echo ref="master" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Checkout for setup-os
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          ref: ${{ steps.ref_for_setup.outputs.ref }}
-
-      - name: Setup OS
-        uses: ./.github/actions/setup-os
 
       - name: Checkout target ref for workflow_dispatch
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
