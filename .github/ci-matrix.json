@@ -1,6 +1,7 @@
 [
   {
     "base": "alpine:latest",
+    "tag": "alpine-latest",
     "build-variants": [
       {
         "meson_setup": "-Db_sanitize=none",
@@ -11,6 +12,7 @@
   },
   {
     "base": "archlinux:multilib-devel",
+    "tag": "archlinux-multilib-devel",
     "build-variants": [
       {},
       {
@@ -35,6 +37,7 @@
   },
   {
     "base": "debian:bookworm-slim",
+    "tag": "debian-bookworm-slim",
     "build-variants": [
       {
         "meson_setup": "-Dzstd=disabled -Dxz=disabled -Dzlib=disabled -Dmbedtls=disabled",
@@ -44,12 +47,14 @@
   },
   {
     "base": "debian:unstable",
+    "tag": "debian-unstable",
     "build-variants": [
       {}
     ]
   },
   {
     "base": "fedora:latest",
+    "tag": "fedora-latest",
     "build-variants": [
       {
         "only_bits": "64"
@@ -63,6 +68,7 @@
   },
   {
     "base": "ubuntu:22.04",
+    "tag": "ubuntu-22.04",
     "build-variants": [
       {
         "meson_setup": "-Dmbedtls=disabled"
@@ -76,6 +82,7 @@
   },
   {
     "base": "ubuntu:24.04",
+    "tag": "ubuntu-24.04",
     "build-variants": [
       {
         "meson_setup": "-Dmbedtls=disabled"
@@ -84,6 +91,7 @@
   },
   {
     "base": "ubuntu:26.04",
+    "tag": "ubuntu-26.04",
     "build-variants": [
       {}
     ]

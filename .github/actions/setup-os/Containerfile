@@ -1,0 +1,11 @@
+# SPDX-FileCopyrightText: 2026 Lucas De Marchi <demarchi@kernel.org>
+# SPDX-License-Identifier: LGPL-2.1-or-later
+#
+# Prebuilt CI image: the base distro image plus everything installed by the
+# setup-<distro>.sh scripts. Built and published by .github/workflows/ci-images.yml.
+
+ARG BASE
+FROM ${BASE}
+
+COPY setup-*.sh /tmp/setup-os/
+RUN . /etc/os-release && /tmp/setup-os/setup-${ID}.sh && rm -rf /tmp/setup-os
