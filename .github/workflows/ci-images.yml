@@ -1,0 +1,109 @@
+# SPDX-FileCopyrightText: 2026 Lucas De Marchi <demarchi@kernel.org>
+# SPDX-License-Identifier: LGPL-2.1-or-later
+
+# Build the CI container images, one per supported OS, and rollout them so they
+# can be used by the PR/push runs.
+
+name: Build CI images
+
+on:
+  push:
+    branches: [master, ci-test]
+    paths:
+      - '.github/actions/setup-os/**'
+      - '.github/ci-matrix.json'
+      - '.github/workflows/ci-images.yml'
+  schedule:
+    - cron: "0 2 * * 0"
+  workflow_dispatch:
+
+concurrency:
+  group: ci-images-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  prep:
+    runs-on: ubuntu-26.04
+    permissions:
+      contents: read
+    outputs:
+      repo: ${{ steps.vars.outputs.repo }}
+      stamp: ${{ steps.vars.outputs.stamp }}
+      images: ${{ steps.vars.outputs.images }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          sparse-checkout: .github/ci-matrix.json
+          sparse-checkout-cone-mode: false
+
+      - name: Set variables
+        id: vars
+        env:
+          OWNER: ${{ github.repository_owner }}
+        run: |
+          {
+          echo "repo=ghcr.io/${OWNER,,}/kmod-ci"
+          echo "stamp=$(date -u +%Y%m%d)-${GITHUB_RUN_ID}"
+          # base: upstream image; tag: tag in our repo, used by the workflows
+          echo "images=$(jq -c 'map({base, tag})' .github/ci-matrix.json)"
+          } >> "$GITHUB_OUTPUT"
+
+  build:
+    needs: prep
+    runs-on: ubuntu-26.04
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.prep.outputs.images) }}
+    env:
+      IMAGE: ${{ needs.prep.outputs.repo }}:${{ matrix.tag }}-${{ needs.prep.outputs.stamp }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Login to registry
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ACTOR: ${{ github.actor }}
+        run: echo "$TOKEN" | docker login ghcr.io -u "$ACTOR" --password-stdin
+
+      - name: Build
+        env:
+          BASE: ${{ matrix.base }}
+        run: |
+          docker build --pull \
+            --build-arg BASE="$BASE" \
+            --label org.opencontainers.image.source="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}" \
+            --label org.opencontainers.image.revision="${GITHUB_SHA}" \
+            -t "$IMAGE" \
+            .github/actions/setup-os
+
+      - name: Push
+        run: docker push "$IMAGE"
+
+  rollout:
+    needs: [prep, build]
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-26.04
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      matrix:
+        include: ${{ fromJSON(needs.prep.outputs.images) }}
+    env:
+      SRC: ${{ needs.prep.outputs.repo }}:${{ matrix.tag }}-${{ needs.prep.outputs.stamp }}
+      DST: ${{ needs.prep.outputs.repo }}:${{ matrix.tag }}
+    steps:
+      - name: Login to registry
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ACTOR: ${{ github.actor }}
+        run: echo "$TOKEN" | docker login ghcr.io -u "$ACTOR" --password-stdin
+
+      - name: Rollout
+        run: docker buildx imagetools create -t "$DST" "$SRC"

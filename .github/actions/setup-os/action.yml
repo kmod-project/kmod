@@ -3,10 +3,35 @@
 
 name: 'Setup OS'
 description: 'Setup an OS container for running CI'
+inputs:
+  only-if-changed:
+    description: >
+      If trigger originated from a PR, check for relevant code changes
+      and skip setup if nothing changed. Base for PR is assumed to be
+      at HEAD^1.
+    default: 'false'
 runs:
   using: 'composite'
   steps:
+    - name: Check if setup is needed
+      id: check
+      shell: sh
+      env:
+        ONLY_IF_CHANGED: ${{ inputs.only-if-changed }}
+        EVENT_NAME: ${{ github.event_name }}
+      run: |
+        if [ "$ONLY_IF_CHANGED" != "true" ]; then
+          echo run=true >> "$GITHUB_OUTPUT"
+        elif [ "$EVENT_NAME" = "pull_request" ] && \
+             ! git diff --quiet HEAD^1 HEAD -- "${GITHUB_ACTION_PATH}"; then
+          echo "::notice::setup-os changed in this PR, re-running it on top of the prebuilt image"
+          echo run=true >> "$GITHUB_OUTPUT"
+        else
+          echo run=false >> "$GITHUB_OUTPUT"
+        fi
+
     - name: Detect distro
+      if: steps.check.outputs.run == 'true'
       shell: sh
       run: |
         . /etc/os-release
@@ -15,5 +40,6 @@ runs:
         echo DISTRO="$DISTRO" >> $GITHUB_ENV
 
     - name: Setup distro
+      if: steps.check.outputs.run == 'true'
       shell: sh
       run: ${GITHUB_ACTION_PATH}/setup-${DISTRO}.sh
