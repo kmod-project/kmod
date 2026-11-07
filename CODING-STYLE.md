@@ -17,8 +17,8 @@ ASAP.
 
 # Inspiration
 
-The kmod coding style is heavily based on the [Linux kernel]'s, oFono's and
-BlueZ's. Below are some basic rules:
+The kmod coding style is heavily based on the [Linux kernel]'s.
+Below are some basic rules:
 
 ## Line wrap
 
