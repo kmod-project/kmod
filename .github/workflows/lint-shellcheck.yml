@@ -1,21 +1,12 @@
 # SPDX-License-Identifier: LGPL-2.1-or-later
+#
 # SPDX-FileCopyrightText: 2026 Kron Kastrati <kronkastrati900@gmail.com>
+# SPDX-FileCopyrightText: 2026 suzush <suzush392@gmail.com>
 
-name: Check shell scripts with shellcheck
+name: ShellCheck
 
 on:
-  push:
-    branches: [master, ci-test]
-    paths:
-      - '.github/**'
-      - 'scripts/*.sh'
-      - 'shell-completion/bash/*'
-  pull_request:
-    branches: [master]
-    paths:
-      - '.github/**'
-      - 'scripts/*.sh'
-      - 'shell-completion/bash/*'
+  workflow_call:
 
 permissions:
   contents: read
@@ -27,12 +18,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - name: Install shellcheck
+      - name: Setup shellCheck
         run: |
           sudo apt-get update
           sudo apt-get install -y shellcheck
 
-      - name: Run shellcheck
+      - name: Shellcheck
         run: |
           shellcheck --version
           shellcheck \

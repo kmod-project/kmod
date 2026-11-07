@@ -1,0 +1,27 @@
+# SPDX-License-Identifier: LGPL-2.1-or-later
+#
+# SPDX-FileCopyrightText: 2026 suzush <suzush392@gmail.com>
+
+name: Lint checks
+
+on:
+  push:
+    branches: [master, ci-test]
+  pull_request:
+    branches: [master]
+
+permissions:
+  contents: read
+
+jobs:
+  lint-codespell:
+    uses: ./.github/workflows/lint-codespell.yml
+
+  lint-shellcheck:
+    uses: ./.github/workflows/lint-shellcheck.yml
+
+  lint-clang-format:
+    if: github.event_name == 'pull_request'
+    uses: ./.github/workflows/lint-clang-format.yml
+    with:
+      base: ${{ github.event.pull_request.base.sha }}
