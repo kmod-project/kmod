@@ -62,6 +62,18 @@
 #define _nonnull_(...) __attribute__((nonnull(__VA_ARGS__)))
 #define _nonnull_all_ __attribute__((nonnull))
 
+/* malloc(deallocator, ptr-index), GCC 11+.
+ * The deallocator must be declared first. ptr-index is 1-based.
+ * Empty on GCC older than 11 and on Clang, which does not implement this form.
+ * This is not the bare malloc attribute: that one claims the returned storage
+ * holds no pointers and is usually non-NULL.
+ */
+#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ >= 11
+#define _malloc_(deallocator, idx) __attribute__((malloc(deallocator, idx)))
+#else
+#define _malloc_(deallocator, idx)
+#endif
+
 #define _cleanup_(x) _clang_suppress_alloc_ __attribute__((cleanup(x)))
 
 static inline void freep(void *p)
