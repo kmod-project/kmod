@@ -1,0 +1,29 @@
+# SPDX-FileCopyrightText: 2026 suzush <suzush392@gmail.com>
+# SPDX-License-Identifier: LGPL-2.1-or-later
+
+name: ShellCheck
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  shellcheck:
+    runs-on: ubuntu-26.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: ShellCheck
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y shellcheck
+          shellcheck --version
+          shellcheck \
+            .github/functions.sh \
+            .github/actions/setup-os/*.sh \
+            scripts/*.sh \
+            shell-completion/bash/*

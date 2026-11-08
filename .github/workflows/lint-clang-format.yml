@@ -1,0 +1,31 @@
+# SPDX-FileCopyrightText: 2026 suzush <suzush392@gmail.com>
+# SPDX-License-Identifier: LGPL-2.1-or-later
+
+name: Clang-format
+
+on:
+  workflow_call:
+    inputs:
+      base:
+        description: Base commit SHA
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  clang-format:
+    runs-on: ubuntu-26.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Fetch PR base
+        run: git fetch --depth=1 origin "${{ inputs.base }}"
+
+      - name: Clang-format
+        uses: yshui/git-clang-format-lint@0758f498e508097267c3f4d0827b2fefeb25cc9d # v1.18
+        with:
+          base: ${{ inputs.base }}
