@@ -144,6 +144,11 @@ if get_option('b_sanitize') != 'none' and cc.get_id() == 'clang'
   add_project_arguments('-shared-libasan', language : 'c')
   add_project_link_arguments('-shared-libasan', language : 'c')
 endif
+
+if get_option('buildtype').startswith('debug')
+  add_project_arguments('-fno-omit-frame-pointer', '-mno-omit-leaf-frame-pointer', language: 'c')
+endif
+
 ################################################################################
 # Options
 ################################################################################
