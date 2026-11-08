@@ -19,6 +19,7 @@ In this file you can find:
     + [Bugfixes, regressions](#bugfixes-regressions)
   * [Coding style](#coding-style)
   * [API documentation](#api-documentation)
+  * [Testing](#testing)
   * [Tools manual pages](#tools-manual-pages)
   * [Tools shell completion](#tools-shell-completion)
 
@@ -144,6 +145,17 @@ Here is a [quick primer] to get up-to speed with `gtk-doc`.
 When adding new API, make sure to include the `Since:` token and add a new
 api-index section in `libkmod/docs/libkmod-docs.xml`.
 
+## Testing
+
+When working on a piece of the code base, consider adding test coverage to
+ensure your work stays up-to date and does not regress in the future.
+
+We have a fairly extensive testsuite with a designated [README], although more
+tests are always welcome.
+
+Said tests can be executed locally via `meson test` and via CI by pushing to a
+special branch `ci-test` in your GitHub fork.
+
 ## Tools manual pages
 
 Our manual pages are written in [scdoc] a simple [markdown-like syntax]. Please
@@ -161,5 +173,6 @@ patches improving on those are greatly appreciated.
 [linear, "recipe" style]: https://www.bitsnbites.eu/git-history-work-log-vs-recipe/
 [gtk-doc]: https://gitlab.gnome.org/GNOME/gtk-doc
 [quick primer]: https://gi.readthedocs.io/en/latest/annotations/gtkdoc.html
+[README]: testsuite/README.md
 [scdoc]: https://sr.ht/~sircmpwn/scdoc/
 [markdown-like syntax]: https://man.archlinux.org/man/scdoc.5.en
