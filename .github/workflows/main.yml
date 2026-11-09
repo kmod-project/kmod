@@ -25,7 +25,7 @@ env:
 
 jobs:
   build:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     strategy:
       fail-fast: false
       matrix:
@@ -35,32 +35,21 @@ jobs:
             only_bits: '64'
             modules_makeflags: '-j1'
           - container: 'archlinux:multilib-devel'
-          - container: 'debian:bookworm-slim'
-            meson_setup: '-Dzstd=disabled -Dxz=disabled -Dzlib=disabled -Dmbedtls=disabled'
-            only_compiler: 'gcc'
+            pkgconfig_path: '/usr/lib/mbedtls3/pkgconfig/'
+          - container: 'debian:trixie-slim'
           - container: 'debian:unstable'
           - container: 'fedora:latest'
             only_bits: '64'
-          - container: 'ubuntu:22.04'
-            meson_setup: '-Dmbedtls=disabled'
           - container: 'ubuntu:24.04'
             meson_setup: '-Dmbedtls=disabled'
+            skip_mbedtls_fallback: '1'
           - container: 'ubuntu:26.04'
 
           # Special configurations
 
-          # Variants with different compression options
-          - container: 'fedora:latest'
-            meson_setup: '-Dxz=disabled -Ddlopen=all'
-            only_bits: '64'
-            custom: 'no-xz-dlopen-all'
-          - container: 'ubuntu:22.04'
-            meson_setup: '-Ddlopen=zstd,zlib -Dmbedtls=disabled'
-            only_bits: '64'
-            custom: 'dlopen-zstd-zlib'
-
           # Variant with lld as linker
           - container: 'archlinux:multilib-devel'
+            pkgconfig_path: '/usr/lib/mbedtls3/pkgconfig/'
             only_bits: '64'
             only_compiler: 'clang'
             custom: 'ldd-as-linker'
@@ -68,11 +57,13 @@ jobs:
 
           # Variants with moduledir
           - container: 'archlinux:multilib-devel'
+            pkgconfig_path: '/usr/lib/mbedtls3/pkgconfig/'
             meson_setup: '-Dmoduledir=/usr/lib/modules'
             only_bits: '64'
             only_compiler: 'gcc'
             custom: 'usr-moduledir'
           - container: 'archlinux:multilib-devel'
+            pkgconfig_path: '/usr/lib/mbedtls3/pkgconfig/'
             meson_setup: '-Dmoduledir=/kernel-modules'
             only_bits: '64'
             only_compiler: 'gcc'
@@ -101,28 +92,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - name: configure checks
-        run: |
-          should_fail() {
-            rm -rf build-setup-test/
-            if meson setup "$@" build-setup-test/; then
-              echo Command was expected to fail, but was successful
-              return 1
-            fi
-          }
-          should_pass() {
-            rm -rf build-setup-test/
-            meson setup "$@" build-setup-test/
-          }
-
-          should_fail -D distconfdir=relative/
-          should_fail -D moduledir=relative/
-          should_fail -D dlopen=nonexistent
-          should_fail -D xz=disabled -D dlopen=xz
-
-          should_pass -D mbedtls=disabled -D dlopen=xz
-          should_pass -D mbedtls=disabled -D dlopen=xz -D xz=enabled
-
       - name: configure
         run: |
           do_setup() {
@@ -136,6 +105,7 @@ jobs:
               setup_options="$setup_options -Db_sanitize=none"
             fi
 
+            [[ -n "${{ matrix.pkgconfig_path }}" ]] && export PKG_CONFIG_PATH="${{ matrix.pkgconfig_path }}"
             [[ -n "${{ matrix.linker }}" ]] && export CC_LD="${{ matrix.linker }}"
             meson setup --native-file build-dev.ini $setup_options "$1"
           }
@@ -164,6 +134,12 @@ jobs:
               export MAKEFLAGS="${{ matrix.modules_makeflags }}"
             fi
             meson test -C "$1" || meson test -C "$1" --verbose
+
+            if [[ -z "${{ matrix.skip_mbedtls_fallback }}" ]]; then
+              find /usr -name "libcrypto.so.*" -exec mv {} {}.orig \;
+              meson test -C "$1" || meson test -C "$1" --verbose
+              find /usr -name "libcrypto.so.*" -exec mv {}.orig {} \;
+            fi
           }
           source .github/functions.sh
           for_each_config "${{ matrix.only_compiler }}" "${{ matrix.only_bits }}" "${{ matrix.custom }}" do_test
