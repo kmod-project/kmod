@@ -14,21 +14,24 @@
     "base": "archlinux:multilib-devel",
     "tag": "archlinux-multilib-devel",
     "build-variants": [
-      {},
       {
+        "meson_setup": "-Dc_args='-Wno-error=deprecated-declarations'"
+      },
+      {
+        "meson_setup": "-Dc_args='-Wno-error=deprecated-declarations'",
         "only_bits": "64",
         "only_compiler": "clang",
         "custom": "ldd-as-linker",
         "linker": "lld"
       },
       {
-        "meson_setup": "-Dmoduledir=/usr/lib/modules",
+        "meson_setup": "-Dmoduledir=/usr/lib/modules -Dc_args='-Wno-error=deprecated-declarations'",
         "only_bits": "64",
         "only_compiler": "gcc",
         "custom": "usr-moduledir"
       },
       {
-        "meson_setup": "-Dmoduledir=/kernel-modules",
+        "meson_setup": "-Dmoduledir=/kernel-modules -Dc_args='-Wno-error=deprecated-declarations'",
         "only_bits": "64",
         "only_compiler": "gcc",
         "custom": "custom-moduledir"
