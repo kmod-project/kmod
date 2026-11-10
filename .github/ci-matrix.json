@@ -1,0 +1,91 @@
+[
+  {
+    "base": "alpine:latest",
+    "build-variants": [
+      {
+        "meson_setup": "-Db_sanitize=none",
+        "only_bits": "64",
+        "modules_makeflags": "-j1"
+      }
+    ]
+  },
+  {
+    "base": "archlinux:multilib-devel",
+    "build-variants": [
+      {},
+      {
+        "only_bits": "64",
+        "only_compiler": "clang",
+        "custom": "ldd-as-linker",
+        "linker": "lld"
+      },
+      {
+        "meson_setup": "-Dmoduledir=/usr/lib/modules",
+        "only_bits": "64",
+        "only_compiler": "gcc",
+        "custom": "usr-moduledir"
+      },
+      {
+        "meson_setup": "-Dmoduledir=/kernel-modules",
+        "only_bits": "64",
+        "only_compiler": "gcc",
+        "custom": "custom-moduledir"
+      }
+    ]
+  },
+  {
+    "base": "debian:bookworm-slim",
+    "build-variants": [
+      {
+        "meson_setup": "-Dzstd=disabled -Dxz=disabled -Dzlib=disabled -Dmbedtls=disabled",
+        "only_compiler": "gcc"
+      }
+    ]
+  },
+  {
+    "base": "debian:unstable",
+    "build-variants": [
+      {}
+    ]
+  },
+  {
+    "base": "fedora:latest",
+    "build-variants": [
+      {
+        "only_bits": "64"
+      },
+      {
+        "meson_setup": "-Dxz=disabled -Ddlopen=all",
+        "only_bits": "64",
+        "custom": "no-xz-dlopen-all"
+      }
+    ]
+  },
+  {
+    "base": "ubuntu:22.04",
+    "build-variants": [
+      {
+        "meson_setup": "-Dmbedtls=disabled"
+      },
+      {
+        "meson_setup": "-Ddlopen=zstd,zlib -Dmbedtls=disabled",
+        "only_bits": "64",
+        "custom": "dlopen-zstd-zlib"
+      }
+    ]
+  },
+  {
+    "base": "ubuntu:24.04",
+    "build-variants": [
+      {
+        "meson_setup": "-Dmbedtls=disabled"
+      }
+    ]
+  },
+  {
+    "base": "ubuntu:26.04",
+    "build-variants": [
+      {}
+    ]
+  }
+]

@@ -24,59 +24,30 @@ env:
   KDIR: 'any'
 
 jobs:
+  prep:
+    runs-on: ubuntu-24.04
+    outputs:
+      matrix: ${{ steps.vars.outputs.matrix }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          sparse-checkout: .github/ci-matrix.json
+          sparse-checkout-cone-mode: false
+
+      - name: Set variables
+        id: vars
+        run: |
+          # One job per build variant, with the image as container
+          echo "matrix=$(jq -c '[.[] as $img | $img["build-variants"][] | {container: $img.base} + .]' .github/ci-matrix.json)" >> "$GITHUB_OUTPUT"
+
   build:
+    needs: prep
     runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - container: 'alpine:latest'
-            meson_setup: '-Db_sanitize=none'
-            only_bits: '64'
-            modules_makeflags: '-j1'
-          - container: 'archlinux:multilib-devel'
-          - container: 'debian:bookworm-slim'
-            meson_setup: '-Dzstd=disabled -Dxz=disabled -Dzlib=disabled -Dmbedtls=disabled'
-            only_compiler: 'gcc'
-          - container: 'debian:unstable'
-          - container: 'fedora:latest'
-            only_bits: '64'
-          - container: 'ubuntu:22.04'
-            meson_setup: '-Dmbedtls=disabled'
-          - container: 'ubuntu:24.04'
-            meson_setup: '-Dmbedtls=disabled'
-          - container: 'ubuntu:26.04'
-
-          # Special configurations
-
-          # Variants with different compression options
-          - container: 'fedora:latest'
-            meson_setup: '-Dxz=disabled -Ddlopen=all'
-            only_bits: '64'
-            custom: 'no-xz-dlopen-all'
-          - container: 'ubuntu:22.04'
-            meson_setup: '-Ddlopen=zstd,zlib -Dmbedtls=disabled'
-            only_bits: '64'
-            custom: 'dlopen-zstd-zlib'
-
-          # Variant with lld as linker
-          - container: 'archlinux:multilib-devel'
-            only_bits: '64'
-            only_compiler: 'clang'
-            custom: 'ldd-as-linker'
-            linker: 'lld'
-
-          # Variants with moduledir
-          - container: 'archlinux:multilib-devel'
-            meson_setup: '-Dmoduledir=/usr/lib/modules'
-            only_bits: '64'
-            only_compiler: 'gcc'
-            custom: 'usr-moduledir'
-          - container: 'archlinux:multilib-devel'
-            meson_setup: '-Dmoduledir=/kernel-modules'
-            only_bits: '64'
-            only_compiler: 'gcc'
-            custom: 'custom-moduledir'
+        include: ${{ fromJSON(needs.prep.outputs.matrix) }}
 
     container:
       image: ${{ matrix.container }}
