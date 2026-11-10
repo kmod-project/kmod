@@ -288,6 +288,7 @@ CC_CHECK_FLAGS_APPEND(with_cflags, [CFLAGS], [\
 		       -Wnested-externs \
 		       -Wno-attributes=clang::suppress \
 		       -Wno-unused-parameter \
+                       -Wno-error=deprecated-declarations \
 		       -Wold-style-definition \
 		       -Wpointer-arith \
 		       -Wredundant-decls \
