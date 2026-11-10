@@ -30,6 +30,7 @@ jobs:
           - name: 'alpine:latest'
             meson_setup: '-D docs=false -D b_sanitize=none'
           - name: 'archlinux:multilib-devel'
+            meson_setup: "-Dc_args='-Wno-error=deprecated-declarations'"
             multilib: 'true'
           - name: 'debian:unstable'
             multilib: 'true'
