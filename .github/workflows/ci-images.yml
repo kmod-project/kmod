@@ -69,13 +69,13 @@ jobs:
         env:
           TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ACTOR: ${{ github.actor }}
-        run: echo "$TOKEN" | docker login ghcr.io -u "$ACTOR" --password-stdin
+        run: echo "$TOKEN" | podman login ghcr.io -u "$ACTOR" --password-stdin
 
       - name: Build
         env:
           BASE: ${{ matrix.base }}
         run: |
-          docker build --pull \
+          podman build --pull=always \
             -f .github/actions/setup-os/Containerfile \
             --build-arg BASE="$BASE" \
             --label org.opencontainers.image.source="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}" \
@@ -84,7 +84,7 @@ jobs:
             .github/actions/setup-os
 
       - name: Push
-        run: docker push "$IMAGE"
+        run: podman push "$IMAGE"
 
   rollout:
     needs: [prep, build]
@@ -104,7 +104,7 @@ jobs:
         env:
           TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ACTOR: ${{ github.actor }}
-        run: echo "$TOKEN" | docker login ghcr.io -u "$ACTOR" --password-stdin
+        run: echo "$TOKEN" | skopeo login ghcr.io -u "$ACTOR" --password-stdin
 
       - name: Rollout
-        run: docker buildx imagetools create -t "$DST" "$SRC"
+        run: skopeo copy --all "docker://$SRC" "docker://$DST"

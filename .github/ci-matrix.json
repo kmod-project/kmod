@@ -1,6 +1,6 @@
 [
   {
-    "base": "alpine:latest",
+    "base": "docker.io/library/alpine:latest",
     "tag": "alpine-latest",
     "build-variants": [
       {
@@ -11,7 +11,7 @@
     ]
   },
   {
-    "base": "archlinux:multilib-devel",
+    "base": "docker.io/library/archlinux:multilib-devel",
     "tag": "archlinux-multilib-devel",
     "build-variants": [
       {
@@ -39,21 +39,21 @@
     ]
   },
   {
-    "base": "debian:trixie-slim",
+    "base": "docker.io/library/debian:trixie-slim",
     "tag": "debian-trixie-slim",
     "build-variants": [
       {}
     ]
   },
   {
-    "base": "debian:unstable",
+    "base": "docker.io/library/debian:unstable",
     "tag": "debian-unstable",
     "build-variants": [
       {}
     ]
   },
   {
-    "base": "fedora:latest",
+    "base": "docker.io/library/fedora:latest",
     "tag": "fedora-latest",
     "build-variants": [
       {
@@ -62,7 +62,7 @@
     ]
   },
   {
-    "base": "ubuntu:24.04",
+    "base": "docker.io/library/ubuntu:24.04",
     "tag": "ubuntu-24.04",
     "build-variants": [
       {
@@ -71,7 +71,7 @@
     ]
   },
   {
-    "base": "ubuntu:26.04",
+    "base": "docker.io/library/ubuntu:26.04",
     "tag": "ubuntu-26.04",
     "build-variants": [
       {}
