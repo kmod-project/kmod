@@ -16,7 +16,8 @@ endif
 ifndef KDIR
   KDIR := $(MODULE_DIRECTORY)/$$(uname -r)/build
 else ifeq ($(KDIR),any)
-  KDIR := $(shell find $(MODULE_DIRECTORY) -maxdepth 1 -mindepth 1 -type d | sort -V | tail -n1)/build
+  # Only consider versions that have a (non-dangling) build dir/symlink
+  KDIR := $(shell find -L $(MODULE_DIRECTORY) -maxdepth 2 -mindepth 2 -name build -type d | sort -V | tail -n1)
 endif
 
 ARCH_SPECIFIC_MODULES := mod-simple-x86_64.ko mod-simple-i386.ko mod-simple-sparc64.ko
