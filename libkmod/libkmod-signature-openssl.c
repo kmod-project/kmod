@@ -99,11 +99,11 @@ bool kmod_fill_pkcs7_openssl(const char *mem, off_t size, size_t sig_len,
 	const PKCS7_ISSUER_AND_SERIAL *is;
 	const ASN1_OCTET_STRING *sig;
 	BIGNUM *sno_bn;
-	X509_ALGOR *dig_alg;
-	const ASN1_OBJECT *o;
+	X509_ALGOR *dig_alg, *sig_alg;
+	const ASN1_OBJECT *dig_obj, *sig_obj;
 	BIO *in;
 	const char *issuer_str;
-	int hash_algo_len;
+	int hash_algo_len, sig_algo_len;
 	size_t total_len;
 	int ret;
 
@@ -148,13 +148,21 @@ bool kmod_fill_pkcs7_openssl(const char *mem, off_t size, size_t sig_len,
 	total_len += sym_BN_num_bytes(sno_bn);
 
 	/* hash_algo */
-	sym_PKCS7_SIGNER_INFO_get0_algs(si, NULL, &dig_alg, NULL);
-	sym_X509_ALGOR_get0(&o, NULL, NULL, dig_alg);
-	hash_algo_len = sym_OBJ_obj2txt(NULL, 0, o, 0);
+	sym_PKCS7_SIGNER_INFO_get0_algs(si, NULL, &dig_alg, &sig_alg);
+
+	sym_X509_ALGOR_get0(&dig_obj, NULL, NULL, dig_alg);
+	hash_algo_len = sym_OBJ_obj2txt(NULL, 0, dig_obj, 0);
 	if (hash_algo_len < 0)
 		goto err1;
 
 	total_len += hash_algo_len + 1;
+
+	sym_X509_ALGOR_get0(&sig_obj, NULL, NULL, sig_alg);
+	sig_algo_len = sym_OBJ_obj2txt(NULL, 0, sig_obj, 0);
+	if (sig_algo_len < 0)
+		goto err1;
+
+	total_len += sig_algo_len + 1;
 
 	/* sig */
 	sig = si->enc_digest;
@@ -186,12 +194,19 @@ bool kmod_fill_pkcs7_openssl(const char *mem, off_t size, size_t sig_len,
 
 	/* hash_algo */
 	sig_info->hash_algo = p;
-
-	hash_algo_len = sym_OBJ_obj2txt(p, hash_algo_len + 1, o, 0);
+	hash_algo_len = sym_OBJ_obj2txt(p, hash_algo_len + 1, dig_obj, 0);
 	if (hash_algo_len < 0)
 		goto err2;
 	p += hash_algo_len;
+	*p = '\0';
+	p++;
 
+	/* sig_algo */
+	sig_info->sig_algo = p;
+	sig_algo_len = sym_OBJ_obj2txt(p, sig_algo_len + 1, sig_obj, 0);
+	if (sig_algo_len < 0)
+		goto err2;
+	p += sig_algo_len;
 	*p = '\0';
 	p++;
 

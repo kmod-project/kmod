@@ -2017,10 +2017,13 @@ static int module_signature_info(const struct kmod_module *mod,
 			goto list_error;
 		count++;
 
-		/*
-		 * Omit sig_info->algo for now, as these
-		 * are currently constant.
-		 */
+		n = kmod_module_info_append(list, "sig_sigalgo", strlen("sig_sigalgo"),
+					    sig_info->sig_algo,
+					    strlen(sig_info->sig_algo));
+		if (n == NULL)
+			goto list_error;
+		count++;
+
 		if (raw)
 			n = kmod_module_info_append(list, "signature", strlen("signature"),
 						    sig_info->sig, sig_info->sig_len);
