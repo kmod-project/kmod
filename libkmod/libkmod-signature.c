@@ -98,6 +98,7 @@ static bool fill_default(const char *mem, off_t size,
 	sig_info->signer_len = modsig->signer_len;
 
 	sig_info->hash_algo = pkey_hash_algo[modsig->hash];
+	sig_info->sig_algo = modsig->algo == PKEY_ALGO_DSA ? "DSA" : "RSA";
 
 	*out_sig_info = sig_info;
 
@@ -112,6 +113,7 @@ static bool kmod_fill_pkcs7_dummy(const char *mem, off_t size, size_t sig_len,
 		return false;
 
 	sig_info->hash_algo = "unknown";
+	sig_info->sig_algo = "unknown";
 	*out_sig_info = sig_info;
 	return true;
 }
