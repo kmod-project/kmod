@@ -1324,6 +1324,31 @@ void kmod_module_versions_free_list(struct kmod_list *list);
 int kmod_module_get_info(const struct kmod_module *mod, struct kmod_list **list);
 
 /**
+ * kmod_module_get_info_raw:
+ * @mod: kmod module
+ * @list: where to return list of module information
+ *
+ * Get a list of entries in ELF section ".modinfo", these contain
+ * alias, license, depends, vermagic and other keys with respective
+ * values. If the module is signed (CONFIG_MODULE_SIG), information
+ * about the module signature is included as well: signer,
+ * sig_key and sig_hashalgo. Unlike kmod_module_get_info(), which
+ * returns all values serialized as strings, this function returns the
+ * build-id, sig-key, and signature fields as raw binary data.
+ *
+ * The structure contained in this list is internal to libkmod and its fields
+ * can be obtainsed by calling kmod_module_info_get_key() and
+ * kmod_module_info_get_value_raw().
+ *
+ * After use, free the @list by calling kmod_module_info_free_list().
+ *
+ * Returns: number of entries in @list on success or < 0 otherwise.
+ *
+ * Since: 35
+ */
+int kmod_module_get_info_raw(const struct kmod_module *mod, struct kmod_list **list);
+
+/**
  * kmod_module_info_get_key:
  * @entry: a list entry representing a kmod module info
  *
@@ -1348,6 +1373,21 @@ const char *kmod_module_info_get_key(const struct kmod_list *entry);
  * Since: 2
  */
 const char *kmod_module_info_get_value(const struct kmod_list *entry);
+
+/**
+ * kmod_module_info_get_value_raw:
+ * @entry: a list entry representing a kmod module info
+ * @size: where to save the size of value.
+ *
+ * Get the value and size of a kmod module info.
+ *
+ * Returns: the value of this kmod module info and store the size in
+ * the @size on success or NULL on failure. The string is owned by the
+ * info, do not free it.
+ *
+ * Since: 35
+ */
+const char *kmod_module_info_get_value_raw(const struct kmod_list *entry, size_t *size);
 
 /**
  * kmod_module_info_free_list:
