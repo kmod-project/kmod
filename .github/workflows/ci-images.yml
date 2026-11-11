@@ -76,6 +76,7 @@ jobs:
           BASE: ${{ matrix.base }}
         run: |
           docker build --pull \
+            -f .github/actions/setup-os/Containerfile \
             --build-arg BASE="$BASE" \
             --label org.opencontainers.image.source="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}" \
             --label org.opencontainers.image.revision="${GITHUB_SHA}" \
