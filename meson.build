@@ -277,6 +277,7 @@ endif
 _moar_deps = [
   ['zstd',    'libzstd',   '>= 1.4.4'],
   ['xz',      'liblzma',   '>= 4.99'],
+  ['lz4',     'liblz4',    '>= 1.8.0'],
   ['zlib',    'zlib',      '>= 0'],
   ['openssl', 'libcrypto', '>= 3.0.0'],
   ['mbedtls', 'mbedx509',  ['>= 3.6.0', '< 4.0.0']],
@@ -387,6 +388,11 @@ endif
 if dep_map.get('xz').found()
   libkmod_files += files('libkmod/libkmod-file-xz.c')
   libkmod_deps += dep_map['xz']
+endif
+
+if dep_map.get('lz4').found()
+  libkmod_files += files('libkmod/libkmod-file-lz4.c')
+  libkmod_deps += dep_map['lz4']
 endif
 
 if dep_map.get('zlib').found()

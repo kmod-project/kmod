@@ -51,6 +51,7 @@ enum kmod_file_compression_type {
 	KMOD_FILE_COMPRESSION_ZSTD,
 	KMOD_FILE_COMPRESSION_XZ,
 	KMOD_FILE_COMPRESSION_ZLIB,
+	KMOD_FILE_COMPRESSION_LZ4,
 };
 
 // clang-format off
