@@ -46,6 +46,7 @@ Optional dependencies, required with the default build configuration:
 - ZLIB library
 - LZMA library
 - ZSTD library
+- LZ4 library
 - OPENSSL library (signature handling in modinfo)
 - MBEDTLS library (signature handling in modinfo)
 

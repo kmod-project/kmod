@@ -212,6 +212,8 @@ static enum kmod_file_compression_type get_kernel_compression(struct kmod_ctx *c
 		return KMOD_FILE_COMPRESSION_XZ;
 	else if (streq(buf, "gzip\n"))
 		return KMOD_FILE_COMPRESSION_ZLIB;
+	else if (streq(buf, "lz4\n"))
+		return KMOD_FILE_COMPRESSION_LZ4;
 
 	ERR(ctx, "unknown kernel compression %s", buf);
 

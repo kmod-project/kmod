@@ -17,11 +17,13 @@ apt-get install --yes \
     gcovr \
     git \
     gtk-doc-tools \
+    liblz4-dev \
     liblzma-dev \
     libmbedtls-dev \
     libssl-dev \
     libzstd-dev \
     linux-headers-generic \
+    lz4 \
     meson \
     scdoc \
     zlib1g-dev \

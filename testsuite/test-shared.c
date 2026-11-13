@@ -802,6 +802,9 @@ static int test_path_ends_with_kmod_ext(void)
 #if ENABLE_ZSTD
 		{ "/bla.ko.zst", true },
 #endif
+#if ENABLE_LZ4
+		{ "/bla.ko.lz4", true },
+#endif
 		{ "/bla.ko.x", false },
 		{ "/bla.ko.", false },
 		{ "/bla.koz", false },

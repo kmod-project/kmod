@@ -82,7 +82,7 @@ jobs:
 
             if [[ "$2" == "32" ]]; then
               echo "::notice::TODO fix and reuse the original options."
-              setup_options="$setup_options -Dzstd=disabled -Dxz=disabled -Dzlib=disabled -Dopenssl=disabled -Dmbedtls=disabled"
+              setup_options="$setup_options -Dzstd=disabled -Dxz=disabled -Dlz4=disabled -Dzlib=disabled -Dopenssl=disabled -Dmbedtls=disabled"
 
               echo "::notice::TODO fix and re-enable sanitizer(s)."
               setup_options="$setup_options -Db_sanitize=none"
