@@ -1816,6 +1816,7 @@ static int kmod_module_load_elf(const struct kmod_module *mod)
 
 struct kmod_module_info {
 	char *key;
+	size_t value_len;
 	char value[];
 };
 
@@ -1834,6 +1835,7 @@ static struct kmod_module_info *kmod_module_info_new(const char *key, size_t key
 	if (value)
 		memcpy(info->value, value, valuelen);
 	info->value[valuelen] = '\0';
+	info->value_len = valuelen;
 	return info;
 }
 
@@ -1912,8 +1914,8 @@ list_error:
 	return NULL;
 }
 
-KMOD_EXPORT int kmod_module_get_info(const struct kmod_module *mod,
-				     struct kmod_list **list)
+static int module_signature_info(const struct kmod_module *mod,
+				 struct kmod_list **list, bool raw)
 {
 	char **strings;
 	int i, count, ret = -ENOMEM;
@@ -1969,9 +1971,14 @@ KMOD_EXPORT int kmod_module_get_info(const struct kmod_module *mod,
 		if (kmod_elf_get_build_id(mod->elf, &build_id, &build_id_len) == 0) {
 			struct kmod_list *n;
 
-			n = kmod_module_info_append_hex(list, "build-id",
-							strlen("build-id"), build_id,
-							build_id_len);
+			if (raw)
+				n = kmod_module_info_append(list, "build-id",
+							    strlen("build-id"), build_id,
+							    build_id_len);
+			else
+				n = kmod_module_info_append_hex(list, "build-id",
+								strlen("build-id"), build_id,
+								build_id_len);
 			if (n == NULL)
 				goto list_error;
 			count++;
@@ -1993,8 +2000,12 @@ KMOD_EXPORT int kmod_module_get_info(const struct kmod_module *mod,
 			goto list_error;
 		count++;
 
-		n = kmod_module_info_append_hex(list, "sig_key", strlen("sig_key"),
-						sig_info->key_id, sig_info->key_id_len);
+		if (raw)
+			n = kmod_module_info_append(list, "sig_key", strlen("sig_key"),
+						    sig_info->key_id, sig_info->key_id_len);
+		else
+			n = kmod_module_info_append_hex(list, "sig_key", strlen("sig_key"),
+							sig_info->key_id, sig_info->key_id_len);
 		if (n == NULL)
 			goto list_error;
 		count++;
@@ -2006,13 +2017,19 @@ KMOD_EXPORT int kmod_module_get_info(const struct kmod_module *mod,
 			goto list_error;
 		count++;
 
-		/*
-		 * Omit sig_info->algo for now, as these
-		 * are currently constant.
-		 */
-		n = kmod_module_info_append_hex(list, "signature", strlen("signature"),
-						sig_info->sig, sig_info->sig_len);
+		n = kmod_module_info_append(list, "sig_sigalgo", strlen("sig_sigalgo"),
+					    sig_info->sig_algo,
+					    strlen(sig_info->sig_algo));
+		if (n == NULL)
+			goto list_error;
+		count++;
 
+		if (raw)
+			n = kmod_module_info_append(list, "signature", strlen("signature"),
+						    sig_info->sig, sig_info->sig_len);
+		else
+			n = kmod_module_info_append_hex(list, "signature", strlen("signature"),
+							sig_info->sig, sig_info->sig_len);
 		if (n == NULL)
 			goto list_error;
 		count++;
@@ -2029,6 +2046,18 @@ list_error:
 	}
 	free(strings);
 	return ret;
+}
+
+KMOD_EXPORT int kmod_module_get_info(const struct kmod_module *mod,
+				     struct kmod_list **list)
+{
+	return module_signature_info(mod, list, false);
+}
+
+KMOD_EXPORT int kmod_module_get_info_raw(const struct kmod_module *mod,
+					 struct kmod_list **list)
+{
+	return module_signature_info(mod, list, true);
 }
 
 KMOD_EXPORT const char *kmod_module_info_get_key(const struct kmod_list *entry)
@@ -2050,6 +2079,19 @@ KMOD_EXPORT const char *kmod_module_info_get_value(const struct kmod_list *entry
 		return NULL;
 
 	info = entry->data;
+	return info->value;
+}
+
+KMOD_EXPORT const char *kmod_module_info_get_value_raw(const struct kmod_list *entry, size_t *size)
+{
+	struct kmod_module_info *info;
+
+	if (entry == NULL)
+		return NULL;
+
+	info = entry->data;
+	if (size)
+		*size = info->value_len;
 	return info->value;
 }
 
