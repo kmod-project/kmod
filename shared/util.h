@@ -18,7 +18,7 @@
 #define streq(a, b) (strcmp((a), (b)) == 0)
 #define strstartswith(a, b) (strncmp(a, b, strlen(b)) == 0)
 char *strchr_replace(char *s, char c, char r);
-_nonnull_all_ void *memdup(const void *p, size_t n);
+_malloc_(free, 1) _nonnull_all_ void *memdup(const void *p, size_t n);
 
 /* module-related functions                                                 */
 /* ************************************************************************ */
@@ -41,11 +41,11 @@ _must_check_ _nonnull_(2) ssize_t read_str_safe(int fd, char *buf, size_t buflen
 _nonnull_(2) ssize_t write_str_safe(int fd, const char *buf, size_t buflen);
 _must_check_ _nonnull_(2) int read_str_long(int fd, long *value, int base);
 _must_check_ _nonnull_(2) int read_str_ulong(int fd, unsigned long *value, int base);
-_nonnull_(1) char *freadline_wrapped(FILE *fp, unsigned int *linenum);
+_malloc_(free, 1) _nonnull_(1) char *freadline_wrapped(FILE *fp, unsigned int *linenum);
 
 /* path handling functions                                                  */
 /* ************************************************************************ */
-_must_check_ _nonnull_all_ char *path_make_absolute_cwd(const char *p);
+_malloc_(free, 1) _must_check_ _nonnull_all_ char *path_make_absolute_cwd(const char *p);
 static inline _must_check_ _nonnull_all_ bool path_is_absolute(const char *p)
 {
 	return p[0] == '/';

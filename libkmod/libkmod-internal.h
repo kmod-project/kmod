@@ -2,6 +2,7 @@
 
 #include <stdbool.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <syslog.h>
 #include <limits.h>
 
@@ -79,7 +80,7 @@ _nonnull_all_ int kmod_lookup_alias_from_commands(struct kmod_ctx *ctx, const ch
 _nonnull_(1) void kmod_set_modules_visited(struct kmod_ctx *ctx, bool visited);
 _nonnull_(1) void kmod_set_modules_required(struct kmod_ctx *ctx, bool required);
 
-_nonnull_all_ char *kmod_search_moddep(struct kmod_ctx *ctx, const char *name);
+_malloc_(free, 1) _nonnull_all_ char *kmod_search_moddep(struct kmod_ctx *ctx, const char *name);
 
 _nonnull_all_ struct kmod_module *kmod_pool_get_module(struct kmod_ctx *ctx, const char *key);
 _nonnull_all_ int kmod_pool_add_module(struct kmod_ctx *ctx, struct kmod_module *mod, const char *key);
