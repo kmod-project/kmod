@@ -29,7 +29,10 @@ endif
 # used for the kernel - since BTF sections are not used, disable it.
 KERNEL_MAKE_ARGS += CONFIG_DEBUG_INFO_BTF_MODULES=
 
-HOSTCC ?= $(filter-out -m32,$(CC))
+OBJTOOL := $(shell command -v objtool)
+ifneq ($(OBJTOOL),)
+  KERNEL_MAKE_ARGS += objtool=$(OBJTOOL)
+endif
 
 ARCH_SPECIFIC_MODULES := mod-simple-x86_64.ko mod-simple-i386.ko mod-simple-sparc64.ko
 
@@ -39,16 +42,10 @@ mod-simple-%.ko: mod-simple-%.c Makefile.arch
 	$(eval arch=$(patsubst mod-simple-%.ko,%,$@))
 	$(MAKE) KDIR=$(KDIR_$(arch)) ARCH=$(arch) CROSS_COMPILE=$(CROSS_COMPILE_$(arch)) -f Makefile.arch
 
-# workaround for objtool having a too small sigaltstack
-# TODO: fix in the kernel side which is particularly bad with musl where a fixed 8k stack is used
-sigaltstack.so: sigaltstack.c
-	$(HOSTCC) -shared -fPIC -O2 -o $@ $< -ldl
-
-modules: sigaltstack.so
-	LD_PRELOAD=$(abspath sigaltstack.so)$${LD_PRELOAD:+:$$LD_PRELOAD} $(MAKE) -C $(KDIR) $(KERNEL_MAKE_ARGS) modules
+modules:
+	$(MAKE) -C $(KDIR) $(KERNEL_MAKE_ARGS) modules
 
 arch-modules: $(ARCH_SPECIFIC_MODULES)
 
 clean:
 	$(MAKE) -C $(KDIR) $(KERNEL_MAKE_ARGS) clean
-	rm -f sigaltstack.so

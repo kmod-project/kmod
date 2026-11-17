@@ -7,5 +7,5 @@
 ARG BASE
 FROM ${BASE}
 
-COPY setup-*.sh /tmp/setup-os/
+COPY *.sh *.patch /tmp/setup-os/
 RUN . /etc/os-release && /tmp/setup-os/setup-${ID}.sh && rm -rf /tmp/setup-os
