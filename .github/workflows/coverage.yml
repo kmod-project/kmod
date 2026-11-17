@@ -19,9 +19,6 @@ on:
         description: 'Suffix appended to the image tag, e.g. to test new images'
         type: string
 
-permissions:
-  contents: read
-
 env:
   KDIR: 'any'
 

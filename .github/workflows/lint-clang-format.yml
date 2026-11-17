@@ -12,9 +12,6 @@ on:
         required: true
         type: string
 
-permissions:
-  contents: read
-
 jobs:
   clang-format:
     runs-on: ubuntu-26.04

@@ -23,7 +23,6 @@ env:
   KDIR: 'any'
 
 permissions:
-  contents: read
   actions: read
   security-events: write
 

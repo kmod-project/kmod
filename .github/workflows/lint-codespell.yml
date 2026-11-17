@@ -7,9 +7,6 @@ name: Codespell
 on:
   workflow_call:
 
-permissions:
-  contents: read
-
 jobs:
   codespell:
     runs-on: ubuntu-26.04

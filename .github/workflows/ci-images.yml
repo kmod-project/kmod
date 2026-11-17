@@ -26,8 +26,6 @@ concurrency:
 jobs:
   prep:
     runs-on: ubuntu-26.04
-    permissions:
-      contents: read
     outputs:
       repo: ${{ steps.vars.outputs.repo }}
       stamp: ${{ steps.vars.outputs.stamp }}
@@ -55,7 +53,6 @@ jobs:
     needs: prep
     runs-on: ubuntu-26.04
     permissions:
-      contents: read
       packages: write
     strategy:
       fail-fast: false
@@ -107,7 +104,6 @@ jobs:
     needs: [prep, build]
     uses: ./.github/workflows/codeql.yml
     permissions:
-      contents: read
       actions: read
       security-events: write
     with:
@@ -119,7 +115,6 @@ jobs:
     if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-26.04
     permissions:
-      contents: read
       packages: write
     strategy:
       matrix:

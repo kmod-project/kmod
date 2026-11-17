@@ -10,9 +10,6 @@ on:
   pull_request:
     branches: [master]
 
-permissions:
-  contents: read
-
 jobs:
   lint-codespell:
     uses: ./.github/workflows/lint-codespell.yml
