@@ -33,7 +33,7 @@ jobs:
       stamp: ${{ steps.vars.outputs.stamp }}
       images: ${{ steps.vars.outputs.images }}
     steps:
-      - name: Checkout
+      - name: Sparse checkout the json matrix
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           sparse-checkout: .github/ci-matrix.json
