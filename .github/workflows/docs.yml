@@ -6,13 +6,9 @@
 name: Trigger kmod-project.github.io
 
 on:
-  # Runs on pushes targeting master and tag with prefix `v`
   push:
-    branches:
-      - 'master'
-      - 'ci-test-docs'
-    tags:
-      - 'v*'
+    branches: [master, ci-test-docs]
+    tags: ['v*']
   workflow_dispatch:
     inputs:
       tag:
