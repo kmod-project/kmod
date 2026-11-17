@@ -53,13 +53,11 @@ jobs:
       - name: Mark workspace as safe for git
         # The container runs as root, but the workspace is owned by the
         # runner user: git refuses to operate on it after actions/checkout
-        # (e.g. meson dist, setup-os only-if-changed).
+        # (e.g. meson dist, setup-os).
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
       - name: Setup OS if changed
         uses: ./.github/actions/setup-os
-        with:
-          only-if-changed: true
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
