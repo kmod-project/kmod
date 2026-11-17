@@ -301,6 +301,10 @@ foreach tuple : _moar_deps
   cdata.set10('ENABLE_' + opt.to_upper(), have)
   cdata.set10('ENABLE_' + opt.to_upper() + '_DLOPEN', have and dlopen)
 
+  # Define the API level that we use/require. Thus silencing deprecation
+  # warnings where possible.
+  cdata.set('OPENSSL_API_COMPAT', '30000')
+
   if have
     if opt == 'openssl' or opt == 'mbedtls'
       signatures += ['PKCS7']
