@@ -1,7 +1,6 @@
 # SPDX-License-Identifier: LGPL-2.1-or-later
 #
 # SPDX-FileCopyrightText: 2024-2026 Emil Velikov <emil.l.velikov@gmail.com>
-# SPDX-FileCopyrightText: 2026 suzush <suzush392@gmail.com>
 
 name: Clang-format
 
