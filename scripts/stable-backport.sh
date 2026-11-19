@@ -12,6 +12,10 @@
 #     "(cherry picked from commit <commit>)" line);
 #   - it is itself a candidate already selected (fix of a fix).
 #
+# A candidate can be excluded by adding an "Ignore-fixes: <reason>" line to
+# its message, or later as a git note (git notes add -m "Ignore-fixes: ...")
+# so an incorrectly marked fix is not reported forever.
+#
 # Commits are walked oldest first, so a fix of a fix is only evaluated after
 # the fix it refers to.
 #
@@ -31,6 +35,8 @@ set -euo pipefail
 CHERRY_PICK_RE='^\(cherry picked from commit ([0-9a-f]{7,40})\)'
 # Matches the "Fixes: <commit>" line, capturing <commit>
 FIXES_RE='^Fixes: *([0-9a-fA-F]{7,40})'
+# Matches the "Ignore-fixes: <reason>" line, capturing <reason>
+IGNORE_RE='^Ignore-fixes: *([^ ].*)'
 
 usage() {
     log "Usage: $0 [--starting-point=<commit>] <stable-branch> <upstream-branch>"
@@ -138,6 +144,7 @@ parse_args "$@"
 # Global state
 declare -A PICKED=()
 declare -A FIX=()
+declare -A IGNORE=()
 declare -A REASON=()
 declare -A RESULT=()
 CANDIDATE=()
@@ -149,10 +156,10 @@ readarray -t CANDIDATE < <(git log --notes --reverse --format=%H -E \
                            --grep="$FIXES_RE" "$START..$UPSTREAM_BRANCH")
 log "Found ${#CANDIDATE[@]} candidate commits in $START..$UPSTREAM_BRANCH"
 for c in "${CANDIDATE[@]}"; do
-    f=$(git show -s --format=%B%N "$c" | \
-        sed -nE "s/$FIXES_RE.*/\\1/p" | \
-        git_resolve_all "$c" | xargs)
-    FIX[$c]="$f"
+    msg=$(git show -s --format="%(trailers:key=Fixes,key=Ignore-fixes)%N" "$c")
+
+    FIX[$c]=$(sed -nE "s/$FIXES_RE.*/\\1/p" <<< "$msg" | git_resolve_all "$c" | xargs)
+    IGNORE[$c]=$(sed -nE "s/$IGNORE_RE/\\1/p" <<< "$msg" | sed -z 's/\n/; /g; s/; $/\n/')
 done
 
 # Find all commits in the stable branch that were cherry-picked (assume it was
@@ -178,6 +185,12 @@ for c in "${CANDIDATE[@]}"; do
     [[ -z ${PICKED[$c]-} ]] || {
         RESULT[$c]=0
         REASON[$c]="already cherry-picked to $STABLE_BRANCH"
+        continue
+    }
+
+    [[ -z ${IGNORE[$c]} ]] || {
+        RESULT[$c]=0
+        REASON[$c]="Ignored: ${IGNORE[$c]}"
         continue
     }
 
