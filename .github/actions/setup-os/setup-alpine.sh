@@ -12,6 +12,7 @@ apk add \
     clang \
     git \
     gtk-doc \
+    linux-headers \
     linux-stable-dev \
     mbedtls-dev \
     meson \
@@ -22,3 +23,5 @@ apk add \
     xz-dev \
     zlib-dev \
     zstd-dev
+
+"$(dirname "$0")"/vendor-objtool.sh
