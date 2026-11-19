@@ -213,3 +213,33 @@ check_result() {
     [[ $status -eq 1 ]]
     [[ $stderr == *"Invalid branch/commit: nonexistent"* ]]
 }
+
+@test "Ignore-fixes in the commit message excludes the candidate" {
+    local fix
+    fix=$(commit fix "$(printf 'Fixes: %s\nIgnore-fixes: not relevant to stable' "${BASE:0:12}")")
+
+    run_backport --starting-point="$BASE"
+    [[ $status -eq 0 ]]
+    check_result "$fix" 0 "Ignored: not relevant to stable"
+}
+
+@test "Ignore-fixes in a git note excludes the candidate" {
+    local fix
+    fix=$(commit fix "Fixes: ${BASE:0:12}")
+    git notes add -m "Ignore-fixes: wrongly marked" -m "Ignore-fixes: only affects master" "$fix"
+
+    run_backport --starting-point="$BASE"
+    [[ $status -eq 0 ]]
+    check_result "$fix" 0 "Ignored: wrongly marked; only affects master"
+}
+
+@test "fix of an ignored fix is not a candidate" {
+    local fix fix2
+    fix=$(commit fix "Fixes: ${BASE:0:12}")
+    git notes add -m "Ignore-fixes: wrongly marked" "$fix"
+    fix2=$(commit fix2 "Fixes: ${fix:0:12}")
+
+    run_backport --starting-point="$BASE"
+    [[ $status -eq 0 ]]
+    check_result "$fix2" 0 "Fixed commit(s) $fix not in stable"
+}
