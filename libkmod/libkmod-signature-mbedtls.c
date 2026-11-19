@@ -17,10 +17,11 @@
 
 #include "libkmod-internal-signature.h"
 
-#define DL_SYMBOL_TABLE(M)         \
-	M(mbedtls_pkcs7_init)      \
-	M(mbedtls_pkcs7_parse_der) \
-	M(mbedtls_pkcs7_free)
+#define DL_SYMBOL_TABLE(M)              \
+	M(mbedtls_pkcs7_init)           \
+	M(mbedtls_pkcs7_parse_der)      \
+	M(mbedtls_pkcs7_free)  	        \
+	M(mbedtls_oid_get_sig_alg_desc)
 
 DL_SYMBOL_TABLE(DECLARE_SYM)
 
@@ -136,6 +137,12 @@ bool kmod_fill_pkcs7_mbedtls(const char *mem, off_t size, size_t sig_len,
 	/* hash_algo */
 	sig_info->hash_algo = pkey_hash_algo[hash_algo];
 
+	/* sig_algo */
+	ret = sym_mbedtls_oid_get_sig_alg_desc(&signers->MBEDTLS_PRIVATE(sig_alg_identifier),
+					       &sig_info->sig_algo);
+	if (ret < 0)
+		goto err1;
+
 	/* sig */
 	sig_info->sig = p;
 	sig_info->sig_len = signers->MBEDTLS_PRIVATE(sig).len;
@@ -147,6 +154,8 @@ bool kmod_fill_pkcs7_mbedtls(const char *mem, off_t size, size_t sig_len,
 
 	return true;
 
+err1:
+	free(sig_info);
 err:
 	sym_mbedtls_pkcs7_free(&pkcs7);
 	return false;

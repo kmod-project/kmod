@@ -174,6 +174,7 @@ struct kmod_signature_info {
 	const char *key_id;
 	size_t key_id_len;
 	const char *hash_algo, *id_type;
+	const char *sig_algo;
 	const char *sig;
 	size_t sig_len;
 };
