@@ -1312,8 +1312,8 @@ void kmod_module_versions_free_list(struct kmod_list *list);
  * sig_key and sig_hashalgo.
  *
  * The structure contained in this list is internal to libkmod and its fields
- * can be obtainsed by calling kmod_module_info_get_key() and
- * kmod_module_info_get_value().
+ * can be obtainsed by calling kmod_module_info_get_key(),
+ * kmod_module_info_get_value() and kmod_module_info_get_raw_value().
  *
  * After use, free the @list by calling kmod_module_info_free_list().
  *
@@ -1348,6 +1348,23 @@ const char *kmod_module_info_get_key(const struct kmod_list *entry);
  * Since: 2
  */
 const char *kmod_module_info_get_value(const struct kmod_list *entry);
+
+/**
+ * kmod_module_info_get_raw_value:
+ * @entry: a list entry representing a kmod module info
+ * @size: where to store the raw value's size.
+ *
+ * Get the raw value and size of a kmod module info.  This function is
+ * only applicable to attributes containing binary data.
+ *
+ * Returns: the raw value on success, storing its size in @size, or NULL
+ * if @entry is NULL, setting @size to zero. The data is owned by the
+ * info, do not free it. It is not necessarily a null-terminated string.
+ *
+ * Since: 35
+ */
+const uint8_t *kmod_module_info_get_raw_value(const struct kmod_list *entry,
+					      size_t *size);
 
 /**
  * kmod_module_info_free_list:
