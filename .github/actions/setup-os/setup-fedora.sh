@@ -18,6 +18,8 @@ dnf install -y \
     libtsan \
     libubsan \
     libzstd-devel \
+    lz4 \
+    lz4-devel \
     make \
     mbedtls-devel \
     meson \

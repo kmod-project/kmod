@@ -25,6 +25,15 @@ static inline int kmod_file_load_xz(_maybe_unused_ struct kmod_file *file)
 }
 #endif
 
+#if ENABLE_LZ4
+int kmod_file_load_lz4(struct kmod_file *file);
+#else
+static inline int kmod_file_load_lz4(_maybe_unused_ struct kmod_file *file)
+{
+	return -ENOSYS;
+}
+#endif
+
 #if ENABLE_ZLIB
 int kmod_file_load_zlib(struct kmod_file *file);
 #else

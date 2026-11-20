@@ -24,6 +24,7 @@
 static const char magic_zstd[] = { 0x28, 0xB5, 0x2F, 0xFD };
 static const char magic_xz[] = { 0xfd, '7', 'z', 'X', 'Z', 0 };
 static const char magic_zlib[] = { 0x1f, 0x8b };
+static const char magic_lz4[] = { 0x04, 0x22, 0x4d, 0x18 };
 
 static int load_reg(struct kmod_file *file)
 {
@@ -55,6 +56,7 @@ static const struct comp_type {
 	{ sizeof(magic_zstd), KMOD_FILE_COMPRESSION_ZSTD, magic_zstd, kmod_file_load_zstd },
 	{ sizeof(magic_xz), KMOD_FILE_COMPRESSION_XZ, magic_xz, kmod_file_load_xz },
 	{ sizeof(magic_zlib), KMOD_FILE_COMPRESSION_ZLIB, magic_zlib, kmod_file_load_zlib },
+	{ sizeof(magic_lz4), KMOD_FILE_COMPRESSION_LZ4, magic_lz4, kmod_file_load_lz4 },
 	{ 0, KMOD_FILE_COMPRESSION_NONE, NULL, load_reg },
 	// clang-format on
 };
@@ -70,6 +72,7 @@ int kmod_file_open(const struct kmod_ctx *ctx, const char *filename,
 	assert_cc(sizeof(magic_zstd) < sizeof(buf));
 	assert_cc(sizeof(magic_xz) < sizeof(buf));
 	assert_cc(sizeof(magic_zlib) < sizeof(buf));
+	assert_cc(sizeof(magic_lz4) < sizeof(buf));
 
 	file = calloc(1, sizeof(struct kmod_file));
 	if (file == NULL) {
