@@ -1,0 +1,36 @@
+# SPDX-License-Identifier: LGPL-2.1-or-later
+#
+# SPDX-FileCopyrightText: 2026 Polly Labs <pollychen.lab@gmail.com>
+
+name: Signed-off-by
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  signed-off-by:
+    runs-on: ubuntu-26.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+
+      - name: Fetch pull request base
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_REPOSITORY: ${{ github.repository }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: git fetch --no-tags "https://github.com/${BASE_REPOSITORY}.git" "$BASE_SHA"
+
+      - name: Check every commit has a matching sign-off
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: scripts/check-signed-off-by.sh "$BASE_SHA" "$HEAD_SHA"
