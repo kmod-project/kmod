@@ -20,6 +20,12 @@ jobs:
   lint-shellcheck:
     uses: ./.github/workflows/lint-shellcheck.yml
 
+  lint-signed-off-by:
+    if: github.event_name == 'pull_request'
+    uses: ./.github/workflows/lint-signed-off-by.yml
+    with:
+      base: ${{ github.event.pull_request.base.sha }}
+
   lint-clang-format:
     if: github.event_name == 'pull_request'
     uses: ./.github/workflows/lint-clang-format.yml
