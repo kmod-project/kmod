@@ -25,3 +25,8 @@ jobs:
     uses: ./.github/workflows/lint-clang-format.yml
     with:
       base: ${{ github.event.pull_request.base.sha }}
+
+  # Deleted-branch pushes have no head commit to check.
+  lint-signed-off-by:
+    if: github.event_name == 'pull_request' || github.event.deleted == false
+    uses: ./.github/workflows/lint-signed-off-by.yml
