@@ -130,6 +130,7 @@ map=(
     ["test-modinfo/mod-simple-sha1.ko"]="mod-simple.ko"
     ["test-modinfo/mod-simple-sha256.ko"]="mod-simple.ko"
     ["test-modinfo/mod-simple-pkcs7.ko"]="mod-simple.ko"
+    ["test-modinfo/lz4/mod-simple.ko"]="mod-simple.ko"
     ["test-modinfo/external/lib/modules/external/mod-simple.ko"]="mod-simple.ko"
     ["test-libkmod/weakdep$MODULE_DIRECTORY/4.4.4/kernel/mod-loop-a.ko"]="mod-loop-a.ko"
     ["test-libkmod/weakdep$MODULE_DIRECTORY/4.4.4/kernel/mod-loop-b.ko"]="mod-loop-b.ko"
@@ -152,6 +153,10 @@ xz_array=(
 
 zstd_array=(
     "test-depmod/modules-order-compressed$MODULE_DIRECTORY/4.4.4/kernel/drivers/scsi/hpsa.ko"
+    )
+
+lz4_array=(
+    "test-modinfo/lz4/mod-simple.ko"
     )
 
 attach_sha256_array=(
@@ -198,6 +203,12 @@ fi
 if feature_enabled ZSTD; then
 	for m in "${zstd_array[@]}"; do
 	    zstd --rm "$ROOTFS/$m"
+	done
+fi
+
+if feature_enabled LZ4; then
+	for m in "${lz4_array[@]}"; do
+	    lz4 -q --rm "$ROOTFS/$m" "$ROOTFS/$m.lz4"
 	done
 fi
 

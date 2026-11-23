@@ -94,4 +94,19 @@ DEFINE_TEST(test_modinfo_builtin,
 		.out = TESTSUITE_ROOTFS "test-modinfo/correct-builtin.txt",
 	});
 
+#if ENABLE_LZ4
+static int test_modinfo_lz4(void)
+{
+	return EXEC_TOOL(modinfo, "-F", "description", "/lz4/mod-simple.ko.lz4");
+}
+DEFINE_TEST(test_modinfo_lz4,
+	.description = "check if modinfo reads an LZ4-compressed module",
+	.config = {
+		[TC_ROOTFS] = TESTSUITE_ROOTFS "test-modinfo/",
+	},
+	.output = {
+		.out = TESTSUITE_ROOTFS "test-modinfo/correct-description.txt",
+	});
+#endif
+
 TESTSUITE_MAIN();

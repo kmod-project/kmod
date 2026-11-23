@@ -46,6 +46,13 @@ option(
 )
 
 option(
+  'lz4',
+  type : 'feature',
+  value : 'enabled',
+  description : 'Handle LZ4-compressed modules. Default: enabled',
+)
+
+option(
   'zlib',
   type : 'feature',
   value : 'enabled',
@@ -77,7 +84,7 @@ option(
 option(
   'dlopen',
   type : 'array',
-  choices : ['zstd', 'xz', 'zlib', 'openssl', 'mbedtls', 'all'],
+  choices : ['zstd', 'xz', 'lz4', 'zlib', 'openssl', 'mbedtls', 'all'],
   value : ['all'],
   description : 'Libraries to dlopen rather than linking. Default: "all"',
 )

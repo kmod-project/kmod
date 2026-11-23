@@ -36,6 +36,9 @@ static const struct kmod_ext {
 #if ENABLE_ZSTD
 	{ ".ko.zst", strlen(".ko.zst") },
 #endif
+#if ENABLE_LZ4
+	{ ".ko.lz4", strlen(".ko.lz4") },
+#endif
 	{},
 };
 
