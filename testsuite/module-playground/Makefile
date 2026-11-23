@@ -29,6 +29,11 @@ endif
 # used for the kernel - since BTF sections are not used, disable it.
 KERNEL_MAKE_ARGS += CONFIG_DEBUG_INFO_BTF_MODULES=
 
+OBJTOOL := $(shell command -v objtool)
+ifneq ($(OBJTOOL),)
+  KERNEL_MAKE_ARGS += objtool=$(OBJTOOL)
+endif
+
 ARCH_SPECIFIC_MODULES := mod-simple-x86_64.ko mod-simple-i386.ko mod-simple-sparc64.ko
 
 default: modules

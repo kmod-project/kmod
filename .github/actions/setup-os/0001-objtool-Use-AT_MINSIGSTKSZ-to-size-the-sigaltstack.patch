@@ -1,0 +1,84 @@
+From: Alexander Moch <mail@alexmoch.com>
+Date: Sun, 20 Sep 2026 16:38:15 +0200
+Subject: [PATCH] objtool: Use AT_MINSIGSTKSZ to size the sigaltstack
+
+init_signal_handler() allocates its alternate signal stack with SIGSTKSZ.
+Built against musl on x86-64 that is a compile-time 8192, whatever the CPU
+it ends up running on turns out to need.
+
+The C library refuses a stack below its own minimum, and that minimum
+follows the kernel: musl's sigaltstack() rejects anything smaller than
+sysconf(_SC_MINSIGSTKSZ), which it derives from AT_MINSIGSTKSZ, and the
+kernel grows that figure with the xsave area.  On a machine with AMX it is
+11952, so the 8192 objtool asks for is refused and objtool exits before
+doing any work:
+
+  error: objtool [signal.c:118]: init_signal_handler: sigaltstack failed: Out of memory
+
+Ask the kernel instead of assuming.  It publishes the size a signal frame
+needs as AT_MINSIGSTKSZ, and the handler still has to run in what is left
+above that, so add SIGSTKSZ on top, which is what
+tools/testing/selftests/x86/sigaltstack.c already does.  Where the auxv
+entry is absent, before v5.14, getauxval() returns 0 and the result is
+SIGSTKSZ, as today.
+
+Fixes: 799647ddb4c0 ("objtool: Add more robust signal error handling, detect and warn about stack overflows")
+Reviewed-by: Lucas De Marchi <ldemarchi@nvidia.com>
+Link: https://lore.kernel.org/all/20260920143815.32426-1-mail@alexmoch.com/
+Signed-off-by: Alexander Moch <mail@alexmoch.com>
+---
+ tools/objtool/signal.c | 18 ++++++++++++++++--
+ 1 file changed, 16 insertions(+), 2 deletions(-)
+
+diff --git a/tools/objtool/signal.c b/tools/objtool/signal.c
+index af5c65c0fb2d..8f86c79adbfb 100644
+--- a/tools/objtool/signal.c
++++ b/tools/objtool/signal.c
+@@ -9,11 +9,16 @@
+ #include <signal.h>
+ #include <unistd.h>
+ #include <sys/resource.h>
++#include <sys/auxv.h>
+ #include <string.h>
+ 
+ #include <objtool/objtool.h>
+ #include <objtool/warn.h>
+ 
++#ifndef AT_MINSIGSTKSZ
++#define AT_MINSIGSTKSZ	51
++#endif
++
+ static unsigned long stack_limit;
+ 
+ static bool is_stack_overflow(void *fault_addr)
+@@ -101,17 +106,26 @@ int init_signal_handler(void)
+ {
+ 	int signals[] = {SIGSEGV, SIGBUS, SIGILL, SIGABRT};
+ 	struct sigaction sa;
++	long stack_size;
+ 	stack_t ss;
+ 
+ 	if (read_stack_limit())
+ 		return -1;
+ 
+-	ss.ss_sp = malloc(SIGSTKSZ);
++	/*
++	 * SIGSTKSZ is a compile-time constant here and can be smaller
++	 * than the signal frame on the running CPU.  Ask the kernel how
++	 * big that frame is, and leave SIGSTKSZ on top of it for the
++	 * handler.  Before v5.14 getauxval() returns 0, leaving SIGSTKSZ.
++	 */
++	stack_size = getauxval(AT_MINSIGSTKSZ) + SIGSTKSZ;
++
++	ss.ss_sp = malloc(stack_size);
+ 	if (!ss.ss_sp) {
+ 		ERROR_GLIBC("malloc");
+ 		return -1;
+ 	}
+-	ss.ss_size = SIGSTKSZ;
++	ss.ss_size = stack_size;
+ 	ss.ss_flags = 0;
+ 
+ 	if (sigaltstack(&ss, NULL) == -1) {
+-- 
+2.55.0
