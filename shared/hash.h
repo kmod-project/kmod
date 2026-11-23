@@ -1,6 +1,9 @@
 #pragma once
 
 #include <stdbool.h>
+#include <stdlib.h>
+
+#include <shared/macro.h>
 
 struct hash;
 
@@ -10,8 +13,9 @@ struct hash_iter {
 	unsigned int entry;
 };
 
-struct hash *hash_new(unsigned int n_buckets, void (*free_value)(void *value));
 void hash_free(struct hash *hash);
+_malloc_(hash_free, 1) struct hash *hash_new(unsigned int n_buckets,
+					     void (*free_value)(void *value));
 int hash_add(struct hash *hash, const char *key, const void *value);
 int hash_add_unique(struct hash *hash, const char *key, const void *value);
 int hash_del(struct hash *hash, const char *key);
