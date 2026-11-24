@@ -109,4 +109,5 @@ global:
 LIBKMOD_35 {
 global:
 	kmod_config_get_masks;
+	kmod_module_info_get_raw_value;
 } LIBKMOD_33;

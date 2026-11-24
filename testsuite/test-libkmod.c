@@ -627,4 +627,159 @@ DEFINE_TEST(test_weakdep,
 		.out = TESTSUITE_ROOTFS "test-libkmod/weakdep/correct.txt",
 	});
 
+static int test_module_info_raw_invalid(void)
+{
+	size_t size = 1;
+
+	TS_ASSERT(kmod_module_info_get_raw_value(NULL, &size) == NULL);
+	TS_ASSERT(kmod_module_info_get_raw_value(NULL, NULL) == NULL);
+
+	return 0;
+}
+DEFINE_TEST(test_module_info_raw_invalid,
+	    .description = "check raw module information rejects invalid arguments");
+
+static int check_module_info_raw(const struct kmod_list *entry, const void *expected,
+				 size_t expected_size)
+{
+	static const char digits[] = "0123456789ABCDEF";
+	const uint8_t *raw;
+	const char *value;
+	size_t size = 1;
+
+	TS_ASSERT(kmod_module_info_get_raw_value(entry, NULL) == NULL);
+	raw = kmod_module_info_get_raw_value(entry, &size);
+	TS_ASSERT(size == expected_size);
+
+	if (expected_size == 0) {
+		TS_ASSERT(raw == NULL);
+		return 0;
+	}
+
+	TS_ASSERT(raw != NULL);
+	TS_ASSERT(memcmp(raw, expected, size) == 0);
+	TS_ASSERT(kmod_module_info_get_raw_value(entry, &size) == raw);
+
+	/* The formatted getter must still expose uppercase, colon-separated hex. */
+	value = kmod_module_info_get_value(entry);
+	TS_ASSERT(value != NULL);
+	for (size_t i = 0; i < size; i++) {
+		TS_ASSERT(*value++ == digits[raw[i] >> 4]);
+		TS_ASSERT(*value++ == digits[raw[i] & 0x0f]);
+		if (i == size - 1)
+			break;
+		TS_ASSERT(*value++ == ':');
+		if ((i + 1) % 20 == 0) {
+			TS_ASSERT(strncmp(value, "\n\t\t", 3) == 0);
+			value += 3;
+		}
+	}
+	TS_ASSERT(*value == '\0');
+
+	return 0;
+}
+
+static int test_module_info_raw(void)
+{
+	static const char *const paths[] = {
+		"/mod-simple.ko",
+		"/mod-simple-sha1.ko",
+		"/mod-simple-sha256.ko",
+		"/mod-simple-pkcs7.ko",
+	};
+	const char *null_config = NULL;
+	struct kmod_ctx *ctx;
+
+	ctx = kmod_new(NULL, &null_config);
+	TS_ASSERT(ctx != NULL);
+
+	for (size_t i = 0; i < ARRAY_SIZE(paths); i++) {
+		struct kmod_signature_info *sig_info = NULL;
+		struct kmod_list *list = NULL, *entry;
+		struct kmod_module *mod;
+		struct kmod_file *file;
+		struct kmod_elf *elf;
+		const void *contents, *build_id;
+		size_t build_id_size;
+		off_t file_size;
+		bool seen_build_id = false, seen_key = false, seen_signature = false;
+		bool seen_license = false, have_build_id;
+		int err, count = 0;
+
+		/* Obtain the expected bytes independently of the module information list. */
+		err = kmod_file_open(ctx, paths[i], &file);
+		TS_ASSERT(err == 0);
+		err = kmod_file_get_contents(file, &contents, &file_size);
+		TS_ASSERT(err == 0);
+		err = kmod_elf_new(contents, file_size, &elf);
+		TS_ASSERT(err == 0);
+		err = kmod_elf_get_build_id(elf, &build_id, &build_id_size);
+		TS_ASSERT(err == 0 || err == -ENODATA);
+		have_build_id = err == 0;
+		TS_ASSERT(kmod_module_signature_info(file, &sig_info) == (i != 0));
+		if (i == 1 || i == 2) {
+			TS_ASSERT(sig_info->sig_len > 20);
+			TS_ASSERT(memchr(sig_info->sig, '\0', sig_info->sig_len) != NULL);
+		}
+
+		err = kmod_module_new_from_path(ctx, paths[i], &mod);
+		TS_ASSERT(err == 0);
+		err = kmod_module_get_info(mod, &list);
+		TS_ASSERT(err > 0);
+
+		/* Information, including raw values, must survive releasing the module. */
+		kmod_module_unref(mod);
+
+		kmod_list_foreach(entry, list) {
+			const char *key = kmod_module_info_get_key(entry);
+			const void *expected = NULL;
+			size_t expected_size = 0;
+
+			TS_ASSERT(key != NULL);
+			if (streq(key, "build-id")) {
+				TS_ASSERT(have_build_id);
+				seen_build_id = true;
+				expected = build_id;
+				expected_size = build_id_size;
+			} else if (streq(key, "sig_key")) {
+				TS_ASSERT(sig_info != NULL);
+				seen_key = true;
+				expected = sig_info->key_id;
+				expected_size = sig_info->key_id_len;
+			} else if (streq(key, "signature")) {
+				TS_ASSERT(sig_info != NULL);
+				seen_signature = true;
+				expected = sig_info->sig;
+				expected_size = sig_info->sig_len;
+			} else if (streq(key, "license")) {
+				seen_license = true;
+				TS_ASSERT(streq(kmod_module_info_get_value(entry), "GPL"));
+			}
+
+			TS_ASSERT(check_module_info_raw(entry, expected, expected_size) ==
+				  0);
+			count++;
+		}
+		TS_ASSERT(count == err);
+		TS_ASSERT(seen_build_id == have_build_id);
+		TS_ASSERT(seen_license);
+		TS_ASSERT(seen_key == (i != 0));
+		TS_ASSERT(seen_signature == (i != 0));
+
+		kmod_module_info_free_list(list);
+		free(sig_info);
+		kmod_elf_unref(elf);
+		kmod_file_unref(file);
+	}
+
+	kmod_unref(ctx);
+
+	return 0;
+}
+DEFINE_TEST(test_module_info_raw,
+	    .description = "check raw and formatted module information and list ownership",
+	    .config = {
+		    [TC_ROOTFS] = TESTSUITE_ROOTFS "test-modinfo/",
+	    });
+
 TESTSUITE_MAIN();

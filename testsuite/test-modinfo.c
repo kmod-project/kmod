@@ -51,6 +51,16 @@ DEFINE_MODINFO_SIGN_TEST(signer);
 DEFINE_MODINFO_SIGN_TEST(sig_key);
 DEFINE_MODINFO_SIGN_TEST(sig_hashalgo);
 
+#if ENABLE_OPENSSL
+DEFINE_MODINFO_TEST(sig_sigalgo, -openssl, "/mod-simple-sha1.ko", "/mod-simple-sha256.ko",
+		    "/mod-simple-pkcs7.ko");
+#elif ENABLE_MBEDTLS
+DEFINE_MODINFO_TEST(sig_sigalgo, -mbedtls, "/mod-simple-sha1.ko", "/mod-simple-sha256.ko",
+		    "/mod-simple-pkcs7.ko");
+#else
+DEFINE_MODINFO_SIGN_TEST(sig_sigalgo);
+#endif
+
 #if 0
 static int test_modinfo_signature(void)
 {

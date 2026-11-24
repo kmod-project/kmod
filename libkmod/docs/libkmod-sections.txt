@@ -104,6 +104,7 @@ kmod_module_versions_free_list
 kmod_module_get_info
 kmod_module_info_get_key
 kmod_module_info_get_value
+kmod_module_info_get_raw_value
 kmod_module_info_free_list
 </SECTION>
 
